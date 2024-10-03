@@ -37,17 +37,29 @@ db_table_land_use = "cubf"
 db_table_match_regsets_territory = 'association_er_territoire'
 db_table_analysis_territory = 'sec_analyse'
 # colonnes
+# role foncier
 db_column_tax_id = 'id_provinc'
 db_column_tax_constr_year = 'rl0307a'
+# cadastre
 db_column_lot_id = 'g_no_lot'
+# cartographie_secteurs
 db_column_territory_id = 'id_periode_geo'
+# historique
 db_column_history_id = "id_periode"
+db_column_history_start_year = 'date_debut_periode'
+db_column_history_end_year = 'date_fin_periode'
+# règlementation stationnement
 db_column_parking_regs_id = 'id_reg_stat'
+# unite stationnement
 db_column_units_id = 'id_unite'
+# ensembles de règlements
 db_column_reg_sets_id = 'id_er'
+# utilsiation du territoire
 db_column_land_use_id = 'cubf'
+#territoire d'analyse
 db_column_analysis_territory_id = 'ID'
 db_column_analysis_territory_name = 'NOM'
+
 # colonnes de géométrie
 db_geom_analysis ='geometry'
 db_geom_tax = 'geometry'

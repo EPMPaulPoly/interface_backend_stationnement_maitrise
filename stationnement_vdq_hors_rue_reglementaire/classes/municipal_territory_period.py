@@ -219,6 +219,25 @@ def get_territories_from_postgis(period:Union[int,list])->list[MunicipalTerritor
     return list_to_return
 
 
+def get_territories_based_tax_dataset(tax_dataset:TD.TaxDataset):
+    tax_ids = tax_dataset.tax_table[config_db.db_column_tax_id].unique().tolist()
+    command_period_headers = f'SELECT * FROM public.{config_db.db_table_history}'
+    engine = create_engine(config_db.pg_string)
+    with engine.connect() as con:
+        historique_total = pd.read_sql(command_period_headers,con=con)
+        for _ , periode in historique_total.iterrows():
+            # si c'est une période sans début
+            if np.isnan(periode[config_db.db_column_history_start_year]):
+                command_tax = f'SELECT * FROM public.{config_db.db_table_territory} AS territories WHERE (ST_Intersects(territories.{config_db.db_geom_territory}, SELECT )) AND'
+                print(command_tax)
+            elif np.isnan(periode[config_db.db_column_history_end_year]):
+                command_tax = f'SELECT * FROM public.{config_db.db_table_territory} AS territories WHERE (ST_Intersects(territories.{config_db.db_geom_territory}, SELECT )) AND'
+                print(command_tax)
+            else:
+                command_tax = f"WITH unioned_geometry AS (SELECT ST_Union(geometry) AS geom  FROM {config_db.db_table_tax_data_points} WHERE ({config_db.db_column_tax_id}  IN ('{"','".join(map(str,tax_ids))}')) AND ({config_db.db_column_tax_constr_year}::numeric>={periode[config_db.db_column_history_start_year]}) AND ({config_db.db_column_tax_constr_year}::numeric<={periode[config_db.db_column_history_end_year]}))  SELECT territories.* FROM public.{config_db.db_table_territory} AS territories, unioned_geometry WHERE (ST_Intersects(territories.{config_db.db_geom_territory},unioned_geometry.geom)) AND ({config_db.db_column_history_id}={periode[config_db.db_column_history_id]})"
+            territories = gpd.read_postgis(command_tax,con=engine,geom_col=config_db.db_geom_territory)
+            print(command_tax)
+
 if __name__=="__main__":
     
     list_of_territory_periods = get_territories_from_postgis(7)
