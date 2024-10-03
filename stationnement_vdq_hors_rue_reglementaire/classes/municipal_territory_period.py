@@ -218,26 +218,37 @@ def get_territories_from_postgis(period:Union[int,list])->list[MunicipalTerritor
             list_to_return.append(mtp_to_append)
     return list_to_return
 
-
+'''
 def get_territories_based_tax_dataset(tax_dataset:TD.TaxDataset):
+    # liste des identifiants provinciaux de l'ensemble de tax consulté
     tax_ids = tax_dataset.tax_table[config_db.db_column_tax_id].unique().tolist()
+    # Requête pour chercher l'historique de la ville
     command_period_headers = f'SELECT * FROM public.{config_db.db_table_history}'
+    # Créé l'interface de la base de données postgis
     engine = create_engine(config_db.pg_string)
+    #with pour l'ouverture
     with engine.connect() as con:
+        # historique de la ville
         historique_total = pd.read_sql(command_period_headers,con=con)
+        # itération aux travers des périodes. Pour chaque
         for _ , periode in historique_total.iterrows():
-            # si c'est une période sans début
-            if np.isnan(periode[config_db.db_column_history_start_year]):
-                command_tax = f'SELECT * FROM public.{config_db.db_table_territory} AS territories WHERE (ST_Intersects(territories.{config_db.db_geom_territory}, SELECT )) AND'
-                print(command_tax)
-            elif np.isnan(periode[config_db.db_column_history_end_year]):
-                command_tax = f'SELECT * FROM public.{config_db.db_table_territory} AS territories WHERE (ST_Intersects(territories.{config_db.db_geom_territory}, SELECT )) AND'
-                print(command_tax)
-            else:
+            Requête pour trouver les territoires qui sont affectés par les points du rôle foncier. Séquencement en fonction des dates de périodes. Si la période de début est nulle alors on compare seulement la date de fin et inversement. Cette solution ne gère pas les entrées du rôle foncier qui n'ont pas de date de construction
+            if np.isnan(periode[config_db.db_column_history_start_year]):# no start date, earliest period
+                command_tax = f"WITH unioned_geometry AS (SELECT ST_Union(geometry) AS geom  FROM {config_db.db_table_tax_data_points} WHERE ({config_db.db_column_tax_id}  IN ('{"','".join(map(str,tax_ids))}')) AND ({config_db.db_column_tax_constr_year}::numeric<={periode[config_db.db_column_history_end_year]}))  SELECT territories.* FROM public.{config_db.db_table_territory} AS territories, unioned_geometry WHERE (ST_Intersects(territories.{config_db.db_geom_territory},unioned_geometry.geom)) AND ({config_db.db_column_history_id}={periode[config_db.db_column_history_id]})"
+            elif np.isnan(periode[config_db.db_column_history_end_year]):# no end date latest period
+                
+                command_tax = f"WITH unioned_geometry AS (SELECT ST_Union(geometry) AS geom  FROM {config_db.db_table_tax_data_points} WHERE ({config_db.db_column_tax_id}  IN ('{"','".join(map(str,tax_ids))}')) AND ({config_db.db_column_tax_constr_year}::numeric>={periode[config_db.db_column_history_start_year]}))  SELECT territories.* FROM public.{config_db.db_table_territory} AS territories, unioned_geometry WHERE (ST_Intersects(territories.{config_db.db_geom_territory},unioned_geometry.geom)) AND ({config_db.db_column_history_id}={periode[config_db.db_column_history_id]})"
+            else:# everything else
                 command_tax = f"WITH unioned_geometry AS (SELECT ST_Union(geometry) AS geom  FROM {config_db.db_table_tax_data_points} WHERE ({config_db.db_column_tax_id}  IN ('{"','".join(map(str,tax_ids))}')) AND ({config_db.db_column_tax_constr_year}::numeric>={periode[config_db.db_column_history_start_year]}) AND ({config_db.db_column_tax_constr_year}::numeric<={periode[config_db.db_column_history_end_year]}))  SELECT territories.* FROM public.{config_db.db_table_territory} AS territories, unioned_geometry WHERE (ST_Intersects(territories.{config_db.db_geom_territory},unioned_geometry.geom)) AND ({config_db.db_column_history_id}={periode[config_db.db_column_history_id]})"
+            # va chercher les territoire qui englobent les points choisis
             territories = gpd.read_postgis(command_tax,con=engine,geom_col=config_db.db_geom_territory)
-            print(command_tax)
-
+            # créé une liste des identifiants de territoire
+            territories_list = territories[config_db.db_column_territory_id].unique().tolist()
+            # va chercher les ensembles de règlements associés au territoire
+            command_rulesets = f"SELECT * FROM public.{config_db.db_table_match_regsets_territory} WHERE {config_db.db_column_territory_id} IN ('{"','".join(map(str,territories_list))}')"
+            ruleset_association_data = pd.read_sql(command_rulesets,con=con)
+            print(command_rulesets)
+'''
 if __name__=="__main__":
     
     list_of_territory_periods = get_territories_from_postgis(7)

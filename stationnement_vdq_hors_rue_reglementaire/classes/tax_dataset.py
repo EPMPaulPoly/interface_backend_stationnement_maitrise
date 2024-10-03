@@ -8,12 +8,38 @@ from stationnement_vdq_hors_rue_reglementaire.config import config_db
 from typing import Optional, Union
 
 class TaxDataset():
-    '''# TaxDataset: \n
-    contient le rôle foncier, le cadastre et la table associant les deux avec une table'''
+    """# TaxDataset: \n
+    contient le rôle foncier, le cadastre et la table associant les deux avec une table. Des propriétés agrégées sont aussi fournies
+    ## Attributs:
+        - tax_table: role foncier
+        - lot_table: cadastrer
+        - lot_association: table d'association cadastre rôle
+        - aggregate_data: données du rôle agrégées par lot
+    """
     def __init__(self,data_table:gpd.GeoDataFrame,lot_association:pd.DataFrame,lot_data:gpd.GeoDataFrame):
         self.tax_table = data_table
         self.lot_association = lot_association
         self.lot_table = lot_data
+        self.aggregate_data = pd.DataFrame()
+        dude = self.tax_table[config_db.db_column_tax_constr_year].fillna(0).astype('int32')
+        self.tax_table[config_db.db_column_tax_constr_year] = dude
+        self.aggregate_data_create({'rl0308a':'sum','rl0311a':'sum','rl0312a':'sum','rl0313a':'sum','rl0307a':'max'})
+    
+    def aggregate_data_create(self, aggregate_dict:dict)->None:
+        '''# aggregate_data_create
+            Utilisé pour créé des données agrégées par lot pour chaque 
+            ## Inputs
+                - aggregate_dict: dictionnaire sous format colonne:fonction qui donne les colonnes à agréger et selon quelle fonction
+            ## Sortie
+                - Mise à jour de la table aggregate_data
+                '''
+        tax_table_ammended = self.tax_table.merge(self.lot_association,on=config_db.db_column_tax_id,how='left')
+        columns = list(aggregate_dict)
+        columns.append(config_db.db_column_lot_id)
+        columns.reverse()
+        aggregate_table_base = tax_table_ammended[columns]
+        aggregate_table_final = aggregate_table_base.groupby(by=config_db.db_column_lot_id).aggregate(aggregate_dict)
+        self.aggregate_data = aggregate_table_final
 
     def plot(self,ax:plt.axis=None,arguments=None):
         ''' # plot\n 
