@@ -4,7 +4,7 @@ import numpy as np
 from shapely import wkt
 import matplotlib.pyplot as plt
 from sqlalchemy import create_engine,text
-from ..config import config_db
+from stationnement_vdq_hors_rue_reglementaire.config import config_db
 from typing import Optional, Union
 
 class TaxDataset():
@@ -26,10 +26,21 @@ class TaxDataset():
             ax = self.lot_table.plot(ax=ax)
             self.tax_table.plot(ax=ax,color="r")
         else:
-            self.lot_table.plot()
+            ax=self.lot_table.plot()
             self.tax_table.plot(ax=ax,color="r")
         return ax
     
+    def explore(self,file:str="./data/tax.html",arguments=None):
+        '''# explore\n
+            utilise leaflet pour envoyer les données vers un fichier html
+            ## Inputs
+                - file: nom du fichier
+        '''
+        m1 = self.lot_table.explore()
+        tax_table = self.tax_table.drop(columns="dat_cond_mrche")
+        tax_table.explore(m=m1,color='red')
+        m1.save(file)
+
     def __repr__(self):
         '''# __repr__ \n
          donne la représentation de l'ensemble de données. Il faudra faire un ménage parce que la jointure va prendre trop longtemps. Ce n'est pas particulièrement brillant en ce moment'''
@@ -66,7 +77,19 @@ def tax_database_points_from_date_territory(id_territory:Union[int,list[int]],st
     data_to_out = TaxDataset(data_table=data,lot_association=association_table,lot_data=lot_table)
     return data_to_out
     
-
+def tax_database_for_analysis_territory(id_analysis_territory:int)->TaxDataset:
+    engine = create_engine(config_db.pg_string)
+    with engine.connect() as con:
+        command = f'SELECT points.* FROM {config_db.db_table_tax_data_points} AS points, {config_db.db_table_analysis_territory} AS polygons WHERE ST_Within(points.{config_db.db_geom_tax}, (SELECT polygons.{config_db.db_geom_analysis} WHERE polygons."{config_db.db_column_analysis_territory_id}" = {id_analysis_territory}))'
+        tax_base_data = gpd.read_postgis(command,con=engine,geom_col=config_db.db_geom_tax)
+        unique_tax_ids = tax_base_data[config_db.db_column_tax_id].unique().tolist()
+        command_association = f"SELECT * FROM {config_db.db_table_match_tax_lots} WHERE {config_db.db_column_tax_id} IN ('{"','".join(map(str,unique_tax_ids))}')"
+        association_database = pd.read_sql(command_association,con=con)
+        unique_lot_ids = association_database[config_db.db_column_lot_id].unique().tolist()
+        command_lots = f"SELECT * FROM {config_db.db_table_lots} WHERE {config_db.db_column_lot_id} IN ('{"','".join(map(str,unique_lot_ids))}')"
+        lot_database = gpd.read_postgis(command_lots,con=engine,geom_col=config_db.db_geom_lots)
+        tax_data_set_to_return = TaxDataset(tax_base_data,association_database,lot_database)
+        return tax_data_set_to_return
 
 def from_postgis(**kwargs):
     polygon = kwargs.get("polygon",None)

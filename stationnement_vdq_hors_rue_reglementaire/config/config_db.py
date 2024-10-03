@@ -35,6 +35,7 @@ db_table_reg_sets_header = "ensembles_reglements_stat"
 db_table_reg_sets_match = "association_er_reg_stat"
 db_table_land_use = "cubf"
 db_table_match_regsets_territory = 'association_er_territoire'
+db_table_analysis_territory = 'sec_analyse'
 # colonnes
 db_column_tax_id = 'id_provinc'
 db_column_tax_constr_year = 'rl0307a'
@@ -45,3 +46,10 @@ db_column_parking_regs_id = 'id_reg_stat'
 db_column_units_id = 'id_unite'
 db_column_reg_sets_id = 'id_er'
 db_column_land_use_id = 'cubf'
+db_column_analysis_territory_id = 'ID'
+db_column_analysis_territory_name = 'NOM'
+# colonnes de géométrie
+db_geom_analysis ='geometry'
+db_geom_tax = 'geometry'
+db_geom_lots = 'geometry'
+db_geom_territory = 'geometry'
