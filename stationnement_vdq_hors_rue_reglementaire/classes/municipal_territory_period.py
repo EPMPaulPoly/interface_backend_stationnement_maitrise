@@ -1,5 +1,4 @@
 import numpy as np
-from stationnement_vdq_hors_rue_reglementaire.classes.parking_reg_sets import ParkingRegulationSet 
 import geopandas as gpd
 import pandas as pd
 from typing import Optional, Union
@@ -19,7 +18,7 @@ class MunicipalTerritoryPeriod():
         ## Attributes:
             - territories_info: GeoDataFrame - name of city, name of sector, id periode and limits of sector
             - ruleset_match_table: DataFrame - many to many association of rulesets to territories Dataframe containint 
-            - rulesets: PR.ParkingRegulationSet which contains association of land use to given parking regulation. Regulations are represented in similar manner to what 
+            - rulesets: PRS.ParkingRegulationSet which contains association of land use to given parking regulation. Regulations are represented in similar manner to what 
         ## Methods
             - __init__: instantiates the relevant object
             - __repr__: element to print
@@ -27,7 +26,7 @@ class MunicipalTerritoryPeriod():
             - get_tax_points_data_in_territory
             - apply_parking_rules
         '''
-    def __init__(self,territories_info:gpd.GeoDataFrame,ruleset_match_table:pd.DataFrame,rulesets:Union[ParkingRegulationSet,list],description:str,start_year:int,end_year:int,period_id:int):
+    def __init__(self,territories_info:gpd.GeoDataFrame,ruleset_match_table:pd.DataFrame,rulesets:Union[PRS.ParkingRegulationSet,list],description:str,start_year:int,end_year:int,period_id:int):
         self.territories_table = territories_info
         self.ruleset_match_table = ruleset_match_table
         self.description = description
@@ -36,10 +35,10 @@ class MunicipalTerritoryPeriod():
         self.period_id = period_id
         if isinstance(rulesets,list):
             for ruleset in rulesets:
-                if not isinstance(ruleset,ParkingRegulationSet):
+                if not isinstance(ruleset,PRS.ParkingRegulationSet):
                     raise ValueError("Rulesets must be ParkingRegulationSet or list of ParkingRegulationSet")
             self.rulesets = rulesets
-        elif isinstance(rulesets,ParkingRegulationSet):
+        elif isinstance(rulesets,PRS.ParkingRegulationSet):
             self.rulesets[0]=rulesets
     
     def __repr__(self)->str:
@@ -226,13 +225,15 @@ def get_territories_based_tax_dataset(tax_dataset:TD.TaxDataset):
     command_period_headers = f'SELECT * FROM public.{config_db.db_table_history}'
     # Créé l'interface de la base de données postgis
     engine = create_engine(config_db.pg_string)
+    list_rules = []
+    list_tax = []
     #with pour l'ouverture
     with engine.connect() as con:
         # historique de la ville
         historique_total = pd.read_sql(command_period_headers,con=con)
         # itération aux travers des périodes. Pour chaque
         for _ , periode in historique_total.iterrows():
-            Requête pour trouver les territoires qui sont affectés par les points du rôle foncier. Séquencement en fonction des dates de périodes. Si la période de début est nulle alors on compare seulement la date de fin et inversement. Cette solution ne gère pas les entrées du rôle foncier qui n'ont pas de date de construction
+            # Requête pour trouver les territoires qui sont affectés par les points du rôle foncier. Séquencement en fonction des dates de périodes. Si la période de début est nulle alors on compare seulement la date de fin et inversement. Cette solution ne gère pas les entrées du rôle foncier qui n'ont pas de date de construction
             if np.isnan(periode[config_db.db_column_history_start_year]):# no start date, earliest period
                 command_tax = f"WITH unioned_geometry AS (SELECT ST_Union(geometry) AS geom  FROM {config_db.db_table_tax_data_points} WHERE ({config_db.db_column_tax_id}  IN ('{"','".join(map(str,tax_ids))}')) AND ({config_db.db_column_tax_constr_year}::numeric<={periode[config_db.db_column_history_end_year]}))  SELECT territories.* FROM public.{config_db.db_table_territory} AS territories, unioned_geometry WHERE (ST_Intersects(territories.{config_db.db_geom_territory},unioned_geometry.geom)) AND ({config_db.db_column_history_id}={periode[config_db.db_column_history_id]})"
             elif np.isnan(periode[config_db.db_column_history_end_year]):# no end date latest period
@@ -246,7 +247,20 @@ def get_territories_based_tax_dataset(tax_dataset:TD.TaxDataset):
             territories_list = territories[config_db.db_column_territory_id].unique().tolist()
             # va chercher les ensembles de règlements associés au territoire
             command_rulesets = f"SELECT * FROM public.{config_db.db_table_match_regsets_territory} WHERE {config_db.db_column_territory_id} IN ('{"','".join(map(str,territories_list))}')"
-            ruleset_association_data = pd.read_sql(command_rulesets,con=con)
+            ruleset_association_data:pd.DataFrame = pd.read_sql(command_rulesets,con=con)
+            for territory in territories_list:
+                relevant_rulesets = ruleset_association_data.loc[ruleset_association_data[config_db.db_column_territory_id]==territory,config_db.db_column_reg_sets_id].unique().tolist()
+                for rule_set in relevant_rulesets:
+                    command_ruleset_header = f'SELECT * FROM public.{config_db.db_table_reg_sets_header} WHERE {config_db.db_column_reg_sets_id}={rule_set}'
+                    ruleset_header = pd.read_sql(command_ruleset_header,con=con)
+                    if ruleset_header[config_db.db_column_reg_sets_start_year].values[0] is None:
+                        command_tax_data_to_assess = f"SELECT * FROM public.{config_db.db_table_tax_data_points} WHERE ({config_db.db_column_tax_id} IN ('{"','".join(map(str,tax_ids))}')) AND ({config_db.db_column_tax_constr_year}::numeric<={ruleset_header[config_db.db_column_reg_sets_end_year].values[0]})"
+                    elif ruleset_header[config_db.db_column_reg_sets_end_year].values[0] is None:
+                        command_tax_data_to_assess = f"SELECT * FROM public.{config_db.db_table_tax_data_points} WHERE ({config_db.db_column_tax_id} IN ('{"','".join(map(str,tax_ids))}')) AND ({config_db.db_column_tax_constr_year}::numeric­­­>={ruleset_header[config_db.db_column_reg_sets_start_year].values[0]})"
+                    else:
+                        command_tax_data_to_assess = f"SELECT * FROM public.{config_db.db_table_tax_data_points} WHERE ({config_db.db_column_tax_id} IN ('{"','".join(map(str,tax_ids))}')) AND ({config_db.db_column_tax_constr_year}::numeric­­­>={ruleset_header[config_db.db_column_reg_sets_start_year].values[0]}) AND ({config_db.db_column_tax_constr_year}::numeric<={ruleset_header[config_db.db_column_reg_sets_end_year].values[0]})"
+                    tax_data_points = gpd.read_postgis(command_tax_data_to_assess,con=engine,geom_col=config_db.db_geom_tax)
+                    print(command_tax_data_to_assess)
             print(command_rulesets)
 '''
 if __name__=="__main__":

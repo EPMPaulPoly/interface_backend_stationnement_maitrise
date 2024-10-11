@@ -54,6 +54,8 @@ db_column_parking_regs_id = 'id_reg_stat'
 db_column_units_id = 'id_unite'
 # ensembles de règlements
 db_column_reg_sets_id = 'id_er'
+db_column_reg_sets_start_year = 'date_debut_er'
+db_column_reg_sets_end_year = 'date_fin_er'
 # utilsiation du territoire
 db_column_land_use_id = 'cubf'
 #territoire d'analyse
