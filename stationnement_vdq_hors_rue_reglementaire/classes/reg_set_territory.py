@@ -26,7 +26,13 @@ class RegSetTerritory():
         self.end_year = period_end_year
     
     def __repr__(self):
-        return f"Territory: {self.territory_info[config_db.db_column_territory_name].values[0]} - {self.start_year:.0f}-{self.end_year:.0f} - Ruleset: {self.parking_regulation_set.description}"
+        if self.end_year is None:
+            return_string = f"Territory: {self.territory_info[config_db.db_column_territory_name].values[0]} - {self.start_year:.0f}-Présent - Ruleset: {self.parking_regulation_set.description}"
+        elif self.end_year is None:
+            return_string = f"Territory: {self.territory_info[config_db.db_column_territory_name].values[0]} - Big Bang -{self.end_year:.0f} - Ruleset: {self.parking_regulation_set.description}"
+        else:
+            return_string = f"Territory: {self.territory_info[config_db.db_column_territory_name].values[0]} - {self.start_year:.0f}-{self.end_year:.0f} - Ruleset: {self.parking_regulation_set.description}"
+        return return_string
     
 def get_postgis_rst_by_terr_id(territory_id:Union[int,list[int]])->list[RegSetTerritory]:
     '''# get_postgis_rst_by_terr_id
@@ -55,14 +61,20 @@ def get_postgis_rst_by_terr_id(territory_id:Union[int,list[int]])->list[RegSetTe
 
         RST_list_to_return =[]
         for _,association in associations.iterrows():
+            # get the regset id to pull
             reg_set_to_get = association[config_db.db_column_reg_sets_id]
+            # get the relevant territory id
             relevant_territory_id = association[config_db.db_column_territory_id]
+            # get actual territory in full
             relevant_territory = territories.loc[territories[config_db.db_column_territory_id]==relevant_territory_id]
+            # pull territory start and end year
             start_year_terr = history.loc[history[config_db.db_column_history_id] == relevant_territory[config_db.db_column_history_id].values[0],config_db.db_column_history_start_year].values[0]
             end_year_terr = history.loc[history[config_db.db_column_history_id] == relevant_territory[config_db.db_column_history_id].values[0],config_db.db_column_history_end_year].values[0]
+            # get the reg set and years
             reg_set:PRS.ParkingRegulationSet = PRS.from_sql(int(reg_set_to_get),con=con)[0]
             start_year_regset = reg_set.start_date
             end_year_regset = reg_set.end_date
+            # put the dates into coherence
             if start_year_terr is None and start_year_regset is None:
                 start_year_RST = None
             elif start_year_terr is None:
@@ -72,14 +84,34 @@ def get_postgis_rst_by_terr_id(territory_id:Union[int,list[int]])->list[RegSetTe
             else:
                 start_year_RST = max(start_year_terr,start_year_regset)
             
-            if end_year_terr is None and end_year_regset is None:
+            if (end_year_terr is None or np.isnan(end_year_terr)) and (end_year_regset is None or np.isnan(end_year_regset)):
                 end_year_RST = None
-            elif start_year_terr is None:
+            elif (end_year_terr is None or np.isnan(end_year_terr)):
                 end_year_RST = end_year_regset
-            elif  start_year_regset is None :
+            elif  (end_year_regset is None or np.isnan(end_year_regset)) :
                 end_year_RST = end_year_terr
             else:
                 end_year_RST = min(end_year_terr,end_year_regset)
             RST_to_append = RegSetTerritory(relevant_territory,reg_set,start_year_RST,end_year_RST)
             RST_list_to_return.append(RST_to_append)
     return RST_list_to_return  
+
+def get_rst_by_tax_data(tax_data:TD.TaxDataset,db_eng=None)->list[list[RegSetTerritory],list[TD.TaxDataset]]:
+    unique_tax_ids = tax_data.tax_table[config_db.db_column_tax_id].unique().tolist()
+    command_tax = f"WITH unioned_geometry AS (SELECT ST_Union(geometry) AS geom  FROM {config_db.db_table_tax_data_points} WHERE ({config_db.db_column_tax_id}  IN ('{"','".join(map(str,unique_tax_ids))}'))) SELECT territories.* FROM public.{config_db.db_table_territory} AS territories, unioned_geometry WHERE (ST_Intersects(territories.{config_db.db_geom_territory},unioned_geometry.geom))"
+    if db_eng is None:
+        db_eng = create_engine(config_db.pg_string)
+    relevant_territories = gpd.read_postgis(command_tax,con=db_eng,geom_col=config_db.db_geom_territory)
+    relevant_territory_ids = relevant_territories[config_db.db_column_territory_id].unique().tolist()
+    relevant_rsts = get_postgis_rst_by_terr_id(relevant_territory_ids)
+    tax_dataset_match = []
+    tax_table_total = tax_data.tax_table
+    for rst_to_filter_by in relevant_rsts:
+        if rst_to_filter_by.end_year is None:
+            print("to_be completed")
+        elif rst_to_filter_by.start_year ==0:
+            print("to_be_completed")
+        else:
+            tax_data = tax_table_total.sjoin(rst_to_filter_by.territory_info[config_db.db_column_territory_id],predicate="within")
+        print("dude2")
+    print("dude")

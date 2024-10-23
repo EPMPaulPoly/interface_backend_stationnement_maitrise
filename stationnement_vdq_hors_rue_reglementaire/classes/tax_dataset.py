@@ -67,6 +67,28 @@ class TaxDataset():
         tax_table.explore(m=m1,color='red')
         m1.save(file)
 
+    def year_filter(self,start_year=None,end_year=None):
+        '''# year_filter
+        Returns a tax dataset within a year set
+        ## Inputs
+            - start_year: start year of filter
+            - end_year : end year of filter
+        ## Outputs
+            - TaxDataSet'''
+        if start_year is None and end_year is None:
+            raise ValueError
+        elif start_year is None:
+            new_tax_table:gpd.GeoDataFrame = self.tax_table.loc[((self.tax_table[config_db.db_column_tax_constr_year]>= start_year))]
+        else:
+            new_tax_table:gpd.GeoDataFrame = self.tax_table.loc[((self.tax_table[config_db.db_column_tax_constr_year]>= start_year) & (self.tax_table[config_db.db_column_tax_constr_year]<= end_year))]
+        tax_ids = new_tax_table[config_db.db_column_tax_id].unique().tolist()
+        new_association_table:pd.DataFrame = self.lot_association[self.lot_association[config_db.db_column_tax_id]].isin(tax_ids).any(axis=1)
+        lot_ids = new_association_table[config_db.db_column_lot_id].unique().tolist()
+        new_lot_table:gpd.GeoDataFrame = self.lot_table[self.lot_table[config_db.db_column_lot_id]].isin(lot_ids).any(axis=1)
+        new_tax_data = TaxDataset(new_tax_table,new_association_table,new_lot_table)
+        return new_tax_data
+                                           
+
     def __repr__(self):
         '''# __repr__ \n
          donne la représentation de l'ensemble de données. Il faudra faire un ménage parce que la jointure va prendre trop longtemps. Ce n'est pas particulièrement brillant en ce moment'''
