@@ -44,6 +44,7 @@ db_column_tax_constr_year = 'rl0307a'
 db_column_lot_id = 'g_no_lot'
 # cartographie_secteurs
 db_column_territory_id = 'id_periode_geo'
+db_column_territory_name = 'ville_sec'
 # historique
 db_column_history_id = "id_periode"
 db_column_history_start_year = 'date_debut_periode'
