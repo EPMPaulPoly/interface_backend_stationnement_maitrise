@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from sqlalchemy import create_engine,text
 from stationnement_vdq_hors_rue_reglementaire.config import config_db
 from typing import Optional, Union
+from folium import Map
 
 class TaxDataset():
     """# TaxDataset: \n
@@ -56,16 +57,19 @@ class TaxDataset():
             self.tax_table.plot(ax=ax,color="r")
         return ax
     
-    def explore(self,file:str="./data/tax.html",arguments=None):
+    def explore(self,m:Map=None,arguments=None):
         '''# explore\n
             utilise leaflet pour envoyer les données vers un fichier html
             ## Inputs
                 - file: nom du fichier
         '''
-        m1 = self.lot_table.explore()
+        if m is None:
+            m1 = self.lot_table.explore()
+        else:
+            m1 = self.lot_table.explore(m=m)
         tax_table = self.tax_table.drop(columns="dat_cond_mrche")
         tax_table.explore(m=m1,color='red')
-        m1.save(file)
+        return m1
 
     def year_filter(self,start_year=None,end_year=None):
         '''# year_filter
@@ -78,23 +82,32 @@ class TaxDataset():
         if start_year is None and end_year is None:
             raise ValueError
         elif start_year is None:
+            new_tax_table:gpd.GeoDataFrame = self.tax_table.loc[((self.tax_table[config_db.db_column_tax_constr_year]<= end_year))]
+        elif end_year is None:
             new_tax_table:gpd.GeoDataFrame = self.tax_table.loc[((self.tax_table[config_db.db_column_tax_constr_year]>= start_year))]
         else:
-            new_tax_table:gpd.GeoDataFrame = self.tax_table.loc[((self.tax_table[config_db.db_column_tax_constr_year]>= start_year) & (self.tax_table[config_db.db_column_tax_constr_year]<= end_year))]
+            new_tax_table:gpd.GeoDataFrame = self.tax_table.loc[((self.tax_table[config_db.db_column_tax_constr_year]>= start_year) & (self.tax_table[config_db.db_column_tax_constr_year]<= end_year))].copy()
         tax_ids = new_tax_table[config_db.db_column_tax_id].unique().tolist()
-        new_association_table:pd.DataFrame = self.lot_association[self.lot_association[config_db.db_column_tax_id]].isin(tax_ids).any(axis=1)
+        new_association_table:pd.DataFrame = self.lot_association.loc[self.lot_association[config_db.db_column_tax_id].isin(tax_ids)].copy()
         lot_ids = new_association_table[config_db.db_column_lot_id].unique().tolist()
-        new_lot_table:gpd.GeoDataFrame = self.lot_table[self.lot_table[config_db.db_column_lot_id]].isin(lot_ids).any(axis=1)
+        new_lot_table:gpd.GeoDataFrame = self.lot_table.loc[self.lot_table[config_db.db_column_lot_id].isin(lot_ids)].copy()
         new_tax_data = TaxDataset(new_tax_table,new_association_table,new_lot_table)
         return new_tax_data
-                                           
+
+    def territory_filter(self,territory:gpd.GeoDataFrame):
+        new_tax_table = self.tax_table.clip(territory).copy()
+        tax_ids = new_tax_table[config_db.db_column_tax_id].unique().tolist()
+        new_association_table = self.lot_association.loc[self.lot_association[config_db.db_column_tax_id].isin(tax_ids)].copy()
+        lot_ids = new_association_table[config_db.db_column_lot_id].unique().tolist()
+        new_lot_table = self.lot_table.loc[self.lot_table[config_db.db_column_lot_id].isin(lot_ids)].copy()
+        tax_data_to_out = TaxDataset(new_tax_table,new_association_table,new_lot_table)
+        return tax_data_to_out
 
     def __repr__(self):
         '''# __repr__ \n
          donne la représentation de l'ensemble de données. Il faudra faire un ménage parce que la jointure va prendre trop longtemps. Ce n'est pas particulièrement brillant en ce moment'''
-        data = pd.merge(self.lot_table.drop(columns="geometry"),self.lot_association, on="g_no_lot")
-        data = pd.merge(data,self.tax_table.drop(columns="geometry"), on="id_provinc")
-        return data.__repr__()
+        repr = f'Tax Dataset: N accounts = {self.tax_table[config_db.db_column_tax_id].count()} - N lots = {self.lot_table[config_db.db_column_lot_id].count()}'
+        return repr
 
 def tax_database_points_from_date_territory(id_territory:Union[int,list[int]],start_year:int,end_year:int)->TaxDataset:
     '''# tax_database_points_from_polygon \n
@@ -128,14 +141,20 @@ def tax_database_points_from_date_territory(id_territory:Union[int,list[int]],st
 def tax_database_for_analysis_territory(id_analysis_territory:int)->TaxDataset:
     engine = create_engine(config_db.pg_string)
     with engine.connect() as con:
+        # commande pour aller chercher les points de rôle foncier à l'intérieur du territoire d'analuse
         command = f'SELECT points.* FROM {config_db.db_table_tax_data_points} AS points, {config_db.db_table_analysis_territory} AS polygons WHERE ST_Within(points.{config_db.db_geom_tax}, (SELECT polygons.{config_db.db_geom_analysis} WHERE polygons."{config_db.db_column_analysis_territory_id}" = {id_analysis_territory}))'
         tax_base_data = gpd.read_postgis(command,con=engine,geom_col=config_db.db_geom_tax)
+        # list les identifiants provinciaux
         unique_tax_ids = tax_base_data[config_db.db_column_tax_id].unique().tolist()
+        # va chercher la table d'association pour tous les points trouvés ci-haut
         command_association = f"SELECT * FROM {config_db.db_table_match_tax_lots} WHERE {config_db.db_column_tax_id} IN ('{"','".join(map(str,unique_tax_ids))}')"
         association_database = pd.read_sql(command_association,con=con)
+        # liste les lots qu'on vient d'aller chercher
         unique_lot_ids = association_database[config_db.db_column_lot_id].unique().tolist()
+        # va chercher les lots qu'on vient de lister
         command_lots = f"SELECT * FROM {config_db.db_table_lots} WHERE {config_db.db_column_lot_id} IN ('{"','".join(map(str,unique_lot_ids))}')"
         lot_database = gpd.read_postgis(command_lots,con=engine,geom_col=config_db.db_geom_lots)
+        # Crée un tax_dataset à retourner
         tax_data_set_to_return = TaxDataset(tax_base_data,association_database,lot_database)
         return tax_data_set_to_return
 
