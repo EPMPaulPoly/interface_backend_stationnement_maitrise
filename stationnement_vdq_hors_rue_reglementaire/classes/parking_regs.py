@@ -5,7 +5,8 @@ from functools import singledispatchmethod,singledispatch
 import numpy as np
 from stationnement_vdq_hors_rue_reglementaire.config import config_db
 from sqlalchemy import create_engine,text
-from stationnement_vdq_hors_rue_reglementaire.classes.tax_dataset import TaxDataset
+from stationnement_vdq_hors_rue_reglementaire.classes.tax_dataset import TaxDataset 
+from stationnement_vdq_hors_rue_reglementaire.classes.parking_inventory import ParkingInventory
 
 class ParkingRegulations():
     def __init__(self,reg_head:pd.DataFrame,reg_def:pd.DataFrame,units_table:pd.DataFrame)->None:
@@ -36,6 +37,13 @@ class ParkingRegulations():
         long_regs = self.reg_def[self.reg_def[config_db.db_column_parking_regs_id].isin(reg_ids)]
         object_out = ParkingRegulations(data,long_regs,self.units_table)
         return object_out
+
+    def calculate_minimum_parking(self,tax_data:TaxDataset)->ParkingInventory:
+        if len(self.reg_head[config_db.db_column_parking_regs_id].unique().tolist())>1:
+            IndexError('Should only have one regulation at a time')
+        else:
+            print('Not implemented yet')
+        
 
     @singledispatchmethod
     def get_reg_by_id(self,id_to_get_):

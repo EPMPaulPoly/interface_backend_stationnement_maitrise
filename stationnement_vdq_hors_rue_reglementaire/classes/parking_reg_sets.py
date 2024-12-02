@@ -1,4 +1,6 @@
 from stationnement_vdq_hors_rue_reglementaire.classes.parking_regs import ParkingRegulations 
+from stationnement_vdq_hors_rue_reglementaire.classes import tax_dataset as TD
+from stationnement_vdq_hors_rue_reglementaire.classes import parking_inventory as PI
 import pandas as pd
 import numpy as np
 from typing import Optional, Union
@@ -108,6 +110,24 @@ class ParkingRegulationSet(ParkingRegulations):
         else:
             raise ValueError("Missing land uses 1-9 which are necessary at a minimum")
 
+    def get_unique_reg_ids(self)->list:
+        unique_ids = self.reg_head[config_db.db_column_parking_regs_id].unique().tolist()
+        return unique_ids
+
+    def get_unique_reg_ids_using_land_use(self,land_uses:list[int])->list:
+        '''
+            # get_unique_reg_ids_using_land_use
+                permet de retourner les règlements qui sont associés aux usage du sole dans la liste land_uses
+        '''
+        int_land_uses = list(map(int, land_uses))
+        unique_ids = self.expanded_table.loc[ self.expanded_table[config_db.db_column_land_use_id].isin(int_land_uses),config_db.db_column_parking_regs_id].unique().tolist()
+        return unique_ids
+    
+    def get_parking_reg_by_id(self,reg_id:int)->ParkingRegulations:
+        new_reg_head = self.reg_head.loc[self.reg_head[config_db.db_column_parking_regs_id]==reg_id]
+        new_reg_def = self.reg_def.loc[self.reg_def[config_db.db_column_parking_regs_id]==reg_id]
+        new_units_table = self.units_table
+        return ParkingRegulations(new_reg_head,new_reg_def,new_units_table)
 
 def from_sql(ruleset_id:Union[int,list],con:sqlalchemy.Connection=None)->list[ParkingRegulationSet]:
     '''
@@ -177,6 +197,16 @@ def run_sql_requests(ruleset_id,con:sqlalchemy.Connection):
         command = f"select * from public.cubf"
         land_use_table= pd.read_sql(command,con=con)
     return rulesets_header_table,rules_association_table,relevant_rules_def,relevant_rules_heads,units_table,land_use_table
+
+def calculate_parking_inventory(reg_set:ParkingRegulationSet,tax_data:TD.TaxDataset)->PI.ParkingInventory:
+    land_uses_to_get_regs_for = tax_data.get_land_uses_in_set()
+    unique_parking_regs = reg_set.get_unique_reg_ids_using_land_use(land_uses_to_get_regs_for) 
+    for reg_id in unique_parking_regs:
+        relevant_land_uses = reg_set.expanded_table.loc[reg_set.expanded_table[config_db.db_column_parking_regs_id]== reg_id,config_db.db_column_land_use_id].tolist()
+        relevant_tax_data_points = tax_data.select_by_land_uses(relevant_land_uses)
+        parking_reg = reg_set.get_parking_reg_by_id(reg_id)
+        parking_inventory = parking_reg.calculate_minimum_parking(relevant_tax_data_points)
+        print(relevant_land_uses)
 
 if __name__=="__main__":
     #entete_reglement = pd.DataFrame([[100,"test",1995,2009,"VQZ3","Annexe D","3.1-st-sacrement","CUQ"],

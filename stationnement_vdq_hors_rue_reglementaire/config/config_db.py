@@ -41,6 +41,7 @@ db_table_parking_inventory = 'inventaire_stationnement'
 # role foncier
 db_column_tax_id = 'id_provinc'
 db_column_tax_constr_year = 'rl0307a'
+db_column_tax_land_use = 'rl0105a'
 # cadastre
 db_column_lot_id = 'g_no_lot'
 # cartographie_secteurs

@@ -5,8 +5,10 @@ from shapely import wkt
 import matplotlib.pyplot as plt
 from sqlalchemy import create_engine,text
 from stationnement_vdq_hors_rue_reglementaire.config import config_db
-from typing import Optional, Union
+from typing import Optional, Union, Self
 from folium import Map
+
+aggregate_def_dict:dict = {'rl0308a':'sum','rl0311a':'sum','rl0312a':'sum','rl0313a':'sum','rl0307a':'max'}
 
 class TaxDataset():
     """# TaxDataset: \n
@@ -22,9 +24,11 @@ class TaxDataset():
         self.lot_association = lot_association
         self.lot_table = lot_data
         self.aggregate_data = pd.DataFrame()
-        dude = self.tax_table[config_db.db_column_tax_constr_year].fillna(0).astype('int32')
-        self.tax_table[config_db.db_column_tax_constr_year] = dude
-        self.aggregate_data_create({'rl0308a':'sum','rl0311a':'sum','rl0312a':'sum','rl0313a':'sum','rl0307a':'max'})
+        constr_year_int = self.tax_table[config_db.db_column_tax_constr_year].fillna(0).astype('int32')
+        self.tax_table[config_db.db_column_tax_constr_year] = constr_year_int
+        land_use_int = self.tax_table[config_db.db_column_tax_land_use].astype('int32')
+        self.tax_table[config_db.db_column_tax_land_use] = land_use_int
+        self.aggregate_data_create(aggregate_def_dict)
     
     def aggregate_data_create(self, aggregate_dict:dict)->None:
         '''# aggregate_data_create
@@ -108,6 +112,21 @@ class TaxDataset():
          donne la représentation de l'ensemble de données. Il faudra faire un ménage parce que la jointure va prendre trop longtemps. Ce n'est pas particulièrement brillant en ce moment'''
         repr = f'Tax Dataset: N accounts = {self.tax_table[config_db.db_column_tax_id].count()} - N lots = {self.lot_table[config_db.db_column_lot_id].count()}'
         return repr
+
+    def select_by_land_uses(self,cubf:Union[int,list[int]])->Self:
+        '''# select_by_land_use
+            Permet de tirer un sous ensemble de données taxe foncière basé sur les identifiants du CUBF. Retourne un ensemble de données de taxe'''
+        new_tax_table:pd.DataFrame = self.tax_table.loc[self.tax_table[config_db.db_column_tax_land_use].isin(cubf)]
+        tax_ids_to_pull = new_tax_table[config_db.db_column_tax_id].unique().tolist()
+        new_association_table = self.lot_association.loc[self.lot_association[config_db.db_column_tax_id].isin(tax_ids_to_pull)]
+        lot_ids_to_pull = new_association_table[config_db.db_column_lot_id].unique().tolist()
+        new_lot_table = self.lot_table.loc[self.lot_table[config_db.db_column_lot_id].isin(lot_ids_to_pull)]
+        new_tax_data_set = TaxDataset(new_tax_table,new_association_table,new_lot_table)
+        return new_tax_data_set
+        
+    def get_land_uses_in_set(self)->list[int]:
+        land_uses_to_return = self.tax_table[config_db.db_column_tax_land_use].unique().tolist()
+        return land_uses_to_return
 
 def tax_database_points_from_date_territory(id_territory:Union[int,list[int]],start_year:int,end_year:int)->TaxDataset:
     '''# tax_database_points_from_polygon \n
