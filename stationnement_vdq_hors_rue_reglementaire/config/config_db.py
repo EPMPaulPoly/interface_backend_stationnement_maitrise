@@ -36,6 +36,7 @@ db_table_reg_sets_match = "association_er_reg_stat"
 db_table_land_use = "cubf"
 db_table_match_regsets_territory = 'association_er_territoire'
 db_table_analysis_territory = 'sec_analyse'
+db_table_parking_inventory = 'inventaire_stationnement'
 # colonnes
 # role foncier
 db_column_tax_id = 'id_provinc'

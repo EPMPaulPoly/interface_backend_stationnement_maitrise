@@ -10,6 +10,7 @@ from stationnement_vdq_hors_rue_reglementaire.classes import tax_dataset as TD
 import matplotlib.pyplot as plt
 from copy import deepcopy
 from folium import Map
+import parking_inventory as PI
 
 class RegSetTerritory():
     '''
@@ -135,3 +136,6 @@ def explore_RST_TD(reg_sets:Union[RegSetTerritory,list[RegSetTerritory]],tax_dat
     else:
         raise TypeError('reg_set and tax_data must be both list or both individual')
     
+def calculate_parking_from_reg_set(reg_sets:Union[RegSetTerritory,list[RegSetTerritory]],tax_data:Union[TD.TaxDataset,list[TD.TaxDataset]])->PI.ParkingInventory:
+    for sub_reg_set,sub_tax_data in zip(reg_sets,tax_data):
+        print(sub_reg_set)
