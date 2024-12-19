@@ -188,7 +188,7 @@ def run_sql_requests(ruleset_id,con:sqlalchemy.Connection):
         command = f"SELECT * FROM public.{config_db.db_table_parking_reg_headers} WHERE {config_db.db_column_parking_regs_id} IN ({list_rules_to_retrieve}) ORDER BY {config_db.db_column_parking_regs_id} ASC"
         relevant_rules_heads = pd.read_sql(command,con=con)
         # pull the stacked rules
-        command = f"SELECT * FROM public.{config_db.db_table_parking_reg_stacked} WHERE {config_db.db_column_parking_regs_id} IN ({list_rules_to_retrieve}) ORDER BY {config_db.db_column_parking_regs_id} ASC"
+        command = f"SELECT * FROM public.{config_db.db_table_parking_reg_stacked} WHERE {config_db.db_column_parking_regs_id} IN ({list_rules_to_retrieve}) ORDER BY {config_db.db_column_parking_regs_id},{config_db.db_column_stacked_parking_id} ASC"
         relevant_rules_def = pd.read_sql(command,con=con)
         # pull the units
         command = f"SELECT * FROM public.{config_db.db_table_units}"
@@ -207,6 +207,7 @@ def calculate_parking_inventory(reg_set:ParkingRegulationSet,tax_data:TD.TaxData
         parking_reg = reg_set.get_parking_reg_by_id(reg_id)
         parking_inventory = parking_reg.calculate_minimum_parking(relevant_tax_data_points)
         print(relevant_land_uses)
+    return parking_inventory
 
 if __name__=="__main__":
     #entete_reglement = pd.DataFrame([[100,"test",1995,2009,"VQZ3","Annexe D","3.1-st-sacrement","CUQ"],

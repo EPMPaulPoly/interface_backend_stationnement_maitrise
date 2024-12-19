@@ -139,10 +139,10 @@ def explore_RST_TD(reg_sets:Union[RegSetTerritory,list[RegSetTerritory]],tax_dat
 def calculate_parking_from_reg_sets(reg_sets:Union[RegSetTerritory,list[RegSetTerritory]],tax_datas:Union[TD.TaxDataset,list[TD.TaxDataset]])->Union[PI.ParkingInventory,list[PI.ParkingInventory]]:
     if isinstance(reg_sets,RegSetTerritory) and isinstance(tax_datas,TD.TaxDataset):
         parking_inventory_to_return = calculate_parking_from_reg_set(reg_sets,tax_datas)
-        return [parking_inventory_to_return]
+        return parking_inventory_to_return
     parking_inventory_list = []
     for sub_reg_set ,sub_tax_data in zip(reg_sets,tax_datas):
-        # find unique parking regs
+        # find unique parking regs and recursively call function with only one
         parking_inventory_to_append = calculate_parking_from_reg_set(sub_reg_set,sub_tax_data)
         parking_inventory_list.append(parking_inventory_to_append)
     return parking_inventory_list
