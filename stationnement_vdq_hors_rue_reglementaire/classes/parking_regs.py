@@ -124,8 +124,10 @@ class ParkingRegulations():
             parking_inventory_df[config_db.db_column_parking_regs_id] = self.reg_head[config_db.db_column_parking_regs_id].values[0]
             parking_inventory_df['n_places_min']=np.nan
             parking_inventory_df['n_places_max']=np.nan
-             # do unit conversion if required (i.e. from if infering seating capacity from square footage or something like that)
-            parking_inventory_df.merge(tax_data.lot_association[[config_db.db_column_tax_id,config_db.db_column_lot_id]],how='left',on=config_db.db_column_tax_id)
+             # merge lot_data into the data to aggregate
+            parking_inventory_df = parking_inventory_df.merge(tax_data.lot_association[[config_db.db_column_lot_id,config_db.db_column_tax_id]],how='left',on=config_db.db_column_tax_id)
+            land_use_id_joins:pd.DataFrame = tax_data.lot_association[[config_db.db_column_lot_id,config_db.db_column_tax_id]].merge(tax_data.tax_table[[config_db.db_column_tax_id,config_db.db_column_tax_land_use]],on=config_db.db_column_tax_id,how='left')
+            land_use_id_joins_agg = land_use_id_joins.groupby([config_db.db_column_lot_id])[config_db.db_column_tax_land_use].apply(lambda x: ','.join(str(x)))
             
             match operation:
                 case 1:
@@ -140,12 +142,16 @@ class ParkingRegulations():
                         # calculate the minimum
                         parking_inventory_df['n_places_min'] = parking_inventory_df['n_places_min'] + subset_reg[config_db.db_column_parking_zero_crossing_min] + subset_reg[config_db.db_column_parking_slope_min] * parking_inventory_df['converted_assessement_column'] # infer min parking capacity
                         parking_inventory_df['n_places_max'] = parking_inventory_df['n_places_max'] + subset_reg[config_db.db_column_parking_zero_crossing_max] + subset_reg[config_db.db_column_parking_slope_max] * parking_inventory_df['converted_assessement_column'] # infer max parking capacity
+                    parking_inventory_df.drop(columns=['column_to_use','unconverted_value','converted_assessement_column'],inplace=True)
+                    parking_inventory_df_agg = parking_inventory_df.groupby(by=config_db.db_column_lot_id).agg({'n_places_min':'sum','n_places_max':'sum'})
                 case 2:
                     AttributeError('Case 2:  Obsolete operator')
+                    parking_inventory_df_agg=-1
+                    return parking_inventory_df_agg
                 case 3:
                     NotImplementedError('Operation Not yet implemented OR MOST CONSTRAINING')
-                    parking_inventory_df=-1
-                    return parking_inventory_df
+                    parking_inventory_df_agg=-1
+                    return parking_inventory_df_agg
                 case 4:
                     # get unit to use
                     units_in_subset = parking_subset[config_db.db_column_parking_unit_id].unique().tolist()
@@ -159,8 +165,12 @@ class ParkingRegulations():
                         
                         # find column to use and propagate
                         parking_inventory_df['column_to_use'] = column_in_tax_data # bump the column to use to whold frame
-                        parking_inventory_df['unconverted_value'] = tax_data.tax_table[column_in_tax_data].copy() # copy the column to use
+                        parking_inventory_df = parking_inventory_df.merge(tax_data.tax_table[[config_db.db_column_tax_id,column_in_tax_data]],on=config_db.db_column_tax_id,how='left')
+                        parking_inventory_df['unconverted_value'] = parking_inventory_df[column_in_tax_data]
+                         # copy the column to use
                         parking_inventory_df['converted_assessement_column'] = self.units_table[config_db.db_column_tax_data_conversion_zero].values[0]+parking_inventory_df['unconverted_value'] * self.units_table[config_db.db_column_tax_data_conversion_slope].values[0] # infer converted value
+                        # Aggregate the  converted assessement column in order to properly apply the regulatiosn for undivided coops
+                        parking_inventory_df_agg = parking_inventory_df.groupby(by=config_db.db_column_lot_id).agg({'converted_assessement_column':'sum'})
                         # Iterate through lower bounds
                         for inx,lower_bound in enumerate(lower_bounds):
                             zero_crossing_min = parking_subset.loc[parking_subset[config_db.db_column_threshold_value]==lower_bound,config_db.db_column_parking_zero_crossing_min].values[0]
@@ -169,34 +179,46 @@ class ParkingRegulations():
                             slope_max=parking_subset.loc[parking_subset[config_db.db_column_threshold_value]==lower_bound,config_db.db_column_parking_slope_max].values[0]
                             if inx==0: # if its the largest lower bound(based on sort values at line 153), then pick all tax data above threshold
                                 if not np.isnan(zero_crossing_min) and not np.isnan(slope_min):
-                                    parking_inventory_df.loc[parking_inventory_df['converted_assessement_column']>=lower_bound,'n_places_min'] = zero_crossing_min+slope_min* parking_inventory_df.loc[parking_inventory_df['converted_assessement_column']>=lower_bound,'converted_assessement_column']
+                                    parking_inventory_df_agg.loc[parking_inventory_df_agg['converted_assessement_column']>=lower_bound,'n_places_min'] = zero_crossing_min+slope_min* parking_inventory_df_agg.loc[parking_inventory_df_agg['converted_assessement_column']>=lower_bound,'converted_assessement_column']
                                 elif not np.isnan(zero_crossing_min) and np.isnan(slope_min):
-                                    parking_inventory_df.loc[parking_inventory_df['converted_assessement_column']>=lower_bound,'n_places_min'] = zero_crossing_min
+                                    parking_inventory_df_agg.loc[parking_inventory_df_agg['converted_assessement_column']>=lower_bound,'n_places_min'] = zero_crossing_min
                                 if not np.isnan(zero_crossing_max) and not np.isnan(slope_max):
-                                    parking_inventory_df.loc[parking_inventory_df['converted_assessement_column']>=lower_bound,'n_places_max'] = zero_crossing_max+ slope_max* parking_inventory_df.loc[parking_inventory_df['converted_assessement_column']>=lower_bound,'converted_assessement_column']
+                                    parking_inventory_df_agg.loc[parking_inventory_df_agg['converted_assessement_column']>=lower_bound,'n_places_max'] = zero_crossing_max+ slope_max* parking_inventory_df_agg.loc[parking_inventory_df_agg['converted_assessement_column']>=lower_bound,'converted_assessement_column']
                                 elif not np.isnan(zero_crossing_max) and np.isnan(slope_max):
-                                    parking_inventory_df.loc[parking_inventory_df['converted_assessement_column']>=lower_bound,'n_places_max'] = zero_crossing_max
+                                    parking_inventory_df_agg.loc[parking_inventory_df_agg['converted_assessement_column']>=lower_bound,'n_places_max'] = zero_crossing_max
                                 previous_lower_bound = lower_bound
                             else: # otherwise pick 
                                 if not np.isnan(zero_crossing_min) and not np.isnan(slope_min):
-                                    parking_inventory_df.loc[(parking_inventory_df['converted_assessement_column']>=lower_bound) & (parking_inventory_df['converted_assessement_column']<previous_lower_bound),'n_places_min'] = zero_crossing_min + slope_min * parking_inventory_df.loc[(parking_inventory_df['converted_assessement_column']>=lower_bound) & (parking_inventory_df['converted_assessement_column']<previous_lower_bound),'converted_assessement_column']
+                                    parking_inventory_df_agg.loc[(parking_inventory_df_agg['converted_assessement_column']>=lower_bound) & (parking_inventory_df_agg['converted_assessement_column']<previous_lower_bound),'n_places_min'] = zero_crossing_min + slope_min * parking_inventory_df_agg.loc[(parking_inventory_df_agg['converted_assessement_column']>=lower_bound) & (parking_inventory_df_agg['converted_assessement_column']<previous_lower_bound),'converted_assessement_column']
                                 elif not np.isnan(zero_crossing_min) and np.isnan(slope_min):
-                                    parking_inventory_df.loc[(parking_inventory_df['converted_assessement_column']>=lower_bound) & (parking_inventory_df['converted_assessement_column']<previous_lower_bound),'n_places_min'] = zero_crossing_min
+                                    parking_inventory_df_agg.loc[(parking_inventory_df_agg['converted_assessement_column']>=lower_bound) & (parking_inventory_df_agg['converted_assessement_column']<previous_lower_bound),'n_places_min'] = zero_crossing_min
                                 
                                 if not np.isnan(zero_crossing_max) and not np.isnan(slope_max):
-                                    parking_inventory_df.loc[(parking_inventory_df['converted_assessement_column']>=lower_bound) & (parking_inventory_df['converted_assessement_column']<previous_lower_bound),'n_places_max'] = zero_crossing_max+slope_max* parking_inventory_df.loc[(parking_inventory_df['converted_assessement_column']>=lower_bound) & (parking_inventory_df['converted_assessement_column']<previous_lower_bound)]
+                                    parking_inventory_df_agg.loc[(parking_inventory_df_agg['converted_assessement_column']>=lower_bound) & (parking_inventory_df_agg['converted_assessement_column']<previous_lower_bound),'n_places_max'] = zero_crossing_max+slope_max* parking_inventory_df_agg.loc[(parking_inventory_df_agg['converted_assessement_column']>=lower_bound) & (parking_inventory_df_agg['converted_assessement_column']<previous_lower_bound)]
                                 elif not np.isnan(zero_crossing_max) and np.isnan(slope_max):
-                                    parking_inventory_df.loc[(parking_inventory_df['converted_assessement_column']>=lower_bound) & (parking_inventory_df['converted_assessement_column']<previous_lower_bound),'n_places_max'] = zero_crossing_max
+                                    parking_inventory_df_agg.loc[(parking_inventory_df_agg['converted_assessement_column']>=lower_bound) & (parking_inventory_df['converted_assessement_column']<previous_lower_bound),'n_places_max'] = zero_crossing_max
                                 previous_lower_bound = lower_bound
                         
                     else:
                         NotImplementedError(f'Issue assessing subset: {subset} of rule{self.reg_head[config_db.db_column_parking_regs_id]}. Too many units in subset cannot operate threshold type condition')
                 case 5:
                     AttributeError('Case 5: Obsolete operator for rule')
+                    parking_inventory_df_agg=-1
+                    return parking_inventory_df_agg
                 case 6:
                     NotImplementedError('Operation Not yet implemented SIMPLE OR')
-                    parking_inventory_df=-1
-                    return parking_inventory_df
+                    parking_inventory_df_agg=-1
+                    return parking_inventory_df_agg
+            parking_inventory_df_agg = parking_inventory_df_agg.drop(columns=['converted_assessement_column'])
+            #parking_inventory_df_agg[config_db.db_column_parking_subset_id] = subset
+            parking_inventory_df_agg[config_db.db_column_reg_sets_id] = rule_set_id
+            parking_inventory_df_agg[config_db.db_column_parking_regs_id] = self.reg_head[config_db.db_column_parking_regs_id].values[0]
+            parking_inventory_df_agg['commentaire']='Création automatique réglementaire'
+            parking_inventory_df_agg['methode_estime']=2
+            parking_inventory_df_agg = parking_inventory_df_agg.merge(land_use_id_joins_agg,on=config_db.db_column_lot_id,how='left')
+            parking_inventory_df_agg.reset_index(inplace=True)
+            parking_inventory_df_agg.rename(inplace=True,columns={config_db.db_column_tax_land_use:config_db.db_column_land_use_id })
+            parking_inventory_object = ParkingInventory(parking_inventory_df_agg)
             if parking_inventory_df != -1:
                 return parking_inventory_df
             else:
