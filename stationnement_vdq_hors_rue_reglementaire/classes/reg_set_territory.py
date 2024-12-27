@@ -149,3 +149,4 @@ def calculate_parking_from_reg_sets(reg_sets:Union[RegSetTerritory,list[RegSetTe
 
 def calculate_parking_from_reg_set(reg_set_terr:RegSetTerritory,tax_data:TD.TaxDataset)->PI.ParkingInventory:
     parking_inventory = PRS.calculate_parking_inventory(reg_set_terr.parking_regulation_set,tax_data)
+    return parking_inventory

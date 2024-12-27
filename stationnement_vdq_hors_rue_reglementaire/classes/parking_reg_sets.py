@@ -201,13 +201,15 @@ def run_sql_requests(ruleset_id,con:sqlalchemy.Connection):
 def calculate_parking_inventory(reg_set:ParkingRegulationSet,tax_data:TD.TaxDataset)->PI.ParkingInventory:
     land_uses_to_get_regs_for = tax_data.get_land_uses_in_set()
     unique_parking_regs = reg_set.get_unique_reg_ids_using_land_use(land_uses_to_get_regs_for) 
+    parking_inventory_final = PI.ParkingInventory(pd.DataFrame(columns=[config_db.db_column_lot_id,config_db.db_column_reg_sets_id,config_db.db_column_parking_regs_id,config_db.db_column_land_use_id,'n_places_min','n_places_max','methode_estime','commentaire']))
     for reg_id in unique_parking_regs:
         relevant_land_uses = reg_set.expanded_table.loc[reg_set.expanded_table[config_db.db_column_parking_regs_id]== reg_id,config_db.db_column_land_use_id].tolist()
         relevant_tax_data_points = tax_data.select_by_land_uses(relevant_land_uses)
         parking_reg = reg_set.get_parking_reg_by_id(reg_id)
-        parking_inventory = parking_reg.calculate_minimum_parking(relevant_tax_data_points)
+        parking_inventory = parking_reg.calculate_minimum_parking(relevant_tax_data_points,reg_set.ruleset_id)
+        parking_inventory_final.concat(parking_inventory)
         print(relevant_land_uses)
-    return parking_inventory
+    return parking_inventory_final
 
 if __name__=="__main__":
     #entete_reglement = pd.DataFrame([[100,"test",1995,2009,"VQZ3","Annexe D","3.1-st-sacrement","CUQ"],
