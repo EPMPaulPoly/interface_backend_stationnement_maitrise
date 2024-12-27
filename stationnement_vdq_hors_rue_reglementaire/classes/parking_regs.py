@@ -65,7 +65,7 @@ class ParkingRegulations():
                     else:
                         operator = self.reg_def.loc[self.reg_def[config_db.db_column_parking_subset_id]==iter_subset_id,config_db.db_column_parking_operation].iloc[0]
                         subset_inventory = self.calculate_minimum_parking(iter_subset_id,tax_data,rule_set_to_transfer)
-                        parking_inventory =parking_inventory.subset_operation(operator=operator,inventory_2 = subset_inventory) # if subsequen subset, you need to check which operator it is for the subset and 
+                        parking_inventory = parking_inventory.subset_operation(operator=operator,inventory_2 = subset_inventory) # if subsequen subset, you need to check which operator it is for the subset and 
         return parking_inventory
         
     def calculate_minimum_parking_subset(self,subset:int,tax_data:TaxDataset,rule_set_id:int)->ParkingInventory:
@@ -109,7 +109,7 @@ class ParkingRegulations():
                     operation = other_operators
                 else:
                     operation = int(other_operators.iloc[0])
-                print(operation)
+                print(f'Operation being performed for subset {subset} of rule #{parking_subset[config_db.db_column_parking_regs_id].iloc[0]}: {operation} (1:sum, 4: change of rule based on threshold)')
         else:
             raise ValueError('Too many operators. Multiple operators not supported within subset except for first')
         '''operations options: 

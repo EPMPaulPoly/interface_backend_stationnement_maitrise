@@ -208,7 +208,7 @@ def calculate_parking_inventory(reg_set:ParkingRegulationSet,tax_data:TD.TaxData
         parking_reg = reg_set.get_parking_reg_by_id(reg_id)
         parking_inventory = parking_reg.calculate_minimum_parking(relevant_tax_data_points,reg_set.ruleset_id)
         parking_inventory_final.concat(parking_inventory)
-        print(relevant_land_uses)
+        print(f'Parking rule #{int(reg_id)} has following relevant land uses: {relevant_land_uses}')
     return parking_inventory_final
 
 if __name__=="__main__":

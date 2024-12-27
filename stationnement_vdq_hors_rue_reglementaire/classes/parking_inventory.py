@@ -4,7 +4,7 @@ from sqlalchemy import create_engine,text,Engine
 from stationnement_vdq_hors_rue_reglementaire.config import config_db
 from stationnement_vdq_hors_rue_reglementaire.classes import parking_inventory as PI
 from typing_extensions import Self
-
+import logging
 class ParkingInventory():
     '''
         # ParkingInventory
@@ -34,7 +34,8 @@ class ParkingInventory():
                 case 2:
                     raise NotImplementedError('Obsolete operator')
                 case 3:
-                    raise NotImplementedError('Subset Operator no implemented')
+                    logging.log('entering MOST CONSTRAINING OR operation')
+                    print('test')
                 case 4:
                     raise NotImplementedError('Subset Operator no implemented')
                 case 5:
@@ -45,7 +46,10 @@ class ParkingInventory():
             raise ValueError(f'Operator must be integer, you supplied {type(operator)}')
                 
     def concat(self,inventory_2:Self)->Self:
-        self.parking_frame = pd.concat([self.parking_frame,inventory_2.parking_frame])
+        if self.parking_frame.empty==False:
+            self.parking_frame = pd.concat([self.parking_frame,inventory_2.parking_frame])
+        else:
+            self.parking_frame = inventory_2.parking_frame
 
     def to_postgis(self,con:Engine=None):
         '''

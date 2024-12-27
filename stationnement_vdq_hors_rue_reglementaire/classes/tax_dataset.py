@@ -116,11 +116,11 @@ class TaxDataset():
     def select_by_land_uses(self,cubf:Union[int,list[int]])->Self:
         '''# select_by_land_use
             Permet de tirer un sous ensemble de données taxe foncière basé sur les identifiants du CUBF. Retourne un ensemble de données de taxe'''
-        new_tax_table:pd.DataFrame = self.tax_table.loc[self.tax_table[config_db.db_column_tax_land_use].isin(cubf)]
+        new_tax_table:pd.DataFrame = self.tax_table.loc[self.tax_table[config_db.db_column_tax_land_use].isin(cubf)].copy()
         tax_ids_to_pull = new_tax_table[config_db.db_column_tax_id].unique().tolist()
-        new_association_table = self.lot_association.loc[self.lot_association[config_db.db_column_tax_id].isin(tax_ids_to_pull)]
+        new_association_table = self.lot_association.loc[self.lot_association[config_db.db_column_tax_id].isin(tax_ids_to_pull)].copy()
         lot_ids_to_pull = new_association_table[config_db.db_column_lot_id].unique().tolist()
-        new_lot_table = self.lot_table.loc[self.lot_table[config_db.db_column_lot_id].isin(lot_ids_to_pull)]
+        new_lot_table = self.lot_table.loc[self.lot_table[config_db.db_column_lot_id].isin(lot_ids_to_pull)].copy()
         new_tax_data_set = TaxDataset(new_tax_table,new_association_table,new_lot_table)
         return new_tax_data_set
         
