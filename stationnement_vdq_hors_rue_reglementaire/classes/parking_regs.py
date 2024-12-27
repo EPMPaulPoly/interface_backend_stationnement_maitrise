@@ -277,23 +277,23 @@ class ParkingRegulations():
 
     @get_reg_by_id.register
     def _(self,id_to_get_:int):
-        data = self.reg_head.loc[id_to_get_]
-        long_regs = self.reg_head.loc[id_to_get_]
+        data = self.reg_head.loc[self.reg_head[config_db.db_column_parking_regs_id]==id_to_get_]
+        long_regs = self.reg_def.loc[self.reg_def[config_db.db_column_parking_regs_id]==id_to_get_]
         object_out = ParkingRegulations(data,long_regs,self.units_table)
         return object_out
 
 
     @get_reg_by_id.register
     def _(self,id_to_get_:np.ndarray):
-        data = self.reg_head.loc[id_to_get_]
-        long_regs = self.reg_head.loc[id_to_get_]
+        data = self.reg_head.loc[self.reg_head[config_db.db_column_parking_regs_id].isin(id_to_get_)]
+        long_regs = self.reg_def.loc[self.reg_def[config_db.db_column_parking_regs_id].isin(id_to_get_)]
         object_out = ParkingRegulations(data,long_regs,self.units_table)
         return object_out
     
     @get_reg_by_id.register
     def _(self,id_to_get_:list):
-        data = self.reg_head.loc[id_to_get_]
-        long_regs = self.reg_head.loc[id_to_get_]
+        data = self.reg_head.loc[self.reg_head[config_db.db_column_parking_regs_id].isin(id_to_get_)]
+        long_regs = self.reg_def.loc[self.reg_def[config_db.db_column_parking_regs_id].isin(id_to_get_)]
         object_out = ParkingRegulations(data,long_regs,self.units_table)
         return object_out
     
