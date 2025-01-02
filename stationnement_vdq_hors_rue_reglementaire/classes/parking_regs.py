@@ -7,7 +7,7 @@ from stationnement_vdq_hors_rue_reglementaire.config import config_db
 from sqlalchemy import create_engine,text
 from stationnement_vdq_hors_rue_reglementaire.classes.tax_dataset import TaxDataset 
 from stationnement_vdq_hors_rue_reglementaire.classes.parking_inventory import ParkingInventory
-
+import logging
 class ParkingRegulations():
     def __init__(self,reg_head:pd.DataFrame,reg_def:pd.DataFrame,units_table:pd.DataFrame)->None:
         self.reg_head = reg_head
@@ -46,25 +46,32 @@ class ParkingRegulations():
             # calculate_minimum_parking
             Calcule le minimum de stationnement pour un ensemble de points du rôle foncier.
         '''
+        logger = logging.getLogger(__name__)
+       
         # Only compute if there's one reg. Inefficient but easy to handle at the moment
         if len(self.reg_head[config_db.db_column_parking_regs_id].unique().tolist())>1:
             raise IndexError('Should only have one regulation at a time')
         else:
             # number of subsets
+            parking_reg_id = self.reg_def[config_db.db_column_parking_regs_id].values[0]
+            logger.info(f'Starting parking calculation for {config_db.db_column_parking_regs_id} = {parking_reg_id}')
+            logger.info(f'Using tax data for {tax_data}')
             n_ensembles = len(self.reg_def[config_db.db_column_parking_subset_id].unique().tolist())
             if n_ensembles == 1:
                 # straight assessment if only one subset in the rule
                 subset_id = self.reg_def[config_db.db_column_parking_subset_id].iloc[0]
                 parking_inventory = self.calculate_minimum_parking_subset(subset_id,tax_data,rule_set_to_transfer)
             else:
+                if parking_reg_id==1182:
+                    logger.info('Debugging 1182 - subset interpretation')
                 # loop through subsets and manage operators between
                 for iter_subset_id in self.reg_def[config_db.db_column_parking_subset_id].unique().tolist():
                     if iter_subset_id == 1: # if first subset, set as inventory to start
                         subset_inventory = self.calculate_minimum_parking_subset(iter_subset_id,tax_data,rule_set_to_transfer)
                         parking_inventory = subset_inventory
                     else:
-                        operator = self.reg_def.loc[self.reg_def[config_db.db_column_parking_subset_id]==iter_subset_id,config_db.db_column_parking_operation].iloc[0]
-                        subset_inventory = self.calculate_minimum_parking(iter_subset_id,tax_data,rule_set_to_transfer)
+                        operator = int(self.reg_def.loc[self.reg_def[config_db.db_column_parking_subset_id]==iter_subset_id,config_db.db_column_parking_operation].iloc[0])
+                        subset_inventory = self.calculate_minimum_parking_subset(iter_subset_id,tax_data,rule_set_to_transfer)
                         parking_inventory = parking_inventory.subset_operation(operator=operator,inventory_2 = subset_inventory) # if subsequen subset, you need to check which operator it is for the subset and 
         return parking_inventory
         
@@ -73,6 +80,7 @@ class ParkingRegulations():
             # calculate_parking_minimum_subset
             calculates the parking requirements for one subset of a rule (as opposed to the entire rule)
         '''
+        logger = logging.getLogger(__name__)
         # get the subset that is relevant. only need definition
         parking_subset = self.reg_def.loc[self.reg_def[config_db.db_column_parking_subset_id]==subset].copy().sort_values(by=config_db.db_column_stacked_parking_id)
         # Bool check to see stop run 
@@ -134,12 +142,13 @@ class ParkingRegulations():
             parking_inventory_df = parking_inventory_df.merge(tax_data.lot_association[[config_db.db_column_lot_id,config_db.db_column_tax_id]],how='left',on=config_db.db_column_tax_id)
             land_use_id_joins:pd.DataFrame = tax_data.lot_association[[config_db.db_column_lot_id,config_db.db_column_tax_id]].merge(tax_data.tax_table[[config_db.db_column_tax_id,config_db.db_column_tax_land_use]],on=config_db.db_column_tax_id,how='left')
             land_use_id_joins_agg = land_use_id_joins.groupby([config_db.db_column_lot_id])[config_db.db_column_tax_land_use].apply(lambda x: ','.join(map(str, x))).reset_index()
-            
+            if parking_subset[config_db.db_column_parking_regs_id].values[0]==1182:
+                logger.debug('Debugging rule 1182 before any subset operations')
             match operation:
                 case 1:
                     # simple addition, run through the lines and add to the total
                     if len(parking_subset)>1:
-                        for inx,subset_reg in enumerate(parking_subset.iterrows()): # iterate through lines of subset
+                        for inx,subset_reg in parking_subset.iterrows(): # iterate through lines of subset
                             # find the column you need to get from tax data in order 
                             column_in_tax_data: str = self.units_table.loc[self.units_table[config_db.db_column_units_id]==subset_reg[config_db.db_column_parking_unit_id],config_db.db_column_tax_data_column_to_multiply] 
                         
@@ -150,21 +159,29 @@ class ParkingRegulations():
                             parking_inventory_df['converted_assessement_column'] = conversion_zero_crossing+parking_inventory_df['unconverted_value'] * conversion_slope # infer converted value
                             # calculate the parking
                             # get the slopes for the linear estimate
-                            zero_crossing_min = subset_reg[config_db.db_column_parking_zero_crossing_min].values[0]
-                            zero_crossing_max = subset_reg[config_db.db_column_parking_zero_crossing_max].values[0]
-                            slope_min = subset_reg[config_db.db_column_parking_slope_min].values[0] 
-                            slope_max = subset_reg[config_db.db_column_parking_slope_max].values[0]
+                            zero_crossing_min = subset_reg[config_db.db_column_parking_zero_crossing_min]
+                            zero_crossing_max = subset_reg[config_db.db_column_parking_zero_crossing_max]
+                            slope_min = subset_reg[config_db.db_column_parking_slope_min]
+                            slope_max = subset_reg[config_db.db_column_parking_slope_max]
+                            if subset_reg[config_db.db_column_parking_regs_id]==1182:
+                                logger.debug('Debugging rule 1182 for multiline sum')
                             if inx==0:
                                 # infer min/max parking capacity
                                 parking_inventory_df['n_places_min'] = zero_crossing_min + slope_min* parking_inventory_df['converted_assessement_column'] 
-                                if zero_crossing_max is not None and slope_max is not None:
-                                    parking_inventory_df['n_places_max'] = zero_crossing_max + slope_max * parking_inventory_df['converted_assessement_column'] 
+                                if (zero_crossing_max is not None or not np.isnan(zero_crossing_max)) and (slope_max is not None or not np.isnan(slope_max)):
+                                    parking_inventory_df['n_places_max'] = zero_crossing_max + slope_max * parking_inventory_df['converted_assessement_column']
+                                else:
+                                    parking_inventory_df['n_places_max'] = np.nan
                             else:
                                 # infer min/max
                                 #  parking capacity
                                 parking_inventory_df['n_places_min'] = parking_inventory_df['n_places_min'] + zero_crossing_min + slope_min * parking_inventory_df['converted_assessement_column'] 
-                                if zero_crossing_max is not None and slope_max is not None:
+                                if subset_reg[config_db.db_column_parking_regs_id]==1182:
+                                    logger.debug('Debugging rule 1182 during summing operation for multiline  sum')
+                                if (zero_crossing_max is not None and isinstance(zero_crossing_max,float) and not np.isnan(zero_crossing_max)) and (slope_max is not None and isinstance(slope_max,float) and not np.isnan(slope_max)):
                                     parking_inventory_df['n_places_max'] = parking_inventory_df['n_places_max'] + zero_crossing_max + slope_max * parking_inventory_df['converted_assessement_column'] 
+                                else:
+                                    parking_inventory_df['n_places_max'] = np.nan
                          
                     else:
                         # find the column you need to get from tax data in order 
@@ -180,10 +197,13 @@ class ParkingRegulations():
                         # calculate the minimum
                         # infer min/max parking capacity
                         parking_inventory_df['n_places_min'] = zero_crossing_min + slope_min* parking_inventory_df['converted_assessement_column'] 
-                        if zero_crossing_max is not None and slope_max is not None:
+                        if (zero_crossing_max is not None and isinstance(zero_crossing_max,float) and not np.isnan(zero_crossing_max)) and (slope_max is not None and isinstance(slope_max,float) and not np.isnan(slope_max)):
                             parking_inventory_df['n_places_max'] = zero_crossing_max + slope_max * parking_inventory_df['converted_assessement_column']  
+                        else:
+                            parking_inventory_df['n_places_max'] = np.nan
                     parking_inventory_df.drop(columns=['column_to_use','unconverted_value','converted_assessement_column'],inplace=True)
-                    parking_inventory_df_agg = parking_inventory_df.groupby(by=config_db.db_column_lot_id).agg({'n_places_min':'sum','n_places_max':'sum'})
+                    parking_inventory_df_agg = parking_inventory_df.groupby(by=config_db.db_column_lot_id).agg({'n_places_min':'sum','n_places_max':'sum'},skipna=True)
+                    parking_inventory_df_agg.loc[parking_inventory_df_agg['n_places_max']<parking_inventory_df_agg['n_places_min'],'n_places_max']=np.nan
                 case 2:
                     raise AttributeError('Case 2:  Obsolete operator')
                 case 3:
@@ -265,6 +285,8 @@ class ParkingRegulations():
             parking_inventory_df_agg = parking_inventory_df_agg.merge(land_use_id_joins_agg,on=config_db.db_column_lot_id,how='left')
             parking_inventory_df_agg.reset_index(inplace=True)
             parking_inventory_df_agg.rename(inplace=True,columns={config_db.db_column_tax_land_use:config_db.db_column_land_use_id })
+            if parking_subset[config_db.db_column_parking_regs_id].values[0]==1182:
+                logger.debug('Debugging rule 1182 - exit point')
             parking_inventory_object = ParkingInventory(parking_inventory_df_agg)
             return parking_inventory_object
         else:

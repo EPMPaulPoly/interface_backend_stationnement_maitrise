@@ -22,7 +22,8 @@ class RegSetTerritory():
          ## Methods:
 
     '''
-    def __init__(self, territory: gpd.GeoSeries, parking_regulation_set:PRS.ParkingRegulationSet,period_start_year:int,period_end_year:int):
+    def __init__(self, territory: gpd.GeoSeries, parking_regulation_set:PRS.ParkingRegulationSet,period_start_year:int,period_end_year:int,assoc_id:int):
+        self.assoc_id = assoc_id
         self.territory_info = territory
         self.parking_regulation_set = parking_regulation_set
         self.start_year = period_start_year
@@ -30,11 +31,11 @@ class RegSetTerritory():
     
     def __repr__(self):
         if self.end_year is None:
-            return_string = f"Territory: {self.territory_info[config_db.db_column_territory_name].values[0]} - {self.start_year:.0f}-Présent - Ruleset: {self.parking_regulation_set.description}"
+            return_string = f"RST ID: {self.assoc_id:03} - Territory: {self.territory_info[config_db.db_column_territory_name].values[0]} - {self.start_year:.0f}-Présent - Ruleset: {self.parking_regulation_set.description}"
         elif self.end_year is None:
-            return_string = f"Territory: {self.territory_info[config_db.db_column_territory_name].values[0]} - Big Bang -{self.end_year:.0f} - Ruleset: {self.parking_regulation_set.description}"
+            return_string = f"RST ID: {self.assoc_id:03} - Territory: {self.territory_info[config_db.db_column_territory_name].values[0]} - Big Bang -{self.end_year:.0f} - Ruleset: {self.parking_regulation_set.description}"
         else:
-            return_string = f"Territory: {self.territory_info[config_db.db_column_territory_name].values[0]} - {self.start_year:.0f}-{self.end_year:.0f} - Ruleset: {self.parking_regulation_set.description}"
+            return_string = f"RST ID: {self.assoc_id:03} - Territory: {self.territory_info[config_db.db_column_territory_name].values[0]} - {self.start_year:.0f}-{self.end_year:.0f} - Ruleset: {self.parking_regulation_set.description}"
         return return_string
 
 def get_postgis_rst_by_terr_id(territory_id:Union[int,list[int]])->list[RegSetTerritory]:
@@ -94,7 +95,7 @@ def get_postgis_rst_by_terr_id(territory_id:Union[int,list[int]])->list[RegSetTe
                 end_year_RST = end_year_terr
             else:
                 end_year_RST = min(end_year_terr,end_year_regset)
-            RST_to_append = RegSetTerritory(relevant_territory,reg_set,start_year_RST,end_year_RST)
+            RST_to_append = RegSetTerritory(relevant_territory,reg_set,start_year_RST,end_year_RST,association[config_db.db_column_RST_id])
             RST_list_to_return.append(RST_to_append)
     return RST_list_to_return  
 
@@ -137,11 +138,20 @@ def explore_RST_TD(reg_sets:Union[RegSetTerritory,list[RegSetTerritory]],tax_dat
         raise TypeError('reg_set and tax_data must be both list or both individual')
     
 def calculate_parking_from_reg_sets(reg_sets:Union[RegSetTerritory,list[RegSetTerritory]],tax_datas:Union[TD.TaxDataset,list[TD.TaxDataset]])->Union[PI.ParkingInventory,list[PI.ParkingInventory]]:
+    print('-----------------------------------------------------------------------------------------------')
+    print('Entering Inventory')
+    print('-----------------------------------------------------------------------------------------------')
     if isinstance(reg_sets,RegSetTerritory) and isinstance(tax_datas,TD.TaxDataset):
+        print('-----------------------------------------------------------------------------------------------')
+        print(f'Starting inventory for regset territory: {reg_sets}')
+        print('-----------------------------------------------------------------------------------------------')
         parking_inventory_to_return = calculate_parking_from_reg_set(reg_sets,tax_datas)
         return parking_inventory_to_return
     parking_inventory_list = []
     for sub_reg_set ,sub_tax_data in zip(reg_sets,tax_datas):
+        print('-----------------------------------------------------------------------------------------------')
+        print(f'Starting inventory for regset territory: {sub_reg_set}')
+        print('-----------------------------------------------------------------------------------------------')
         # find unique parking regs and recursively call function with only one
         parking_inventory_to_append = calculate_parking_from_reg_set(sub_reg_set,sub_tax_data)
         parking_inventory_list.append(parking_inventory_to_append)

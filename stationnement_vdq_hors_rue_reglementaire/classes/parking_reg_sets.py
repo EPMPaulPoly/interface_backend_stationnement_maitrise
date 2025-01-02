@@ -35,12 +35,12 @@ class ParkingRegulationSet(ParkingRegulations):
         #joined_rules = self.association_table.merge(self.reg_head,how="left",on=self.id_column)
         #joined_rules = joined_rules.merge(self.reg_def,how="right",on=self.id_column)
         #joined_rules = joined_rules.sort_values(by=["cubf","ss_ensemble","seuil"])
-        if np.isnan(self.end_date):
-            out =   f'''Ruleset id:{self.ruleset_id:03} - Valide: {self.start_date:04.0f}-Présent - Description: {self.description}\n'''
-        elif np.isnan(self.start_date):
-            out =   f'''Ruleset id:{self.ruleset_id:03} - Valide: Sans début-{self.end_date:04.0f} - Description: {self.description}\n'''
+        if self.end_date is None or (isinstance(self.end_date,float) and np.isnan(self.end_date)):
+            out =   f'''Ruleset id:{self.ruleset_id:03} - Valide: {self.start_date:04.0f}-Présent - Description: {self.description}'''
+        elif self.start_date is None or (isinstance(self.start_date,float) and np.isnan(self.start_date)):
+            out =   f'''Ruleset id:{self.ruleset_id:03} - Valide: Sans début-{self.end_date:04.0f} - Description: {self.description}'''
         else:
-            out =   f'''Ruleset id:{self.ruleset_id:03} - Valide: {self.start_date:04.0f}-{self.end_date:04.0f} - Description: {self.description}\n'''
+            out =   f'''Ruleset id:{self.ruleset_id:03} - Valide: {self.start_date:04.0f}-{self.end_date:04.0f} - Description: {self.description}'''
         return out
 
     def validate_dates(self)-> tuple[bool,np.array]:
@@ -198,7 +198,10 @@ def run_sql_requests(ruleset_id,con:sqlalchemy.Connection):
         land_use_table= pd.read_sql(command,con=con)
     return rulesets_header_table,rules_association_table,relevant_rules_def,relevant_rules_heads,units_table,land_use_table
 
-def calculate_parking_inventory(reg_set:ParkingRegulationSet,tax_data:TD.TaxDataset)->PI.ParkingInventory:
+def calculate_parking_inventory(reg_set:ParkingRegulationSet,tax_data:TD.TaxDataset,reg_set_territory_to_transfer:int=0)->PI.ParkingInventory:
+    print('-----------------------------------------------------------------------------------------------')
+    print(f'Starting inventory for regset: {reg_set}')
+    print('-----------------------------------------------------------------------------------------------')
     land_uses_to_get_regs_for = tax_data.get_land_uses_in_set()
     unique_parking_regs = reg_set.get_unique_reg_ids_using_land_use(land_uses_to_get_regs_for) 
     parking_inventory_final = PI.ParkingInventory(pd.DataFrame(columns=[config_db.db_column_lot_id,config_db.db_column_reg_sets_id,config_db.db_column_parking_regs_id,config_db.db_column_land_use_id,'n_places_min','n_places_max','methode_estime','commentaire']))

@@ -38,6 +38,9 @@ db_table_match_regsets_territory = 'association_er_territoire'
 db_table_analysis_territory = 'sec_analyse'
 db_table_parking_inventory = 'inventaire_stationnement'
 # colonnes
+# reg set Terrirtory:
+db_column_RST_id = 'id_asso_er_ter'
+
 # role foncier
 db_column_tax_id = 'id_provinc'
 db_column_tax_constr_year = 'rl0307a'
