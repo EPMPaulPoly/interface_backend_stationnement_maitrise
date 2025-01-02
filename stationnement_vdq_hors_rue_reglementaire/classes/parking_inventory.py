@@ -171,3 +171,11 @@ class ParkingInventory():
         else: 
             con = create_engine(config_db.pg_string)
         self.parking_frame.to_sql(config_db.db_table_parking_inventory,con=con,if_exists='replace',index=False)
+
+def dissolve_list(list_to_dissolve:list[ParkingInventory])->ParkingInventory:
+    for inx,item_to_concat in enumerate(list_to_dissolve):
+        if inx==0:
+            inventory_to_out = item_to_concat
+        else:
+            inventory_to_out.concat(item_to_concat)
+    return inventory_to_out
