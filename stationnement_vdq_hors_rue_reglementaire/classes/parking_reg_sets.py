@@ -8,6 +8,7 @@ from sqlalchemy import create_engine,text
 import sqlalchemy
 from stationnement_vdq_hors_rue_reglementaire.config import config_db
 import copy
+import logging
 
 class ParkingRegulationSet(ParkingRegulations):
     '''# ParkingRegulationSet
@@ -199,9 +200,10 @@ def run_sql_requests(ruleset_id,con:sqlalchemy.Connection):
     return rulesets_header_table,rules_association_table,relevant_rules_def,relevant_rules_heads,units_table,land_use_table
 
 def calculate_parking_inventory(reg_set:ParkingRegulationSet,tax_data:TD.TaxDataset,reg_set_territory_to_transfer:int=0)->PI.ParkingInventory:
-    print('-----------------------------------------------------------------------------------------------')
-    print(f'Starting inventory for regset: {reg_set}')
-    print('-----------------------------------------------------------------------------------------------')
+    logger = logging.getLogger(__name__)
+    logger.info('-----------------------------------------------------------------------------------------------')
+    logger.info(f'Starting inventory for regset: {reg_set}')
+    logger.info('-----------------------------------------------------------------------------------------------')
     land_uses_to_get_regs_for = tax_data.get_land_uses_in_set()
     unique_parking_regs = reg_set.get_unique_reg_ids_using_land_use(land_uses_to_get_regs_for) 
     parking_inventory_final = PI.ParkingInventory(pd.DataFrame(columns=[config_db.db_column_lot_id,config_db.db_column_reg_sets_id,config_db.db_column_parking_regs_id,config_db.db_column_land_use_id,'n_places_min','n_places_max','methode_estime','commentaire']))
@@ -211,7 +213,9 @@ def calculate_parking_inventory(reg_set:ParkingRegulationSet,tax_data:TD.TaxData
         parking_reg = reg_set.get_parking_reg_by_id(reg_id)
         parking_inventory = parking_reg.calculate_minimum_parking(relevant_tax_data_points,reg_set.ruleset_id)
         parking_inventory_final.concat(parking_inventory)
-        print(f'Parking rule #{int(reg_id)} has following relevant land uses: {relevant_land_uses}')
+        with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
+            reg_set.land_use_table.style.set_properties(**{'text-align': 'left'})
+            logger.info(f'Parking rule #{int(reg_id)} has following relevant land uses:\n {reg_set.land_use_table.loc[reg_set.land_use_table[config_db.db_column_land_use_id].isin(relevant_land_uses)].to_string(index=False,col_space=[10,120],justify='left')}')
     return parking_inventory_final
 
 if __name__=="__main__":

@@ -65,6 +65,7 @@ db_column_parking_zero_crossing_min = 'cases_fix_min'
 db_column_parking_zero_crossing_max = 'cases_fix_max'
 db_column_parking_slope_min = 'pente_min'
 db_column_parking_slope_max = 'pente_max'
+db_column_parking_description = 'description'
 # unite stationnement
 db_column_units_id = 'id_unite'
 db_column_tax_data_column_to_multiply = 'colonne_role_foncier'

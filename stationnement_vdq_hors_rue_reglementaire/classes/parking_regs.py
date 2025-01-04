@@ -55,6 +55,8 @@ class ParkingRegulations():
             # number of subsets
             parking_reg_id = self.reg_def[config_db.db_column_parking_regs_id].values[0]
             logger.info(f'Starting parking calculation for {config_db.db_column_parking_regs_id} = {parking_reg_id}')
+            self.reg_head.style.set_properties(**{'text-align': 'left'})
+            logger.info(f'Description of parking regulation: {self.reg_head[config_db.db_column_parking_description].values[0]}')
             logger.info(f'Using tax data for {tax_data}')
             n_ensembles = len(self.reg_def[config_db.db_column_parking_subset_id].unique().tolist())
             if n_ensembles == 1:
@@ -117,7 +119,7 @@ class ParkingRegulations():
                     operation = other_operators
                 else:
                     operation = int(other_operators.iloc[0])
-                print(f'Operation being performed for subset {subset} of rule #{parking_subset[config_db.db_column_parking_regs_id].iloc[0]}: {operation} (1:sum, 4: change of rule based on threshold)')
+                logger.info(f'Operation being performed for subset {subset} of rule #{parking_subset[config_db.db_column_parking_regs_id].iloc[0]}: {operation} (1:sum, 4: change of rule based on threshold)')
         else:
             raise ValueError('Too many operators. Multiple operators not supported within subset except for first')
         '''operations options: 

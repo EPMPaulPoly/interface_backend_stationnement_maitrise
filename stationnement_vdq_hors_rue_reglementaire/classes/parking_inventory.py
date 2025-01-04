@@ -156,18 +156,24 @@ class ParkingInventory():
             raise ValueError(f'Operator must be integer, you supplied {type(operator)}')
                 
     def concat(self,inventory_2:Self)->Self:
-        if self.parking_frame.empty==False:
+        logger = logging.getLogger(__name__)
+        if self.parking_frame.empty==False and inventory_2.parking_frame.empty ==False:
+            logger.info('Inventory concatenation - 2 inventories with data')
             self.parking_frame = pd.concat([self.parking_frame,inventory_2.parking_frame])
-        else:
+        elif self.parking_frame.empty==True:
+            logger.info('Inventory concatenation - Main inventory empty, setting to inventory 2 frame')
             self.parking_frame = inventory_2.parking_frame
+        else:
+            logger.warning('Inventory concatenation - Both datasets are empty - continuing')
 
     def to_postgis(self,con:Engine=None):
         '''
         # to_postgis
         Fonction qui envoie l'inventaire de stationnement sur la base de données
         '''
+        logger = logging.getLogger(__name__)
         if isinstance(con,Engine):
-            print('Using existing connection engine')
+            logger.info('Using existing connection engine')
         else: 
             con = create_engine(config_db.pg_string)
         self.parking_frame.to_sql(config_db.db_table_parking_inventory,con=con,if_exists='replace',index=False)
