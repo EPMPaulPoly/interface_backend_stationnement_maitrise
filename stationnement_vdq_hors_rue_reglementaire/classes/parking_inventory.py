@@ -5,6 +5,8 @@ from stationnement_vdq_hors_rue_reglementaire.config import config_db
 from stationnement_vdq_hors_rue_reglementaire.classes import parking_inventory as PI
 from typing_extensions import Self
 import logging
+import numpy as np
+
 class ParkingInventory():
     '''
         # ParkingInventory
@@ -178,6 +180,24 @@ class ParkingInventory():
             con = create_engine(config_db.pg_string)
         self.parking_frame.to_sql(config_db.db_table_parking_inventory,con=con,if_exists='replace',index=False)
 
+    def merge_lot_data(self:Self)->None:
+        '''
+        #merge_lot_data
+            Utilisé pour faire le ménage de duplication de lots lorque plusieurs entrées d'inventaire sont présentes pour un même lot du rôle foncier.
+        '''
+        logger = logging.getLogger(__name__)
+        self.parking_frame.reset_index(inplace=True)
+        self.parking_frame.drop(columns='index',inplace=True)
+        lots_to_clean_up = self.parking_frame.loc[self.parking_frame[config_db.db_column_lot_id].duplicated(keep=False)]
+        lots_list_to_purge_from_self = lots_to_clean_up[config_db.db_column_lot_id].unique().tolist()
+        aggregate_parking_data = lots_to_clean_up.groupby([config_db.db_column_lot_id]).apply(inventory_duplicates_agg_function).reset_index()
+        aggregate_parking_data.loc[(aggregate_parking_data['n_places_min']>aggregate_parking_data['n_places_max']) & (aggregate_parking_data['n_places_max']==0.0),'n_places_max'] =None
+        new_parking_frame = self.parking_frame.drop(self.parking_frame[self.parking_frame[config_db.db_column_lot_id].isin(lots_list_to_purge_from_self)].index)
+        new_parking_frame = pd.concat([new_parking_frame,aggregate_parking_data])
+
+        self.parking_frame = new_parking_frame 
+        logger.info(f'found following items which have two estimates : {lots_list_to_purge_from_self} - estimates were summed')
+
 def dissolve_list(list_to_dissolve:list[ParkingInventory])->ParkingInventory:
     for inx,item_to_concat in enumerate(list_to_dissolve):
         if inx==0:
@@ -185,3 +205,14 @@ def dissolve_list(list_to_dissolve:list[ParkingInventory])->ParkingInventory:
         else:
             inventory_to_out.concat(item_to_concat)
     return inventory_to_out
+
+def inventory_duplicates_agg_function(x:pd.DataFrame):
+    d = {}
+    d[config_db.db_column_land_use_id] = '/'.join(map(str, x[config_db.db_column_land_use_id]))
+    d[config_db.db_column_reg_sets_id] = '/'.join(map(str, x[config_db.db_column_reg_sets_id]))
+    d[config_db.db_column_parking_regs_id] = '/'.join(map(str, x[config_db.db_column_parking_regs_id]))
+    d['n_places_min'] = x['n_places_min'].sum()
+    d['n_places_max'] = x['n_places_max'].sum()
+    d['commentaire'] = x['commentaire'].values[0]
+    d['methode_estime'] = x['methode_estime'].values[0]
+    return pd.Series(d,index = [config_db.db_column_land_use_id,config_db.db_column_reg_sets_id,config_db.db_column_parking_regs_id,'n_places_min','n_places_max','commentaire','methode_estime'])
