@@ -226,5 +226,5 @@ def to_sql(inventory_to_save:ParkingInventory,engine:sqlalchemy.Engine=None):
         engine = sqlalchemy.create_engine(config_db.pg_string)
         
     with engine.connect() as con:
-        sql_return = inventory_to_save.parking_frame.to_sql(config_db.db_table_parking_inventory,con=con,schema='public',if_exists='append',index=False)
+        sql_return = inventory_to_save.parking_frame.to_sql(config_db.db_table_parking_inventory,con=con,schema='public',if_exists='replace',index=False)
     return sql_return
