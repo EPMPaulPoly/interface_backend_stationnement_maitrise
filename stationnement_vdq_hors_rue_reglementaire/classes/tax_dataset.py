@@ -4,6 +4,7 @@ import numpy as np
 from shapely import wkt
 import matplotlib.pyplot as plt
 from sqlalchemy import create_engine,text
+import sqlalchemy
 from stationnement_vdq_hors_rue_reglementaire.config import config_db
 from typing import Optional, Union, Self
 from folium import Map
@@ -175,7 +176,30 @@ def tax_database_for_analysis_territory(id_analysis_territory:int)->TaxDataset:
         lot_database = gpd.read_postgis(command_lots,con=engine,geom_col=config_db.db_geom_lots)
         # Crée un tax_dataset à retourner
         tax_data_set_to_return = TaxDataset(tax_base_data,association_database,lot_database)
-        return tax_data_set_to_return
+    return tax_data_set_to_return
+
+def tax_database_from_lot_id(lot_id:str,engine:sqlalchemy.Engine = None):
+    '''
+        # tax_database_from_lot_id
+        Retrieves tax_data from lot 
+    '''
+    if engine is None:
+        engine = create_engine(config_db.pg_string)
+    with engine.connect() as con:
+        # va chercher le lot à analyser
+        lot_query = f"SELECT * FROM {config_db.db_table_lots} WHERE {config_db.db_column_lot_id} = '{lot_id}'"
+        lot_database = gpd.read_postgis(lot_query,con=engine,geom_col=config_db.db_geom_lots)
+        # va chercher la table d'association pour tous les points trouvés ci-haut
+        command_association = f"SELECT * FROM {config_db.db_table_match_tax_lots} WHERE {config_db.db_column_lot_id} = '{lot_id}'"
+        association_database:pd.DataFrame = pd.read_sql(command_association,con=con)
+        unique_tax_ids = association_database[config_db.db_column_tax_id].unique().tolist()
+        
+        # va chercher les lots qu'on vient de lister
+        command_lots = f"SELECT * FROM {config_db.db_table_tax_data_points} WHERE {config_db.db_column_tax_id} IN ('{"','".join(map(str,unique_tax_ids))}')"
+        tax_base_data = gpd.read_postgis(command_lots,con=engine,geom_col=config_db.db_geom_lots)
+        # Crée un tax_dataset à retourner
+        tax_data_set_to_return = TaxDataset(tax_base_data,association_database,lot_database)
+    return tax_data_set_to_return
 
 def from_postgis(**kwargs):
     polygon = kwargs.get("polygon",None)

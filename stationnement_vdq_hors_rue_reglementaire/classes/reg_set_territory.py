@@ -10,7 +10,6 @@ from stationnement_vdq_hors_rue_reglementaire.classes import tax_dataset as TD
 import matplotlib.pyplot as plt
 from copy import deepcopy
 from folium import Map
-from stationnement_vdq_hors_rue_reglementaire.classes import parking_inventory as PI
 import logging
 
 class RegSetTerritory():
@@ -138,27 +137,4 @@ def explore_RST_TD(reg_sets:Union[RegSetTerritory,list[RegSetTerritory]],tax_dat
     else:
         raise TypeError('reg_set and tax_data must be both list or both individual')
     
-def calculate_parking_from_reg_sets(reg_sets:Union[RegSetTerritory,list[RegSetTerritory]],tax_datas:Union[TD.TaxDataset,list[TD.TaxDataset]])->Union[PI.ParkingInventory,list[PI.ParkingInventory]]:
-    logger = logging.getLogger(__name__)
-    logger.info('-----------------------------------------------------------------------------------------------')
-    logger.info('Entering Inventory')
-    logger.info('-----------------------------------------------------------------------------------------------')
-    if isinstance(reg_sets,RegSetTerritory) and isinstance(tax_datas,TD.TaxDataset):
-        logger.info('-----------------------------------------------------------------------------------------------')
-        logger.info(f'Starting inventory for regset territory: {reg_sets}')
-        logger.info('-----------------------------------------------------------------------------------------------')
-        parking_inventory_to_return = calculate_parking_from_reg_set(reg_sets,tax_datas)
-        return parking_inventory_to_return
-    parking_inventory_list = []
-    for sub_reg_set ,sub_tax_data in zip(reg_sets,tax_datas):
-        logger.info('-----------------------------------------------------------------------------------------------')
-        logger.info(f'Starting inventory for regset territory: {sub_reg_set}')
-        logger.info('-----------------------------------------------------------------------------------------------')
-        # find unique parking regs and recursively call function with only one
-        parking_inventory_to_append = calculate_parking_from_reg_set(sub_reg_set,sub_tax_data)
-        parking_inventory_list.append(parking_inventory_to_append)
-    return parking_inventory_list
 
-def calculate_parking_from_reg_set(reg_set_terr:RegSetTerritory,tax_data:TD.TaxDataset)->PI.ParkingInventory:
-    parking_inventory = PRS.calculate_parking_inventory(reg_set_terr.parking_regulation_set,tax_data)
-    return parking_inventory
