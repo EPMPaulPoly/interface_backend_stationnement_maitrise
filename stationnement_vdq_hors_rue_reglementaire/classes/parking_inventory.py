@@ -6,6 +6,7 @@ from stationnement_vdq_hors_rue_reglementaire.classes import parking_inventory a
 from typing_extensions import Self
 import logging
 import numpy as np
+import sqlalchemy
 
 class ParkingInventory():
     '''
@@ -216,3 +217,14 @@ def inventory_duplicates_agg_function(x:pd.DataFrame):
     d['commentaire'] = x['commentaire'].values[0]
     d['methode_estime'] = x['methode_estime'].values[0]
     return pd.Series(d,index = [config_db.db_column_land_use_id,config_db.db_column_reg_sets_id,config_db.db_column_parking_regs_id,'n_places_min','n_places_max','commentaire','methode_estime'])
+
+def to_sql(inventory_to_save:ParkingInventory,engine:sqlalchemy.Engine=None):
+    ''' # to_sql
+        inserts parking frame into relevant 
+    '''
+    if engine is None:
+        engine = sqlalchemy.create_engine(config_db.pg_string)
+        
+    with engine.connect() as con:
+        sql_return = inventory_to_save.parking_frame.to_sql(config_db.db_table_parking_inventory,con=con,schema='public',if_exists='append',index=False)
+    return sql_return
