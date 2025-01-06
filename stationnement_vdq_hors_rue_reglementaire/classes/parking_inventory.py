@@ -313,12 +313,14 @@ def calculate_parking_for_reg_set_territories(reg_set_territories:Union[RST.RegS
         return parking_inventory_to_return
     parking_inventory_list = []
     for sub_reg_set ,sub_tax_data in zip(reg_set_territories,tax_datas):
-        logger.info('-----------------------------------------------------------------------------------------------')
-        logger.info(f'Starting inventory for regset territory: {sub_reg_set}')
-        logger.info('-----------------------------------------------------------------------------------------------')
-        # find unique parking regs and recursively call function with only one
-        parking_inventory_to_append = calculate_parking_specific_reg_set(sub_reg_set.parking_regulation_set,sub_tax_data)
-        parking_inventory_list.append(parking_inventory_to_append)
+        
+        if len(sub_tax_data.tax_table)>0 and len(sub_tax_data.lot_table)>0:
+            logger.info('-----------------------------------------------------------------------------------------------')
+            logger.info(f'Starting inventory for regset territory: {sub_reg_set}')
+            logger.info('-----------------------------------------------------------------------------------------------')
+            # find unique parking regs and recursively call function with only one
+            parking_inventory_to_append = calculate_parking_specific_reg_set(sub_reg_set.parking_regulation_set,sub_tax_data)
+            parking_inventory_list.append(parking_inventory_to_append)
     return parking_inventory_list
 
 
