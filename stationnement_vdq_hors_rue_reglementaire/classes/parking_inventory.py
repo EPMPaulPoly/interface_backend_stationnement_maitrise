@@ -36,134 +36,7 @@ class ParkingInventory():
     def __repr__(self):
         return f'N_lots ={len(self.parking_frame[config_db.db_column_lot_id].unique())}, N_places_min = {self.parking_frame['n_places_min'].agg('sum')}'
     
-    def subset_operation(self,operator,inventory_2:Self) ->Self:
-        logger = logging.getLogger(__name__)
-        if isinstance(operator,int):
-            match operator:
-                case 1:
-                    raise NotImplementedError('Subset Operator no implemented')
-                case 2:
-                    raise NotImplementedError('Obsolete operator')
-                case 3:
-                    logger.info('entering MOST CONSTRAINING OR operation')
-                    if (self.parking_frame['n_places_min'].isnull().all() and inventory_2.parking_frame['n_places_max'].isnull().all()): # one is a min, one is a max if min > max
-                        logger.info('Entrée dans l''opération de subset par défaut')
-                        # create dataframe
-                        parking_frame_out = pd.DataFrame()
-                        # pull data from left
-                        parking_frame_out = self.parking_frame[[config_db.db_column_lot_id,'n_places_max']].copy()
-                        parking_frame_out.rename(columns={'n_places_max':'n_places_max_left'},inplace=True)
-                        # pull data from right
-                        parking_frame_right =inventory_2.parking_frame[[config_db.db_column_lot_id,'n_places_min']].copy()
-                        parking_frame_right.rename(columns={'n_places_min':'n_places_min_right'},inplace=True)
-                        #merge data
-                        parking_frame_out = parking_frame_out.merge(parking_frame_right,on=config_db.db_column_lot_id)
-                        # case 1 min<=max
-                        parking_frame_out.loc[parking_frame_out['n_places_min_right']<=parking_frame_out['n_places_max_left'],'n_places_min_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_right']<=parking_frame_out['n_places_max_left'],'n_places_min_right'] 
-                        parking_frame_out.loc[parking_frame_out['n_places_min_right']<=parking_frame_out['n_places_max_left'],'n_places_max_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_right']<=parking_frame_out['n_places_max_left'],'n_places_max_left'] 
-                        # case 2 min>max
-                        parking_frame_out.loc[parking_frame_out['n_places_min_right']>parking_frame_out['n_places_max_left'],'n_places_min_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_right']<=parking_frame_out['n_places_max_left'],'n_places_max_left'] 
-                        parking_frame_out.loc[parking_frame_out['n_places_min_right']>parking_frame_out['n_places_max_left'],'n_places_max_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_right']<=parking_frame_out['n_places_max_left'],'n_places_max_left'] 
-                        # clean up the right left stuff
-                        parking_frame_out.drop(columns=['n_places_min_right','n_places_max_left'],inplace=True)
-                        # copy old parking frame
-                        old_parking_frame = self.parking_frame.copy()
-                        # merge the data to the old parking frame
-                        new_parking_frame = old_parking_frame.merge(parking_frame_out,how='left',on=config_db.db_column_lot_id)
-                        # drop the old data
-                        new_parking_frame.drop(columns=['n_places_min','n_places_max'],inplace=True)
-                        # rename columns
-                        new_parking_frame.rename(columns={'n_places_min_final':'n_places_min','n_places_max_final':'n_places_max'},inplace=True)
-                        #create parking inventory object
-                        parking_inventory_object = ParkingInventory(new_parking_frame)
-                    elif (self.parking_frame['n_places_max'].isnull().all() and inventory_2.parking_frame['n_places_min'].isnull().all()): # one is a min, one is a max if min > max
-                        logger.info('Entrée dans l''opération de subset par défaut')
-                        # create dataframe
-                        parking_frame_out = pd.DataFrame()
-                        # pull data from left
-                        parking_frame_out = self.parking_frame[[config_db.db_column_lot_id,'n_places_min']].copy()
-                        parking_frame_out.rename(columns={'n_places_min':'n_places_min_left'},inplace=True)
-                        # pull data from right
-                        parking_frame_right =inventory_2.parking_frame[[config_db.db_column_lot_id,'n_places_max']].copy()
-                        parking_frame_right.rename(columns={'n_places_max':'n_places_max_right'},inplace=True)
-                        #merge data
-                        parking_frame_out = parking_frame_out.merge(parking_frame_right,on=config_db.db_column_lot_id)
-                        # case 1 min<=max
-                        parking_frame_out.loc[parking_frame_out['n_places_min_left']<=parking_frame_out['n_places_max_right'],'n_places_min_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<=parking_frame_out['n_places_max_right'],'n_places_min_left'] 
-                        parking_frame_out.loc[parking_frame_out['n_places_min_left']<=parking_frame_out['n_places_max_right'],'n_places_max_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<=parking_frame_out['n_places_max_right'],'n_places_max_right'] 
-                        # case 2 min>max
-                        parking_frame_out.loc[parking_frame_out['n_places_min_left']>parking_frame_out['n_places_max_right'],'n_places_min_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<=parking_frame_out['n_places_max_right'],'n_places_max_right'] 
-                        parking_frame_out.loc[parking_frame_out['n_places_min_left']>parking_frame_out['n_places_max_right'],'n_places_max_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<=parking_frame_out['n_places_max_right'],'n_places_max_right'] 
-                        # clean up the right left stuff
-                        parking_frame_out.drop(columns=['n_places_min_left','n_places_max_right'],inplace=True)
-                        # copy old parking frame
-                        old_parking_frame = self.parking_frame.copy()
-                        # merge the data to the old parking frame
-                        new_parking_frame = old_parking_frame.merge(parking_frame_out,how='left',on=config_db.db_column_lot_id)
-                        # drop the old data
-                        new_parking_frame.drop(columns=['n_places_min','n_places_max'],inplace=True)
-                        # rename columns
-                        new_parking_frame.rename(columns={'n_places_min_final':'n_places_min','n_places_max_final':'n_places_max'},inplace=True)
-                        #create parking inventory object
-                        parking_inventory_object = ParkingInventory(new_parking_frame)
-                    else: # default case, i have a min and a max
-                        logger.info('Entrée dans l''opération de subset par défaut')
-                        # create an emptry dataframe
-                        parking_frame_out = pd.DataFrame()
-                        # copy over self.parking_frame, mins and maxes, rename left
-                        parking_frame_out = self.parking_frame[[config_db.db_column_lot_id,'n_places_min','n_places_max']].copy()
-                        parking_frame_out.rename(columns={'n_places_min':'n_places_min_left','n_places_max':'n_places_max_left'},inplace=True)
-                        # copy over inventory_2.parking_frame, mins and maxes, rename right
-                        parking_frame_right =inventory_2.parking_frame[[config_db.db_column_lot_id,'n_places_min','n_places_max']].copy()
-                        parking_frame_right.rename(columns={'n_places_min':'n_places_min_right','n_places_max':'n_places_max_right'},inplace=True)
-                        # merge the dataframes
-                        parking_frame_out = parking_frame_out.merge(parking_frame_right,on=config_db.db_column_lot_id)
-                        # mins and maxes and cleanup
-                        parking_frame_out['n_places_min_final'] = parking_frame_out[['n_places_min_left','n_places_min_right']].max(axis=1)
-                        parking_frame_out['n_places_max_final'] = parking_frame_out[['n_places_max_left','n_places_max_right']].min(axis=1)
-                        parking_frame_out.drop(columns=['n_places_min_left','n_places_min_right','n_places_max_left','n_places_max_right'],inplace=True)
-                        # copy th old frame
-                        old_parking_frame = self.parking_frame.copy()
-                        # merge new onto old
-                        new_parking_frame = old_parking_frame.merge(parking_frame_out,how='left',on=config_db.db_column_lot_id)
-                        # drop old
-                        new_parking_frame.drop(columns=['n_places_min','n_places_max'],inplace=True)
-                        #name cleanup
-                        new_parking_frame.rename(columns={'n_places_min_final':'n_places_min','n_places_max_final':'n_places_max'},inplace=True)
-                        #create object
-                        parking_inventory_object = ParkingInventory(new_parking_frame)
-                    logger.info('Complétion du cas de base')
-                    return parking_inventory_object
-                case 4:
-                    raise NotImplementedError('Subset Operator no implemented')
-                case 5:
-                    raise NotImplementedError('Obsolete operator')
-                case 6:
-                    logger.info('Entrée dans l''opération de subset par défaut')
-                    parking_frame_out = pd.DataFrame()
-                    parking_frame_out = self.parking_frame[[config_db.db_column_lot_id,'n_places_min','n_places_max']].copy()
-                    parking_frame_out.rename(columns={'n_places_min':'n_places_min_left','n_places_max':'n_places_max_left'},inplace=True)
-                    parking_frame_right =inventory_2.parking_frame[[config_db.db_column_lot_id,'n_places_min','n_places_max']].copy()
-                    parking_frame_right.rename(columns={'n_places_min':'n_places_min_right','n_places_max':'n_places_max_right'},inplace=True)
-                    parking_frame_out = parking_frame_out.merge(parking_frame_right,on=config_db.db_column_lot_id)
-                    # implémenté comme prenant le minimum des requis minimaux. Ceci et mis en place selon la logique qu'un développeur immobilier voudrait potentiellement 
-                    # Cas 1 la gauche est plus petit: min_final = min_left, max_final = max_left
-                    parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_min_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_min_left']
-                    parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_max_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_max_left']
-                    # Cas 1 la droite est plus petit: min_final = min_right, max_final = max_right
-                    parking_frame_out.loc[parking_frame_out['n_places_min_left']>=parking_frame_out['n_places_min_right'],'n_places_min_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_min_right']
-                    parking_frame_out.loc[parking_frame_out['n_places_min_left']>=parking_frame_out['n_places_min_right'],'n_places_max_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_max_right']
-                    # ramène le vieux frame
-                    old_parking_frame = self.parking_frame.copy()
-                    # drop gauche/droite
-                    parking_frame_out.drop(columns=['n_places_min_left','n_places_min_right','n_places_max_left','n_places_max_right'],inplace=True)
-                    new_parking_frame = old_parking_frame.merge(parking_frame_out,how='left',on=config_db.db_column_lot_id)
-                    new_parking_frame.drop(columns=['n_places_min','n_places_max'],inplace=True)
-                    new_parking_frame.rename(columns={'n_places_min_final':'n_places_min','n_places_max_final':'n_places_max'},inplace=True)
-                    parking_inventory_object = ParkingInventory(new_parking_frame)
-                    return parking_inventory_object
-        else:
-            raise ValueError(f'Operator must be integer, you supplied {type(operator)}')
+    
                 
     def concat(self,inventory_2:Self)->Self:
         logger = logging.getLogger(__name__)
@@ -209,6 +82,135 @@ class ParkingInventory():
         else: 
             logger.info('No duplicate entries, continue,continuting on')
 
+def subset_operation(inventory_1:ParkingInventory,operator,inventory_2:ParkingInventory) ->ParkingInventory:
+    logger = logging.getLogger(__name__)
+    if isinstance(operator,int):
+        match operator:
+            case 1:
+                raise NotImplementedError('Subset Operator no implemented')
+            case 2:
+                raise NotImplementedError('Obsolete operator')
+            case 3:
+                logger.info('entering MOST CONSTRAINING OR operation')
+                if (inventory_1.parking_frame['n_places_min'].isnull().all() and inventory_2.parking_frame['n_places_max'].isnull().all()): # one is a min, one is a max if min > max
+                    logger.info('Entrée dans l''opération de subset par défaut')
+                    # create dataframe
+                    parking_frame_out = pd.DataFrame()
+                    # pull data from left
+                    parking_frame_out = inventory_1.parking_frame[[config_db.db_column_lot_id,'n_places_max']].copy()
+                    parking_frame_out.rename(columns={'n_places_max':'n_places_max_left'},inplace=True)
+                    # pull data from right
+                    parking_frame_right =inventory_2.parking_frame[[config_db.db_column_lot_id,'n_places_min']].copy()
+                    parking_frame_right.rename(columns={'n_places_min':'n_places_min_right'},inplace=True)
+                    #merge data
+                    parking_frame_out = parking_frame_out.merge(parking_frame_right,on=config_db.db_column_lot_id)
+                    # case 1 min<=max
+                    parking_frame_out.loc[parking_frame_out['n_places_min_right']<=parking_frame_out['n_places_max_left'],'n_places_min_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_right']<=parking_frame_out['n_places_max_left'],'n_places_min_right'] 
+                    parking_frame_out.loc[parking_frame_out['n_places_min_right']<=parking_frame_out['n_places_max_left'],'n_places_max_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_right']<=parking_frame_out['n_places_max_left'],'n_places_max_left'] 
+                    # case 2 min>max
+                    parking_frame_out.loc[parking_frame_out['n_places_min_right']>parking_frame_out['n_places_max_left'],'n_places_min_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_right']<=parking_frame_out['n_places_max_left'],'n_places_max_left'] 
+                    parking_frame_out.loc[parking_frame_out['n_places_min_right']>parking_frame_out['n_places_max_left'],'n_places_max_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_right']<=parking_frame_out['n_places_max_left'],'n_places_max_left'] 
+                    # clean up the right left stuff
+                    parking_frame_out.drop(columns=['n_places_min_right','n_places_max_left'],inplace=True)
+                    # copy old parking frame
+                    old_parking_frame = inventory_1.parking_frame.copy()
+                    # merge the data to the old parking frame
+                    new_parking_frame = old_parking_frame.merge(parking_frame_out,how='left',on=config_db.db_column_lot_id)
+                    # drop the old data
+                    new_parking_frame.drop(columns=['n_places_min','n_places_max'],inplace=True)
+                    # rename columns
+                    new_parking_frame.rename(columns={'n_places_min_final':'n_places_min','n_places_max_final':'n_places_max'},inplace=True)
+                    #create parking inventory object
+                    parking_inventory_object = ParkingInventory(new_parking_frame)
+                elif (inventory_1.parking_frame['n_places_max'].isnull().all() and inventory_2.parking_frame['n_places_min'].isnull().all()): # one is a min, one is a max if min > max
+                    logger.info('Entrée dans l''opération de subset par défaut')
+                    # create dataframe
+                    parking_frame_out = pd.DataFrame()
+                    # pull data from left
+                    parking_frame_out = inventory_1.parking_frame[[config_db.db_column_lot_id,'n_places_min']].copy()
+                    parking_frame_out.rename(columns={'n_places_min':'n_places_min_left'},inplace=True)
+                    # pull data from right
+                    parking_frame_right =inventory_2.parking_frame[[config_db.db_column_lot_id,'n_places_max']].copy()
+                    parking_frame_right.rename(columns={'n_places_max':'n_places_max_right'},inplace=True)
+                    #merge data
+                    parking_frame_out = parking_frame_out.merge(parking_frame_right,on=config_db.db_column_lot_id)
+                    # case 1 min<=max
+                    parking_frame_out.loc[parking_frame_out['n_places_min_left']<=parking_frame_out['n_places_max_right'],'n_places_min_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<=parking_frame_out['n_places_max_right'],'n_places_min_left'] 
+                    parking_frame_out.loc[parking_frame_out['n_places_min_left']<=parking_frame_out['n_places_max_right'],'n_places_max_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<=parking_frame_out['n_places_max_right'],'n_places_max_right'] 
+                    # case 2 min>max
+                    parking_frame_out.loc[parking_frame_out['n_places_min_left']>parking_frame_out['n_places_max_right'],'n_places_min_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<=parking_frame_out['n_places_max_right'],'n_places_max_right'] 
+                    parking_frame_out.loc[parking_frame_out['n_places_min_left']>parking_frame_out['n_places_max_right'],'n_places_max_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<=parking_frame_out['n_places_max_right'],'n_places_max_right'] 
+                    # clean up the right left stuff
+                    parking_frame_out.drop(columns=['n_places_min_left','n_places_max_right'],inplace=True)
+                    # copy old parking frame
+                    old_parking_frame = inventory_1.parking_frame.copy()
+                    # merge the data to the old parking frame
+                    new_parking_frame = old_parking_frame.merge(parking_frame_out,how='left',on=config_db.db_column_lot_id)
+                    # drop the old data
+                    new_parking_frame.drop(columns=['n_places_min','n_places_max'],inplace=True)
+                    # rename columns
+                    new_parking_frame.rename(columns={'n_places_min_final':'n_places_min','n_places_max_final':'n_places_max'},inplace=True)
+                    #create parking inventory object
+                    parking_inventory_object = ParkingInventory(new_parking_frame)
+                else: # default case, i have a min and a max
+                    logger.info('Entrée dans l''opération de subset par défaut')
+                    # create an emptry dataframe
+                    parking_frame_out = pd.DataFrame()
+                    # copy over self.parking_frame, mins and maxes, rename left
+                    parking_frame_out = inventory_1.parking_frame[[config_db.db_column_lot_id,'n_places_min','n_places_max']].copy()
+                    parking_frame_out.rename(columns={'n_places_min':'n_places_min_left','n_places_max':'n_places_max_left'},inplace=True)
+                    # copy over inventory_2.parking_frame, mins and maxes, rename right
+                    parking_frame_right =inventory_2.parking_frame[[config_db.db_column_lot_id,'n_places_min','n_places_max']].copy()
+                    parking_frame_right.rename(columns={'n_places_min':'n_places_min_right','n_places_max':'n_places_max_right'},inplace=True)
+                    # merge the dataframes
+                    parking_frame_out = parking_frame_out.merge(parking_frame_right,on=config_db.db_column_lot_id)
+                    # mins and maxes and cleanup
+                    parking_frame_out['n_places_min_final'] = parking_frame_out[['n_places_min_left','n_places_min_right']].max(axis=1)
+                    parking_frame_out['n_places_max_final'] = parking_frame_out[['n_places_max_left','n_places_max_right']].min(axis=1)
+                    parking_frame_out.drop(columns=['n_places_min_left','n_places_min_right','n_places_max_left','n_places_max_right'],inplace=True)
+                    # copy th old frame
+                    old_parking_frame = inventory_1.parking_frame.copy()
+                    # merge new onto old
+                    new_parking_frame = old_parking_frame.merge(parking_frame_out,how='left',on=config_db.db_column_lot_id)
+                    # drop old
+                    new_parking_frame.drop(columns=['n_places_min','n_places_max'],inplace=True)
+                    #name cleanup
+                    new_parking_frame.rename(columns={'n_places_min_final':'n_places_min','n_places_max_final':'n_places_max'},inplace=True)
+                    #create object
+                    parking_inventory_object = ParkingInventory(new_parking_frame)
+                logger.info('Complétion du cas de base')
+                return parking_inventory_object
+            case 4:
+                raise NotImplementedError('Subset Operator no implemented')
+            case 5:
+                raise NotImplementedError('Obsolete operator')
+            case 6:
+                logger.info('Entrée dans l''opération de subset par défaut')
+                parking_frame_out = pd.DataFrame()
+                parking_frame_out = inventory_1.parking_frame[[config_db.db_column_lot_id,'n_places_min','n_places_max']].copy()
+                parking_frame_out.rename(columns={'n_places_min':'n_places_min_left','n_places_max':'n_places_max_left'},inplace=True)
+                parking_frame_right =inventory_2.parking_frame[[config_db.db_column_lot_id,'n_places_min','n_places_max']].copy()
+                parking_frame_right.rename(columns={'n_places_min':'n_places_min_right','n_places_max':'n_places_max_right'},inplace=True)
+                parking_frame_out = parking_frame_out.merge(parking_frame_right,on=config_db.db_column_lot_id)
+                # implémenté comme prenant le minimum des requis minimaux. Ceci et mis en place selon la logique qu'un développeur immobilier voudrait potentiellement 
+                # Cas 1 la gauche est plus petit: min_final = min_left, max_final = max_left
+                parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_min_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_min_left']
+                parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_max_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_max_left']
+                # Cas 1 la droite est plus petit: min_final = min_right, max_final = max_right
+                parking_frame_out.loc[parking_frame_out['n_places_min_left']>=parking_frame_out['n_places_min_right'],'n_places_min_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_min_right']
+                parking_frame_out.loc[parking_frame_out['n_places_min_left']>=parking_frame_out['n_places_min_right'],'n_places_max_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_max_right']
+                # ramène le vieux frame
+                old_parking_frame = inventory_1.parking_frame.copy()
+                # drop gauche/droite
+                parking_frame_out.drop(columns=['n_places_min_left','n_places_min_right','n_places_max_left','n_places_max_right'],inplace=True)
+                new_parking_frame = old_parking_frame.merge(parking_frame_out,how='left',on=config_db.db_column_lot_id)
+                new_parking_frame.drop(columns=['n_places_min','n_places_max'],inplace=True)
+                new_parking_frame.rename(columns={'n_places_min_final':'n_places_min','n_places_max_final':'n_places_max'},inplace=True)
+                parking_inventory_object = ParkingInventory(new_parking_frame)
+                return parking_inventory_object
+    else:
+        raise ValueError(f'Operator must be integer, you supplied {type(operator)}')
+        
 def dissolve_list(list_to_dissolve:list[ParkingInventory])->ParkingInventory:
     for inx,item_to_concat in enumerate(list_to_dissolve):
         if inx==0:
@@ -371,12 +373,12 @@ def calculate_parking_specific_reg(reg_to_calculate: PR.ParkingRegulations,tax_d
             # loop through subsets and manage operators between
             for iter_subset_id in reg_to_calculate.reg_def[config_db.db_column_parking_subset_id].unique().tolist():
                 if iter_subset_id == 1: # if first subset, set as inventory to start
-                    subset_inventory = calculate_parking_specific_reg_subset(iter_subset_id,tax_data,rule_set_to_transfer)
+                    subset_inventory = calculate_parking_specific_reg_subset(reg_to_calculate,iter_subset_id,tax_data,rule_set_to_transfer)
                     parking_inventory = subset_inventory
                 else:
                     operator = int(reg_to_calculate.reg_def.loc[reg_to_calculate.reg_def[config_db.db_column_parking_subset_id]==iter_subset_id,config_db.db_column_parking_operation].iloc[0])
-                    subset_inventory = calculate_parking_specific_reg_subset(iter_subset_id,tax_data,rule_set_to_transfer)
-                    parking_inventory = ParkingInventory.subset_operation(operator=operator,inventory_2 = subset_inventory) # if subsequen subset, you need to check which operator it is for the subset and 
+                    subset_inventory = calculate_parking_specific_reg_subset(reg_to_calculate,iter_subset_id,tax_data,rule_set_to_transfer)
+                    parking_inventory = subset_operation(parking_inventory,operator=operator,inventory_2 = subset_inventory) # if subsequen subset, you need to check which operator it is for the subset and 
     return parking_inventory
         
 def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subset:int,tax_data:TD.TaxDataset,rule_set_id:int)->ParkingInventory:
@@ -454,7 +456,7 @@ def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subs
                 if len(parking_subset)>1:
                     for inx,subset_reg in parking_subset.iterrows(): # iterate through lines of subset
                         # find the column you need to get from tax data in order 
-                        column_in_tax_data: str = parking_reg.units_table.loc[self.units_table[config_db.db_column_units_id]==subset_reg[config_db.db_column_parking_unit_id],config_db.db_column_tax_data_column_to_multiply] 
+                        column_in_tax_data: str = parking_reg.units_table.loc[parking_reg.units_table[config_db.db_column_units_id]==subset_reg[config_db.db_column_parking_unit_id],config_db.db_column_tax_data_column_to_multiply] 
                     
                         parking_inventory_df['column_to_use'] = column_in_tax_data # bump the column to use to whold frame
                         parking_inventory_df['unconverted_value'] = tax_data.tax_table[column_in_tax_data].copy() # copy the column to use
@@ -485,8 +487,7 @@ def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subs
                             if (zero_crossing_max is not None and isinstance(zero_crossing_max,float) and not np.isnan(zero_crossing_max)) and (slope_max is not None and isinstance(slope_max,float) and not np.isnan(slope_max)):
                                 parking_inventory_df['n_places_max'] = parking_inventory_df['n_places_max'] + zero_crossing_max + slope_max * parking_inventory_df['converted_assessement_column'] 
                             else:
-                                parking_inventory_df['n_places_max'] = np.nan
-                        
+                                parking_inventory_df['n_places_max'] = np.nan      
                 else:
                     # find the column you need to get from tax data in order 
                     column_in_tax_data: str = parking_reg.units_table.loc[parking_reg.units_table[config_db.db_column_units_id]==parking_subset[config_db.db_column_parking_unit_id].iloc[0],config_db.db_column_tax_data_column_to_multiply].iloc[0]
