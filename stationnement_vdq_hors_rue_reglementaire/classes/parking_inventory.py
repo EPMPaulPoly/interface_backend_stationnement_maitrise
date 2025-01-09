@@ -1,6 +1,7 @@
 import pandas as pd
 import geopandas as gpd
-from sqlalchemy import create_engine,text,Engine
+from sqlalchemy import create_engine,text,Engine,MetaData,Table
+import sqlalchemy as db_alchemy
 from stationnement_vdq_hors_rue_reglementaire.config import config_db
 from stationnement_vdq_hors_rue_reglementaire.classes import parking_inventory as PI
 from typing_extensions import Self
@@ -49,16 +50,16 @@ class ParkingInventory():
         else:
             logger.warning('Inventory concatenation - Both datasets are empty - continuing')
 
-    def to_postgis(self,con:Engine=None):
+    def to_postgis(self,con:db_alchemy.Engine=None):
         '''
         # to_postgis
         Fonction qui envoie l'inventaire de stationnement sur la base de données
         '''
         logger = logging.getLogger(__name__)
-        if isinstance(con,Engine):
+        if isinstance(con,db_alchemy.Engine):
             logger.info('Using existing connection engine')
         else: 
-            con = create_engine(config_db.pg_string)
+            con = db_alchemy.create_engine(config_db.pg_string)
         self.parking_frame.to_sql(config_db.db_table_parking_inventory,con=con,if_exists='replace',index=False)
 
     def merge_lot_data(self:Self)->None:
@@ -230,7 +231,7 @@ def inventory_duplicates_agg_function(x:pd.DataFrame):
     d['methode_estime'] = x['methode_estime'].values[0]
     return pd.Series(d,index = [config_db.db_column_land_use_id,config_db.db_column_reg_sets_id,config_db.db_column_parking_regs_id,'n_places_min','n_places_max','commentaire','methode_estime'])
 
-def calculate_inventory_by_analysis_sector(sector_to_calculate:int, create_html:bool = False):
+def calculate_inventory_by_analysis_sector(sector_to_calculate:int, create_html:bool = False,overwrite:int=0):
     '''
         # calculate_inventory_by_analysis_sector
         Permet de calculer le stationnement pour chaque lot danas un quartier d'analyse donné
@@ -248,7 +249,7 @@ def calculate_inventory_by_analysis_sector(sector_to_calculate:int, create_html:
     final_parking_inventory = PI.dissolve_list(parking_inventories)
     logging.info('Merging inventories for a given lot')
     final_parking_inventory.merge_lot_data()
-    return_value_save = PI.to_sql(final_parking_inventory)
+    return_value_save = PI.to_sql(final_parking_inventory,overwrite=overwrite)
     if create_html:
         path = './data/tax.html'
         # display the points
@@ -269,7 +270,7 @@ def calculate_inventory_by_analysis_sector(sector_to_calculate:int, create_html:
         folium_to_explore.save(path_inventory)
         webbrowser.open('file://'+os.path.realpath(path_inventory))
 
-def calculate_inventory_by_lot(lot_to_calculate:str, create_html:bool = False):
+def calculate_inventory_by_lot(lot_to_calculate:str, create_html:bool = False,overwrite:int=0):
     '''
         # calculate_inventory_by_lot
             calculates the inventory for a lot
@@ -289,18 +290,53 @@ def calculate_inventory_by_lot(lot_to_calculate:str, create_html:bool = False):
     final_parking_inventory = PI.dissolve_list(parking_inventories)
     logging.info('Merging inventories for a given lot')
     final_parking_inventory.merge_lot_data()
+    return_value_save = PI.to_sql(final_parking_inventory,overwrite=overwrite)
 
-
-def to_sql(inventory_to_save:ParkingInventory,engine:sqlalchemy.Engine=None):
+def to_sql(inventory_to_save:ParkingInventory,engine:sqlalchemy.Engine=None,overwrite:int=0):
     ''' # to_sql
         inserts parking frame into relevant 
     '''
+    logger = logging.getLogger(__name__)
     if engine is None:
         engine = sqlalchemy.create_engine(config_db.pg_string)
         
+    
+    query_existing_inventory = f"SELECT * FROM public.{config_db.db_table_parking_inventory}"
     with engine.connect() as con:
-        sql_return = inventory_to_save.parking_frame.to_sql(config_db.db_table_parking_inventory,con=con,schema='public',if_exists='replace',index=False)
-    return sql_return
+        existing_inventory:pd.DataFrame = pd.read_sql(query_existing_inventory,con=con)
+    existing_g_no_lot = existing_inventory[config_db.db_column_lot_id].unique().tolist()
+    already_existing_inventory = inventory_to_save.parking_frame.loc[((inventory_to_save.parking_frame[config_db.db_column_lot_id].isin(existing_g_no_lot)) & (inventory_to_save.parking_frame['methode_estime']==2))]
+    not_existing_inventory = inventory_to_save.parking_frame.loc[(~(inventory_to_save.parking_frame[config_db.db_column_lot_id].isin(existing_g_no_lot)) & (inventory_to_save.parking_frame['methode_estime']==2))]
+    if already_existing_inventory.empty:
+        inventory_to_save.parking_frame.to_sql(config_db.db_table_parking_inventory,con=engine,schema='public',if_exists='append',index=False)
+        print('save_complete')
+    else:
+        if overwrite==1:
+            logger.info(f'Les lots suivants sont déja dans la base de données \n {already_existing_inventory[config_db.db_column_lot_id].to_list()}\n')
+            question_unanswered = True
+            while question_unanswered:
+                answer= str(input('Voulez vous remplacer les estimés pour lots en question[o/n]?'))
+                if answer == 'o':
+                    question_unanswered=False
+                    lots_to_alter = already_existing_inventory[config_db.db_column_lot_id].unique().tolist()
+                    query = f"DELETE FROM public.{config_db.db_table_parking_inventory} WHERE {config_db.db_column_lot_id} IN ('{"','".join(map(str,lots_to_alter))}') AND methode_estime = 2;"
+                    statement = db_alchemy.text(query)
+                    #meta = MetaData()
+                    with engine.connect() as con:
+                        dude = con.execute(statement)
+                        con.commit()
+                    inventory_to_save.parking_frame.to_sql(config_db.db_table_parking_inventory,con=engine,schema='public',if_exists='append',index=False)
+                elif answer =='n':
+                    logger.info(f'Nous sauverons seulement les éléments non-dupliqués')
+                    question_unanswered=False
+                    if not not_existing_inventory.empty:
+                        not_existing_inventory.to_sql(config_db.db_table_parking_inventory,con=engine,schema='public',if_exists='append',index=False)
+                else:
+                    logger.info('Entrée invalide, seul y et n sont des entrés valides')
+        else:
+            logger.info("Seuls les items nos dupliqués seront sauvegardés, changez l'option overwrite pour supprimer les anciens estimés")
+            if not not_existing_inventory.empty:
+                not_existing_inventory.to_sql(config_db.db_table_parking_inventory,con=engine,schema='public',if_exists='append',index=False)
 
 def calculate_parking_for_reg_set_territories(reg_set_territories:Union[RST.RegSetTerritory,list[RST.RegSetTerritory]],tax_datas:Union[TD.TaxDataset,list[TD.TaxDataset]])->Union[PI.ParkingInventory,list[PI.ParkingInventory]]:
     logger = logging.getLogger(__name__)
@@ -336,13 +372,13 @@ def calculate_parking_specific_reg_set(reg_set:PRS.ParkingRegulationSet,tax_data
     parking_inventory_final = PI.ParkingInventory(pd.DataFrame(columns=[config_db.db_column_lot_id,config_db.db_column_reg_sets_id,config_db.db_column_parking_regs_id,config_db.db_column_land_use_id,'n_places_min','n_places_max','methode_estime','commentaire']))
     for reg_id in unique_parking_regs:
         relevant_land_uses = reg_set.expanded_table.loc[reg_set.expanded_table[config_db.db_column_parking_regs_id]== reg_id,config_db.db_column_land_use_id].tolist()
+        with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
+            reg_set.land_use_table.style.set_properties(**{'text-align': 'left'})
+            logger.info(f'Parking rule #{int(reg_id)} has following relevant land uses:\n {reg_set.land_use_table.loc[reg_set.land_use_table[config_db.db_column_land_use_id].isin(relevant_land_uses)].to_string(index=False,col_space=[10,120],justify='left')}')
         relevant_tax_data_points = tax_data.select_by_land_uses(relevant_land_uses)
         parking_reg = reg_set.get_parking_reg_by_id(reg_id)
         parking_inventory = calculate_parking_specific_reg(parking_reg,relevant_tax_data_points,reg_set.ruleset_id)
         parking_inventory_final.concat(parking_inventory)
-        with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
-            reg_set.land_use_table.style.set_properties(**{'text-align': 'left'})
-            logger.info(f'Parking rule #{int(reg_id)} has following relevant land uses:\n {reg_set.land_use_table.loc[reg_set.land_use_table[config_db.db_column_land_use_id].isin(relevant_land_uses)].to_string(index=False,col_space=[10,120],justify='left')}')
     return parking_inventory_final
 
 def calculate_parking_specific_reg(reg_to_calculate: PR.ParkingRegulations,tax_data:TD.TaxDataset,rule_set_to_transfer:int = 0)->Self :
@@ -597,3 +633,5 @@ def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subs
     else:
         raise AttributeError('Too many operators in regulation subset_feature not yet implementated')
 
+def check_neighborhood_inventory()->bool:
+    NotImplementedError('Not Yet implemented')
