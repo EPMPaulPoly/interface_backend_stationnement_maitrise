@@ -1,0 +1,39 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Frontend",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:3000",
+            "webRoot": "${workspaceFolder}/frontend",
+            "sourceMapPathOverrides": {
+                "/app/*": "${workspaceFolder}/frontend/*"
+            }
+        },
+        {
+            "name": "Debug Backend",
+            "type": "node",
+            "request": "attach",
+            "port": 9229,
+            "address": "localhost",
+            "localRoot": "${workspaceFolder}/backend",
+            "remoteRoot": "/app",
+            "restart": true,
+            "sourceMaps": true,
+            "skipFiles": ["<node_internals>/**"],
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/backend/**",
+                "!**/node_modules/**"
+            ],
+            "outFiles": ["${workspaceFolder}/backend/dist/**/*.js"],
+            "internalConsoleOptions": "neverOpen"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Full Stack: Frontend + Backend",
+            "configurations": ["Debug Frontend", "Debug Backend"]
+        }
+    ]
+}
