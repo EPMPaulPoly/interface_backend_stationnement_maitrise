@@ -45,10 +45,10 @@ export interface association_util_reglement{
 }
 
 export interface periode{
-    id: number,
-    description: string,
-    annee_debut: number,
-    annee_fin: number,
+    id_periode: number,
+    nom_periode: string,
+    date_debut_periode: number,
+    date_fin_periode: number,
 }
 
 export interface territoire{
@@ -56,7 +56,6 @@ export interface territoire{
     id_periode: number,
     ville: string|null,
     secteur: string|null,
-
 }
 
 export interface ensemble_reglement_territoire{

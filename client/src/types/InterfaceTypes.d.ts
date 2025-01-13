@@ -18,8 +18,13 @@ export interface error_state{
     set_error_state: SetStateAction<boolean>
 }
 
-export interface user{
+export interface Utilisateur{
     name:string|null,
     hash:string|null,
     role:1|2|undefined
+}
+
+export interface role_set_state{
+    state:boolean,
+    set_role_set_state:SetStateAction<boolean>
 }
