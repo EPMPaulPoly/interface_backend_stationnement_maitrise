@@ -74,7 +74,8 @@ const TableHistoire: React.FC<{}> = () => {
     }
 
     const gestSelectRadio = (id_periode: number) => {
-        
+        console.log('not implemented')
+    }    
 
     return (
         <div>
