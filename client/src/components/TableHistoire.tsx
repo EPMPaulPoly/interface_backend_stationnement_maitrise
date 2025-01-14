@@ -77,28 +77,79 @@ const TableHistoire: React.FC<{}> = () => {
         console.log('not implemented')
     }    
 
+    const gestBoutonSauv = () => {
+        if (typeof PeriodesSelect === 'number') {
+            const entry_to_add = etat_periodes.find(o => o.id_periode === PeriodesSelect);
+
+            if (entry_to_add) {
+                defPeriodes(prev => {
+                    const index = prev.findIndex(o => o.id_periode === PeriodesSelect);
+
+                    if (index !== -1) {
+                        // Update existing entry
+                        const updatedPeriods = [...prev];
+                        updatedPeriods[index] = entry_to_add; // Replace the existing entry
+                        return updatedPeriods;
+                    } else {
+                        // Add new entry
+                        return [...prev, entry_to_add];
+                    }
+                });
+
+                defAnciennesPeriodes([]); // Clear previous periods
+                defEdit(false); // Disable edit mode
+            } else {
+                console.warn('Entry not found for the selected period.');
+            }
+        } else {
+            console.warn('Invalid PeriodesSelect: must be a number.');
+        }
+    };
+
+    const gestBoutonSuppr = () =>{
+        console.log
+    };
+
+    const renduBoutonsTableHistoire=() =>{
+        if ((edit) && (typeof(PeriodesSelect)==='number')){
+            return(<>
+                <button
+                    onClick={gestBoutonSauv}>Save</button>
+                <button
+                    onClick={gestBoutonAnnul}
+                >Cancel</button>
+            </>)
+        }else if(!edit && !(typeof(PeriodesSelect)==='number')){
+            return (<>
+                <button
+                    onClick={gestBoutonAjout}>
+                        Ajouter
+                </button>
+                <button
+                    onClick={gestBoutonEdit}
+                    >Éditer</button>
+                </>)
+        }else{
+            return (<>
+                <button
+                    onClick={gestBoutonAjout}>
+                        Ajouter
+                </button>
+                <button
+                    onClick={gestBoutonEdit}
+                    >Éditer</button>
+                <button
+                    onClick={gestBoutonSuppr}>
+                    Supprimer
+                </button>
+            </>)
+        }
+    };
+
     return (
         <div>
             <h2>Table Histoire</h2>
-            {!edit ? (
-                <>
-                    <button
-                        onClick={gestBoutonAjout}>
-                            Ajouter
-                    </button>
-                    <button
-                        onClick={gestBoutonEdit}
-                        >Éditer</button>
-                </>
-                
-            ) : (
-                <>
-                    <button>Save</button>
-                    <button
-                        onClick={gestBoutonAnnul}
-                    >Cancel</button>
-                </>
-            )}
+            {renduBoutonsTableHistoire()}
             <table>
                 <thead>
                     <tr>
