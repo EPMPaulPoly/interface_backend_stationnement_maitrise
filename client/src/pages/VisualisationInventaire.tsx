@@ -1,16 +1,8 @@
-import React, { useState } from 'react';
-import TableHistoire from '../components/TableHistoire';
-import TableTerritoire from '../components/TableTerritoire';
+import './AnalyseInventaire.css'
+import './common.css'
 import MenuBar from '../components/MenuBar';
-import { ResizableBox } from 'react-resizable';
-import './Histoire.css'; // Your custom styles for handles
-import './common.css';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMapEvents,GeoJSON, Polygon, useMap } from 'react-leaflet';
 
-import {LatLngExpression} from 'leaflet';
-const position: LatLngExpression = [45.5017, -73.5673]; // Montreal coordinates
-
-const Histoire: React.FC = () => {
+const VisualisationInventaire: React.FC = () => {
     const [leftPanelWidth, setLeftPanelWidth] = useState(300); // Left panel width
     const [bottomPanelHeight, setBottomPanelHeight] = useState(200); // Bottom panel height
 
@@ -70,4 +62,4 @@ const Histoire: React.FC = () => {
     );
 };
 
-export default Histoire;
+export default VisualisationInvenataire;

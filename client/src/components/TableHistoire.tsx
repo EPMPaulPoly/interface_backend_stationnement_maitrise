@@ -148,7 +148,7 @@ const TableHistoire: React.FC<{}> = () => {
 
     return (
         <div>
-            <h2>Table Histoire</h2>
+            <h4>Table Histoire</h4>
             {renduBoutonsTableHistoire()}
             <table>
                 <thead>

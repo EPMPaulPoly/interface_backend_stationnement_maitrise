@@ -1,0 +1,49 @@
+
+
+.react-resizable-handle {
+    background-color: #fcfbfb;
+    border-radius: 4px;
+    width: 10px;  /* Handle width */
+    height: 10px; /* Handle height */
+    z-index: 10;  /* Ensure handle is in front of other elements */
+}
+
+/* Style the South (bottom) resize handle */
+.react-resizable-handle-n {
+    top: -5px; /* Shift handle to the top */
+    left: 50%; /* Center handle horizontally */
+    cursor: ns-resize; /* Change cursor to resize vertically */
+}
+
+
+.menu-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: #1f1f1f;
+    border-bottom: 2px solid #333;
+    color: #ffffff;
+}
+
+.menu-bar h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #ffffff;
+}
+
+.menu-links {
+    display: flex;
+    gap: 15px;
+}
+
+.menu-links a {
+    text-decoration: none;
+    color: #333;
+    font-size: 18px;
+    transition: color 0.3s ease;
+}
+
+.menu-links a:hover {
+    color: #007bff;
+}

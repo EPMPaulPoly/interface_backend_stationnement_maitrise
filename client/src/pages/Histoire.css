@@ -1,0 +1,89 @@
+/* Make the main container take up the full viewport */
+.page-histoire {
+    display: flex;
+    flex-direction: column; /* Stack vertically if necessary */
+    height: 100vh; /* Full height of the page */
+    overflow: hidden; /* Prevent overflow (no scrollbars) */
+    background-color: #1f1f1f;
+}
+
+/* The dimensionable area for resizing */
+.histoire-dimensionnable {
+    display: flex; /* This makes the left and right panels sit side by side */
+    flex: 1; /* Take remaining space */
+    height: 100%; /* Ensure it fills the entire height of its parent */
+    justify-content: flex-start;
+    align-items:left;
+}
+
+/* The left panel with the table (Resizable) */
+.histoire-barre-historique {
+    background-color: #1f1f1f;
+    color:white;
+    border-right: 2px solid #ccc;
+    display: flex;
+    justify-content: flex-start;
+    align-content: flex-start;
+    min-width: 150px;
+    max-width: 600px;
+    height: 100%; /* Full height of its container */
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+/* The right panel for map and bottom table */
+.histoire-barre-droite {
+    display: flex;
+    flex-direction: column; /* Stack map and table vertically */
+    flex: 1; /* Take remaining space */
+    height: 100%; /* Full height of its container */
+}
+
+/* The resizable map (histoire-carte) */
+.histoire-carte-container {
+    flex: 1;
+    position: relative;
+}
+
+/* The bottom section in the right panel */
+.histoire-barre-territoires-bas {
+    display: flex;
+    justify-content: flex-start;
+    align-content: flex-start;
+    flex-shrink: 0; /* Prevent shrinking */
+    overflow-y: auto; /* Allow scrolling if necessary within this section */
+    background-color: #1f1f1f;
+    color:white;
+}
+
+.table-territoire {
+    width: 100%;
+    border-collapse: collapse;
+    display: grid;
+}
+
+.table-territoire th,
+.table-territoire td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.table-territoire th {
+    background-color: #f2f2f2;
+    color: black;
+}
+
+.table-territoire th:nth-child(1),
+.table-territoire td:nth-child(1) {
+    min-width: 150px; /* Minimum width for the first column */
+}
+
+.table-territoire th:nth-child(2),
+.table-territoire td:nth-child(2) {
+    min-width: 200px; /* Minimum width for the second column */
+}
+
+.table-territoire th:nth-child(3),
+.table-territoire td:nth-child(3) {
+    min-width: 250px; /* Minimum width for the third column */
+}

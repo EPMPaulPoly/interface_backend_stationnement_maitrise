@@ -1,4 +1,4 @@
-import periode from './DataTypes'
+import {periode,territoire} from './DataTypes'
 
 export interface ApiResponse<T> {
     success?: boolean;
@@ -7,3 +7,4 @@ export interface ApiResponse<T> {
   }
 
 export type ReponsePeriode = ApiResponse<periode[]>
+export type ReponseTerritoire = ApiResponse<territoire[]>
