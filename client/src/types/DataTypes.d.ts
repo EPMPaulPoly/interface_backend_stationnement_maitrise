@@ -82,3 +82,20 @@ export interface entree_role_foncier{
     valeur_totale:number|null,
     addresse:string|null
 }
+
+export interface inventaire_stationnement{
+    g_no_lot:string,
+    n_places_min:number,
+    n_places_max:number,
+    n_places_mesure:number,
+    n_places_estime:number,
+    methode_estime:number,
+    id_er: string,
+    id_reg_stat:string,
+    cubf:string
+}
+
+export interface quartiers_analyse{
+    id_quartier:number,
+    nom_quartier:string
+}

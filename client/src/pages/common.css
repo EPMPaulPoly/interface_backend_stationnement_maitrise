@@ -35,6 +35,7 @@
 .menu-links {
     display: flex;
     gap: 15px;
+    color:white;
 }
 
 .menu-links a {
@@ -45,5 +46,5 @@
 }
 
 .menu-links a:hover {
-    color: #007bff;
+    color: white;
 }

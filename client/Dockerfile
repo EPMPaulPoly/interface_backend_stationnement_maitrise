@@ -1,7 +1,10 @@
 FROM node:20
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+# Update npm to the latest version
+RUN npm config set cache /app/.npm-cache --global
+RUN npm install -g npm@11.0.0
+RUN npm install --verbose
 #COPY . .
 ENV WATCHPACK_POLLING=true
 ENV CHOKIDAR_USEPOLLING=true

@@ -1,0 +1,38 @@
+{
+    "name": "parking-inventory-backend",
+    "version": "1.0.0",
+    "description": "Backend for parking inventoery",
+    "main": "dist/server.js",
+    "scripts": {
+        "dev": "nodemon --legacy-watch",
+        "build": "tsc",
+        "start": "node dist/server.js"
+    },
+    "dependencies": {
+        "axios": "latest",
+        "cors": "latest",
+        "dotenv": "latest",
+        "express": "^4.21.1",
+        "geojson": "latest",
+        "leaflet": "latest",
+        "pg": "latest",
+        "zod": "^3.23.8"
+    },
+    "devDependencies": {
+        "@types/axios": "latest",
+        "@types/cors": "latest",
+        "@types/express": "latest",
+        "@types/geojson": "latest",
+        "@types/leaflet": "latest",
+        "@types/node": "latest",
+        "@types/pg": "latest",
+        "@typescript-eslint/eslint-plugin": "latest",
+        "@typescript-eslint/parser": "latest",
+        "eslint": "latest",
+        "jest": "latest",
+        "nodemon": "^3.1.7",
+        "ts-jest": "latest",
+        "ts-node": "latest",
+        "typescript": "latest"
+    }
+}

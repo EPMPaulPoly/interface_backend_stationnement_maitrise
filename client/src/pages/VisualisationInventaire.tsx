@@ -1,65 +1,70 @@
-import './AnalyseInventaire.css'
-import './common.css'
+import './VisualisationInventaire.css';
+import './common.css';
 import MenuBar from '../components/MenuBar';
+import {ResizableBox} from 'react-resizable';
+import {useState,useEffect} from 'react';
+import {MapContainer,TileLayer} from 'react-leaflet';
+import { LatLngExpression } from 'leaflet';
+import TableInventaire from '../components/TableInventaire';
+import { inventaire_stationnement, quartiers_analyse } from '../types/DataTypes';
+import { serviceQuartiersAnalyse } from '../services/serviceQuartiersAnalyse';
+
+const position: LatLngExpression = [45.5017, -73.5673]; // Montreal coordinates
 
 const VisualisationInventaire: React.FC = () => {
-    const [leftPanelWidth, setLeftPanelWidth] = useState(300); // Left panel width
     const [bottomPanelHeight, setBottomPanelHeight] = useState(200); // Bottom panel height
+    const [quartier,defQuartierAnalyse] = useState<number>(-1);
+    const [optionsQuartier,defOptionsQuartiers] = useState<quartiers_analyse[]>([]);
+    const [inventaire,defInventaire] = useState<inventaire_stationnement[]>([]);
 
-    const handleResizeLeftPanel = (e: any, data: any) => {
-        setLeftPanelWidth(data.size.width); // Dynamically set width of left panel
-    };
+    useEffect(() => {
+        const fetchData = async () => {
+            const quartiers = await serviceQuartiersAnalyse.chercheTousQuartiersAnalyse();
+            defOptionsQuartiers(quartiers.data);
+        };
+        fetchData();
+    }, []);
 
     const handleResizeBottomPanel = (e: any, data: any) => {
         setBottomPanelHeight(data.size.height); // Dynamically set height of bottom panel
     };
 
     return (
-        <div className="page-histoire">
+        <div className="page-inventaire">
             <MenuBar/>
-            <div className="histoire-dimensionnable">
-                {/* Left Panel with the table */}
-                <ResizableBox
-                    className="histoire-barre-historique"
-                    width={leftPanelWidth}
-                    height={Infinity}
-                    resizeHandles={['e']}
-                    minConstraints={[150, Infinity]}
-                    maxConstraints={[600, Infinity]}
-                    onResizeStop={handleResizeLeftPanel}
-                >
-                    <TableHistoire />
-                </ResizableBox>
-
-                {/* Right Panel with map and table */}
-                <div className="histoire-barre-droite">
-                    <div className="histoire-carte-container">
-                        
-                            <MapContainer
-                                center={position}
-                                zoom={13}
-                                style={{ height: '100%', width: '100%' }}
-                            >
-                                <TileLayer
-                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                />
-                            </MapContainer>
-                        
-                    </div>
-                    <ResizableBox className="histoire-barre-territoires-bas"
+                <div className="inventaire-carte-conteneur">
+                    <MapContainer
+                        center={position}
+                        zoom={13}
+                        style={{ height: '100%', width: '100%' }}
+                    >
+                        <TileLayer
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        />
+                    </MapContainer>
+                    
+                </div>
+                <ResizableBox 
+                    className="table-inventaire"
                     width={Infinity}
                     height={bottomPanelHeight}
                     resizeHandles={['n']}
                     minConstraints={[Infinity, 100]}
                     maxConstraints={[Infinity, 800]}
-                    onResizeStop={handleResizeBottomPanel}>
-                        <TableTerritoire />
-                    </ResizableBox>
+                    onResizeStop={handleResizeBottomPanel}
+                >
+                    <TableInventaire
+                        quartier={quartier}
+                        defQuartier={defQuartierAnalyse}
+                        optionsQuartiers={optionsQuartier}
+                        defOptionsQuartiers={defOptionsQuartiers}
+                        inventaire={inventaire}
+                        defInventaire={defInventaire} />
+                </ResizableBox>
                 </div>
-            </div>
-        </div>
+
     );
 };
 
-export default VisualisationInvenataire;
+export default VisualisationInventaire;

@@ -2,3 +2,4 @@
 .env
 /serveur/node_modules
 /client/package-lock.json
+/client/.npm-cache

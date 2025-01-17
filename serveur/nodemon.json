@@ -1,0 +1,8 @@
+{
+    "watch": ["src"],
+    "ignore": ["src/**/*.spec.ts"],
+    "ext": ".js,.json,.ts",
+    "exec": "node --inspect=0.0.0.0:9229 -r ts-node/register src/server.ts",
+    "verbose": true,
+    "legacyWatch": false
+  }
