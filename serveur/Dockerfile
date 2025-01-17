@@ -2,6 +2,7 @@ FROM node:20
 WORKDIR /app
 COPY package*.json ./
 COPY tsconfig.json ./
+RUN npm install -g npm@11.0.0
 RUN npm install
 RUN npm install -g nodemon typescript ts-node
 COPY . .

@@ -18,7 +18,7 @@ const TableHistoire: React.FC<{}> = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const ResPeriodes = await serviceHistorique.getAll();
+                const ResPeriodes = await serviceHistorique.obtientTous();
                 console.log('Recu les périodes', ResPeriodes);
                 defPeriodes(ResPeriodes.data);
                 defAnciennesPeriodes([])

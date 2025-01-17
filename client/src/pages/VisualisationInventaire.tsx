@@ -7,7 +7,8 @@ import {MapContainer,TileLayer} from 'react-leaflet';
 import { LatLngExpression } from 'leaflet';
 import TableInventaire from '../components/TableInventaire';
 import { inventaire_stationnement, quartiers_analyse } from '../types/DataTypes';
-import { serviceQuartiersAnalyse } from '../services/serviceQuartiersAnalyse';
+import { serviceQuartiersAnalyse, } from '../services/serviceQuartiersAnalyse';
+import {serviceInventaire} from '../services/serviceInventaire';
 
 const position: LatLngExpression = [45.5017, -73.5673]; // Montreal coordinates
 
@@ -21,6 +22,9 @@ const VisualisationInventaire: React.FC = () => {
         const fetchData = async () => {
             const quartiers = await serviceQuartiersAnalyse.chercheTousQuartiersAnalyse();
             defOptionsQuartiers(quartiers.data);
+            //if (quartier != 1){
+            //    const inventaire = await serviceInventaire.obtientInventaireParQuartier(quartier)
+            //}
         };
         fetchData();
     }, []);

@@ -1,5 +1,5 @@
 import React, {useState,} from 'react';
-import { inventaire_stationnement } from '../types/DataTypes';
+import { inventaire_stationnement, quartiers_analyse } from '../types/DataTypes';
 import { TableInventaireProps } from '../types/InterfaceTypes';
 
 const TableInventaire:React.FC<TableInventaireProps>=({
@@ -10,7 +10,9 @@ const TableInventaire:React.FC<TableInventaireProps>=({
     inventaire,
     defInventaire
 }) =>{
-    
+    const gestSelectQuartier = (quartier_selectionne:number) =>{
+        
+    }
     return(
         <>
             <div className="panneau-bas-inventaire">
@@ -18,7 +20,11 @@ const TableInventaire:React.FC<TableInventaireProps>=({
                     <label htmlFor="select-quartier">Sélection Quartier</label>
                     <select id="select-quartier" name="select-quartier">
                         <option value="">Selection quartier</option>
-                        {/* Add options here */}
+                        {optionsQuartiers.map(quartier=>(
+                            <option key={quartier.id_quartier} value={quartier.id_quartier} onChange={e => gestSelectQuartier(quartier.id_quartier)}>
+                                {quartier.nom_quartier}
+                            </option>
+                        ))}
                     </select>
                 </div>
                 <div>

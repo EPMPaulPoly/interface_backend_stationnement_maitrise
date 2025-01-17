@@ -97,5 +97,6 @@ export interface inventaire_stationnement{
 
 export interface quartiers_analyse{
     id_quartier:number,
-    nom_quartier:string
+    nom_quartier:string,
+    
 }

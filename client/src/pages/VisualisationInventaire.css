@@ -36,9 +36,9 @@ table {
   }
   /* play with bg cells and cols ? */
   
-  tr:nth-child(even) :nth-child(odd) {
+  /*tr:nth-child(even) :nth-child(odd) {
     background:rgba(100,255,50,0.3);
     }
   tr:nth-child(odd) :nth-child(even) {
     background:rgba(255,255,255,0.3);
-    }
+    }*/

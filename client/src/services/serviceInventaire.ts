@@ -1,12 +1,13 @@
 
-import { ReponsePeriode } from '../types/serviceTypes';
+import { ReponseInventaire } from '../types/serviceTypes';
 import api from './api';
 import axios,{AxiosResponse} from 'axios';
-export const serviceHistorique = {
-    obtientTous: async() : Promise<ReponsePeriode> => {
+
+export const serviceInventaire = {
+    obtientInventaireParQuartier: async(id_quartier:number) : Promise<ReponseInventaire> => {
         try {
-            const response: AxiosResponse<ReponsePeriode> = await api.get(`/historique`);
-            console.log('Recu historique')
+            const response: AxiosResponse<ReponseInventaire> = await api.get(`/inventaire/quartier/${id_quartier}`);
+            console.log('Recu Invetaire')
             return {success:response.data.success,data:response.data.data};
         } catch (error: any) {
             if (axios.isAxiosError(error)) {
