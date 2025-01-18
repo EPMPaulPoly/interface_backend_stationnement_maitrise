@@ -1,6 +1,6 @@
-import {LatLng} from "leaflet";
+import {LatLng, LatLngExpression} from "leaflet";
 import { SetStateAction } from "react";
-import { inventaire_stationnement,quartiers_analyse } from "./DataTypes";
+import { inventaire_stationnement,quartiers_analyse, territoire } from "./DataTypes";
 
 export interface study_area{
     name: string;
@@ -38,4 +38,20 @@ export interface TableInventaireProps{
     defOptionsQuartiers: React.Dispatch<SetStateAction<quartiers_analyse[]>>;
     inventaire: inventaire_stationnement[];
     defInventaire: React.Dispatch<SetStateAction<inventaire_stationnement[]>>
+}
+
+export interface CarteHistoriqueProps{
+    territoires:territoire[];
+    defTerritoires: React.Dispatch<SetStateAction<territoire[]>>;
+    territoireSelect: number;
+    defTerritoireSelect: React.Dispatch<SetStateAction<number>>;
+    startPosition: LatLngExpression;
+    setStartPosition:React.Dispatch<SetStateAction<LatLngExpression>>;
+    startZoom: number;
+    setStartZoom: React.Dispatch<SetStateAction<number>>;
+}
+
+export interface TableHistoireProps{
+    periodeSelect:number,
+    defPeriodeSelect:React.Dispatch<SetStateAction<number>>;
 }

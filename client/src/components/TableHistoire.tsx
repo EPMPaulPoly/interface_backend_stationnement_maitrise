@@ -1,20 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import { periode } from '../types/DataTypes';
 import { serviceHistorique } from '../services';
-
-interface TableHistoireProps {
-    periodes: periode[],
-}
+import { TableHistoireProps } from '../types/InterfaceTypes';
 
 
 
-const TableHistoire: React.FC<{}> = () => {
+
+const TableHistoire: React.FC<TableHistoireProps> = (props:TableHistoireProps) => {
     const [etat_periodes, defPeriodes] = useState<periode[]>([]);
     const [charge, defCharg] = useState<boolean>(true);
     const [edit, defEdit] = useState<boolean>(false);
-    const [PeriodesSelect, defPeriodSelect] = useState<number|null>(null);
     const [etat_anciennes_periodes, defAnciennesPeriodes] = useState<periode[]>([]);
-
+    const panelRefGauche = useRef<HTMLDivElement>(null);
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -47,7 +44,7 @@ const TableHistoire: React.FC<{}> = () => {
     }
 
     const gestBoutonEdit = () => {
-        if (PeriodesSelect !== null) {
+        if (props.periodeSelect !== -1) {
             defEdit(true);
             defAnciennesPeriodes(etat_periodes);
         }
@@ -57,7 +54,7 @@ const TableHistoire: React.FC<{}> = () => {
         defPeriodes(etat_anciennes_periodes)
         defEdit(false)
         defAnciennesPeriodes([])
-        defPeriodSelect(null)
+        props.defPeriodeSelect(-1)
     }
 
     const gestBoutonAjout = () => {
@@ -69,21 +66,22 @@ const TableHistoire: React.FC<{}> = () => {
         }
         defPeriodes([...etat_periodes, newPeriode])
         defEdit(true)
-        defPeriodSelect(newPeriode.id_periode)
+        props.defPeriodeSelect(newPeriode.id_periode)
         defAnciennesPeriodes(etat_periodes)
     }
 
     const gestSelectRadio = (id_periode: number) => {
+
         console.log('not implemented')
     }    
 
     const gestBoutonSauv = () => {
-        if (typeof PeriodesSelect === 'number') {
-            const entry_to_add = etat_periodes.find(o => o.id_periode === PeriodesSelect);
+        if (props.periodeSelect != -1) {
+            const entry_to_add = etat_periodes.find(o => o.id_periode === props.periodeSelect);
 
             if (entry_to_add) {
                 defPeriodes(prev => {
-                    const index = prev.findIndex(o => o.id_periode === PeriodesSelect);
+                    const index = prev.findIndex(o => o.id_periode === props.periodeSelect);
 
                     if (index !== -1) {
                         // Update existing entry
@@ -110,17 +108,19 @@ const TableHistoire: React.FC<{}> = () => {
         console.log
     };
 
+    
+
     const renduBoutonsTableHistoire=() =>{
-        if ((edit) && (typeof(PeriodesSelect)==='number')){
-            return(<>
+        if ((edit) && (props.periodeSelect!=-1)){
+            return(<div className="bouton-modif-historique">
                 <button
                     onClick={gestBoutonSauv}>Save</button>
                 <button
                     onClick={gestBoutonAnnul}
                 >Cancel</button>
-            </>)
-        }else if(!edit && !(typeof(PeriodesSelect)==='number')){
-            return (<>
+            </div>)
+        }else if(!edit && props.periodeSelect!=-1){
+            return (<div className="bouton-modif-historique">
                 <button
                     onClick={gestBoutonAjout}>
                         Ajouter
@@ -128,9 +128,9 @@ const TableHistoire: React.FC<{}> = () => {
                 <button
                     onClick={gestBoutonEdit}
                     >Éditer</button>
-                </>)
+                </div>)
         }else{
-            return (<>
+            return (<div className="bouton-modif-historique">
                 <button
                     onClick={gestBoutonAjout}>
                         Ajouter
@@ -142,15 +142,36 @@ const TableHistoire: React.FC<{}> = () => {
                     onClick={gestBoutonSuppr}>
                     Supprimer
                 </button>
-            </>)
+                </div>)
         }
     };
 
+    const handleMouseDown = (e: React.MouseEvent) => {
+            const startX = e.clientX;
+            const startWidth = panelRefGauche.current ? panelRefGauche.current.offsetWidth : 0;
+    
+            const handleMouseMove = (e: MouseEvent) => {
+                const newWidth = startWidth - (startX - e.clientX);
+                if (panelRefGauche.current) {
+                    panelRefGauche.current.style.width = `${newWidth}px`;
+                }
+            };
+    
+            const handleMouseUp = () => {
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+            };
+    
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        };
+
     return (
-        <div>
+        <div className="panneau-histoire-modifiable" ref={panelRefGauche}>
+            <div className="resize-handle-left-panel" onMouseDown={handleMouseDown}></div>
             <h4>Table Histoire</h4>
             {renduBoutonsTableHistoire()}
-            <table>
+            <table className="table-histoire">
                 <thead>
                     <tr>
                         <th>Édit.</th>
@@ -166,22 +187,22 @@ const TableHistoire: React.FC<{}> = () => {
                                     type="radio"
                                     name="periode_a_editer"
                                     value={periode.id_periode}
-                                    onClick={() => defPeriodSelect(periode.id_periode)}
+                                    onClick={() => props.defPeriodeSelect(periode.id_periode)}
                                     disabled = {edit}
-                                    checked = {PeriodesSelect === periode.id_periode}
+                                    checked = {props.periodeSelect === periode.id_periode}
                                 />    
                             </td>
-                            <td>{(PeriodesSelect === periode.id_periode) && (edit) ? (<input
+                            <td>{(props.periodeSelect === periode.id_periode) && (edit) ? (<input
                                 type={'string'}
                                 value={periode.nom_periode !== null ? periode.nom_periode : ''}
                                 onChange={(e) => gestChangement(periode.id_periode, 'nom_periode', e.target.value)}
                             />):(periode.nom_periode)}</td>
-                            <td>{(PeriodesSelect === periode.id_periode) && (edit) ? (<input
+                            <td>{(props.periodeSelect === periode.id_periode) && (edit) ? (<input
                                 type={'number'}
                                 value={periode.date_debut_periode !== null ? periode.date_debut_periode : 0}
                                 onChange={(e) => gestChangement(periode.id_periode, 'date_debut_periode', e.target.value)}
                             />):(periode.date_debut_periode)}</td>
-                            <td>{(PeriodesSelect === periode.id_periode) && (edit) ? (<input
+                            <td>{(props.periodeSelect === periode.id_periode) && (edit) ? (<input
                                 type={'number'}
                                 value={periode.date_fin_periode !== null ? periode.date_fin_periode : 0}
                                 onChange={(e) => gestChangement(periode.id_periode, 'date_fin_periode', e.target.value)}
