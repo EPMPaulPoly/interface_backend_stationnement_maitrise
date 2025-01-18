@@ -1,5 +1,3 @@
-import './VisualisationInventaire.css';
-import './common.css';
 import MenuBar from '../components/MenuBar';
 import {ResizableBox} from 'react-resizable';
 import {useState,useEffect} from 'react';
@@ -22,9 +20,9 @@ const VisualisationInventaire: React.FC = () => {
         const fetchData = async () => {
             const quartiers = await serviceQuartiersAnalyse.chercheTousQuartiersAnalyse();
             defOptionsQuartiers(quartiers.data);
-            //if (quartier != 1){
-            //    const inventaire = await serviceInventaire.obtientInventaireParQuartier(quartier)
-            //}
+            if (quartier !== -1){
+                const inventaire = await serviceInventaire.obtientInventaireParQuartier(quartier)
+            }
         };
         fetchData();
     }, []);
@@ -49,15 +47,6 @@ const VisualisationInventaire: React.FC = () => {
                     </MapContainer>
                     
                 </div>
-                <ResizableBox 
-                    className="table-inventaire"
-                    width={Infinity}
-                    height={bottomPanelHeight}
-                    resizeHandles={['n']}
-                    minConstraints={[Infinity, 100]}
-                    maxConstraints={[Infinity, 800]}
-                    onResizeStop={handleResizeBottomPanel}
-                >
                     <TableInventaire
                         quartier={quartier}
                         defQuartier={defQuartierAnalyse}
@@ -65,7 +54,6 @@ const VisualisationInventaire: React.FC = () => {
                         defOptionsQuartiers={defOptionsQuartiers}
                         inventaire={inventaire}
                         defInventaire={defInventaire} />
-                </ResizableBox>
                 </div>
 
     );

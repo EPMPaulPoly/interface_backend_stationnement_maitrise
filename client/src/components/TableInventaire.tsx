@@ -1,6 +1,7 @@
-import React, {useState,} from 'react';
+import React, {useState,useRef} from 'react';
 import { inventaire_stationnement, quartiers_analyse } from '../types/DataTypes';
 import { TableInventaireProps } from '../types/InterfaceTypes';
+import { serviceInventaire } from '../services/serviceInventaire';
 
 const TableInventaire:React.FC<TableInventaireProps>=({
     quartier,
@@ -10,24 +11,53 @@ const TableInventaire:React.FC<TableInventaireProps>=({
     inventaire,
     defInventaire
 }) =>{
-    const gestSelectQuartier = (quartier_selectionne:number) =>{
-        
+    const panelRef = useRef<HTMLDivElement>(null);
+    const gestSelectQuartier = async (quartier_selectionne:number) =>{
+        defQuartier(quartier_selectionne)
+        const inventaire = await serviceInventaire.obtientInventaireParQuartier(quartier_selectionne)
+        if (inventaire.success){
+            defInventaire(inventaire.data)
+        }
     }
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+        const startY = e.clientY;
+        const startHeight = panelRef.current ? panelRef.current.offsetHeight : 0;
+
+        const handleMouseMove = (e: MouseEvent) => {
+            const newHeight = startHeight + (startY - e.clientY);
+            if (panelRef.current) {
+                panelRef.current.style.height = `${newHeight}px`;
+            }
+        };
+
+        const handleMouseUp = () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    };
+
+
     return(
         <>
-            <div className="panneau-bas-inventaire">
+            
+            <div className="panneau-bas-inventaire" ref={panelRef}>
+                <div className="resize-handle" onMouseDown={handleMouseDown}></div>
                 <div className="table-inventaire-control">
                     <label htmlFor="select-quartier">Sélection Quartier</label>
-                    <select id="select-quartier" name="select-quartier">
+                    <select id="select-quartier" name="select-quartier" onChange={e => gestSelectQuartier(Number(e.target.value))}>
                         <option value="">Selection quartier</option>
                         {optionsQuartiers.map(quartier=>(
-                            <option key={quartier.id_quartier} value={quartier.id_quartier} onChange={e => gestSelectQuartier(quartier.id_quartier)}>
+                            <option key={quartier.id_quartier} value={quartier.id_quartier} >
                                 {quartier.nom_quartier}
                             </option>
                         ))}
                     </select>
                 </div>
-                <div>
+                <div className="table-inventaire-rendu-container">
                     <table className="table-inventaire-rendu">
                         <thead>
                             <tr>
@@ -45,7 +75,8 @@ const TableInventaire:React.FC<TableInventaireProps>=({
                         <tbody>
                             {inventaire.map((item_inventaire) => (
                                 <tr key={item_inventaire.g_no_lot}>
-                                    <td>{item_inventaire.n_places_min}</td>
+                                    <td>{item_inventaire.g_no_lot}</td>
+                                    <td>{typeof(item_inventaire.n_places_min) == 'number'? item_inventaire.n_places_min.toFixed(2):item_inventaire.n_places_min}</td>
                                     <td>{item_inventaire.n_places_max}</td>
                                     <td>{item_inventaire.n_places_mesure}</td>
                                     <td>{item_inventaire.n_places_estime}</td>
@@ -59,7 +90,9 @@ const TableInventaire:React.FC<TableInventaireProps>=({
                     </table>
                 </div>
             </div>
+            
         </>
+        
     );
 };
 export default TableInventaire;

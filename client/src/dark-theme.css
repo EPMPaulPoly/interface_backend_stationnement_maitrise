@@ -16,16 +16,6 @@ body,html{
     background-color: #1f1f1f;
 }
 
-.resize-handle {
-    position:absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 10px;
-    background-color: #ccc;
-    cursor: ns-resize;
-    z-index: 10; /* Ensure handle is in front of other elements */
-  }
 .inventaire-carte-conteneur{
     flex: 1;
     position: relative;
@@ -44,13 +34,12 @@ body,html{
 }
 
 .table-inventaire-control {
-    flex-shrink: 0; /* Prevent shrinking */
-    padding: 10px;
-    background-color: #1f1f1f;
-    color: white;
-    width: 100%;
+  flex-shrink: 0; /* Prevent shrinking */
+  padding: 10px;
+  background-color: #1f1f1f;
+  color: white;
+  width:100%;
 }
-
 
 .table-inventaire-rendu-container {
   flex: 1; /* Take remaining space */
@@ -65,14 +54,10 @@ body,html{
 }
 
 .panneau-bas-inventaire {
-    display: flex;
-    flex-direction: column;
-    height: 200px; /* Initial height */
-    overflow: hidden; /* Prevent overflow */
-    width: 100%; /* Ensure it takes the full width of its container */
-    border: 1px solid #ccc; /* Add a border for visibility */
-    position: relative; /* Ensure the handle is positioned correctly */
-  }
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent overflow */
+}
 
 
 .table-inventaire-rendu th {
@@ -82,7 +67,6 @@ body,html{
   top: 0; /* Fix the header at the top */
   z-index: 1; /* Ensure the header is above the table body */
 }
-
 
 /* ---------------------------------------------------------------------------------------- */
 /* ------------------------------- HISTOIRE   ----------------------------------------------*/
@@ -183,7 +167,6 @@ body,html{
 /* ---------------------------------------------------------------------------------------- */
 
 .react-resizable-handle {
-    /*position: absolute;*/
     background-color: #fcfbfb;
     border-radius: 4px;
     width: 10px;  /* Handle width */
@@ -191,7 +174,7 @@ body,html{
     z-index: 10;  /* Ensure handle is in front of other elements */
 }
 
-/* Style the north (top) resize handle */
+/* Style the South (bottom) resize handle */
 .react-resizable-handle-n {
     top: -5px; /* Shift handle to the top */
     left: 50%; /* Center handle horizontally */
@@ -202,10 +185,6 @@ body,html{
 /* ---------------------------------------------------------------------------------------- */
 /* ------------------------------- Menu Bar -----------------------------------------*/
 /* ---------------------------------------------------------------------------------------- */
-.ville-control{
-    padding: 10px 20px;
-}
-
 
 .menu-bar {
     display: flex;
@@ -228,8 +207,8 @@ body,html{
     display: flex;
     gap: 15px;
     color:white;
+    width:100%;
     justify-content: flex-end; 
-    flex-grow: 1;
 }
 
 .menu-links a {

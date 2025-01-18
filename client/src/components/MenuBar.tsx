@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from "react-router";
+import '../App.css'
 
 const MenuBar: React.FC<{}> = () => {
     return(
@@ -11,8 +12,8 @@ const MenuBar: React.FC<{}> = () => {
             <Link className="menu-links"to="/comp-reg">Comp. Règ</Link>
             <Link className="menu-links"to="/inventaire">Inventaire</Link>
             <Link className="menu-links"to="/comp-quartiers">Comp. Quartiers</Link>
-            <div className="table-inventaire-control">
-                    <select id="select-quartier" name="select-quartier">
+            <div className="ville-control">
+                    <select className="ville-control-dd" id="select-quartier" name="select-quartier">
                         <option value="">Selection RMR</option>
                         <option value="1">Québec</option>
                         <option value="2">Montréal</option>

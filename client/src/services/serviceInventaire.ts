@@ -7,8 +7,13 @@ export const serviceInventaire = {
     obtientInventaireParQuartier: async(id_quartier:number) : Promise<ReponseInventaire> => {
         try {
             const response: AxiosResponse<ReponseInventaire> = await api.get(`/inventaire/quartier/${id_quartier}`);
+            const data = response.data.data;
+            const lots = data.map((item: any) => ({
+                ...item,
+                geojson_geometry: JSON.parse(item.geojson_geometry), // Parse the GeoJSON string
+            }));
             console.log('Recu Invetaire')
-            return {success:response.data.success,data:response.data.data};
+            return {success:response.data.success,data:lots};
         } catch (error: any) {
             if (axios.isAxiosError(error)) {
                 console.error('Axios Error:', error.response?.data);

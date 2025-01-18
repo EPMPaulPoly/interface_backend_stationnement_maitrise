@@ -15,3 +15,20 @@ export interface DbHistoriqueGeopol{
     date_debut_periode:number,
     date_fin_periode:number
 }
+
+export interface DbInventaire{
+    g_no_lot:string,
+    n_places_min:number,
+    n_places_max:number,
+    n_places_est:number,
+    n_places_mes:number,
+    methode_estime:number,
+    id_er:string,
+    id_reg_stat:string,
+    cubf:number,
+    geometry: GeoJSON.GeoJSON
+}
+
+export interface ParamsQuartier extends ParamsDictionary {
+    id: string;
+  }

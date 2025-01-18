@@ -3,8 +3,6 @@ import TableHistoire from '../components/TableHistoire';
 import TableTerritoire from '../components/TableTerritoire';
 import MenuBar from '../components/MenuBar';
 import { ResizableBox } from 'react-resizable';
-import './Histoire.css'; // Your custom styles for handles
-import './common.css';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMapEvents,GeoJSON, Polygon, useMap } from 'react-leaflet';
 
 import {LatLngExpression} from 'leaflet';

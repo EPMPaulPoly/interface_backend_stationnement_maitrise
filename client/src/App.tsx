@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router';
 import Histoire from './pages/Histoire';
 import VisualisationInvenataire from './pages/VisualisationInventaire';
+import './App.css'
 
 const app: React.FC = () => {
   return (
