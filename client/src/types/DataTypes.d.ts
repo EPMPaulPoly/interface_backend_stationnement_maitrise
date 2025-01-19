@@ -1,3 +1,5 @@
+import Geometry from 'geojson';
+
 export interface reglement_stationnement{
     id: number,
     desc: string,
@@ -56,14 +58,14 @@ export interface territoire{
     id_periode: number,
     ville: string|null,
     secteur: string|null,
-    geojson_geometry: GeoJSON.GeoJSON
+    geojson_geometry: Geometry
 }
 
 export interface territoireGeoJsonProperties {
-    id:number,
+    id_periode_geo:number,
     id_periode:number,
-    ville:string,
-    secteur:string
+    ville:string|null,
+    secteur:string|null
 }
 
 export interface ensemble_reglement_territoire{

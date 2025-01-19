@@ -4,24 +4,24 @@ import TableTerritoire from '../components/TableTerritoire';
 import MenuBar from '../components/MenuBar';
 import { ResizableBox } from 'react-resizable';
 import CarteHistorique from '../components/carteHistorique';
-import { territoire } from '../types/DataTypes';
+import { territoire ,territoireGeoJsonProperties} from '../types/DataTypes';
 import {LatLngExpression} from 'leaflet';
 import { serviceHistorique } from '../services';
 import { serviceTerritoires } from '../services';
-
 import { FeatureCollection,Geometry } from 'geojson';
+
+
 const Histoire: React.FC = () => {
     const[positionDepart,defPositionDepart] = useState<LatLngExpression>([46.85,-71]);
     const[zoomDepart,defZoomDepart] = useState<number>(10);
-    const[etatTerritoire,defTerritoire] = useState<territoire[]>([]);
+    const[etatTerritoire,defTerritoire] = useState<GeoJSON.FeatureCollection<Geometry,territoireGeoJsonProperties>>({
+        type: "FeatureCollection",
+        features: []
+    });
     const[territoireSelect,defTerritoireSelect] = useState<number>(-1);
     const[periodeSelect,defPeriodeSelect]= useState<number>(-1);
-    const [geoJsonData, setGeoJsonData] = useState<GeoJSON.FeatureCollection<GeoJSON.Geometry>>({
-            type: "FeatureCollection",
-            features: []
-        });
     
-    const testGeoJSON:FeatureCollection<Geometry> = {
+    const testGeoJSON:FeatureCollection<Geometry,territoireGeoJsonProperties> = {
             type: "FeatureCollection",
             features: [
                 {
@@ -39,44 +39,22 @@ const Histoire: React.FC = () => {
                         ]
                     },
                     properties: {
-                        id: "test",
-                        name: "Test Polygon"
+                        id_periode_geo: 0,
+                        id_periode:0,
+                        ville: "Test Polygon",
+                        secteur:"test secteur"
                     }
                 }
             ]
         };
-    //console.log('current Polygon State',geoJsonData)
-    useEffect(() => {
-        const renduTerritoire = () => {
-            console.log('rendu territoire');
-            const featureCollection = {
-                type: "FeatureCollection",
-                features: etatTerritoire.map((item) => ({
-                    type: "Feature",
-                    geometry: item.geojson_geometry,
-                    properties: {
-                        id: item.id_periode_geo,
-                        id_periode: item.id_periode,
-                        ville: item.ville,
-                        secteur: item.secteur
-                    }
-                }))
-            };
-            //featureCollection.features.forEach((feature, index) => {
-            //    console.log(``, JSON.stringify(feature, null, 2));
-            //});
-            return featureCollection;
-        };
-
-        setGeoJsonData(renduTerritoire() as GeoJSON.FeatureCollection<GeoJSON.Geometry>);
-    }, [etatTerritoire]);
+    
 
     const setGeoJsonTest = () =>{
-        setGeoJsonData(testGeoJSON)
+        defTerritoire(testGeoJSON)
     }
 
     const saveGeoJSON = ( filename = "data.geojson") => {
-            const blob = new Blob([JSON.stringify(geoJsonData)], { type: "application/json" });
+            const blob = new Blob([JSON.stringify(etatTerritoire)], { type: "application/json" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
             link.download = filename;
@@ -113,8 +91,6 @@ const Histoire: React.FC = () => {
                             setStartPosition={defPositionDepart}
                             startZoom={zoomDepart}
                             setStartZoom={defZoomDepart}
-                            geoJsondata={geoJsonData}
-                            setGeoJsonData={setGeoJsonData}
                         />                        
                     </div>
                     <TableTerritoire

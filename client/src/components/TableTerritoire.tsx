@@ -36,12 +36,14 @@ const TableTerritoire:React.FC<TableTerritoireProps> =(props) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {props.territoires.map((territoire) => (
-                        <tr key={territoire.id_periode_geo}>
-                            <td>{territoire.id_periode}</td>
-                            <td>{territoire.ville}</td>
-                            <td>{territoire.secteur}</td>
-                        </tr>
+                    {props.territoires.features.map((territoire) => (
+                        territoire.properties && (
+                            <tr key={territoire.properties.id_periode_geo}>
+                                <td>{territoire.properties.id_periode}</td>
+                                <td>{territoire.properties.ville}</td>
+                                <td>{territoire.properties.secteur}</td>
+                            </tr>
+                        )
                     ))}
                 </tbody>
             </table>

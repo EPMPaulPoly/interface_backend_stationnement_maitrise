@@ -9,7 +9,7 @@ import L from 'leaflet';
 const CarteHistorique: React.FC<CarteHistoriqueProps> = (props) => {
     
 
-    console.log('Map received  zone data:', JSON.stringify(props.geoJsondata, null, 0));
+    console.log('Map received  zone data:', JSON.stringify(props.territoires, null, 0));
     const geoJsonLayerGroupRef = useRef<L.LayerGroup | null>(null); // Refe
   
     const MapComponent = () => {
@@ -21,9 +21,9 @@ const CarteHistorique: React.FC<CarteHistoriqueProps> = (props) => {
               geoJsonLayerGroupRef.current.clearLayers(); // Clear previous vector layers
             }
     
-            if (props.geoJsondata && props.geoJsondata.features.length > 0) {
+            if (props.territoires && props.territoires.features.length > 0) {
               // Create a new GeoJSON layer from props.geoJsondata
-              const geoJsonLayer = L.geoJSON(props.geoJsondata, {
+              const geoJsonLayer = L.geoJSON(props.territoires, {
                 style: {
                   color: 'blue', // Border color
                   weight: 2,     // Border thickness
@@ -32,9 +32,9 @@ const CarteHistorique: React.FC<CarteHistoriqueProps> = (props) => {
                 },
                 onEachFeature: (feature: any, layer: any) => {
                     if (feature.properties) {
-                      const { id, name, secteur, ville } = feature.properties; // Destructure properties
+                      const { id_periode_geo, secteur, ville } = feature.properties; // Destructure properties
                       const formattedPopupContent = `
-                        <strong>Feature ID:</strong> ${id} <br/>
+                        <strong>Feature ID:</strong> ${id_periode_geo} <br/>
                         <strong>Name:</strong> ${ville} <br/>
                         <strong>Secteur:</strong> ${secteur} <br/>
                       `;
@@ -54,7 +54,7 @@ const CarteHistorique: React.FC<CarteHistoriqueProps> = (props) => {
               map.fitBounds(bounds);
             }
           }
-        }, [props.geoJsondata, map]); // Dependency on props.geoJsondata and map
+        }, [props.territoires, map]); // Dependency on props.geoJsondata and map
     
         return null; // No need to render anything for the map component itself
       };
@@ -101,18 +101,15 @@ const CarteHistorique: React.FC<CarteHistoriqueProps> = (props) => {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
-            {props.geoJsondata && (<>
-                {props.geoJsondata.features?.map((feature, index) => {
+            {props.territoires && (<>
+                {props.territoires.features?.map((feature, index) => {
                     console.log(`Feature ${index + 1}:`, feature);
                 return null; // We return null because we're only logging, not rendering anything here.
                 })}
                 <MapComponent/>
                 </>
             )}
-            
-            
         </MapContainer>
-        
         </>
     );
 };
