@@ -6,7 +6,15 @@ export interface DbQuartierAnalyse{
     nom_quartier:string,
     superf_quartier:number,
     peri_quartier:number,
-    geometry: GeoJSON.GeoJSON;  // Geometry(Geometry,32187)
+    geometry: GeoJSON.GeoJSON;  // Geometry(Geometry,4326)
+}
+
+export interface DbTerritoire{
+    id_periode_geo:number,
+    ville:string,
+    secteur:number,
+    id_periode:number,
+    geometry: GeoJSON.GeoJSON;  // Geometry(Geometry,4326)
 }
 
 export interface DbHistoriqueGeopol{
@@ -31,4 +39,8 @@ export interface DbInventaire{
 
 export interface ParamsQuartier extends ParamsDictionary {
     id: string;
-  }
+}
+
+export interface ParamsPeriode extends ParamsDictionary {
+    id: string;
+}

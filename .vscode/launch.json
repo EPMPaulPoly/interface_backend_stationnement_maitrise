@@ -28,6 +28,13 @@
             ],
             "outFiles": ["${workspaceFolder}/serveur/dist/**/*.js"],
             "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Attach to 3000",
+            "type": "node",
+            "request": "attach",
+            "port": 3000
+
         }
     ],
     "compounds": [

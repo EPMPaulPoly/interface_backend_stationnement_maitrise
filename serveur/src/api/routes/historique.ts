@@ -12,7 +12,7 @@ export const creationRouteurHistorique = (pool: Pool): Router => {
   // Get all lines
   // Get all lines
   const obtiensTousPeriodes: RequestHandler = async (_req, res): Promise<void> => {
-    console.log('entering get all lines query')
+    console.log('Serveur - Obtention toutes periodes')
     try {
       const { geometry } = _req.body as GeometryBody;
       const client = await pool.connect();

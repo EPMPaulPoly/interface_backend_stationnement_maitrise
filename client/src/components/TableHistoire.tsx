@@ -2,7 +2,7 @@ import React, { useState, useEffect,useRef } from 'react';
 import { periode } from '../types/DataTypes';
 import { serviceHistorique } from '../services';
 import { TableHistoireProps } from '../types/InterfaceTypes';
-
+import { serviceTerritoires } from '../services';
 
 
 
@@ -70,8 +70,10 @@ const TableHistoire: React.FC<TableHistoireProps> = (props:TableHistoireProps) =
         defAnciennesPeriodes(etat_periodes)
     }
 
-    const gestSelectRadio = (id_periode: number) => {
-
+    const gestSelectRadio = async(id_periode: number) => {
+        props.defPeriodeSelect(id_periode)
+        const territoire = await serviceTerritoires.chercheTerritoiresParPeriode(id_periode)
+        props.defTerritoires(territoire.data)
         console.log('not implemented')
     }    
 
@@ -187,7 +189,7 @@ const TableHistoire: React.FC<TableHistoireProps> = (props:TableHistoireProps) =
                                     type="radio"
                                     name="periode_a_editer"
                                     value={periode.id_periode}
-                                    onClick={() => props.defPeriodeSelect(periode.id_periode)}
+                                    onClick={()=>gestSelectRadio(periode.id_periode)}
                                     disabled = {edit}
                                     checked = {props.periodeSelect === periode.id_periode}
                                 />    

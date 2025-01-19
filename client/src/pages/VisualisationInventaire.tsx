@@ -11,7 +11,6 @@ import {serviceInventaire} from '../services/serviceInventaire';
 const position: LatLngExpression = [45.5017, -73.5673]; // Montreal coordinates
 
 const VisualisationInventaire: React.FC = () => {
-    const [bottomPanelHeight, setBottomPanelHeight] = useState(200); // Bottom panel height
     const [quartier,defQuartierAnalyse] = useState<number>(-1);
     const [optionsQuartier,defOptionsQuartiers] = useState<quartiers_analyse[]>([]);
     const [inventaire,defInventaire] = useState<inventaire_stationnement[]>([]);
@@ -26,10 +25,6 @@ const VisualisationInventaire: React.FC = () => {
         };
         fetchData();
     }, []);
-
-    const handleResizeBottomPanel = (e: any, data: any) => {
-        setBottomPanelHeight(data.size.height); // Dynamically set height of bottom panel
-    };
 
     return (
         <div className="page-inventaire">

@@ -1,8 +1,7 @@
 import React,{useState,useRef} from 'react';
 import { territoire } from '../types/DataTypes';
-
-const TableTerritoire:React.FC<{}> =() => {
-    const[etatTerritoire,defTerritoire] = useState<territoire[]>([]);
+import { TableTerritoireProps } from '../types/InterfaceTypes';
+const TableTerritoire:React.FC<TableTerritoireProps> =(props) => {
     const panelRef = useRef<HTMLDivElement>(null);
     const handleMouseDown = (e: React.MouseEvent) => {
             const startY = e.clientY;
@@ -37,8 +36,8 @@ const TableTerritoire:React.FC<{}> =() => {
                     </tr>
                 </thead>
                 <tbody>
-                    {etatTerritoire.map((territoire) => (
-                        <tr key={territoire.id}>
+                    {props.territoires.map((territoire) => (
+                        <tr key={territoire.id_periode_geo}>
                             <td>{territoire.id_periode}</td>
                             <td>{territoire.ville}</td>
                             <td>{territoire.secteur}</td>

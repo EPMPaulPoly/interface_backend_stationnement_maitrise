@@ -1,7 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 
 const api = axios.create({
-  baseURL: `${process.env.REACT_APP_API_URL}/api` || 'http://localhost:5000/api',
+  baseURL:  'http://localhost:5000/api', //`${process.env.REACT_APP_API_URL}/api` ||
   headers: {
     'Content-Type': 'application/json'
   }

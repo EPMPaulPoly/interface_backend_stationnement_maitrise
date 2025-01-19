@@ -52,10 +52,18 @@ export interface periode{
 }
 
 export interface territoire{
-    id: number,
+    id_periode_geo: number,
     id_periode: number,
     ville: string|null,
     secteur: string|null,
+    geojson_geometry: GeoJSON.GeoJSON
+}
+
+export interface territoireGeoJsonProperties {
+    id:number,
+    id_periode:number,
+    ville:string,
+    secteur:string
 }
 
 export interface ensemble_reglement_territoire{
@@ -92,7 +100,8 @@ export interface inventaire_stationnement{
     methode_estime:number,
     id_er: string,
     id_reg_stat:string,
-    cubf:string
+    cubf:string,
+    geojson_geometry:GeoJSON.GeoJSON
 }
 
 export interface quartiers_analyse{

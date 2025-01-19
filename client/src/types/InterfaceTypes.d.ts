@@ -49,9 +49,18 @@ export interface CarteHistoriqueProps{
     setStartPosition:React.Dispatch<SetStateAction<LatLngExpression>>;
     startZoom: number;
     setStartZoom: React.Dispatch<SetStateAction<number>>;
+    geoJsondata:GeoJSON.FeatureCollection<GeoJSON.Geometry>;
+    setGeoJsonData:React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry>>>;
 }
 
 export interface TableHistoireProps{
     periodeSelect:number,
     defPeriodeSelect:React.Dispatch<SetStateAction<number>>;
+    territoires:territoire[];
+    defTerritoires: React.Dispatch<SetStateAction<territoire[]>>;
+}
+
+export interface TableTerritoireProps{
+    territoires:territoire[];
+    defTerritoire:React.Dispatch<SetStateAction<territoire[]>>;
 }
