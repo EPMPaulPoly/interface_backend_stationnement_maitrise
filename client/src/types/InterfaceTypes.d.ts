@@ -67,5 +67,7 @@ export interface TableEnteteProps{
     entetes:entete_reglement_stationnement[],
     defEntetes:React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
     enteteSelect:number,
-    defEnteteSelect:React.Dispatch<SetStateAction<number>>
+    defEnteteSelect:React.Dispatch<SetStateAction<number>>,
+    charge:boolean,
+    defCharge:React.Dispatch<SetStateAction<boolean>>
 }

@@ -1,8 +1,29 @@
-import React,{useState,useRef} from 'react';
+import React,{useState,useRef,useEffect} from 'react';
 import { entete_reglement_stationnement } from '../types/DataTypes';
 import { TableEnteteProps } from '../types/InterfaceTypes';
+import { serviceReglements } from "../services";
 
 const TableEnteteReglements:React.FC<TableEnteteProps> =(props) => {
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const resReglements = await serviceReglements.chercheTousEntetesReglements();
+                console.log('Recu les périodes', resReglements);
+                props.defEntetes(resReglements.data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+                props.defCharge(false);
+            }
+        };
+
+        fetchData();
+    }, []); // Empty dependency array means this runs once when the component mounts
+    
+    if (props.charge) {
+        return <div>Chargement...</div>; // You can show a loading state while waiting for the data
+    }  
     const onLineSelect = (id_reg:number)=>{
         props.defEnteteSelect(id_reg)
     }
