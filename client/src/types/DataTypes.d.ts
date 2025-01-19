@@ -1,15 +1,14 @@
 import Geometry from 'geojson';
 
-export interface reglement_stationnement{
-    id: number,
-    desc: string,
-    annee_debut:number |null,
-    annee_fin : number |null,
+export interface entete_reglement_stationnement{
+    id_reg_stat: number,
+    description: string,
+    annee_debut_reg:number |null,
+    annee_fin_reg: number |null,
     texte_loi: string |null,
     article_loi:string|null,
-    para_loi: string |null,
-    ville_loi:string |null,
-    definition: ligne_description_stationnement[]
+    paragraphe_loi: string |null,
+    ville_loi:string |null
 }
 
 export interface ligne_description_stationnement{

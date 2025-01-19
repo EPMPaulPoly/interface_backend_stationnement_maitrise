@@ -6,6 +6,33 @@ body,html{
     padding: 0;
 }
 /* ---------------------------------------------------------------------------------------- */
+/* ------------------------------- Entete Reglements----------------------------------------*/
+/* ---------------------------------------------------------------------------------------- */
+.page-creation-reglements {
+    display: flex;
+    flex-direction: column; /* Stack vertically if necessary */
+    height: 100vh; /* Full height of the page */
+    overflow: hidden; /* Prevent overflow (no scrollbars) */
+    background-color: #1f1f1f;
+}
+
+.panneau-table-entete{
+    display: flex;
+    flex-direction: column; /* Stack vertically if necessary */
+    height: 100vh; /* Full height of the page */
+    overflow-x: auto; /* Prevent overflow (no scrollbars) */
+    background-color: #1f1f1f;
+}
+
+.table-entete-reglements th {
+    background-color: #f2f2f2;
+    color: black;
+    position: sticky;
+    top: 0; /* Fix the header at the top */
+    z-index: 1; /* Ensure the header is above the table body */
+  }
+
+/* ---------------------------------------------------------------------------------------- */
 /* ------------------------------- INVENTAIRE ----------------------------------------------*/
 /* ---------------------------------------------------------------------------------------- */
 .page-inventaire {

@@ -37,6 +37,17 @@ export interface DbInventaire{
     geometry: GeoJSON.GeoJSON
 }
 
+export interface DbEnteteReglement{
+    id_reg_stat:number,
+    description:string,
+    annee_debut_reg: number,
+    annee_fin_reg:number,
+    texte_loi:string,
+    article_loi:string,
+    paragraphe_loi:string,
+    ville:string
+}
+
 export interface ParamsQuartier extends ParamsDictionary {
     id: string;
 }

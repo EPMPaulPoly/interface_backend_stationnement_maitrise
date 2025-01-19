@@ -1,6 +1,6 @@
 import {LatLng, LatLngExpression} from "leaflet";
 import { SetStateAction } from "react";
-import { inventaire_stationnement,quartiers_analyse, territoire } from "./DataTypes";
+import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement } from "./DataTypes";
 
 export interface study_area{
     name: string;
@@ -61,4 +61,11 @@ export interface TableHistoireProps{
 export interface TableTerritoireProps{
     territoires:GeoJSON.FeatureCollection<GeoJSON.Geometry>;
     defTerritoire:React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,territoireGeoJsonProperties>>>;
+}
+
+export interface TableEnteteProps{
+    entetes:entete_reglement_stationnement[],
+    defEntetes:React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
+    enteteSelect:number,
+    defEnteteSelect:React.Dispatch<SetStateAction<number>>
 }
