@@ -1,6 +1,6 @@
 import {LatLng, LatLngExpression} from "leaflet";
 import { SetStateAction } from "react";
-import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement } from "./DataTypes";
+import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet } from "./DataTypes";
 
 export interface study_area{
     name: string;
@@ -66,8 +66,15 @@ export interface TableTerritoireProps{
 export interface TableEnteteProps{
     entetes:entete_reglement_stationnement[],
     defEntetes:React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
-    enteteSelect:number,
-    defEnteteSelect:React.Dispatch<SetStateAction<number>>,
     charge:boolean,
     defCharge:React.Dispatch<SetStateAction<boolean>>
+    regSelect:reglement_complet,
+    defRegSelect:React.Dispatch<SetStateAction<reglement_complet>>
+}
+
+export interface TableVisModRegProps{
+    charge:boolean,
+    defCharge:React.Dispatch<SetStateAction<boolean>>
+    regSelect:reglement_complet,
+    defRegSelect:React.Dispatch<SetStateAction<reglement_complet>>
 }

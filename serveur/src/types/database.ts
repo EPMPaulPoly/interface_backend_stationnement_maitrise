@@ -48,6 +48,24 @@ export interface DbEnteteReglement{
     ville:string
 }
 
+export interface DbDefReglement{
+    id_reg_stat_emp:number,
+    id_reg_stat:number,
+    ss_ensemble:number,
+    seuil:number,
+    oper:number,
+    cases_fix_min:number,
+    cases_fix_max:number,
+    pente_min:number,
+    pente_max:number,
+    unite:number
+}
+
+export interface DbReglementComplet{
+    entete: DbEnteteReglement,
+    definition:DbDefReglement[]
+}
+
 export interface ParamsQuartier extends ParamsDictionary {
     id: string;
 }

@@ -8,7 +8,25 @@ export interface entete_reglement_stationnement{
     texte_loi: string |null,
     article_loi:string|null,
     paragraphe_loi: string |null,
-    ville_loi:string |null
+    ville:string |null
+}
+
+export interface definition_reglement_stationnement{
+    id_reg_stat_emp: number,
+    id_reg_stat:number,
+    ss_ensemble:number,
+    seuil:number,
+    oper:number,
+    cases_fix_min:number,
+    cases_fix_max:number,
+    pente_min:number,
+    pente_max:number,
+    unite:number
+}
+
+export interface reglement_complet{
+    entete: entete_reglement_stationnement,
+    definition:definition_reglement_stationnement[]
 }
 
 export interface ligne_description_stationnement{

@@ -78,10 +78,9 @@ const Histoire: React.FC = () => {
 
                 {/* Right Panel with map and table */}
                 <div className="histoire-barre-droite">
-                <button onClick={() => saveGeoJSON()}>Save GeoJSON</button>
-                <button onClick={() => setGeoJsonTest()}> Set Test Polygon</button>
+                    <button onClick={() => saveGeoJSON()}>Save GeoJSON</button>
+                    <button onClick={() => setGeoJsonTest()}> Set Test Polygon</button>
                     <div className="histoire-carte-container">
-                        
                         <CarteHistorique 
                             territoires={etatTerritoire}
                             defTerritoires={defTerritoire}

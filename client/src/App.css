@@ -6,7 +6,7 @@ body,html{
     padding: 0;
 }
 /* ---------------------------------------------------------------------------------------- */
-/* ------------------------------- Entete Reglements----------------------------------------*/
+/* -------------------------------------- Reglements----------------------------------------*/
 /* ---------------------------------------------------------------------------------------- */
 .page-creation-reglements {
     display: flex;
@@ -15,22 +15,99 @@ body,html{
     overflow: hidden; /* Prevent overflow (no scrollbars) */
     background-color: #1f1f1f;
 }
+.conteneur-table-liste-entete{
+    flex: 1;
+    position: relative;
+    overflow-y: auto; /* Prevent overflow */
+    display: flex;
+    flex-direction: column;
+}
+.table-entete-reglements{
+    width: 100%;
+    border-collapse: collapse;
+}
+
+
+.panneau-details-reglements {
+    display:flex;
+    flex-direction: column;
+    width: 100%; /* Adjust width as needed */
+    height: 200px; /* Adjust height as needed */
+    border: 1px solid #ccc; /* Add border for visibility */
+    background-color: #1f1f1f;
+    position:relative;
+    overflow:hidden;
+}
+.panneau-table-entete h4 {
+    position: sticky;
+    top: 0;
+    background-color: #1f1f1f; /* Match background color */
+    padding: 10px; /* Add padding for spacing */
+    z-index: 10; /* Ensure it stays above the table */
+    border-bottom: 1px solid #ccc; /* Add a bottom border for separation */
+}
+
+.table-entete-reglements-container {
+    flex: 1; /* Allow the container to take the remaining space */
+    overflow-y: auto; /* Enable vertical scrolling */
+    width: 100%; /* Ensure it takes the full width of its container */
+}
+
+.panneau-table-modif-reglements {
+    display: flex;
+    flex-direction: column;
+    height: 200px; /* Initial height */
+    overflow: hidden; /* Prevent overflow */
+    width: 100%; /* Ensure it takes the full width of its container */
+    border: 1px solid #ccc; /* Add a border for visibility */
+    position: relative; /* Ensure the handle is positioned correctly */
+}
 
 .panneau-table-entete{
     display: flex;
-    flex-direction: column; /* Stack vertically if necessary */
-    height: 100vh; /* Full height of the page */
-    overflow-x: auto; /* Prevent overflow (no scrollbars) */
-    background-color: #1f1f1f;
+    flex-direction: column;
+    width: 100%; /* Adjust width as needed */
+    height: 100%; /* Full height of the container */
+    overflow: hidden; /* Prevent overflow */
+    position: relative; /* Ensure the handle is positioned correctly */
 }
+.table-entete-reglements{
+    flex:1;
+    overflow-y:auto;
+    width:100%;
+}
+.table-entete-reglements thead {
+    position: sticky;
+    top: 0px; /* Adjust based on the height of the h4 element */
+    z-index: 5; /* Ensure it stays above the table body */
+    background-color: #f2f2f2; /* Match background color */
+}
+
 
 .table-entete-reglements th {
     background-color: #f2f2f2;
     color: black;
+    text-align: left;
+    border-bottom: 1px solid #ccc; /* Add a bottom border for separation */
+}
+
+.table-modif-reglements-entete th {
+    background-color: #f2f2f2;
+    color: black;
     position: sticky;
+    text-align:left;
     top: 0; /* Fix the header at the top */
     z-index: 1; /* Ensure the header is above the table body */
-  }
+}
+.table-modif-reglements-corps th {
+    background-color: #f2f2f2;
+    color: black;
+    position: sticky;
+    text-align:left;
+    top: 0; /* Fix the header at the top */
+    z-index: 1; /* Ensure the header is above the table body */
+}
+
 
 /* ---------------------------------------------------------------------------------------- */
 /* ------------------------------- INVENTAIRE ----------------------------------------------*/
@@ -61,16 +138,6 @@ body,html{
     width:100%;
 }
 
-.table-inventaire {
-    display: flex;
-    justify-content: flex-start;
-    align-content: flex-start;
-    flex-shrink: 0; /* Prevent shrinking */
-    overflow-y: auto; /* Allow scrolling if necessary within this section */
-    background-color: #1f1f1f;
-    color:white;
-    width:100%;
-}
 
 .table-inventaire-control {
     flex-shrink: 0; /* Prevent shrinking */
