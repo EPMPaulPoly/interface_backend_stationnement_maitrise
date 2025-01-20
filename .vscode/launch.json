@@ -6,9 +6,9 @@
             "type": "chrome",
             "request": "launch",
             "url": "http://localhost:3000",
-            "webRoot": "${workspaceFolder}/frontend",
+            "webRoot": "${workspaceFolder}/client",
             "sourceMapPathOverrides": {
-                "/app/*": "${workspaceFolder}/frontend/*"
+                "/app/*": "${workspaceFolder}/client/*"
             }
         },
         {
@@ -17,17 +17,24 @@
             "request": "attach",
             "port": 9229,
             "address": "localhost",
-            "localRoot": "${workspaceFolder}/backend",
+            "localRoot": "${workspaceFolder}/serveur",
             "remoteRoot": "/app",
             "restart": true,
             "sourceMaps": true,
             "skipFiles": ["<node_internals>/**"],
             "resolveSourceMapLocations": [
-                "${workspaceFolder}/backend/**",
+                "${workspaceFolder}/serveur/**",
                 "!**/node_modules/**"
             ],
-            "outFiles": ["${workspaceFolder}/backend/dist/**/*.js"],
+            "outFiles": ["${workspaceFolder}/serveur/dist/**/*.js"],
             "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Attach to 3000",
+            "type": "node",
+            "request": "attach",
+            "port": 3000
+
         }
     ],
     "compounds": [

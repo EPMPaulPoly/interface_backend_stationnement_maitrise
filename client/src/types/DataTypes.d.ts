@@ -1,13 +1,32 @@
-export interface reglement_stationnement{
-    id: number,
-    desc: string,
-    annee_debut:number |null,
-    annee_fin : number |null,
+import Geometry from 'geojson';
+
+export interface entete_reglement_stationnement{
+    id_reg_stat: number,
+    description: string,
+    annee_debut_reg:number |null,
+    annee_fin_reg: number |null,
     texte_loi: string |null,
     article_loi:string|null,
-    para_loi: string |null,
-    ville_loi:string |null,
-    definition: ligne_description_stationnement[]
+    paragraphe_loi: string |null,
+    ville:string |null
+}
+
+export interface definition_reglement_stationnement{
+    id_reg_stat_emp: number,
+    id_reg_stat:number,
+    ss_ensemble:number,
+    seuil:number,
+    oper:number,
+    cases_fix_min:number,
+    cases_fix_max:number,
+    pente_min:number,
+    pente_max:number,
+    unite:number
+}
+
+export interface reglement_complet{
+    entete: entete_reglement_stationnement,
+    definition:definition_reglement_stationnement[]
 }
 
 export interface ligne_description_stationnement{
@@ -45,18 +64,25 @@ export interface association_util_reglement{
 }
 
 export interface periode{
-    id: number,
-    description: string,
-    annee_debut: number,
-    annee_fin: number,
+    id_periode: number,
+    nom_periode: string,
+    date_debut_periode: number,
+    date_fin_periode: number,
 }
 
 export interface territoire{
-    id: number,
+    id_periode_geo: number,
     id_periode: number,
     ville: string|null,
     secteur: string|null,
+    geojson_geometry: Geometry
+}
 
+export interface territoireGeoJsonProperties {
+    id_periode_geo:number,
+    id_periode:number,
+    ville:string|null,
+    secteur:string|null
 }
 
 export interface ensemble_reglement_territoire{
@@ -82,4 +108,23 @@ export interface entree_role_foncier{
     valeur_immeuble:number|null,
     valeur_totale:number|null,
     addresse:string|null
+}
+
+export interface inventaire_stationnement{
+    g_no_lot:string,
+    n_places_min:number,
+    n_places_max:number,
+    n_places_mesure:number,
+    n_places_estime:number,
+    methode_estime:number,
+    id_er: string,
+    id_reg_stat:string,
+    cubf:string,
+    geojson_geometry:GeoJSON.GeoJSON
+}
+
+export interface quartiers_analyse{
+    id_quartier:number,
+    nom_quartier:string,
+    
 }

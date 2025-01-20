@@ -1,3 +1,7 @@
 /client/node_modules
 .env
 /serveur/node_modules
+/client/package-lock.json
+/client/.npm-cache
+/serveur/dist
+test.geojson 
