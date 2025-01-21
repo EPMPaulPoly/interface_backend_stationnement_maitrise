@@ -42,14 +42,18 @@ export interface ligne_description_stationnement{
     unite: number
 }
 
-export interface ensembles_reglements_stationnement{
-    id: number,
-    annee_debut: number,
-    annee_fin: number|null,
-    description: string,
+export interface ensemble_reglements_stationnement{
+    entete: entete_ensembles_reglement_stationnement,
     table_util_sol: utilisation_sol[],
     assoc_util_reg: association_util_reglement[]
     table_etendue: association_util_reglement[]
+}
+
+export interface entete_ensembles_reglement_stationnement{
+    id_er: number,
+    date_debut_er: number,
+    date_fin_er: number|null,
+    description_er: string,
 }
 
 export interface utilisation_sol{
@@ -58,9 +62,9 @@ export interface utilisation_sol{
 }
 
 export interface association_util_reglement{
-    id:number,
+    id_assoc_er_reg:number,
     cubf:number,
-    reglement:number
+    id_reg_stat:number
 }
 
 export interface periode{
@@ -126,5 +130,4 @@ export interface inventaire_stationnement{
 export interface quartiers_analyse{
     id_quartier:number,
     nom_quartier:string,
-    
 }

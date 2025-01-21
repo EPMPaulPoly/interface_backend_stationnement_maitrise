@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import { entete_reglement_stationnement } from '../types/DataTypes';
 import { TableVisModRegProps } from '../types/InterfaceTypes';
 
 const TableVisModReglement: React.FC<TableVisModRegProps> = (props) => {
