@@ -61,9 +61,27 @@ export interface DbDefReglement{
     unite:number
 }
 
+export interface DbEnteteEnsembleReglement{
+    id_er:number,
+    date_debut_er:number,
+    date_fin_er:number,
+    description_er:string,
+}
+
 export interface DbReglementComplet{
     entete: DbEnteteReglement,
     definition:DbDefReglement[]
+}
+
+export interface DbUtilisationSol{
+    cubf:number,
+    description:string
+}
+
+export interface DbAssociationReglementUtilSol{
+    id_assoc_er_reg:number,
+    cubf:number,
+    id_reg_stat:number
 }
 
 export interface ParamsQuartier extends ParamsDictionary {

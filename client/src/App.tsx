@@ -4,6 +4,7 @@ import Histoire from './pages/Histoire';
 import VisualisationInvenataire from './pages/VisualisationInventaire';
 import './App.css'
 import Reglements from './pages/Reglements';
+import EnsemblesReglements from './pages/EnsemblesReglements';
 
 const app: React.FC = () => {
   return (
@@ -13,6 +14,7 @@ const app: React.FC = () => {
           <Route path="/historique" element={<Histoire />} />
           <Route path="/inventaire" element={<VisualisationInvenataire/>}/>
           <Route path="/reg" element={<Reglements/>}/>
+          <Route path="/ens-reg" element={<EnsemblesReglements/>}/>
         </Routes>
       </Router>
   );

@@ -1,6 +1,6 @@
 import {LatLng, LatLngExpression} from "leaflet";
 import { SetStateAction } from "react";
-import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet } from "./DataTypes";
+import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement } from "./DataTypes";
 
 export interface study_area{
     name: string;
@@ -77,4 +77,18 @@ export interface TableVisModRegProps{
     defCharge:React.Dispatch<SetStateAction<boolean>>
     regSelect:reglement_complet,
     defRegSelect:React.Dispatch<SetStateAction<reglement_complet>>
+}
+
+export interface TableEnteteEnsembleProps{
+    entetesEnsembles:entete_ensemble_reglement_stationnement[],
+    defEntetesEnsembles:React.Dispatch<SetStateAction<entete_ensembles_reglement_stationnement[]>>
+    ensembleReglement: ensemble_reglements_stationnement,
+    defEnsembleReglement: React.Dispatch<SetStateAction<ensemble_reglements_stationnement>>
+}
+
+export interface TableVisModEnsRegProps{
+    charge:boolean,
+    defCharge:React.Dispatch<SetStateAction<boolean>>
+    ensembleReglement: ensemble_reglements_stationnement,
+    defEnsembleReglement: React.Dispatch<SetStateAction<ensemble_reglements_stationnement>>
 }
