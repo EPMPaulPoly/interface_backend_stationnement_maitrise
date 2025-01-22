@@ -7,13 +7,22 @@ import TableInventaire from '../components/TableInventaire';
 import { inventaire_stationnement, quartiers_analyse } from '../types/DataTypes';
 import { serviceQuartiersAnalyse, } from '../services/serviceQuartiersAnalyse';
 import {serviceInventaire} from '../services/serviceInventaire';
+import { FeatureCollection,Geometry } from 'geojson';
+import { inventaireGeoJSONProps } from '../types/DataTypes';
+import CarteInventaire from '../components/carteInventaire';
 
 const position: LatLngExpression = [45.5017, -73.5673]; // Montreal coordinates
 
 const VisualisationInventaire: React.FC = () => {
+    const[positionDepart,defPositionDepart] = useState<LatLngExpression>([46.85,-71]);
+    const[zoomDepart,defZoomDepart] = useState<number>(10);
     const [quartier,defQuartierAnalyse] = useState<number>(-1);
     const [optionsQuartier,defOptionsQuartiers] = useState<quartiers_analyse[]>([]);
-    const [inventaire,defInventaire] = useState<inventaire_stationnement[]>([]);
+    const [inventaire,defInventaire] = useState<FeatureCollection<Geometry,inventaireGeoJSONProps>>({
+        type: "FeatureCollection",
+        features: []
+    });
+    const [itemSelect,defItemSelect] = useState<number>(-1);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -30,16 +39,16 @@ const VisualisationInventaire: React.FC = () => {
         <div className="page-inventaire">
             <MenuBar/>
                 <div className="inventaire-carte-conteneur">
-                    <MapContainer
-                        center={position}
-                        zoom={13}
-                        style={{ height: '100%', width: '100%' }}
-                    >
-                        <TileLayer
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        />
-                    </MapContainer>
+                    <CarteInventaire
+                        startPosition={positionDepart}
+                        setStartPosition={defPositionDepart}
+                        startZoom={zoomDepart}
+                        setStartZoom={defZoomDepart}
+                        inventaire={inventaire}
+                        defInventaire={defInventaire}
+                        itemSelect={itemSelect}
+                        defItemSelect={defItemSelect}
+                    />
                     
                 </div>
                     <TableInventaire

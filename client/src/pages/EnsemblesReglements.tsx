@@ -2,7 +2,7 @@ import MenuBar from "../components/MenuBar";
 import TableListeEnsReg from "../components/TableListeEnsReg";
 import TableVisModEnsReg from "../components/TableVisEnsReg";
 import { useState, useEffect, useRef } from "react";
-import {  association_util_reglement, ensemble_reglements_stationnement } from "../types/DataTypes";
+import {  association_util_reglement, ensemble_reglements_stationnement, entete_reglement_stationnement } from "../types/DataTypes";
 import { entete_ensembles_reglement_stationnement } from "../types/DataTypes";
 
 const EnsemblesReglements: React.FC = () => {
@@ -28,7 +28,7 @@ const EnsemblesReglements: React.FC = () => {
     const [enteteEnsembles, defEnteteEnsembles] = useState<entete_ensembles_reglement_stationnement[]>([]);
     const [charge, defCharg] = useState<boolean>(true);
     const [ensembleReglementComplet, defEnsembleReglementComplet] = useState<ensemble_reglements_stationnement>(reglementCompletVide);
-
+    const [reglementsPertinents,defRegPert] = useState<entete_reglement_stationnement[]>([]);
 
 
     return (
@@ -40,6 +40,8 @@ const EnsemblesReglements: React.FC = () => {
                         defEntetesEnsembles={defEnteteEnsembles}
                         ensembleReglement={ensembleReglementComplet}
                         defEnsembleReglement={defEnsembleReglementComplet}
+                        entetesReglements={reglementsPertinents}
+                        defEntetesReglements={defRegPert}
                     />
 
 
@@ -48,6 +50,8 @@ const EnsemblesReglements: React.FC = () => {
                     defCharge={defCharg}
                     ensembleReglement={ensembleReglementComplet}
                     defEnsembleReglement={defEnsembleReglementComplet}
+                    entetesReglements={reglementsPertinents}
+                    defEntetesReglements={defRegPert}
                 />}
             </div>
         </div>
