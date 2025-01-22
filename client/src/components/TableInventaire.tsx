@@ -73,19 +73,20 @@ const TableInventaire:React.FC<TableInventaireProps>=({
                             </tr>
                         </thead>
                         <tbody>
-                            {inventaire.map((item_inventaire) => (
-                                <tr key={item_inventaire.g_no_lot}>
-                                    <td>{item_inventaire.g_no_lot}</td>
-                                    <td>{typeof(item_inventaire.n_places_min) == 'number'? item_inventaire.n_places_min.toFixed(2):item_inventaire.n_places_min}</td>
-                                    <td>{item_inventaire.n_places_max}</td>
-                                    <td>{item_inventaire.n_places_mesure}</td>
-                                    <td>{item_inventaire.n_places_estime}</td>
-                                    <td>{item_inventaire.methode_estime}</td>
-                                    <td>{item_inventaire.id_er}</td>
-                                    <td>{item_inventaire.id_reg_stat}</td>
-                                    <td>{item_inventaire.cubf}</td>
+                            {inventaire.features.map((item_inventaire) => (
+                                item_inventaire.properties && (
+                                <tr key={item_inventaire.properties.g_no_lot}>
+                                    <td>{item_inventaire.properties.g_no_lot}</td>
+                                    <td>{typeof(item_inventaire.properties.n_places_min) == 'number'? item_inventaire.properties.n_places_min.toFixed(2):item_inventaire.properties.n_places_min}</td>
+                                    <td>{item_inventaire.properties.n_places_max}</td>
+                                    <td>{item_inventaire.properties.n_places_mesure}</td>
+                                    <td>{item_inventaire.properties.n_places_estime}</td>
+                                    <td>{item_inventaire.properties.methode_estime}</td>
+                                    <td>{item_inventaire.properties.id_er}</td>
+                                    <td>{item_inventaire.properties.id_reg_stat}</td>
+                                    <td>{item_inventaire.properties.cubf}</td>
                                 </tr>
-                            ))}
+                            )))}
                         </tbody>
                     </table>
                 </div>

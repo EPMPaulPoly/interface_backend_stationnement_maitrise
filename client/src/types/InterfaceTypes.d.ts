@@ -1,6 +1,7 @@
 import {LatLng, LatLngExpression} from "leaflet";
 import { SetStateAction } from "react";
-import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement } from "./DataTypes";
+import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps } from "./DataTypes";
+import { FeatureCollection } from "geojson";
 
 export interface study_area{
     name: string;
@@ -36,8 +37,8 @@ export interface TableInventaireProps{
     defQuartier:  React.Dispatch<SetStateAction<number>>;
     optionsQuartiers: quartiers_analyse[];
     defOptionsQuartiers: React.Dispatch<SetStateAction<quartiers_analyse[]>>;
-    inventaire: inventaire_stationnement[];
-    defInventaire: React.Dispatch<SetStateAction<inventaire_stationnement[]>>
+    inventaire: GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>;
+    defInventaire: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>>>
 }
 
 export interface CarteHistoriqueProps{
@@ -45,6 +46,17 @@ export interface CarteHistoriqueProps{
     defTerritoires: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,territoireGeoJsonProperties>>>;
     territoireSelect: number;
     defTerritoireSelect: React.Dispatch<SetStateAction<number>>;
+    startPosition: LatLngExpression;
+    setStartPosition:React.Dispatch<SetStateAction<LatLngExpression>>;
+    startZoom: number;
+    setStartZoom: React.Dispatch<SetStateAction<number>>;
+}
+
+export interface CarteInventaireProps{
+    inventaire:GeoJSON.FeatureCollection<GeoJSON.Geometry>;
+    defInventaire: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,territoireGeoJsonProperties>>>;
+    itemSelect: number,
+    defItemSelect :React.Dispatch<SetStateAction<number>>,
     startPosition: LatLngExpression;
     setStartPosition:React.Dispatch<SetStateAction<LatLngExpression>>;
     startZoom: number;
