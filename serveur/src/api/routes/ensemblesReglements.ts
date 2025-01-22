@@ -1,6 +1,6 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { Pool } from 'pg';
-import { DbAssociationReglementUtilSol, DbEnteteEnsembleReglement, DbUtilisationSol } from 'database';
+import { DbAssociationReglementUtilSol, DbEnteteEnsembleReglement, DbUtilisationSol, DbEnteteReglement } from 'database';
 
 
 export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
@@ -63,11 +63,37 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
     }
   };
 
+  const obtiensReglementsPourEnsReg: RequestHandler = async (req, res): Promise<void> => {
+    console.log('Serveur - Obtention entetes de reglements associés à un ensemble de règlements')
+    try {
+      const {id} = req.params;
+      const client = await pool.connect();
+      const query_1= `
+        WITH reg_pert AS(
+          SELECT DISTINCT id_reg_stat
+          from public.association_er_reg_stat
+          where id_er = $1
+        )
+
+        SELECT * 
+        FROM public.entete_reg_stationnement
+        where id_reg_stat in (SELECT id_reg_stat from reg_pert)
+      `;
+
+      const result_header = await client.query<DbEnteteReglement>(query_1,[id] );
+
+      res.json({ success: true, data: result_header.rows });
+      client.release();
+    } catch (err) {
+      res.status(500).json({ success: false, error: 'Database error' });
+    }
+  };
 
 
   // Routes
   router.get('/entete', obtiensTousEntetesEnsemblesReglements);
   router.get('/complet/:id',obtiensEnsembleReglementCompletParId)
+  router.get('/regs-associes/:id',obtiensReglementsPourEnsReg);
 
   return router;
 };

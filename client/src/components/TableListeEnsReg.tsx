@@ -24,6 +24,8 @@ const TableListeEnsReg: React.FC<TableEnteteEnsembleProps> = (props) => {
     const onLineSelect = async (id_reg: number) => {
         const reglementAObtenir = await serviceEnsemblesReglements.chercheEnsembleReglementParId(id_reg)
         props.defEnsembleReglement(reglementAObtenir.data)
+        const entetesReglementsPertinents = await serviceEnsemblesReglements.chercheReglementsPourEnsReg(id_reg)
+        props.defEntetesReglements(entetesReglementsPertinents.data)
     }
 
     const panelRef = useRef<HTMLDivElement>(null);

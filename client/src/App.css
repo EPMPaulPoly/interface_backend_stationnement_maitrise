@@ -91,6 +91,10 @@ body,html{
     border-bottom: 1px solid #ccc; /* Add a bottom border for separation */
 }
 
+.table-entete-reglements tr:hover {
+    background-color: blue;/* Add a bottom border for separation */
+}
+
 .table-modif-reglements-entete th {
     background-color: #f2f2f2;
     color: black;
@@ -292,7 +296,7 @@ body,html{
     display: flex;
     flex-direction: column;
     height: 200px; /* Initial height */
-    overflow: hidden; /* Prevent overflow */
+    overflow-y: auto; /* Prevent overflow */
     width: 100%; /* Ensure it takes the full width of its container */
     border: 1px solid #ccc; /* Add a border for visibility */
     position: relative; /* Ensure the handle is positioned correctly */

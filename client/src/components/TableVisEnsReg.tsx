@@ -36,14 +36,23 @@ const TableVisModEnsReg: React.FC<TableVisModEnsRegProps> = (props) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {props.ensembleReglement.assoc_util_reg.map((assoc) => (
+                    {props.ensembleReglement.assoc_util_reg.map((assoc) => {
+                        console.log('Printing relevant rules',props.entetesReglements)
+                        const foundItem = Array.isArray(props.entetesReglements)
+                        ? props.entetesReglements.find(item => {
+                            console.log('Comparing:', item.id_reg_stat, 'with', assoc.id_reg_stat);
+                            return item.id_reg_stat === assoc.id_reg_stat;
+                        })
+                        : null;
+                        console.log('assoc.id_reg_stat:', assoc.id_reg_stat, 'foundItem:', foundItem);
+                        return(
                         <tr key={assoc.id_assoc_er_reg} >
                             <td>{assoc.id_assoc_er_reg}</td>
                             <td>{assoc.cubf}</td>
-                            <td>{assoc.id_reg_stat}</td>
+                            <td>{assoc.id_reg_stat + '-' + (foundItem ? foundItem.description : 'N/A')}</td>
                         </tr>
 
-                    ))}
+                    )})}
                 </tbody>
             </table>
         </div>
