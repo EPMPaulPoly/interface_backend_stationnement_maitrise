@@ -26,7 +26,7 @@ const TableEnteteReglements: React.FC<TableEnteteProps> = (props) => {
     }
     const onLineSelect = async (id_reg: number) => {
         const reglementAObtenir = await serviceReglements.chercheReglementComplet(id_reg)
-        props.defRegSelect(reglementAObtenir.data)
+        props.defRegSelect(reglementAObtenir.data[0])
     }
 
     return (

@@ -22,11 +22,18 @@ class ServiceReglements {
         }
     }
 
-    async chercheReglementComplet(id:number):Promise<ReponseReglementComplet>{
+    async chercheReglementComplet(id:number|number[]):Promise<ReponseReglementComplet>{
         try {
-            const response: AxiosResponse<ReponseReglementComplet> = await api.get(`/reglements/complet/${id }`);
-            const data_res = response.data.data;
-            return {success:response.data.success,data:data_res};
+            if (typeof(id)==='number'){
+                const response: AxiosResponse<ReponseReglementComplet> = await api.get(`/reglements/complet/${id }`);
+                const data_res = response.data.data;
+                return {success:response.data.success,data:data_res};
+            } else{
+                const response: AxiosResponse<ReponseReglementComplet> = await api.get(`/reglements/complet/${id.join(',')}`);
+                const data_res = response.data.data;
+                return {success:response.data.success,data:data_res};
+            }
+            
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 console.error('Axios Error:', error.response?.data);
@@ -38,6 +45,7 @@ class ServiceReglements {
             throw error; // Re-throw if necessary
         }
     }
+
 }
 
 export const serviceReglements =  new ServiceReglements();

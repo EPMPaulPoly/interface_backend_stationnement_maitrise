@@ -36,12 +36,17 @@ const selectLotInventaire = (inventaireComplet: FeatureCollection<Geometry,inven
             }]
         }
         const idRegStat = inventaireTest.features[0].properties.id_reg_stat || '';
-        const rulesToGet = idRegStat.split(/,|\//).map(Number);
+        const rulesToGet = Array.from(new Set(idRegStat.split(/,|\//).map(Number)));
         const idEr = inventaireTest.features[0].properties.id_er || '';
-        const rulesetsToGet = idEr.split(/,|\//).map(Number);
+        const rulesetsToGet = Array.from(new Set(idEr.split(/,|\//).map(Number)));
         console.log('Regles a obtenir: ',rulesToGet)
         console.log('Ens. Reg a obtenir: ',rulesetsToGet)
         console.log('Démarrage Service')
+        if (rulesToGet.length>1){
+            serviceReglements.chercheReglementComplet(rulesToGet)
+        }else{
+            serviceReglements.chercheReglementComplet(rulesToGet[0])
+        }
     }
 }
 

@@ -13,9 +13,10 @@ export const creationRouteurQuartiersAnalyse = (pool: Pool): Router => {
   // Get all lines
   const obtiensTousQuartiers: RequestHandler = async (_req, res): Promise<void> => {
     console.log('Serveur - obtentions tous quartiers analyse')
+    let client;
     try {
       const { geometry } = _req.body as GeometryBody;
-      const client = await pool.connect();
+      client = await pool.connect();
       const query = `
         SELECT 
           id_quartier,
@@ -28,9 +29,12 @@ export const creationRouteurQuartiersAnalyse = (pool: Pool): Router => {
 
       const result = await client.query<DbQuartierAnalyse>(query, );
       res.json({ success: true, data: result.rows });
-      client.release();
     } catch (err) {
       res.status(500).json({ success: false, error: 'Database error' });
+    } finally{
+      if (client){
+        client.release()
+      }
     }
   };
 

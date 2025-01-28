@@ -14,6 +14,13 @@ app.use(express.json());
 // Database connection
 const pool = new Pool(config.database);
 
+setInterval(() => {
+  console.log('Connection Pool Stats:');
+  console.log('Total connections in pool:', pool.totalCount); // Total connections
+  console.log('Idle connections:', pool.idleCount);          // Idle connections
+  console.log('Waiting connections:', pool.waitingCount);    // Waiting connections
+}, 5000);
+
 // Routes
 app.use('/api', createApiRouter(pool));
 

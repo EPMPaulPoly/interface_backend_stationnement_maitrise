@@ -8,8 +8,9 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
   // Get all lines
   const obtiensTousEntetesEnsemblesReglements: RequestHandler = async (_req, res): Promise<void> => {
     console.log('Serveur - Obtention toutes entetes ensembles reglements')
+    let client;
     try {
-      const client = await pool.connect();
+      client = await pool.connect();
       const query = `
         SELECT *
         FROM public.ensembles_reglements_stat
@@ -21,14 +22,19 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
       client.release();
     } catch (err) {
       res.status(500).json({ success: false, error: 'Database error test' });
+    } finally{
+      if (client){
+        client.release()
+      }
     }
   };
 
   const obtiensEnsembleReglementCompletParId: RequestHandler = async (req, res): Promise<void> => {
     console.log('Serveur - Obtention ensembles reglements complets')
+    let client;
     try {
       const {id} = req.params;
-      const client = await pool.connect();
+      client = await pool.connect();
       const query_1= `
         SELECT *
         FROM public.ensembles_reglements_stat
@@ -57,17 +63,21 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
         table_util_sol:resulUtilSol.rows
       }
       res.json({ success: true, data: output });
-      client.release();
     } catch (err) {
       res.status(500).json({ success: false, error: 'Database error' });
+    } finally{
+      if (client){
+        client.release()
+      }
     }
   };
 
   const obtiensReglementsPourEnsReg: RequestHandler = async (req, res): Promise<void> => {
     console.log('Serveur - Obtention entetes de reglements associés à un ensemble de règlements')
+    let client;
     try {
       const {id} = req.params;
-      const client = await pool.connect();
+      client = await pool.connect();
       const query_1= `
         WITH reg_pert AS(
           SELECT DISTINCT id_reg_stat
@@ -83,9 +93,13 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
       const result_header = await client.query<DbEnteteReglement>(query_1,[id] );
 
       res.json({ success: true, data: result_header.rows });
-      client.release();
+      
     } catch (err) {
       res.status(500).json({ success: false, error: 'Database error' });
+    } finally{
+      if (client){
+        client.release()
+      }
     }
   };
 
