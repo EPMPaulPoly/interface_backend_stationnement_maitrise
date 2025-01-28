@@ -36,9 +36,9 @@ class ServiceCadastre {
         }
     }
 
-    async chercheRoleAssocieParId(ids:Number[]):Promise<ReponseRole>{
+    async chercheRoleAssocieParId(ids:Number):Promise<ReponseRole>{
         try {
-            const response: AxiosResponse<ReponseDBRole> = await api.get(`/cadastre/role-associe/${ids.toString}`);
+            const response: AxiosResponse<ReponseDBRole> = await api.get(`/cadastre/role-associe/${ids}`);
             const data_res = response.data.data;
             const featureCollection: FeatureCollection<Geometry, roleFoncierGeoJsonProps> = {
                 type: "FeatureCollection",
