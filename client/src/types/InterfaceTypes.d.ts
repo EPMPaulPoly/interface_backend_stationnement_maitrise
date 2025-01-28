@@ -1,6 +1,6 @@
 import {LatLng, LatLngExpression} from "leaflet";
 import { SetStateAction } from "react";
-import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps } from "./DataTypes";
+import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps } from "./DataTypes";
 import { FeatureCollection } from "geojson";
 
 export interface study_area{
@@ -107,4 +107,15 @@ export interface TableVisModEnsRegProps{
     defEnsembleReglement: React.Dispatch<SetStateAction<ensemble_reglements_stationnement>>,
     entetesReglements:entete_reglement_stationnement[],
     defEntetesReglements: React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
+}
+
+export interface TableRevueProps{
+    lots:GeoJSON.FeatureCollection<GeoJSON.Geometry,lotCadastralGeoJsonProperties>,
+    defLots: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,lotCadastralGeoJsonProperties>>>,
+    donneesRole: GeoJSON.FeatureCollection<GeoJSON.Geometry,roleFoncierGeoJsonProperties>,
+    defDonneesRole: React.Dispacth<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,roleFoncierGeoJsonProperties>>>,
+    ensemblesReglements:ensemble_reglements_stationnement[],
+    defEnsemblesReglements: React.Dispatch<SetStateAction<ensemble_reglements_stationnement[]>>,
+    reglements: reglement_complet[],
+    defReglements: React.Dispatch<SetStateAction<reglement_complet[]>>
 }

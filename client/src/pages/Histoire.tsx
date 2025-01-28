@@ -9,7 +9,8 @@ import {LatLngExpression} from 'leaflet';
 import { serviceHistorique } from '../services';
 import { serviceTerritoires } from '../services';
 import { FeatureCollection,Geometry } from 'geojson';
-
+import './common.css';
+import './histoire.css'
 
 const Histoire: React.FC = () => {
     const[positionDepart,defPositionDepart] = useState<LatLngExpression>([46.85,-71]);

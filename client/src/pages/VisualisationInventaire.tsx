@@ -1,15 +1,16 @@
 import MenuBar from '../components/MenuBar';
-import {ResizableBox} from 'react-resizable';
 import {useState,useEffect} from 'react';
-import {MapContainer,TileLayer} from 'react-leaflet';
 import { LatLngExpression } from 'leaflet';
 import TableInventaire from '../components/TableInventaire';
-import { inventaire_stationnement, quartiers_analyse } from '../types/DataTypes';
+import { ensemble_reglements_stationnement, entete_ensembles_reglement_stationnement, inventaire_stationnement, quartiers_analyse, reglement_complet } from '../types/DataTypes';
 import { serviceQuartiersAnalyse, } from '../services/serviceQuartiersAnalyse';
 import {serviceInventaire} from '../services/serviceInventaire';
 import { FeatureCollection,Geometry } from 'geojson';
-import { inventaireGeoJSONProps } from '../types/DataTypes';
+import { inventaireGeoJSONProps,lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps } from '../types/DataTypes';
 import CarteInventaire from '../components/carteInventaire';
+import TableRevueInventaire from '../components/RevueInventaire';
+import './inventaire.css';
+import './common.css';
 
 const position: LatLngExpression = [45.5017, -73.5673]; // Montreal coordinates
 
@@ -23,6 +24,16 @@ const VisualisationInventaire: React.FC = () => {
         features: []
     });
     const [itemSelect,defItemSelect] = useState<number>(-1);
+    const [lotSelect,defLotSelect] = useState<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>({
+        type: "FeatureCollection",
+        features: []
+    });
+    const [roleSelect,defRoleSelect] = useState<FeatureCollection<Geometry,roleFoncierGeoJsonProps>>({
+        type: "FeatureCollection",
+        features: []
+    });
+    const [regSelect,defRegSelect] = useState<reglement_complet[]>([]);
+    const [ensRegSelect,defEnsRegSelect] = useState<ensemble_reglements_stationnement[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -49,16 +60,28 @@ const VisualisationInventaire: React.FC = () => {
                         itemSelect={itemSelect}
                         defItemSelect={defItemSelect}
                     />
-                    
+                    <div className="barre-details-inventaire">
+                    <TableRevueInventaire
+                        lots={lotSelect}
+                        defLots={defLotSelect}
+                        donneesRole={roleSelect}
+                        defDonneesRole={defRoleSelect}
+                        reglements={regSelect}
+                        defReglements={defRegSelect}
+                        ensemblesReglements={ensRegSelect}
+                        defEnsemblesReglements={defEnsRegSelect}
+                    />
+                    </div>
+
                 </div>
-                    <TableInventaire
-                        quartier={quartier}
-                        defQuartier={defQuartierAnalyse}
-                        optionsQuartiers={optionsQuartier}
-                        defOptionsQuartiers={defOptionsQuartiers}
-                        inventaire={inventaire}
-                        defInventaire={defInventaire} />
-                </div>
+            <TableInventaire
+                quartier={quartier}
+                defQuartier={defQuartierAnalyse}
+                optionsQuartiers={optionsQuartier}
+                defOptionsQuartiers={defOptionsQuartiers}
+                inventaire={inventaire}
+                defInventaire={defInventaire} />
+        </div>
 
     );
 };

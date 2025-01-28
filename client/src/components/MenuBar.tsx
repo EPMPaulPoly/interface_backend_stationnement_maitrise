@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from "react-router";
-import '../App.css'
 
 const MenuBar: React.FC<{}> = () => {
     return(

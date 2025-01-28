@@ -4,6 +4,8 @@ import TableVisModEnsReg from "../components/TableVisEnsReg";
 import { useState, useEffect, useRef } from "react";
 import {  association_util_reglement, ensemble_reglements_stationnement, entete_reglement_stationnement } from "../types/DataTypes";
 import { entete_ensembles_reglement_stationnement } from "../types/DataTypes";
+import './ensemblereg.css'
+import './common.css'
 
 const EnsemblesReglements: React.FC = () => {
     const enteteEnsemblevide: entete_ensembles_reglement_stationnement = {

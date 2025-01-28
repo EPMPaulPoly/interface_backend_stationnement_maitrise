@@ -1,0 +1,109 @@
+/* ---------------------------------------------------------------------------------------- */
+/* ------------------------------- INVENTAIRE ----------------------------------------------*/
+/* ---------------------------------------------------------------------------------------- */
+.page-inventaire {
+    display: flex;
+    flex-direction: column; /* Stack vertically if necessary */
+    height: 100vh; /* Full height of the page */
+    overflow: hidden; /* Prevent overflow (no scrollbars) */
+    background-color: #1f1f1f;
+}
+
+    .inventaire-carte-conteneur{
+        display:flex;
+        flex-direction:row;
+        flex:1;
+        height:100%;
+    }
+
+        .carte-inventaire{
+            flex:1;
+            position:relative;
+            height:100%
+        }
+
+        .barre-details-inventaire{
+            display:flex;
+            flex-direction:row;
+            position:relative;
+            height:100%;
+            padding: 0px;
+        }
+            .panneau-detail-inventaire-lot{
+                display:flex;
+                flex-direction:column;
+                height:100%;
+                width:300px;
+                padding:10px;
+                overflow-y:auto;
+            }   
+                .table-lot-title{
+                    padding:0px;
+                    display: block;
+                    margin-block-start: 0em;
+                    margin-block-end: 0em;
+                    border-top: 1px solid white; /* Add a bottom border for separation */
+                }
+                .lot-data-table{
+                    padding:5px;
+                    width:100%;
+                    flex:1;
+                }
+
+    .table-inventaire {
+        display: flex;
+        justify-content: flex-start;
+        align-content: flex-start;
+        flex-shrink: 0; /* Prevent shrinking */
+        overflow-y: auto; /* Allow scrolling if necessary within this section */
+        background-color: #1f1f1f;
+        color:white;
+        width:100%;
+    }
+        .panneau-bas-inventaire {
+            display: flex;
+            flex-direction: column;
+            height: 200px; /* Initial height */
+            overflow: hidden; /* Prevent overflow */
+            width: 100%; /* Ensure it takes the full width of its container */
+            border: 1px solid #ccc; /* Add a border for visibility */
+            position: relative; /* Ensure the handle is positioned correctly */
+
+        }
+    
+            .table-inventaire-control {
+                flex-shrink: 0; /* Prevent shrinking */
+                padding: 10px;
+                background-color: #1f1f1f;
+                color: white;
+                width: 100%;
+            }
+
+
+                .table-inventaire-rendu-container {
+                    flex: 1; /* Take remaining space */
+                    overflow-y: auto; /* Enable vertical scrolling */
+                    width:100%;
+                }
+
+                    .table-inventaire-rendu {
+                        width: 100%;
+                        border-collapse: collapse;
+                        justify-content: center;
+                    }
+
+
+                    .panneau-histoire-modifiable{
+                        display:flex;
+                        flex-direction: column;
+                        position:relative;
+                    }
+
+
+                    .table-inventaire-rendu th {
+                        background-color: #f2f2f2;
+                        color: black;
+                        position: sticky;
+                        top: 0; /* Fix the header at the top */
+                        z-index: 1; /* Ensure the header is above the table body */
+                    }

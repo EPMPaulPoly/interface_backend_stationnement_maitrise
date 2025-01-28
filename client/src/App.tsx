@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router';
 import Histoire from './pages/Histoire';
 import VisualisationInvenataire from './pages/VisualisationInventaire';
-import './App.css'
 import Reglements from './pages/Reglements';
 import EnsemblesReglements from './pages/EnsemblesReglements';
 

@@ -57,11 +57,11 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
         return null; // No need to render anything for the map component itself
       };
 
-    return (<>
+    return (<div className="carte-inventaire">
         <MapContainer
             center={props.startPosition}
             zoom={props.startZoom}
-            style={{ height: '100%', width: '100%' }}
+            style={{ height: '100%', width: '100%' }}            
         >
             <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -69,14 +69,14 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
             />
             {props.inventaire && (<>
                 {props.inventaire.features?.map((feature, index) => {
-                    console.log(`Feature ${index + 1}:`, feature);
+                    //console.log(`Feature ${index + 1}:`, feature);
                 return null; // We return null because we're only logging, not rendering anything here.
                 })}
                 <MapComponent/>
                 </>
             )}
         </MapContainer>
-        </>
+        </div>
     );
 };
 

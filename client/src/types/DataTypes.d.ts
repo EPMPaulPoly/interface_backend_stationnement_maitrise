@@ -101,6 +101,25 @@ export interface lot_taxation{
     entrees_role:entree_role_foncier[]
 }
 
+export interface lotCadastralGeoJsonProperties{
+    g_no_lot:string,
+    g_va_superf:number,
+    g_nb_coord:number,
+    g_nb_coo_1:number
+}
+
+export interface roleFoncierGeoJsonProps{
+    id_provinc:number,
+    rl0105a:number,
+    rl0306a:number,
+    rl0307a:number,
+    rl0307b:string,
+    rl0308a:number,
+    rl0311a:number,
+    rl0312a:number,
+    rl0404a:number,
+}
+
 export interface entree_role_foncier{
     id_provinc:string,
     annee_role:string,
