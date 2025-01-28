@@ -95,10 +95,8 @@ export interface ensemble_reglement_territoire{
     ens_reg: ensembles_reglements_stationnement
 }
 
-export interface lot_taxation{
-    id_lot:string,
-    geometry:GeoJSON.GeoJSON
-    entrees_role:entree_role_foncier[]
+export interface lotCadastralDB extends lotCadastralGeoJsonProperties{
+    geojson_geometry:string;
 }
 
 export interface lotCadastralGeoJsonProperties{
@@ -106,6 +104,10 @@ export interface lotCadastralGeoJsonProperties{
     g_va_superf:number,
     g_nb_coord:number,
     g_nb_coo_1:number
+}
+
+export interface roleFoncierDB extends roleFoncierGeoJsonProps{
+    geojson_geometry:string;
 }
 
 export interface roleFoncierGeoJsonProps{
@@ -120,18 +122,6 @@ export interface roleFoncierGeoJsonProps{
     rl0404a:number,
 }
 
-export interface entree_role_foncier{
-    id_provinc:string,
-    annee_role:string,
-    nombre_logements:number|null,
-    nombre_chambres:number|null,
-    superficie_plancher:number|null,
-    superficie_terrain:number|null,
-    valeur_terrain:number|null,
-    valeur_immeuble:number|null,
-    valeur_totale:number|null,
-    addresse:string|null
-}
 
 export interface inventaire_stationnement{
     g_no_lot:string,

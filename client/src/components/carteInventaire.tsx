@@ -1,38 +1,20 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
 import { CarteInventaireProps } from '../types/InterfaceTypes';
-import { FeatureCollection, Geometry } from 'geojson';
+import { FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
 import "leaflet/dist/leaflet.css";
 import L, { LeafletEvent } from 'leaflet';
 import { inventaireGeoJSONProps } from '../types/DataTypes';
+import selectLotInventaire from '../utils/selectLotInventaire';
 
 const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
-
+  const handleLotClick= (e:LeafletEvent)=>{
+    const key = e.target.feature.properties.g_no_lot;
+    selectLotInventaire(props.inventaire as FeatureCollection<Geometry, inventaireGeoJSONProps>, key)
+  }
 
   const geoJsonLayerGroupRef = useRef<L.LayerGroup | null>(null); // Refe
-  const lotSelection = (e: L.LeafletEvent) => {
-    console.log(e.target.feature.properties.g_no_lot)
-    const reglementTest: FeatureCollection<Geometry, inventaireGeoJSONProps> = {
-      type: "FeatureCollection",
-      features: [{
-        type: "Feature",
-        geometry: e.target.feature.geometry,
-        properties: {
-          g_no_lot: e.target.feature.properties.g_no_lot,
-          n_places_min: e.target.feature.properties.n_places_min,
-          n_places_max: e.target.feature.properties.n_places_max,
-          n_places_estime: e.target.feature.properties.n_places_estime,
-          n_places_mesure: e.target.feature.properties.n_places_mesure,
-          methode_estime: e.target.feature.properties.methode_estime,
-          cubf: e.target.feature.properties.cubf,
-          id_er: e.target.feature.properties.id_er,
-          id_reg_stat: e.target.feature.properties.id_reg_stat
-        }
-      }]
-    };
-    const rulesToGet = reglementTest.features[0].properties.id_reg_stat.split(/,| \/ /)
-    console.log(e)
-  }
+
   const MapComponent = () => {
     const map = useMap(); // Access the map instance
 
@@ -61,7 +43,7 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
                       `;
                 layer.bindPopup(formattedPopupContent);
                 layer.on({
-                  click: lotSelection
+                  click:  handleLotClick
                 });
               }
             }
