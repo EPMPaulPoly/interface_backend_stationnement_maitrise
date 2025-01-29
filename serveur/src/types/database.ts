@@ -16,6 +16,25 @@ export interface DbTerritoire{
     id_periode:number,
     geometry: GeoJSON.GeoJSON;  // Geometry(Geometry,4326)
 }
+export interface DbRole{
+    id_provinc:string,
+    rl0105a:string,
+    rl0306a:number,
+    rl0307a:string,
+    rl0307b:string,
+    rl0308a:number,
+    rl0311a:number,
+    rl0312a:number,
+    rl0404a:number,
+    geometry: GeoJSON.GeoJSON
+}
+
+export interface DbCadastre{
+    g_no_lot:string,
+    g_nb_coord:number,
+    g_nb_coo_1:number,
+    g_va_suprf:number,
+}
 
 export interface DbHistoriqueGeopol{
     id_periode:number,
@@ -81,7 +100,8 @@ export interface DbUtilisationSol{
 export interface DbAssociationReglementUtilSol{
     id_assoc_er_reg:number,
     cubf:number,
-    id_reg_stat:number
+    id_reg_stat:number,
+    id_er:number
 }
 
 export interface ParamsQuartier extends ParamsDictionary {
@@ -90,4 +110,8 @@ export interface ParamsQuartier extends ParamsDictionary {
 
 export interface ParamsPeriode extends ParamsDictionary {
     id: string;
+}
+
+export interface ParamsCadastre extends ParamsDictionary{
+    id:string;s
 }

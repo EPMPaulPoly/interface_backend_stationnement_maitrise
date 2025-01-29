@@ -64,7 +64,8 @@ export interface utilisation_sol{
 export interface association_util_reglement{
     id_assoc_er_reg:number,
     cubf:number,
-    id_reg_stat:number
+    id_reg_stat:number,
+    id_er:number
 }
 
 export interface periode{

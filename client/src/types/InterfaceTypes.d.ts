@@ -94,8 +94,8 @@ export interface TableVisModRegProps{
 export interface TableEnteteEnsembleProps{
     entetesEnsembles:entete_ensemble_reglement_stationnement[],
     defEntetesEnsembles:React.Dispatch<SetStateAction<entete_ensembles_reglement_stationnement[]>>
-    ensembleReglement: ensemble_reglements_stationnement,
-    defEnsembleReglement: React.Dispatch<SetStateAction<ensemble_reglements_stationnement>>,
+    ensembleReglement: ensemble_reglements_stationnement[],
+    defEnsembleReglement: React.Dispatch<SetStateAction<ensemble_reglements_stationnement[]>>,
     entetesReglements:entete_reglement_stationnement[],
     defEntetesReglements: React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
 }
@@ -103,8 +103,8 @@ export interface TableEnteteEnsembleProps{
 export interface TableVisModEnsRegProps{
     charge:boolean,
     defCharge:React.Dispatch<SetStateAction<boolean>>
-    ensembleReglement: ensemble_reglements_stationnement,
-    defEnsembleReglement: React.Dispatch<SetStateAction<ensemble_reglements_stationnement>>,
+    ensembleReglement: ensemble_reglements_stationnement[],
+    defEnsembleReglement: React.Dispatch<SetStateAction<ensemble_reglements_stationnement[]>>,
     entetesReglements:entete_reglement_stationnement[],
     defEntetesReglements: React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
 }
@@ -118,4 +118,17 @@ export interface TableRevueProps{
     defEnsemblesReglements: React.Dispatch<SetStateAction<ensemble_reglements_stationnement[]>>,
     reglements: reglement_complet[],
     defReglements: React.Dispatch<SetStateAction<reglement_complet[]>>
+}
+
+export interface selectLotProps{
+    lotAnalyse: GeoJSON.FeatureCollection<GeoJSON.Geometry,lotCadastralGeoJsonProperties>,
+    defLotAnalyse: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,lotCadastralGeoJsonProperties>>>,
+    roleAnalyse:GeoJSON.FeatureCollection<GeoJSON.Geometry,roleFoncierGeoJsonProps>,
+    defRoleAnalyse: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,roleFoncierGeoJsonProps>>>,
+    inventaireAnalyse: GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>,
+    defInventaireAnalyse: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>>>,
+    reglementsAnalyse: reglement_complet[],
+    defReglementsAnalyse: React.Dispatch<SetStateAction<reglement_complet[]>>,
+    ensemblesAnalyse: ensemble_reglements_stationnement[],
+    defEnsemblesAnalyse: React.Dispatch<SetStateAction<ensemble_reglements_stationnement[]>>
 }

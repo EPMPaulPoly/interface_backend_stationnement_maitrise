@@ -3,7 +3,7 @@ import { LeafletEvent } from 'leaflet';
 import { CarteInventaireProps,TableInventaireProps } from '../types/InterfaceTypes';
 import { Feature, FeatureCollection,Geometry } from 'geojson';
 import { inventaireGeoJSONProps } from '../types/DataTypes';
-import { serviceReglements } from '../services';
+import { serviceReglements,serviceCadastre, serviceEnsemblesReglements } from '../services';
 
 const checkAvailable = (inventaireComplet: FeatureCollection<Geometry,inventaireGeoJSONProps>,key:string) : boolean =>{
     const check = inventaireComplet.features.find((o)=>o.properties.g_no_lot===key);
@@ -47,6 +47,16 @@ const selectLotInventaire = (inventaireComplet: FeatureCollection<Geometry,inven
         }else{
             serviceReglements.chercheReglementComplet(rulesToGet[0])
         }
+        if (rulesetsToGet.length>1){
+            serviceEnsemblesReglements.chercheEnsembleReglementParId(rulesToGet)
+        }else{
+            serviceEnsemblesReglements.chercheEnsembleReglementParId(rulesToGet[0])
+        }
+        const idLot = inventaireTest.features[0].properties.g_no_lot
+        const lot = serviceCadastre.obtiensCadastreParId(idLot)
+        const role = serviceCadastre.chercheRoleAssocieParId(idLot)
+        console.log('Obtenu lot',lot) 
+        console.log('Obtenu role',role)
     }
 }
 

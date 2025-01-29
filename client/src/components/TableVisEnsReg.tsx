@@ -19,11 +19,11 @@ const TableVisModEnsReg: React.FC<TableVisModEnsRegProps> = (props) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {<tr key={props.ensembleReglement.entete.id_er}>
-                            <td>{props.ensembleReglement.entete.id_er}</td>
-                            <td>{props.ensembleReglement.entete.description_er}</td>
-                            <td>{props.ensembleReglement.entete.date_debut_er}</td>
-                            <td>{props.ensembleReglement.entete.date_fin_er}</td>
+                        {<tr key={props.ensembleReglement[0].entete.id_er}>
+                            <td>{props.ensembleReglement[0].entete.id_er}</td>
+                            <td>{props.ensembleReglement[0].entete.description_er}</td>
+                            <td>{props.ensembleReglement[0].entete.date_debut_er}</td>
+                            <td>{props.ensembleReglement[0].entete.date_fin_er}</td>
                         </tr>}
                     </tbody>
             </table>
@@ -36,7 +36,7 @@ const TableVisModEnsReg: React.FC<TableVisModEnsRegProps> = (props) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {props.ensembleReglement.assoc_util_reg.map((assoc) => {
+                    {props.ensembleReglement[0].assoc_util_reg.map((assoc) => {
                         //console.log('Printing relevant rules',props.entetesReglements)
                         const foundRule = Array.isArray(props.entetesReglements)
                         ? props.entetesReglements.find(item => {
@@ -44,8 +44,8 @@ const TableVisModEnsReg: React.FC<TableVisModEnsRegProps> = (props) => {
                             return item.id_reg_stat === assoc.id_reg_stat;
                         })
                         : null;
-                        const foundLandUse= Array.isArray(props.ensembleReglement.table_util_sol)?
-                        props.ensembleReglement.table_util_sol.find(item =>{
+                        const foundLandUse= Array.isArray(props.ensembleReglement[0].table_util_sol)?
+                        props.ensembleReglement[0].table_util_sol.find(item =>{
                             return Number(item.cubf) === assoc.cubf
                         })
                         :null;

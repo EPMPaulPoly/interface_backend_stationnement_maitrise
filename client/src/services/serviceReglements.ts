@@ -25,7 +25,7 @@ class ServiceReglements {
     async chercheReglementComplet(id:number|number[]):Promise<ReponseReglementComplet>{
         try {
             if (typeof(id)==='number'){
-                const response: AxiosResponse<ReponseReglementComplet> = await api.get(`/reglements/complet/${id }`);
+                const response: AxiosResponse<ReponseReglementComplet> = await api.get(`/reglements/complet/${id}`);
                 const data_res = response.data.data;
                 return {success:response.data.success,data:data_res};
             } else{

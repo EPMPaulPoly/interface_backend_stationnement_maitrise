@@ -35,10 +35,40 @@ class ServiceCadastre {
             throw error; // Re-throw if necessary
         }
     }
-
-    async chercheRoleAssocieParId(ids:Number):Promise<ReponseRole>{
+    async obtiensCadastreParId(id:string):Promise<ReponseCadastre> {
+        try{
+            const formattedId = id.replace(/ /g, "_");
+            const response: AxiosResponse<ReponseDBCadastre> = await api.get(`/cadastre/lot/${formattedId}`);
+            const data_res = response.data.data;
+            const featureCollection: FeatureCollection<Geometry, lotCadastralGeoJsonProperties> = {
+                type: "FeatureCollection",
+                features: data_res.map((item) => ({
+                    type: "Feature",
+                    geometry: JSON.parse(item.geojson_geometry),
+                    properties: {
+                        g_no_lot:item.g_no_lot,
+                        g_va_superf:item.g_va_superf,
+                        g_nb_coo_1:item.g_nb_coo_1,
+                        g_nb_coord:item.g_nb_coord,
+                    }
+                }))
+            };
+            return {success:response.data.success,data:featureCollection};
+        }catch(error:any){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
+    async chercheRoleAssocieParId(ids:string):Promise<ReponseRole>{
         try {
-            const response: AxiosResponse<ReponseDBRole> = await api.get(`/cadastre/role-associe/${ids}`);
+            const formattedId = ids.replace(/ /g, "_");
+            const response: AxiosResponse<ReponseDBRole> = await api.get(`/cadastre/role-associe/${formattedId}`);
             const data_res = response.data.data;
             const featureCollection: FeatureCollection<Geometry, roleFoncierGeoJsonProps> = {
                 type: "FeatureCollection",

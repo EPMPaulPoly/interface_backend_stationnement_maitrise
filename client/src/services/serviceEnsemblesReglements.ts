@@ -21,11 +21,19 @@ class ServiceEnsemblesReglements {
         }
     } 
 
-    async chercheEnsembleReglementParId(id:number):Promise<ReponseEnsembleReglementComplet> {
+    async chercheEnsembleReglementParId(id:number|number[]):Promise<ReponseEnsembleReglementComplet> {
         try{
             const response:AxiosResponse<ReponseEnsembleReglementComplet>= await api.get(`/ens-reg/complet/${id}`);
-            const data_res = response.data.data;
-            return{success:response.data.success,data:data_res};
+            if (typeof(id)==='number'){
+                const response:AxiosResponse<ReponseEnsembleReglementComplet>= await api.get(`/ens-reg/complet/${id}`);
+                const data_res = response.data.data;
+                return{success:response.data.success,data:data_res};
+            } else{
+                const response:AxiosResponse<ReponseEnsembleReglementComplet>= await api.get(`/ens-reg/complet/${id.join(',')}`);
+                const data_res = response.data.data;
+                return{success:response.data.success,data:data_res};
+            }
+            
         } catch(error){
             if (axios.isAxiosError(error)) {
                 console.error('Axios Error:', error.response?.data);

@@ -17,7 +17,8 @@ const EnsemblesReglements: React.FC = () => {
     const associationVide: association_util_reglement = {
         id_assoc_er_reg:0,
         cubf:0,
-        id_reg_stat:0
+        id_reg_stat:0,
+        id_er:0
     }
 
     const reglementCompletVide: ensemble_reglements_stationnement = {
@@ -29,7 +30,7 @@ const EnsemblesReglements: React.FC = () => {
 
     const [enteteEnsembles, defEnteteEnsembles] = useState<entete_ensembles_reglement_stationnement[]>([]);
     const [charge, defCharg] = useState<boolean>(true);
-    const [ensembleReglementComplet, defEnsembleReglementComplet] = useState<ensemble_reglements_stationnement>(reglementCompletVide);
+    const [ensembleReglementComplet, defEnsembleReglementComplet] = useState<ensemble_reglements_stationnement[]>([reglementCompletVide]);
     const [reglementsPertinents,defRegPert] = useState<entete_reglement_stationnement[]>([]);
 
 

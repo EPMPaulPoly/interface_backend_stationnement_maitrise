@@ -19,7 +19,6 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
 
       const result = await client.query<DbEnteteEnsembleReglement>(query, );
       res.json({ success: true, data: result.rows });
-      client.release();
     } catch (err) {
       res.status(500).json({ success: false, error: 'Database error test' });
     } finally{
@@ -33,23 +32,28 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
     console.log('Serveur - Obtention ensembles reglements complets')
     let client;
     try {
-      const {id} = req.params;
+      const{id} = req.params;
+      // Parse the comma-separated IDs into an array of numbers
+      const idArray = id.split(',').map(Number);
+      // Dynamically create placeholders for the query (e.g., $1, $2, $3, ...)
+      const placeholders = idArray.map((_, index:number) => `$${index + 1}`).join(',');
+
       client = await pool.connect();
       const query_1= `
         SELECT *
         FROM public.ensembles_reglements_stat
-        WHERE id_er = $1
+        WHERE id_er IN (${placeholders})
         ORDER BY id_er ASC
       `;
 
-      const result_header = await client.query<DbEnteteEnsembleReglement>(query_1,[id] );
+      const result_header = await client.query<DbEnteteEnsembleReglement>(query_1,idArray );
       const query2 =`
-        SELECT id_assoc_er_reg, id_reg_stat,cubf
+        SELECT id_assoc_er_reg, id_reg_stat,cubf,id_er
         FROM public.association_er_reg_stat
-        WHERE id_er = $1
+        WHERE id_er IN (${placeholders})
         ORDER BY id_assoc_er_reg  ASC
       `
-      const result_rules = await client.query<DbAssociationReglementUtilSol>(query2,[id] );
+      const result_rules = await client.query<DbAssociationReglementUtilSol>(query2,idArray );
 
       const query_3 = `
         SELECT *
@@ -57,11 +61,15 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
         ORDER BY cubf ASC
       `
       const resulUtilSol = await client.query<DbUtilisationSol>(query_3 );
-      const output={
-        entete: result_header.rows[0],
-        assoc_util_reg: result_rules.rows,
-        table_util_sol:resulUtilSol.rows
-      }
+      const output = idArray.map((id:number) => {
+        const entete = result_header.rows.find((row:DbEnteteEnsembleReglement) => row.id_er === id);
+        const assoc_util_reg = result_rules.rows.filter((row:DbAssociationReglementUtilSol) => row.id_er === id);
+        return {
+          entete,
+          assoc_util_reg,
+          table_util_sol: resulUtilSol.rows
+        };
+      });
       res.json({ success: true, data: output });
     } catch (err) {
       res.status(500).json({ success: false, error: 'Database error' });
