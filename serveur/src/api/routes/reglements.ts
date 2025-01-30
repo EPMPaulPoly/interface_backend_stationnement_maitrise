@@ -20,7 +20,6 @@ export const creationRouteurReglements = (pool: Pool): Router => {
 
       const result = await client.query<DbEnteteReglement>(query,);
       res.json({ success: true, data: result.rows });
-      client.release();
     } catch (err) {
       res.status(500).json({ success: false, error: 'Database error' });
     } finally{

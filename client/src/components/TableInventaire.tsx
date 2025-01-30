@@ -1,6 +1,6 @@
 import React, {useState,useRef} from 'react';
 import { inventaire_stationnement, quartiers_analyse } from '../types/DataTypes';
-import { TableInventaireProps } from '../types/InterfaceTypes';
+import { TableInventaireProps,selectLotProps } from '../types/InterfaceTypes';
 import { serviceInventaire } from '../services/serviceInventaire';
 import selectLotInventaire from '../utils/selectLotInventaire';
 
@@ -15,7 +15,21 @@ const TableInventaire:React.FC<TableInventaireProps>=(props:TableInventaireProps
     }
 
     const handleRowClick = (key: string) => {
-        selectLotInventaire(props.inventaire,key)
+        const propsLot: selectLotProps = {
+              inventaireComplet:props.inventaire,
+              numLot:key,
+              lotAnalyse:props.lots,
+              defLotAnalyse: props.defLots,
+              inventaireAnalyse:props.itemSelect,
+              defInventaireAnalyse:props.defItemSelect,
+              roleAnalyse:props.donneesRole,
+              defRoleAnalyse:props.defDonneesRole,
+              reglementsAnalyse: props.reglements,
+              defReglementsAnalyse:props.defReglements,
+              ensemblesAnalyse:props.ensemblesReglements,
+              defEnsemblesAnalyse: props.defEnsemblesReglements,
+            }
+        selectLotInventaire(propsLot)
     };
 
     const handleMouseDown = (e: React.MouseEvent) => {

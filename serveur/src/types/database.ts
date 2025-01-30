@@ -113,5 +113,5 @@ export interface ParamsPeriode extends ParamsDictionary {
 }
 
 export interface ParamsCadastre extends ParamsDictionary{
-    id:string;s
+    id:string;
 }

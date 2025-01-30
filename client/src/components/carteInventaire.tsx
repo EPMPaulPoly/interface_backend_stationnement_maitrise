@@ -6,11 +6,26 @@ import "leaflet/dist/leaflet.css";
 import L, { LeafletEvent } from 'leaflet';
 import { inventaireGeoJSONProps } from '../types/DataTypes';
 import selectLotInventaire from '../utils/selectLotInventaire';
+import { selectLotProps } from '../types/InterfaceTypes';
 
 const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
   const handleLotClick= (e:LeafletEvent)=>{
     const key = e.target.feature.properties.g_no_lot;
-    selectLotInventaire(props.inventaire as FeatureCollection<Geometry, inventaireGeoJSONProps>, key)
+    const propsLot: selectLotProps = {
+      inventaireComplet:props.inventaire,
+      numLot:key,
+      lotAnalyse:props.lots,
+      defLotAnalyse: props.defLots,
+      inventaireAnalyse:props.itemSelect,
+      defInventaireAnalyse:props.defItemSelect,
+      roleAnalyse:props.donneesRole,
+      defRoleAnalyse:props.defDonneesRole,
+      reglementsAnalyse: props.reglements,
+      defReglementsAnalyse:props.defReglements,
+      ensemblesAnalyse:props.ensemblesReglements,
+      defEnsemblesAnalyse: props.defEnsemblesReglements,
+    }
+    selectLotInventaire(propsLot)
   }
 
   const geoJsonLayerGroupRef = useRef<L.LayerGroup | null>(null); // Refe

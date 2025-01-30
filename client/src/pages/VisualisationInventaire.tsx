@@ -15,25 +15,28 @@ import './common.css';
 const position: LatLngExpression = [45.5017, -73.5673]; // Montreal coordinates
 
 const VisualisationInventaire: React.FC = () => {
-    const[positionDepart,defPositionDepart] = useState<LatLngExpression>([46.85,-71]);
-    const[zoomDepart,defZoomDepart] = useState<number>(10);
-    const [quartier,defQuartierAnalyse] = useState<number>(-1);
-    const [optionsQuartier,defOptionsQuartiers] = useState<quartiers_analyse[]>([]);
-    const [inventaire,defInventaire] = useState<FeatureCollection<Geometry,inventaireGeoJSONProps>>({
+    const[positionDepart,defPositionDepart] = useState<LatLngExpression>([46.85,-71]);// position depart
+    const[zoomDepart,defZoomDepart] = useState<number>(10); // zoom depart
+    const [quartier,defQuartierAnalyse] = useState<number>(-1); // quartier d'analyse pour aller chercher l'inventaire
+    const [optionsQuartier,defOptionsQuartiers] = useState<quartiers_analyse[]>([]);//quartiers selectionnable
+    const [inventaire,defInventaire] = useState<FeatureCollection<Geometry,inventaireGeoJSONProps>>({//inventaire
         type: "FeatureCollection",
         features: []
     });
-    const [itemSelect,defItemSelect] = useState<number>(-1);
-    const [lotSelect,defLotSelect] = useState<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>({
+    const [itemSelect,defItemSelect] = useState<FeatureCollection<Geometry,inventaireGeoJSONProps>>({//inventaire
         type: "FeatureCollection",
         features: []
     });
-    const [roleSelect,defRoleSelect] = useState<FeatureCollection<Geometry,roleFoncierGeoJsonProps>>({
+    const [lotSelect,defLotSelect] = useState<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>({//lot selectionné
         type: "FeatureCollection",
         features: []
     });
-    const [regSelect,defRegSelect] = useState<reglement_complet[]>([]);
-    const [ensRegSelect,defEnsRegSelect] = useState<ensemble_reglements_stationnement[]>([]);
+    const [roleSelect,defRoleSelect] = useState<FeatureCollection<Geometry,roleFoncierGeoJsonProps>>({//items du role
+        type: "FeatureCollection",
+        features: []
+    });
+    const [regSelect,defRegSelect] = useState<reglement_complet[]>([]);// reglement complet
+    const [ensRegSelect,defEnsRegSelect] = useState<ensemble_reglements_stationnement[]>([]);// ensembles de reglement complet
 
     useEffect(() => {
         const fetchData = async () => {
@@ -59,6 +62,14 @@ const VisualisationInventaire: React.FC = () => {
                         defInventaire={defInventaire}
                         itemSelect={itemSelect}
                         defItemSelect={defItemSelect}
+                        lots={lotSelect}
+                        defLots={defLotSelect}
+                        donneesRole={roleSelect}
+                        defDonneesRole={defRoleSelect}
+                        ensemblesReglements={ensRegSelect}
+                        defEnsemblesReglements={defEnsRegSelect}
+                        reglements={regSelect}
+                        defReglements={defRegSelect}
                     />
                     <div className="barre-details-inventaire">
                     <TableRevueInventaire
@@ -70,6 +81,8 @@ const VisualisationInventaire: React.FC = () => {
                         defReglements={defRegSelect}
                         ensemblesReglements={ensRegSelect}
                         defEnsemblesReglements={defEnsRegSelect}
+                        inventaire={itemSelect}
+                        defInventaire={defItemSelect}
                     />
                     </div>
 
@@ -80,7 +93,18 @@ const VisualisationInventaire: React.FC = () => {
                 optionsQuartiers={optionsQuartier}
                 defOptionsQuartiers={defOptionsQuartiers}
                 inventaire={inventaire}
-                defInventaire={defInventaire} />
+                defInventaire={defInventaire} 
+                lots={lotSelect}
+                defLots={defLotSelect}
+                donneesRole={roleSelect}
+                defDonneesRole={defRoleSelect}
+                ensemblesReglements={ensRegSelect}
+                defEnsemblesReglements={defEnsRegSelect}
+                reglements={regSelect}
+                defReglements={defRegSelect}
+                itemSelect={itemSelect}
+                defItemSelect={defItemSelect}
+            />
         </div>
 
     );
