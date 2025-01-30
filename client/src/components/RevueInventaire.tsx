@@ -3,7 +3,7 @@ import { TableRevueProps } from '../types/InterfaceTypes';
 
 const TableRevueInventaire: React.FC<TableRevueProps> =(props:TableRevueProps) =>{
     const panelRef = useRef<HTMLDivElement>(null);
-    const [visibleTable, setTableVisible] = useState<number|null>(null);
+    const [visibleTable, setTableVisible] = useState<number|null>(1);
     const [roleARegarder,defRoleARegarder] = useState<string>('');
     const [regARegarder,defRegARegarder] = useState<number>(-1);
     const [ensRegARegarder,defEnsRegARegarder] = useState<number>(-1);
@@ -173,27 +173,39 @@ const TableRevueInventaire: React.FC<TableRevueProps> =(props:TableRevueProps) =
                        <tbody>
                            <tr>
                                <td>No Lot</td>
-                               <td>{props.inventaire.features[0]?.properties?.g_no_lot}</td>
+                               <td>{props.inventaire.features.find(item => 
+                                   item.properties.methode_estime===methodeEstimeARegarder
+                               )?.properties.g_no_lot}</td>
                            </tr>
                            <tr>
                                <td>N place min</td>
-                               <td>{props.inventaire.features[0]?.properties?.n_places_min}</td>
+                               <td>{props.inventaire.features.find(item => 
+                                   item.properties.methode_estime===methodeEstimeARegarder
+                               )?.properties.n_places_min}</td>
                            </tr>
                            <tr>
                                <td>N place max</td>
-                               <td>{props.inventaire.features[0]?.properties?.n_places_max}</td>
+                               <td>{props.inventaire.features.find(item => 
+                                   item.properties.methode_estime===methodeEstimeARegarder
+                               )?.properties.n_places_max}</td>
                            </tr>
                            <tr>
                                <td>N place comptees</td>
-                               <td>{props.inventaire.features[0]?.properties?.n_places_mesure}</td>
+                               <td>{props.inventaire.features.find(item => 
+                                   item.properties.methode_estime===methodeEstimeARegarder
+                               )?.properties.n_places_mesure}</td>
                            </tr>
                            <tr>
                                <td>N place estimee</td>
-                               <td>{props.inventaire.features[0]?.properties?.n_places_estime}</td>
+                               <td>{props.inventaire.features.find(item => 
+                                   item.properties.methode_estime===methodeEstimeARegarder
+                               )?.properties.n_places_estime}</td>
                            </tr>
                            <tr>
                                <td>Commentaire</td>
-                               <td>{props.inventaire.features[0]?.properties?.n_places_mesure}</td>
+                               <td>{props.inventaire.features.find(item => 
+                                   item.properties.methode_estime===methodeEstimeARegarder
+                               )?.properties.n_places_mesure}</td>
                            </tr>
                        </tbody>
                    </table>

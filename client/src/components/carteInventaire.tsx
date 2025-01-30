@@ -71,11 +71,12 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
           geoJsonLayer.addTo(geoJsonLayerGroupRef.current); // Add the new layer to the group
 
           // Optionally, adjust the map bounds to fit the new GeoJSON data
-          const bounds = geoJsonLayer.getBounds();
-          map.fitBounds(bounds);
+            const bounds = geoJsonLayer.getBounds();
+            const center = bounds.getCenter();
+            const zoom = map.getBoundsZoom(bounds);
         }
       }
-    }, [props.inventaire, map]); // Dependency on props.geoJsondata and map
+    }, [props.inventaire]); // Dependency on props.geoJsondata and map
 
     return null; // No need to render anything for the map component itself
   };
