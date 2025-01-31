@@ -61,6 +61,14 @@ const VisualisationInventaire: React.FC = () => {
         }
     }
 
+    const gestFondDeCarte=()=>{
+        console.log("Fond de carte non-implémenté")
+    }
+
+    const gestChoro=()=>{
+        console.log("Couleur pas encore gérée")
+    }
+
     return (
         <div className="page-inventaire">
             <MenuBar/>
@@ -73,6 +81,33 @@ const VisualisationInventaire: React.FC = () => {
                             {quartier.nom_quartier}
                         </option>
                     ))}
+                </select>
+                <label 
+                    htmlFor="show-all-lots" 
+                    className="label-show-all-lots">
+                        Montrer Tous Lots</label>
+                <input 
+                    type="checkbox" 
+                    id="show-all-lots"/>
+                <label 
+                    htmlFor="fond-de-carte" 
+                    className="label-fond-de-carte">
+                        Fond de carte</label>
+                <select id="fond-de-carte" name="fond-de-carte" onChange={gestFondDeCarte}>
+                    <option>OSM</option>
+                    <option>Géodésie Québec</option>
+                </select>
+                <label 
+                    htmlFor="valeur-choroplethe" 
+                    className="label-valeur-choroplethe">
+                        Échelle Couleur</label>
+                <select 
+                    id="valeur-choroplethe" 
+                    name="valeur-choroplethe" 
+                    onChange={gestChoro}>
+                    <option>Aucun</option>
+                    <option>places/superf terrain</option>
+                    <option>places</option>
                 </select>
             </div>
             <div className="inventaire-carte-conteneur">

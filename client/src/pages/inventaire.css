@@ -8,6 +8,9 @@
     overflow: hidden; /* Prevent overflow (no scrollbars) */
     background-color: #1f1f1f;
 }
+    .label-show-all-lots{
+        padding-left:20px
+    }
 
     .inventaire-carte-conteneur{
         display:flex;
