@@ -90,7 +90,6 @@
                     .table-inventaire-rendu {
                         width: 100%;
                         border-collapse: collapse;
-                        justify-content: center;
                         padding-top: 10px;
                     }
 
@@ -101,15 +100,25 @@
                         position:relative;
                     }
 
-
+                    .table-inventaire-rendu th,
+                    .table-inventaire-rendu td {
+                        border-left: 1px solid #ddd; /* Add left border to table headers and cells */
+                        border-right: 1px solid #ddd; 
+                        text-align: left; /* Ensure consistent text alignment */
+                        padding-left: 8px; /* Ensure consistent padding */
+                    }
                     .table-inventaire-rendu th {
                         background-color: #f2f2f2;
                         color: black;
                         position: sticky;
                         top: 0; /* Fix the header at the top */
                         z-index: 1; /* Ensure the header is above the table body */
-                    }
+                    }   
 
                     .table-inventaire-rendu tr:hover {
                         background-color:blue;
+                    }
+
+                    .selected-row{
+                        background-color: red;
                     }

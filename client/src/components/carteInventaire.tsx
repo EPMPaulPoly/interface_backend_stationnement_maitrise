@@ -47,28 +47,31 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
 
         if (props.inventaire && props.inventaire.features.length > 0) {
           // Create a new GeoJSON layer from props.geoJsondata
-          const geoJsonLayer = L.geoJSON(props.inventaire, {
-            style: {
-              color: 'blue', // Border color
+            const geoJsonLayer = L.geoJSON(props.inventaire, {
+            style: (feature) => {
+              const isLotInAnalyse = feature && props.itemSelect.features.some(lot => lot.properties.g_no_lot === feature.properties.g_no_lot);
+              return {
+              color: isLotInAnalyse ? 'red' : 'blue', // Border color based on condition
               weight: 2,     // Border thickness
-              fillColor: 'cyan', // Fill color
+              fillColor: isLotInAnalyse ? 'pink' : 'cyan', // Fill color based on condition
               fillOpacity: 0.5,  // Fill transparency
+              };
             },
             onEachFeature: (feature: any, layer: any) => {
               if (feature.properties) {
-                const { g_no_lot, n_places_min, n_places_max } = feature.properties; // Destructure properties
-                const formattedPopupContent = `
-                        <strong>No Lot:</strong> ${g_no_lot} <br/>
-                        <strong>Places Min:</strong> ${n_places_min} <br/>
-                        <strong>Places Max:</strong> ${n_places_max} <br/>
-                      `;
-                layer.bindPopup(formattedPopupContent);
-                layer.on({
-                  click:  handleLotClick
-                });
+              const { g_no_lot, n_places_min, n_places_max } = feature.properties; // Destructure properties
+              const formattedPopupContent = `
+                  <strong>No Lot:</strong> ${g_no_lot} <br/>
+                  <strong>Places Min:</strong> ${n_places_min} <br/>
+                  <strong>Places Max:</strong> ${n_places_max} <br/>
+                  `;
+              layer.bindPopup(formattedPopupContent);
+              layer.on({
+                click: handleLotClick
+              });
               }
             }
-          });
+            });
 
           if (!geoJsonLayerGroupRef.current) {
             geoJsonLayerGroupRef.current = L.layerGroup().addTo(map); // Create the layer group if it doesn't exist
