@@ -6,13 +6,7 @@ import selectLotInventaire from '../utils/selectLotInventaire';
 
 const TableInventaire:React.FC<TableInventaireProps>=(props:TableInventaireProps) =>{
     const panelRef = useRef<HTMLDivElement>(null);
-    const gestSelectQuartier = async (quartier_selectionne:number) =>{
-        props.defQuartier(quartier_selectionne)
-        const inventaire = await serviceInventaire.obtientInventaireParQuartier(quartier_selectionne)
-        if (inventaire.success){
-            props.defInventaire(inventaire.data)
-        }
-    }
+    
 
     const handleRowClick = (key: string) => {
         const propsLot: selectLotProps = {
@@ -28,6 +22,14 @@ const TableInventaire:React.FC<TableInventaireProps>=(props:TableInventaireProps
               defReglementsAnalyse:props.defReglements,
               ensemblesAnalyse:props.ensemblesReglements,
               defEnsemblesAnalyse: props.defEnsemblesReglements,
+              methodeEstimeRegard:props.methodeEstimeRegard,
+              defMethodeEstimeRegard:props.defMethodeEstimeRegard,
+              regRegard:props.regRegard,
+              defRegRegard: props.defRegRegard,
+              ensRegRegard:props.ensRegRegard,
+              defEnsRegRegard:props.defEnsRegRegard,
+              roleRegard:props.roleRegard,
+              defRoleRegard:props.defRoleRegard
             }
         selectLotInventaire(propsLot)
     };
@@ -58,17 +60,7 @@ const TableInventaire:React.FC<TableInventaireProps>=(props:TableInventaireProps
             
             <div className="panneau-bas-inventaire" ref={panelRef}>
                 <div className="resize-handle" onMouseDown={handleMouseDown}></div>
-                <div className="table-inventaire-control">
-                    <label htmlFor="select-quartier">Sélection Quartier</label>
-                    <select id="select-quartier" name="select-quartier" onChange={e => gestSelectQuartier(Number(e.target.value))}>
-                        <option value="">Selection quartier</option>
-                        {props.optionsQuartiers.map(quartier=>(
-                            <option key={quartier.id_quartier} value={quartier.id_quartier} >
-                                {quartier.nom_quartier}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                
                 <div className="table-inventaire-rendu-container">
                     <table className="table-inventaire-rendu">
                         <thead>

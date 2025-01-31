@@ -1,6 +1,6 @@
 import MenuBar from '../components/MenuBar';
-import {useState,useEffect} from 'react';
-import { LatLngExpression } from 'leaflet';
+import {useState,useEffect, useRef} from 'react';
+import L, { LatLngExpression } from 'leaflet';
 import TableInventaire from '../components/TableInventaire';
 import { ensemble_reglements_stationnement, entete_ensembles_reglement_stationnement, inventaire_stationnement, quartiers_analyse, reglement_complet } from '../types/DataTypes';
 import { serviceQuartiersAnalyse, } from '../services/serviceQuartiersAnalyse';
@@ -19,6 +19,10 @@ const VisualisationInventaire: React.FC = () => {
     const[zoomDepart,defZoomDepart] = useState<number>(10); // zoom depart
     const [quartier,defQuartierAnalyse] = useState<number>(-1); // quartier d'analyse pour aller chercher l'inventaire
     const [optionsQuartier,defOptionsQuartiers] = useState<quartiers_analyse[]>([]);//quartiers selectionnable
+    const [roleARegarder,defRoleARegarder] = useState<string>('');
+    const [regARegarder,defRegARegarder] = useState<number>(-1);
+    const [ensRegARegarder,defEnsRegARegarder] = useState<number>(-1);
+    const [methodeEstimeARegarder,defMethodeEstimeARegarder] = useState<number>(-1);
     const [inventaire,defInventaire] = useState<FeatureCollection<Geometry,inventaireGeoJSONProps>>({//inventaire
         type: "FeatureCollection",
         features: []
@@ -37,56 +41,91 @@ const VisualisationInventaire: React.FC = () => {
     });
     const [regSelect,defRegSelect] = useState<reglement_complet[]>([]);// reglement complet
     const [ensRegSelect,defEnsRegSelect] = useState<ensemble_reglements_stationnement[]>([]);// ensembles de reglement complet
-
+    // Va chercher les quartiers pertinents
     useEffect(() => {
         const fetchData = async () => {
             const quartiers = await serviceQuartiersAnalyse.chercheTousQuartiersAnalyse();
             defOptionsQuartiers(quartiers.data);
-            if (quartier !== -1){
-                const inventaire = await serviceInventaire.obtientInventaireParQuartier(quartier)
-            }
         };
         fetchData();
     }, []);
+    // Gestion de selection de quartier
+    const gestSelectQuartier = async (quartier_selectionne:number) =>{
+        defQuartierAnalyse(quartier_selectionne)
+        const inventaire = await serviceInventaire.obtientInventaireParQuartier(quartier_selectionne)
+        if (inventaire.success){
+            defInventaire(inventaire.data)
+            const center = new L.GeoJSON(inventaire.data).getBounds().getCenter();
+            defPositionDepart(center);
+            defZoomDepart(12);
+        }
+    }
 
     return (
         <div className="page-inventaire">
             <MenuBar/>
-                <div className="inventaire-carte-conteneur">
-                    <CarteInventaire
-                        startPosition={positionDepart}
-                        setStartPosition={defPositionDepart}
-                        startZoom={zoomDepart}
-                        setStartZoom={defZoomDepart}
-                        inventaire={inventaire}
-                        defInventaire={defInventaire}
-                        itemSelect={itemSelect}
-                        defItemSelect={defItemSelect}
-                        lots={lotSelect}
-                        defLots={defLotSelect}
-                        donneesRole={roleSelect}
-                        defDonneesRole={defRoleSelect}
-                        ensemblesReglements={ensRegSelect}
-                        defEnsemblesReglements={defEnsRegSelect}
-                        reglements={regSelect}
-                        defReglements={defRegSelect}
-                    />
-                    <div className="barre-details-inventaire">
-                    <TableRevueInventaire
-                        lots={lotSelect}
-                        defLots={defLotSelect}
-                        donneesRole={roleSelect}
-                        defDonneesRole={defRoleSelect}
-                        reglements={regSelect}
-                        defReglements={defRegSelect}
-                        ensemblesReglements={ensRegSelect}
-                        defEnsemblesReglements={defEnsRegSelect}
-                        inventaire={itemSelect}
-                        defInventaire={defItemSelect}
-                    />
-                    </div>
-
+            <div className="table-inventaire-control">
+                <label htmlFor="select-quartier">Sélection Quartier</label>
+                <select id="select-quartier" name="select-quartier" onChange={e => gestSelectQuartier(Number(e.target.value))}>
+                    <option value="">Selection quartier</option>
+                    {optionsQuartier.map(quartier=>(
+                        <option key={quartier.id_quartier} value={quartier.id_quartier} >
+                            {quartier.nom_quartier}
+                        </option>
+                    ))}
+                </select>
+            </div>
+            <div className="inventaire-carte-conteneur">
+                <CarteInventaire
+                    startPosition={positionDepart}
+                    setStartPosition={defPositionDepart}
+                    startZoom={zoomDepart}
+                    setStartZoom={defZoomDepart}
+                    inventaire={inventaire}
+                    defInventaire={defInventaire}
+                    itemSelect={itemSelect}
+                    defItemSelect={defItemSelect}
+                    lots={lotSelect}
+                    defLots={defLotSelect}
+                    donneesRole={roleSelect}
+                    defDonneesRole={defRoleSelect}
+                    ensemblesReglements={ensRegSelect}
+                    defEnsemblesReglements={defEnsRegSelect}
+                    reglements={regSelect}
+                    defReglements={defRegSelect}
+                    roleRegard={roleARegarder}
+                    defRoleRegard={defRoleARegarder}
+                    methodeEstimeRegard={methodeEstimeARegarder}
+                    defMethodeEstimeRegard={defMethodeEstimeARegarder}
+                    regRegard={regARegarder}
+                    defRegRegard={defRegARegarder}
+                    ensRegRegard={ensRegARegarder}
+                    defEnsRegRegard={defEnsRegARegarder}
+                />
+                <div className="barre-details-inventaire">
+                <TableRevueInventaire
+                    lots={lotSelect}
+                    defLots={defLotSelect}
+                    donneesRole={roleSelect}
+                    defDonneesRole={defRoleSelect}
+                    reglements={regSelect}
+                    defReglements={defRegSelect}
+                    ensemblesReglements={ensRegSelect}
+                    defEnsemblesReglements={defEnsRegSelect}
+                    inventaire={itemSelect}
+                    defInventaire={defItemSelect}
+                    roleRegard={roleARegarder}
+                    defRoleRegard={defRoleARegarder}
+                    methodeEstimeRegard={methodeEstimeARegarder}
+                    defMethodeEstimeRegard={defMethodeEstimeARegarder}
+                    regRegard={regARegarder}
+                    defRegRegard={defRegARegarder}
+                    ensRegRegard={ensRegARegarder}
+                    defEnsRegRegard={defEnsRegARegarder}
+                />
                 </div>
+
+            </div>
             <TableInventaire
                 quartier={quartier}
                 defQuartier={defQuartierAnalyse}
@@ -104,6 +143,14 @@ const VisualisationInventaire: React.FC = () => {
                 defReglements={defRegSelect}
                 itemSelect={itemSelect}
                 defItemSelect={defItemSelect}
+                roleRegard={roleARegarder}
+                defRoleRegard={defRoleARegarder}
+                methodeEstimeRegard={methodeEstimeARegarder}
+                defMethodeEstimeRegard={defMethodeEstimeARegarder}
+                regRegard={regARegarder}
+                defRegRegard={defRegARegarder}
+                ensRegRegard={ensRegARegarder}
+                defEnsRegRegard={defEnsRegARegarder}
             />
         </div>
 

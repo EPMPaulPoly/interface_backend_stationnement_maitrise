@@ -4,10 +4,7 @@ import { TableRevueProps } from '../types/InterfaceTypes';
 const TableRevueInventaire: React.FC<TableRevueProps> =(props:TableRevueProps) =>{
     const panelRef = useRef<HTMLDivElement>(null);
     const [visibleTable, setTableVisible] = useState<number|null>(1);
-    const [roleARegarder,defRoleARegarder] = useState<string>('');
-    const [regARegarder,defRegARegarder] = useState<number>(-1);
-    const [ensRegARegarder,defEnsRegARegarder] = useState<number>(-1);
-    const [methodeEstimeARegarder,defMethodeEstimeARegarder] = useState<number>(-1);
+    
     const handleMouseDown = (e: React.MouseEvent) => {
         const startX = e.clientX;
         const startWidth = panelRef.current ? panelRef.current.offsetHeight : 0;
@@ -29,15 +26,27 @@ const TableRevueInventaire: React.FC<TableRevueProps> =(props:TableRevueProps) =
     };
 
     const clickTableCollapse = (tableNumber:number)=>{
-        setTableVisible(tableNumber)
+        if (tableNumber != visibleTable){
+            setTableVisible(tableNumber)
+        }else{
+            setTableVisible(-1)
+        }
     }
 
     const gestSelectRole =(e: string) =>{
-        defRoleARegarder(e)
+        props.defRoleRegard(e)
     }
 
     const gestSelectInventaire = (e:number)=>{
-        defMethodeEstimeARegarder(e)
+        props.defMethodeEstimeRegard(e)
+    }
+
+    const gestSelectRule = (e:number) =>{
+        props.defRegRegard(e)
+    }
+
+    const gestSelectRuleSet = (e:number) =>{
+        props.defEnsRegRegard(e)
     }
 
     return(
@@ -87,7 +96,7 @@ const TableRevueInventaire: React.FC<TableRevueProps> =(props:TableRevueProps) =
                 <div className="table-inventaire-control">
                     <label htmlFor="select-role-inventaire">Sélection Role</label>
                     <select id="select-quartier" name="select-quartier" onChange={e => gestSelectRole(e.target.value)}>
-                        <option value="">Selection Role</option>
+                        <option value={""} key={""}>Selection Role</option>
                         {props.donneesRole.features.map(role=>(
                             <option key={role.properties.id_provinc} value={role.properties.id_provinc} >
                                 {role.properties?.id_provinc}
@@ -106,43 +115,43 @@ const TableRevueInventaire: React.FC<TableRevueProps> =(props:TableRevueProps) =
                            <tr>
                                <td>Id Provinc</td>
                                <td>{props.donneesRole.features.find(item => 
-                                   item.properties.id_provinc===roleARegarder
+                                   item.properties.id_provinc===props.roleRegard
                                )?.properties?.id_provinc}</td>
                            </tr>
                            <tr>
                                <td>Util Pred</td>
                                <td>{props.donneesRole.features.find(item => 
-                                   item.properties.id_provinc===roleARegarder
+                                   item.properties.id_provinc===props.roleRegard
                                )?.properties?.rl0105a}</td>
                            </tr>
                            <tr>
                                <td>Nb Étages</td>
                                <td>{props.donneesRole.features.find(item => 
-                                   item.properties.id_provinc===roleARegarder
+                                   item.properties.id_provinc===props.roleRegard
                                )?.properties?.rl0306a}</td>
                            </tr>
                            <tr>
                                <td>Année Construction</td>
                                <td>{props.donneesRole.features.find(item => 
-                                   item.properties.id_provinc===roleARegarder
+                                   item.properties.id_provinc===props.roleRegard
                                )?.properties?.rl0307a}</td>
                            </tr>
                            <tr>
                                <td>Metres Carres</td>
                                <td>{props.donneesRole.features.find(item => 
-                                   item.properties.id_provinc===roleARegarder
+                                   item.properties.id_provinc===props.roleRegard
                                )?.properties?.rl0308a}</td>
                            </tr>
                            <tr>
                                <td>Nb logements</td>
                                <td>{props.donneesRole.features.find(item => 
-                                   item.properties.id_provinc===roleARegarder
+                                   item.properties.id_provinc===props.roleRegard
                                )?.properties.rl0311a}</td>
                            </tr>
                            <tr>
                                <td>Nb chambres</td>
                                <td>{props.donneesRole.features.find(item => 
-                                   item.properties.id_provinc===roleARegarder
+                                   item.properties.id_provinc===props.roleRegard
                                )?.properties?.rl0312a}</td>
                            </tr>
                        </tbody>
@@ -174,44 +183,164 @@ const TableRevueInventaire: React.FC<TableRevueProps> =(props:TableRevueProps) =
                            <tr>
                                <td>No Lot</td>
                                <td>{props.inventaire.features.find(item => 
-                                   item.properties.methode_estime===methodeEstimeARegarder
+                                   item.properties.methode_estime===props.methodeEstimeRegard
                                )?.properties.g_no_lot}</td>
                            </tr>
                            <tr>
                                <td>N place min</td>
                                <td>{props.inventaire.features.find(item => 
-                                   item.properties.methode_estime===methodeEstimeARegarder
+                                   item.properties.methode_estime===props.methodeEstimeRegard
                                )?.properties.n_places_min}</td>
                            </tr>
                            <tr>
                                <td>N place max</td>
                                <td>{props.inventaire.features.find(item => 
-                                   item.properties.methode_estime===methodeEstimeARegarder
+                                   item.properties.methode_estime===props.methodeEstimeRegard
                                )?.properties.n_places_max}</td>
                            </tr>
                            <tr>
                                <td>N place comptees</td>
                                <td>{props.inventaire.features.find(item => 
-                                   item.properties.methode_estime===methodeEstimeARegarder
+                                   item.properties.methode_estime===props.methodeEstimeRegard
                                )?.properties.n_places_mesure}</td>
                            </tr>
                            <tr>
                                <td>N place estimee</td>
                                <td>{props.inventaire.features.find(item => 
-                                   item.properties.methode_estime===methodeEstimeARegarder
+                                   item.properties.methode_estime===props.methodeEstimeRegard
                                )?.properties.n_places_estime}</td>
                            </tr>
                            <tr>
                                <td>Commentaire</td>
                                <td>{props.inventaire.features.find(item => 
-                                   item.properties.methode_estime===methodeEstimeARegarder
-                               )?.properties.n_places_mesure}</td>
+                                   item.properties.methode_estime===props.methodeEstimeRegard
+                               )?.properties.commentaire}</td>
                            </tr>
                        </tbody>
                    </table>
                    </div>)}
             <h4 onClick={()=>clickTableCollapse(4)}className="table-lot-title">Reglements</h4>
+            { visibleTable===4 && (<div className="lot-data-table" >
+                <div className="table-inventaire-control">
+                    <label htmlFor="select-role-inventaire">Sélection règlements</label>
+                    <select id="select-quartier" name="select-quartier" onChange={e => gestSelectRule(Number(e.target.value))}>
+                        <option value={-1} key={-1}>Selection Reglement</option>
+                        {props.reglements.map(reglement=>(
+                            <option key={reglement.entete.id_reg_stat} value={reglement.entete.id_reg_stat} >
+                                {reglement.entete.id_reg_stat}
+                            </option>
+                        ))
+                        }
+                    </select>
+                </div>
+                   <table>
+                       <thead>
+                           <tr>
+                               <th>Description</th>
+                               <th>Valeur</th>
+                           </tr>
+                       </thead>
+                       <tbody>
+                           <tr>
+                               <td>ID Règ</td>
+                               <td>{props.reglements.find(item => 
+                                   item.entete.id_reg_stat===props.regRegard
+                               )?.entete.id_reg_stat}</td>
+                           </tr>
+                           <tr>
+                               <td>Description</td>
+                               <td>{props.reglements.find(item => 
+                                   item.entete.id_reg_stat===props.regRegard
+                               )?.entete.description}</td>
+                           </tr>
+                           <tr>
+                               <td>Annee Debut</td>
+                               <td>{props.reglements.find(item => 
+                                   item.entete.id_reg_stat===props.regRegard
+                               )?.entete.annee_debut_reg}</td>
+                           </tr>
+                           <tr>
+                               <td>Annee Fin</td>
+                               <td>{props.reglements.find(item => 
+                                   item.entete.id_reg_stat===props.regRegard
+                               )?.entete.annee_fin_reg}</td>
+                           </tr>
+                           <tr>
+                               <td>Ville</td>
+                               <td>{props.reglements.find(item => 
+                                   item.entete.id_reg_stat===props.regRegard
+                               )?.entete.ville}</td>
+                           </tr>
+                           <tr>
+                               <td>Texte Loi</td>
+                               <td>{props.reglements.find(item => 
+                                   item.entete.id_reg_stat===props.regRegard
+                               )?.entete.texte_loi}</td>
+                           </tr>
+                           <tr>
+                               <td>Art. Loi</td>
+                               <td>{props.reglements.find(item => 
+                                   item.entete.id_reg_stat===props.regRegard
+                               )?.entete.article_loi}</td>
+                           </tr>
+                           <tr>
+                               <td>Para. Loi</td>
+                               <td>{props.reglements.find(item => 
+                                   item.entete.id_reg_stat===props.regRegard
+                               )?.entete.paragraphe_loi}</td>
+                           </tr>
+                       </tbody>
+                   </table>
+                   </div>)}
             <h4 onClick={()=>clickTableCollapse(5)}className="table-lot-title">Ensembles Reglements</h4>
+            { visibleTable===5 && (<div className="lot-data-table" >
+                <div className="table-inventaire-control">
+                    <label htmlFor="select-role-inventaire">Sélection règlements</label>
+                    <select id="select-ens-reg" name="select-ens-reg" onChange={e => gestSelectRuleSet(Number(e.target.value))}>
+                        <option value={-1} key={-1}>Selection ens-reg</option>
+                        {props.ensemblesReglements.map(ensReg=>(
+                            <option key={ensReg.entete.id_er} value={ensReg.entete.id_er} >
+                                {ensReg.entete.id_er}
+                            </option>
+                        ))
+                        }
+                    </select>
+                </div>
+                   <table>
+                       <thead>
+                           <tr>
+                               <th>Description</th>
+                               <th>Valeur</th>
+                           </tr>
+                       </thead>
+                       <tbody>
+                           <tr>
+                               <td>ID Ens. Reg. </td>
+                               <td>{props.ensemblesReglements.find(item => 
+                                   item.entete.id_er===props.ensRegRegard
+                               )?.entete.id_er}</td>
+                           </tr>
+                           <tr>
+                               <td>description</td>
+                               <td>{props.ensemblesReglements.find(item => 
+                                   item.entete.id_er===props.ensRegRegard
+                               )?.entete.description_er}</td>
+                           </tr>
+                           <tr>
+                               <td>Annee Debut</td>
+                               <td>{props.ensemblesReglements.find(item => 
+                                   item.entete.id_er===props.ensRegRegard
+                               )?.entete.date_debut_er}</td>
+                           </tr>
+                           <tr>
+                               <td>Annee Fin</td>
+                               <td>{props.ensemblesReglements.find(item => 
+                                   item.entete.id_er===props.ensRegRegard
+                               )?.entete.date_fin_er}</td>
+                           </tr>
+                       </tbody>
+                   </table>
+                   </div>)}
         </div>
     )
 }

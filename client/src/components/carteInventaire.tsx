@@ -1,10 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
 import { CarteInventaireProps } from '../types/InterfaceTypes';
-import { FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
 import "leaflet/dist/leaflet.css";
 import L, { LeafletEvent } from 'leaflet';
-import { inventaireGeoJSONProps } from '../types/DataTypes';
 import selectLotInventaire from '../utils/selectLotInventaire';
 import { selectLotProps } from '../types/InterfaceTypes';
 
@@ -24,6 +22,14 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
       defReglementsAnalyse:props.defReglements,
       ensemblesAnalyse:props.ensemblesReglements,
       defEnsemblesAnalyse: props.defEnsemblesReglements,
+      methodeEstimeRegard:props.methodeEstimeRegard,
+      defMethodeEstimeRegard:props.defMethodeEstimeRegard,
+      regRegard:props.regRegard,
+      defRegRegard: props.defRegRegard,
+      ensRegRegard:props.ensRegRegard,
+      defEnsRegRegard:props.defEnsRegRegard,
+      roleRegard:props.roleRegard,
+      defRoleRegard:props.defRoleRegard
     }
     selectLotInventaire(propsLot)
   }
@@ -74,6 +80,7 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
             const bounds = geoJsonLayer.getBounds();
             const center = bounds.getCenter();
             const zoom = map.getBoundsZoom(bounds);
+            //map.setView(props.startPosition,props.startZoom);
         }
       }
     }, [props.inventaire]); // Dependency on props.geoJsondata and map

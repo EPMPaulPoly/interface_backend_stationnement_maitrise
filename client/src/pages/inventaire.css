@@ -84,12 +84,14 @@
                     flex: 1; /* Take remaining space */
                     overflow-y: auto; /* Enable vertical scrolling */
                     width:100%;
+                    padding-top: 5px;
                 }
 
                     .table-inventaire-rendu {
                         width: 100%;
                         border-collapse: collapse;
                         justify-content: center;
+                        padding-top: 10px;
                     }
 
 
@@ -106,4 +108,8 @@
                         position: sticky;
                         top: 0; /* Fix the header at the top */
                         z-index: 1; /* Ensure the header is above the table body */
+                    }
+
+                    .table-inventaire-rendu tr:hover {
+                        background-color:blue;
                     }

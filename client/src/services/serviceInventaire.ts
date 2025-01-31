@@ -24,7 +24,8 @@ export const serviceInventaire = {
                                     methode_estime:item.methode_estime,
                                     cubf:item.cubf,
                                     id_er:item.id_er,
-                                    id_reg_stat:item.id_reg_stat
+                                    id_reg_stat:item.id_reg_stat,
+                                    commentaire: item.commentaire
                                 }
                             }))
                         };
@@ -60,7 +61,8 @@ export const serviceInventaire = {
                         methode_estime:item.methode_estime,
                         cubf:item.cubf,
                         id_er:item.id_er,
-                        id_reg_stat:item.id_reg_stat
+                        id_reg_stat:item.id_reg_stat,
+                        commentaire:item.commentaire
                     }
                 }))
             };

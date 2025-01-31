@@ -53,6 +53,14 @@ export interface TableInventaireProps{
     defReglements: React.Dispatch<SetStateAction<reglement_complet[]>>,
     itemSelect: GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>;
     defItemSelect :React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>>>,
+    methodeEstimeRegard:number,
+    defMethodeEstimeRegard:React.Dispatch<SetStateAction<number>>,
+    regRegard:number,
+    defRegRegard:React.Dispatch<SetStateAction<number>>,
+    ensRegRegard:number,
+    defEnsRegRegard:React.Dispatch<SetStateAction<number>>,
+    roleRegard:string,
+    defRoleRegard:React.Dispatch<SetStateAction<string>>,
 }
 
 
@@ -73,7 +81,15 @@ export interface CarteInventaireProps{
     ensemblesReglements:ensemble_reglements_stationnement[],
     defEnsemblesReglements: React.Dispatch<SetStateAction<ensemble_reglements_stationnement[]>>,
     reglements: reglement_complet[],
-    defReglements: React.Dispatch<SetStateAction<reglement_complet[]>>
+    defReglements: React.Dispatch<SetStateAction<reglement_complet[]>>,
+    methodeEstimeRegard:number,
+    defMethodeEstimeRegard:React.Dispatch<SetStateAction<number>>,
+    regRegard:number,
+    defRegRegard:React.Dispatch<SetStateAction<number>>,
+    ensRegRegard:number,
+    defEnsRegRegard:React.Dispatch<SetStateAction<number>>,
+    roleRegard:string,
+    defRoleRegard:React.Dispatch<SetStateAction<string>>,
 }
 
 export interface TableRevueProps{
@@ -87,7 +103,14 @@ export interface TableRevueProps{
     defReglements: React.Dispatch<SetStateAction<reglement_complet[]>>
     inventaire: GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>,
     defInventaire: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>>>
-
+    methodeEstimeRegard:number,
+    defMethodeEstimeRegard:React.Dispatch<SetStateAction<number>>,
+    regRegard:number,
+    defRegRegard:React.Dispatch<SetStateAction<number>>,
+    ensRegRegard:number,
+    defEnsRegRegard:React.Dispatch<SetStateAction<number>>,
+    roleRegard:string,
+    defRoleRegard:React.Dispatch<SetStateAction<string>>,
 }
 
 export interface selectLotProps{
@@ -103,6 +126,14 @@ export interface selectLotProps{
     defEnsemblesAnalyse: React.Dispatch<SetStateAction<ensemble_reglements_stationnement[]>>,
     numLot: string,
     inventaireComplet: GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>
+    methodeEstimeRegard:number,
+    defMethodeEstimeRegard:React.Dispatch<SetStateAction<number>>,
+    regRegard:number,
+    defRegRegard:React.Dispatch<SetStateAction<number>>,
+    ensRegRegard:number,
+    defEnsRegRegard:React.Dispatch<SetStateAction<number>>,
+    roleRegard:string,
+    defRoleRegard:React.Dispatch<SetStateAction<string>>,
 }
 
 // ------------------------------------------------------------------------------

@@ -134,7 +134,8 @@ export interface inventaire_stationnement{
     id_er: string,
     id_reg_stat:string,
     cubf:string,
-    geojson_geometry:Geometry
+    geojson_geometry:Geometry,
+    commentaire:string
 }
 
 export interface inventaireGeoJSONProps{
@@ -147,6 +148,7 @@ export interface inventaireGeoJSONProps{
     id_er: string,
     id_reg_stat:string,
     cubf:string,
+    commentaire:string
 }
 
 export interface quartiers_analyse{

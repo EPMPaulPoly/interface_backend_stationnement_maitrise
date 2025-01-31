@@ -31,7 +31,8 @@ const selectLotInventaire = async (props:selectLotProps): Promise<void> => {
                 methode_estime: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.methode_estime ?? 0 : 0,
                 cubf: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.cubf ?? '' : '',
                 id_er: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.id_er ?? '' : '',
-                id_reg_stat: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.id_reg_stat ?? '' : ''
+                id_reg_stat: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.id_reg_stat ?? '' : '',
+                commentaire: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.commentaire ?? '' : ''
             }
             }]
         }
@@ -51,10 +52,10 @@ const selectLotInventaire = async (props:selectLotProps): Promise<void> => {
             props.defReglementsAnalyse(reg.data);
         }
         if (rulesetsToGet.length>1){
-            const ensReg = await serviceEnsemblesReglements.chercheEnsembleReglementParId(rulesToGet);
+            const ensReg = await serviceEnsemblesReglements.chercheEnsembleReglementParId(rulesetsToGet);
             props.defEnsemblesAnalyse(ensReg.data);
         }else{
-            const ensReg = await serviceEnsemblesReglements.chercheEnsembleReglementParId(rulesToGet[0])
+            const ensReg = await serviceEnsemblesReglements.chercheEnsembleReglementParId(rulesetsToGet[0])
             props.defEnsemblesAnalyse(ensReg.data);
         }
         const idLot = inventaireTest.features[0].properties.g_no_lot
@@ -64,7 +65,10 @@ const selectLotInventaire = async (props:selectLotProps): Promise<void> => {
         console.log('Obtenu role',role)
         props.defLotAnalyse(lot.data)
         props.defRoleAnalyse(role.data)
-
+        props.defRoleRegard('')
+        props.defEnsRegRegard(-1)
+        props.defRegRegard(-1)
+        props.defMethodeEstimeRegard(-1)
     }
 }
 
