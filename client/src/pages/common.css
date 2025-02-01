@@ -61,10 +61,19 @@ body,html{
 /* ---------------------------------------------------------------------------------------- */
 /* ------------------------------- Menu Bar -----------------------------------------*/
 /* ---------------------------------------------------------------------------------------- */
-.ville-control{
-    padding: 10px 20px;
+.ville-control {
+    display: flex;
     flex-direction: row;
+    align-items: left;
+}
+.map-bground-control{
     display:flex;
+    flex-direction:row;
+    align-items:left;
+}
+.control-dds{
+    display:flex;
+    flex-direction:column;
 }
 
 

@@ -1,0 +1,6 @@
+.year-header{
+    transform: rotate(-90deg); /* Rotate the text 90 degrees counterclockwise */
+    transform-origin: right top; /* Adjust the origin point for the rotation */
+    white-space: nowrap; /* Prevent text from wrapping */
+    text-orientation: mixed; /* Ensure proper text orientation */
+} 
