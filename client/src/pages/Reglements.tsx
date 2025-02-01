@@ -3,6 +3,8 @@ import TableEnteteReglements from "../components/TableEnteteReglements";
 import TableVisModReglement from "../components/TableVisReglement";
 import { useState, useEffect, useRef } from "react";
 import { entete_reglement_stationnement, definition_reglement_stationnement, reglement_complet } from "../types/DataTypes";
+import './reg.css';
+import './common.css';
 
 
 const Reglements: React.FC = () => {

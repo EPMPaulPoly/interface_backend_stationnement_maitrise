@@ -4,6 +4,8 @@ import TableVisModEnsReg from "../components/TableVisEnsReg";
 import { useState, useEffect, useRef } from "react";
 import {  association_util_reglement, ensemble_reglements_stationnement, entete_reglement_stationnement } from "../types/DataTypes";
 import { entete_ensembles_reglement_stationnement } from "../types/DataTypes";
+import './ensemblereg.css'
+import './common.css'
 
 const EnsemblesReglements: React.FC = () => {
     const enteteEnsemblevide: entete_ensembles_reglement_stationnement = {
@@ -15,7 +17,8 @@ const EnsemblesReglements: React.FC = () => {
     const associationVide: association_util_reglement = {
         id_assoc_er_reg:0,
         cubf:0,
-        id_reg_stat:0
+        id_reg_stat:0,
+        id_er:0
     }
 
     const reglementCompletVide: ensemble_reglements_stationnement = {
@@ -27,7 +30,7 @@ const EnsemblesReglements: React.FC = () => {
 
     const [enteteEnsembles, defEnteteEnsembles] = useState<entete_ensembles_reglement_stationnement[]>([]);
     const [charge, defCharg] = useState<boolean>(true);
-    const [ensembleReglementComplet, defEnsembleReglementComplet] = useState<ensemble_reglements_stationnement>(reglementCompletVide);
+    const [ensembleReglementComplet, defEnsembleReglementComplet] = useState<ensemble_reglements_stationnement[]>([reglementCompletVide]);
     const [reglementsPertinents,defRegPert] = useState<entete_reglement_stationnement[]>([]);
 
 

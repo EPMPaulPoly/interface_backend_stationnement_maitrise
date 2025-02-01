@@ -13,9 +13,10 @@ export const creationRouteurTerritoires = (pool: Pool): Router => {
   // Get all lines
   const obtiensTerritoiresParPeriode: RequestHandler<ParamsPeriode> = async (req, res): Promise<void> => {
     console.log('obtention territoire')
+    let client;
     try {
       const { id } = req.params;
-      const client = await pool.connect();
+      client = await pool.connect();
       const query = `
         SELECT 
           id_periode_geo,
@@ -29,9 +30,12 @@ export const creationRouteurTerritoires = (pool: Pool): Router => {
 
       const result = await client.query<DbTerritoire>(query, [id]);
       res.json({ success: true, data: result.rows });
-      client.release();
     } catch (err) {
       res.status(500).json({ success: false, error: 'Database error' });
+    } finally{
+      if (client){
+        client.release()
+      }
     }
   };
 

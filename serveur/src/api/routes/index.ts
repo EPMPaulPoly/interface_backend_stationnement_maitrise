@@ -6,6 +6,7 @@ import { creationRouteurInventaire } from './inventaire';
 import { creationRouteurTerritoires } from './territoire';
 import { creationRouteurReglements } from './reglements';
 import { creationRouteurEnsemblesReglements } from './ensemblesReglements';
+import { creationRouteurCadastre } from './cadastre';
 
 export const createApiRouter = (pool: Pool) => {
     const router = Router();
@@ -16,5 +17,6 @@ export const createApiRouter = (pool: Pool) => {
     router.use('/territoire',creationRouteurTerritoires(pool));
     router.use('/reglements',creationRouteurReglements(pool));
     router.use('/ens-reg',creationRouteurEnsemblesReglements(pool));
+    router.use('/cadastre',creationRouteurCadastre(pool))
     return router;
 }
