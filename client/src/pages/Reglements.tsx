@@ -1,6 +1,6 @@
 import MenuBar from "../components/MenuBar";
 import TableEnteteReglements from "../components/TableEnteteReglements";
-import TableVisModReglement from "../components/TableVisReglement";
+import TableVisModReglement from "../components/tableVisReglement";
 import { useState, useEffect, useRef } from "react";
 import { entete_reglement_stationnement, definition_reglement_stationnement, reglement_complet } from "../types/DataTypes";
 import './reg.css';
