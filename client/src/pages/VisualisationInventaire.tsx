@@ -61,9 +61,7 @@ const VisualisationInventaire: React.FC = () => {
         }
     }
 
-    const gestFondDeCarte=()=>{
-        console.log("Fond de carte non-implémenté")
-    }
+    
 
     const gestChoro=()=>{
         console.log("Couleur pas encore gérée")
@@ -89,14 +87,7 @@ const VisualisationInventaire: React.FC = () => {
                 <input 
                     type="checkbox" 
                     id="show-all-lots"/>
-                <label 
-                    htmlFor="fond-de-carte" 
-                    className="label-fond-de-carte">
-                        Fond de carte</label>
-                <select id="fond-de-carte" name="fond-de-carte" onChange={gestFondDeCarte}>
-                    <option>OSM</option>
-                    <option>Géodésie Québec</option>
-                </select>
+               
                 <label 
                     htmlFor="valeur-choroplethe" 
                     className="label-valeur-choroplethe">
