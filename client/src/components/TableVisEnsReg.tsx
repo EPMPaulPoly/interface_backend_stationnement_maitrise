@@ -33,6 +33,8 @@ const TableVisModEnsReg: React.FC<TableVisModEnsRegProps> = (props) => {
                         <th>ID Assoc</th>
                         <th>CUBF</th>
                         <th>ID Règlement</th>
+                        <th>Deb reg</th>
+                        <th>Fin Reg</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -55,6 +57,8 @@ const TableVisModEnsReg: React.FC<TableVisModEnsRegProps> = (props) => {
                             <td>{assoc.id_assoc_er_reg}</td>
                             <td>{assoc.cubf + ' - ' + (foundLandUse? foundLandUse?.description:'N/A')}</td>
                             <td>{assoc.id_reg_stat + ' - ' + (foundRule ? foundRule.description : 'N/A')}</td>
+                            <td>{(foundRule ? foundRule.annee_debut_reg : 'N/A')}</td>
+                            <td>{(foundRule ? foundRule.annee_fin_reg : 'N/A')}</td>
                         </tr>
 
                     )})}

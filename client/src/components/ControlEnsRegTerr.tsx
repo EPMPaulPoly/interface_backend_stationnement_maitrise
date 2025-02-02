@@ -5,7 +5,8 @@ import { serviceEnsemblesReglements, serviceTerritoires } from '../services';
 
 const ControlEnsRegTerr:React.FC<EnsRegTerrControlProps> = (props:EnsRegTerrControlProps) =>{
 
-    const [ddSelectedValue,defddSelectedValue] = useState(-1)
+    const [ddSelectedValue,defddSelectedValue] = useState(-1);
+    const [ddPerSelectedValue,defddPerSelectedValue] = useState(-1);
     const gestSelectionPeriode = async (periodeAChanger:number)=>{
         if (periodeAChanger!=-1){
             const territoires = await serviceTerritoires.chercheTerritoiresParPeriode(periodeAChanger)
@@ -16,15 +17,28 @@ const ControlEnsRegTerr:React.FC<EnsRegTerrControlProps> = (props:EnsRegTerrCont
             props.defTerritoireSelect(territoireSelect)
             defddSelectedValue(-1)
             props.defEnsRegDispo([])
+            defddPerSelectedValue(periodeAChanger)
+        }else{
+            defddSelectedValue(-1)
+            props.defEnsRegDispo([])
+            defddPerSelectedValue(periodeAChanger)
+            const territoires = {type:'FeatureCollection'as const,features:[] as never[]}
+            props.defTerritoireDispo(territoires)
+            const territoireSelect = {type:'FeatureCollection',features:[]}
+            props.defTerritoireSelect(territoireSelect)
         }
-    }
+    };
 
     const gestSelectionTerritoire = async(territoireAregarder:number)=>{
         if (territoireAregarder!=-1){
             const ensReg = await serviceEnsemblesReglements.obtiensEnsRegParTerritoire(territoireAregarder)
             props.defEnsRegDispo(ensReg.data)
             defddSelectedValue(territoireAregarder)
+        } else{
+            defddSelectedValue(territoireAregarder)
+            props.defEnsRegDispo([])
         }
+        
     }
     return(
         <div className="control-ens-reg-terr-comp">
@@ -34,8 +48,11 @@ const ControlEnsRegTerr:React.FC<EnsRegTerrControlProps> = (props:EnsRegTerrCont
                 className="label-selection-periode">
                 Sélection Période
             </label>
-            <select className="selection-periode" onChange={e => gestSelectionPeriode(Number(e.target.value))}>
-                <option>Choisir Période</option>
+            <select 
+            className="selection-periode" 
+            value ={ddPerSelectedValue}
+            onChange={e => gestSelectionPeriode(Number(e.target.value))}>
+                <option value={-1}>Choisir Période</option>
                 {props.periodesDispo.map((periode)=>(
                     <option value={periode.id_periode}>{periode.nom_periode}</option>
                 ))}

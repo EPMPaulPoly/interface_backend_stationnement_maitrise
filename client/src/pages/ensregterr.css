@@ -22,7 +22,7 @@
 
 .table-vis-assoc-terr-ens-reg td {
     border: 1px solid #ddd; /* Add border to table headers and cells */
-    text-align: left; /* Ensure consistent text alignment */
+    
 }
 
 .table-vis-assoc-terr-ens-reg th {
@@ -36,6 +36,7 @@
     background-color: white;
     color: black;
     z-index:2;
+    text-align: left; /* Ensure consistent text alignment */
 }
 
 .id-col {
@@ -76,4 +77,10 @@
 .year-header{
     transform: rotate(-90deg); /* Rotate the text 90 degrees counterclockwise */
     transform-origin: center; /* Adjust the origin point for the rotation */
+}
+
+.annee-valide{
+    background-color:red;
+    color:black;
+    text-align:center;
 }
