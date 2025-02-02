@@ -1,6 +1,79 @@
+.page-ens-reg-terr{
+    overflow:hidden;
+}
+
+.control-ens-reg-terr-comp {
+    display: flex;
+    flex-direction: row;
+    padding:3px;
+}
+
+.gantt-ens-reg-terr{
+    position: relative;
+    overflow: auto;
+    border: 1px solid black;
+    white-space: nowrap;
+}
+
+.table-vis-assoc-terr-ens-reg {
+    border-collapse: collapse;
+    overflow-x:auto;
+}
+
+.table-vis-assoc-terr-ens-reg td {
+    border: 1px solid #ddd; /* Add border to table headers and cells */
+    text-align: left; /* Ensure consistent text alignment */
+}
+
+.table-vis-assoc-terr-ens-reg th {
+    background-color: white;
+    color:black;
+    height:100px;
+}
+
+.sticky-col {
+    position: sticky;
+    background-color: white;
+    color: black;
+    z-index:2;
+}
+
+.id-col {
+    width:50px;
+    left:0px;
+    min-width:50px;
+    max-width:50px;
+}
+
+.desc-col {
+    width:400px;
+    left:50px;
+    min-width:400px;
+    max-width:400px;
+    overflow:hidden;
+    text-overflow: ellipsis;
+}
+
+.start-col{
+    width:50px;
+    left:450px;
+    min-width:50px;
+    max-width:50px;
+    overflow-wrap: break-word; /* Modern alternative */
+    white-space: normal; /* Allows wrapping */
+}
+
+.end-col{
+    width:50px;
+    left:500px;
+    min-width:50px;
+    max-width:50px;
+    overflow-wrap: break-word; /* Modern alternative */
+    white-space: normal; /* Allows wrapping */
+}
+
+
 .year-header{
     transform: rotate(-90deg); /* Rotate the text 90 degrees counterclockwise */
-    transform-origin: right top; /* Adjust the origin point for the rotation */
-    white-space: nowrap; /* Prevent text from wrapping */
-    text-orientation: mixed; /* Ensure proper text orientation */
-} 
+    transform-origin: center; /* Adjust the origin point for the rotation */
+}
