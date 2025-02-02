@@ -1,5 +1,8 @@
 .page-ens-reg-terr{
     overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    height:100vh;
 }
 
 .control-ens-reg-terr-comp {
@@ -8,11 +11,25 @@
     padding:3px;
 }
 
+.carte-et-tableau-ens-reg-terr{
+    display:flex;
+    flex-direction:row;
+    width:100%;
+    height:100%;
+    flex:1;
+}
+
 .gantt-ens-reg-terr{
     position: relative;
     overflow: auto;
     border: 1px solid black;
     white-space: nowrap;
+    flex:1;
+}
+
+.div-carte-ens-reg-terr{
+    width:400px;
+    height:100%;
 }
 
 .table-vis-assoc-terr-ens-reg {
@@ -22,7 +39,6 @@
 
 .table-vis-assoc-terr-ens-reg td {
     border: 1px solid #ddd; /* Add border to table headers and cells */
-    
 }
 
 .table-vis-assoc-terr-ens-reg th {

@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package*.json ./
 # Update npm to the latest version
 RUN npm config set cache /app/.npm-cache --global
-RUN npm install -g npm@11.0.0
+RUN npm install -g npm@11.1.0
 RUN npm install
 #COPY . .
 ENV WATCHPACK_POLLING=true

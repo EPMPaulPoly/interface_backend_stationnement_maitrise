@@ -32,7 +32,9 @@ const ControlEnsRegTerr:React.FC<EnsRegTerrControlProps> = (props:EnsRegTerrCont
     const gestSelectionTerritoire = async(territoireAregarder:number)=>{
         if (territoireAregarder!=-1){
             const ensReg = await serviceEnsemblesReglements.obtiensEnsRegParTerritoire(territoireAregarder)
-            props.defEnsRegDispo(ensReg.data)
+            const territoireSelectTemp =await serviceTerritoires.chercheTerritoiresParId(territoireAregarder);
+            props.defEnsRegDispo(ensReg.data);
+            props.defTerritoireSelect(territoireSelectTemp.data);
             defddSelectedValue(territoireAregarder)
         } else{
             defddSelectedValue(territoireAregarder)

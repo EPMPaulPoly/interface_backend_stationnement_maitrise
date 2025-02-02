@@ -227,3 +227,12 @@ export interface EnsRegTerrDispTable{
     periodeSelect:periode,
     defPeriodeSelect:React.Dispatch<SetStateAction<periode>>,
 }
+
+export interface CarteEnsRegTerrProps{
+    territoireSelect: GeoJSON.FeatureCollection<GeoJSON.Geometry,territoireGeoJsonProperties>,
+    defTerritoireSelect: React.Dispatch<SetStateActionGeoJSON.FeatureCollection<GeoJSON.Geometry,territoireGeoJsonProperties>>
+    centre: LatLngExpression;
+    defCentre: React.Dispatch<SetStateAction<LatLngExpression>>
+    zoom: number,
+    defZoom:React.Dispatch<SetStateAction<number>>
+}
