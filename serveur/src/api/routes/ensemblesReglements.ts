@@ -1,6 +1,6 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { Pool } from 'pg';
-import { DbAssociationReglementUtilSol, DbEnteteEnsembleReglement, DbUtilisationSol, DbEnteteReglement } from 'database';
+import { DbAssociationReglementUtilSol, DbEnteteEnsembleReglement, DbUtilisationSol, DbEnteteReglement, ParamsTerritoire } from 'database';
 
 
 export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
@@ -111,11 +111,50 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
     }
   };
 
+  const obtiensEntetesParTerritoire: RequestHandler<ParamsTerritoire> = async (req, res): Promise<void> => {
+    console.log('Serveur - Obtention entete reglement par territoire')
+    let client;
+    try {
+      client = await pool.connect();
+      const {id} = req.params;
+      const query = `
+      WITH associations AS (
+        SELECT 
+          id_asso_er_ter,
+          id_periode_geo,
+          id_er
+        FROM 
+          public.association_er_territoire
+        WHERE
+          id_periode_geo = $1
+      )
+        SELECT
+	          ers.id_er,
+	          ers.description_er,
+	          ers.date_debut_er,
+	          ers.date_fin_er
+        FROM public.ensembles_reglements_stat ers
+        JOIN 
+          associations ON associations.id_er = ers.id_er
+        ORDER BY 
+          date_debut_er ASC
+      `;
+      const result = await client.query<DbEnteteEnsembleReglement>(query, [id]);
+      res.json({ success: true, data: result.rows });
+    } catch (err) {
+      res.status(500).json({ success: false, error: 'Database error test' });
+    } finally{
+      if (client){
+        client.release()
+      }
+    }
+  };
+
 
   // Routes
   router.get('/entete', obtiensTousEntetesEnsemblesReglements);
   router.get('/complet/:id',obtiensEnsembleReglementCompletParId)
   router.get('/regs-associes/:id',obtiensReglementsPourEnsReg);
-
+  router.get('/entete-par-territoire/:id',obtiensEntetesParTerritoire)
   return router;
 };

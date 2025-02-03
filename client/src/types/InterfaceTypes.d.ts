@@ -1,6 +1,6 @@
 import {LatLng, LatLngExpression} from "leaflet";
 import { SetStateAction } from "react";
-import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps } from "./DataTypes";
+import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties } from "./DataTypes";
 import { FeatureCollection } from "geojson";
 // --------------------------------------------------------------------------
 // ------------------------- Interface --------------------------------------
@@ -63,11 +63,9 @@ export interface TableInventaireProps{
     defRoleRegard:React.Dispatch<SetStateAction<string>>,
 }
 
-
-
 export interface CarteInventaireProps{
     inventaire:GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>;
-    defInventaire: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,territoireGeoJsonProperties>>>;
+    defInventaire: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>>>;
     itemSelect: GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>;
     defItemSelect :React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>>>,
     startPosition: LatLngExpression;
@@ -204,3 +202,37 @@ export interface TableVisModEnsRegProps{
     defEntetesReglements: React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
 }
 
+// ----------------------------------------------------------------------------
+// -------------------- Ensembles Reglements - Territoires --------------------
+// ---------------------------------------------------------------------------- 
+
+export interface EnsRegTerrControlProps{
+    periodesDispo:periode[],
+    defPeriodesDispo:React.Dispatch<SetStateAction<periode[]>>,
+    periodeSelect:periode,
+    defPeriodeSelect:React.Dispatch<SetStateAction<periode>>,
+    territoiresDispo: GeoJSON.FeatureCollection<GeoJSON.Geometry,territoireGeoJsonProperties>,
+    defTerritoireDispo: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,territoireGeoJsonProperties>>>,
+    territoireSelect: GeoJSON.FeatureCollection<GeoJSON.Geometry,territoireGeoJsonProperties>,
+    defTerritoireSelect: React.Dispatch<SetStateActionGeoJSON.FeatureCollection<GeoJSON.Geometry,territoireGeoJsonProperties>>,
+    ensRegDispo:entete_ensemble_reglement_stationnement[],
+    defEnsRegDispo:React.Dispatch<SetStateAction<entete_ensemble_reglement_stationnement[]>>,
+    anneesVisu:number[],
+    defAnneesVisu:React.Dispatch<SetStateAction<number[]>>
+}
+
+export interface EnsRegTerrDispTable{
+    ensRegDispo:entete_ensemble_reglement_stationnement[],
+    defEnsRegDispo:React.Dispatch<SetStateAction<entete_ensemble_reglement_stationnement[]>>,
+    periodeSelect:periode,
+    defPeriodeSelect:React.Dispatch<SetStateAction<periode>>,
+}
+
+export interface CarteEnsRegTerrProps{
+    territoireSelect: GeoJSON.FeatureCollection<GeoJSON.Geometry,territoireGeoJsonProperties>,
+    defTerritoireSelect: React.Dispatch<SetStateActionGeoJSON.FeatureCollection<GeoJSON.Geometry,territoireGeoJsonProperties>>
+    centre: LatLngExpression;
+    defCentre: React.Dispatch<SetStateAction<LatLngExpression>>
+    zoom: number,
+    defZoom:React.Dispatch<SetStateAction<number>>
+}

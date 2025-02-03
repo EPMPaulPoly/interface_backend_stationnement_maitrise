@@ -4,4 +4,5 @@
 /client/package-lock.json
 /client/.npm-cache
 /serveur/dist
+/serveur/package-lock.json
 test.geojson 

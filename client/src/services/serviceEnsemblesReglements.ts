@@ -62,6 +62,23 @@ class ServiceEnsemblesReglements {
             throw error; // Re-throw if necessary
         }
     }
+
+    async obtiensEnsRegParTerritoire(idPeriodeGeo:number):Promise<ReponseEntetesEnsemblesReglement>{
+        try{
+            const response: AxiosResponse<ReponseEntetesEnsemblesReglement>= await api.get(`/ens-reg/entete-par-territoire/${idPeriodeGeo}`)
+            const data_res = response.data.data
+            return{success:response.data.success,data:data_res}
+        }catch(error){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
 }
 
 export const serviceEnsemblesReglements =  new ServiceEnsemblesReglements();
