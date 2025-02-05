@@ -1,4 +1,4 @@
-from stationnement_vdq_hors_rue_reglementaire.config import config_db
+from calcul_python.config import config_db
 from sqlalchemy import create_engine,text
 import pandas as pd
 import numpy as np

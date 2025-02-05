@@ -1,9 +1,9 @@
 import pandas as pd
 import mimetypes
-from stationnement_vdq_hors_rue_reglementaire.utilitaires.database_interface import retrieve_table
+from calcul_python.utilitaires.database_interface import retrieve_table
 from functools import singledispatchmethod,singledispatch
 import numpy as np
-from stationnement_vdq_hors_rue_reglementaire.config import config_db
+from calcul_python.config import config_db
 from sqlalchemy import create_engine,text
 import logging
 class ParkingRegulations():

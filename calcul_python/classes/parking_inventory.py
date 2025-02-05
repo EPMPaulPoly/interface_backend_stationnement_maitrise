@@ -2,16 +2,16 @@ import pandas as pd
 import geopandas as gpd
 from sqlalchemy import create_engine,text,Engine,MetaData,Table
 import sqlalchemy as db_alchemy
-from stationnement_vdq_hors_rue_reglementaire.config import config_db
-from stationnement_vdq_hors_rue_reglementaire.classes import parking_inventory as PI
+from calcul_python.config import config_db
+from calcul_python.classes import parking_inventory as PI
 from typing_extensions import Self
 import logging
 import numpy as np
 import sqlalchemy
-from stationnement_vdq_hors_rue_reglementaire.classes import tax_dataset as TD
-from stationnement_vdq_hors_rue_reglementaire.classes import reg_set_territory as RST
-from stationnement_vdq_hors_rue_reglementaire.classes import parking_reg_sets as PRS
-from stationnement_vdq_hors_rue_reglementaire.classes import parking_regs as PR
+from calcul_python.classes import tax_dataset as TD
+from calcul_python.classes import reg_set_territory as RST
+from calcul_python.classes import parking_reg_sets as PRS
+from calcul_python.classes import parking_regs as PR
 import webbrowser
 import os
 from typing import Union

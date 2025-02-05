@@ -1,10 +1,10 @@
-from stationnement_vdq_hors_rue_reglementaire.classes.parking_regs import ParkingRegulations 
+from calcul_python.classes.parking_regs import ParkingRegulations 
 import pandas as pd
 import numpy as np
 from typing import Optional, Union
 from sqlalchemy import create_engine,text
 import sqlalchemy
-from stationnement_vdq_hors_rue_reglementaire.config import config_db
+from calcul_python.config import config_db
 import copy
 import logging
 

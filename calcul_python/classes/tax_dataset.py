@@ -5,7 +5,7 @@ from shapely import wkt
 import matplotlib.pyplot as plt
 from sqlalchemy import create_engine,text
 import sqlalchemy
-from stationnement_vdq_hors_rue_reglementaire.config import config_db
+from calcul_python.config import config_db
 from typing import Optional, Union, Self
 from folium import Map
 
