@@ -1,19 +1,21 @@
+import os
+print(os.getcwd())
 import pandas as pd
 import geopandas as gpd
 from sqlalchemy import create_engine,text,Engine,MetaData,Table
 import sqlalchemy as db_alchemy
-from calcul_python.config import config_db
-from calcul_python.classes import parking_inventory as PI
+from config import config_db
+from classes import parking_inventory as PI
 from typing_extensions import Self
 import logging
 import numpy as np
 import sqlalchemy
-from calcul_python.classes import tax_dataset as TD
-from calcul_python.classes import reg_set_territory as RST
-from calcul_python.classes import parking_reg_sets as PRS
-from calcul_python.classes import parking_regs as PR
+from classes import tax_dataset as TD
+from classes import reg_set_territory as RST
+from classes import parking_reg_sets as PRS
+from classes import parking_regs as PR
 import webbrowser
-import os
+
 from typing import Union
 
 class ParkingInventory():

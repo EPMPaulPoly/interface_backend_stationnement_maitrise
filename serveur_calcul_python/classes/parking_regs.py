@@ -1,9 +1,9 @@
 import pandas as pd
 import mimetypes
-from calcul_python.utilitaires.database_interface import retrieve_table
+from utilitaires.database_interface import retrieve_table
 from functools import singledispatchmethod,singledispatch
 import numpy as np
-from calcul_python.config import config_db
+from config import config_db
 from sqlalchemy import create_engine,text
 import logging
 class ParkingRegulations():

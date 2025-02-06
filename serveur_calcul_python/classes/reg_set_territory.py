@@ -4,9 +4,9 @@ import pandas as pd
 from typing import Optional, Union
 from datetime import datetime
 from sqlalchemy import create_engine,text
-from calcul_python.config import config_db
-from calcul_python.classes import parking_reg_sets as PRS
-from calcul_python.classes import tax_dataset as TD
+from config import config_db
+from classes import parking_reg_sets as PRS
+from classes import tax_dataset as TD
 import matplotlib.pyplot as plt
 from copy import deepcopy
 from folium import Map

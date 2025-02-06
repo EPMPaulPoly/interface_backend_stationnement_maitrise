@@ -5,7 +5,7 @@ from shapely import wkt
 import matplotlib.pyplot as plt
 from sqlalchemy import create_engine,text
 import sqlalchemy
-from calcul_python.config import config_db
+from config import config_db
 from typing import Optional, Union, Self
 from folium import Map
 

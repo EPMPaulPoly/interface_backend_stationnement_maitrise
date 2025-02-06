@@ -1,10 +1,10 @@
-from calcul_python.classes.parking_regs import ParkingRegulations 
+from classes.parking_regs import ParkingRegulations 
 import pandas as pd
 import numpy as np
 from typing import Optional, Union
 from sqlalchemy import create_engine,text
 import sqlalchemy
-from calcul_python.config import config_db
+from config import config_db
 import copy
 import logging
 
