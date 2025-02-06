@@ -35,7 +35,16 @@
             "request": "attach",
             "port": 3000
 
-        }
+        },
+        {
+            "name": "Inventaire par quartier",
+            "type": "debugpy",
+            "pythonArgs": ["-O"],
+            "request": "launch",
+            "program": "${workspaceFolder}/serveur_calcul_python/calcul_par_quartier.py",
+            "args":["16"],
+            "console": "integratedTerminal"
+        },
     ],
     "compounds": [
         {
