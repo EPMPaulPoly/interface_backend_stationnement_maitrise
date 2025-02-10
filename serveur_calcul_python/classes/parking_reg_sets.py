@@ -18,6 +18,7 @@ class ParkingRegulationSet(ParkingRegulations):
             - start_date: date de début de l'ensemble de règlements. À valider contre les dates de validité des règlements individuels
             - end_date: date de fin de validité. À valider contre les dates de validité des règlements individuels
             - description: description de l'ensemble de règlements
+            - association_table: association entre les règlements et les codes d'utilisations du bien-fonds
         '''
     def __init__(self,reg_head:pd.DataFrame,reg_def:pd.DataFrame,start_date:int,end_date:int,description:str,association_table:pd.DataFrame,ruleset_id:int,units_table:pd.DataFrame,all_land_uses_table:pd.DataFrame):
         super().__init__(reg_head,reg_def,units_table)
