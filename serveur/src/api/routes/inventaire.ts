@@ -3,6 +3,8 @@ import { Pool } from 'pg';
 import { DbInventaire,ParamsQuartier } from 'database';
 // Types pour les requêtes
 import { Polygon,MultiPolygon } from 'geojson';
+import path from 'path';
+import {spawn} from 'child_process';
 interface GeometryBody {
   geometry: Polygon|MultiPolygon;  
 }
@@ -54,10 +56,16 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
     }
   };
 
+  const calculInventairePythonQuartier: RequestHandler<ParamsQuartier> = async(req,res): Promise<void> =>{
+    const {id} = req.params;
+    const scriptPath = path.resolve(__dirname, "../backend_python/calcul_par_quartier.py");
 
+    const pythonProcess = spawn("python3",[scriptPath,id])
+  };
 
   // Routes
   router.get('/quartier/:id', obtiensInventaireParQuartier);
+  router.get('/calculate/quartier/:id',calculInventairePythonQuartier)
 
   return router;
 };
