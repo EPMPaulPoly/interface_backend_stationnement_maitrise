@@ -416,7 +416,7 @@ def calculate_parking_specific_reg(reg_to_calculate: PR.ParkingRegulations,tax_d
                 else:
                     operator = int(reg_to_calculate.reg_def.loc[reg_to_calculate.reg_def[config_db.db_column_parking_subset_id]==iter_subset_id,config_db.db_column_parking_operation].iloc[0])
                     subset_inventory = calculate_parking_specific_reg_subset(reg_to_calculate,iter_subset_id,tax_data,rule_set_to_transfer)
-                    parking_inventory = subset_operation(parking_inventory,operator=operator,inventory_2 = subset_inventory) # if subsequen subset, you need to check which operator it is for the subset and 
+                    parking_inventory = subset_operation(parking_inventory,operator=operator,inventory_2 = subset_inventory) # if subsequen subset, you need to check which operator it is for the subset and choose which inventory to keep
     return parking_inventory
         
 def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subset:int,tax_data:TD.TaxDataset,rule_set_id:int)->ParkingInventory:
@@ -584,7 +584,7 @@ def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subs
                             zero_crossing_min = np.nan
                         if slope_min is None:
                             slope_min = np.nan
-                        if inx==0: # if its the largest lower bound(based on sort values at line 153), then pick all tax data above threshold
+                        if inx==0: # if its the largest lower bound(based on sort values at line 559), then pick all tax data above threshold
                             if not np.isnan(zero_crossing_min) and not np.isnan(slope_min):
                                 parking_inventory_df_agg.loc[parking_inventory_df_agg['converted_assessement_column']>=lower_bound,'n_places_min'] = zero_crossing_min+slope_min* parking_inventory_df_agg.loc[parking_inventory_df_agg['converted_assessement_column']>=lower_bound,'converted_assessement_column']
                             elif not np.isnan(zero_crossing_min) and np.isnan(slope_min):
