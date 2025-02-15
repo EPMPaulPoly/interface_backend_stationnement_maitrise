@@ -42,7 +42,14 @@ services:
       - /app/node_modules
     command: npm run dev 
 
-
+  serveur_calcul_python:
+    build: 
+      context: ./serveur_calcul_python
+      dockerfile: Dockerfile
+    volumes:
+      - ./serveur_calcul_python:/app
+    environment:
+      - CONDA_ENV=serveur_calcul_python
 volumes:
   client_node_modules:
 networks:
