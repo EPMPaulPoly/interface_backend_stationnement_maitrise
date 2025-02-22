@@ -1,6 +1,6 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { Pool } from 'pg';
-import { DbTerritoire, ParamsCadastre, ParamsPeriode,DbRole,DbCadastre } from 'database';
+import { DbTerritoire, ParamsCadastre, ParamsPeriode,DbRole,DbCadastre } from '../../types/database';
 // Types pour les requêtes
 import { Polygon,MultiPolygon } from 'geojson';
 interface GeometryBody {

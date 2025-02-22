@@ -1,25 +1,25 @@
-{
-    "compilerOptions": {
-      "target": "es2018",
-      "module": "commonjs",
-      "rootDir": "./src",
-      "outDir": "./dist",
-      "esModuleInterop": true,
-      "skipLibCheck": true,
-      "forceConsistentCasingInFileNames": true,
-      "strict": true,
-      "moduleResolution": "node",
-      "resolveJsonModule": true,
-      "sourceMap": true,  // Make sure this is true
-      "inlineSourceMap": false, // This should be false when sourceMap is true
-      "inlineSources": false,
-      "baseUrl": ".",
-      "paths": {
-        "*": ["node_modules/*", "src/types/*"]
+  {
+      "compilerOptions": {
+        "target": "es2018",
+        "module": "commonjs",
+        "rootDir": "./serveur/src",
+        "outDir": "./serveur/dist",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "strict": true,
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "sourceMap": true,  // Make sure this is true
+        "inlineSourceMap": false, // This should be false when sourceMap is true
+        "inlineSources": false,
+        "baseUrl": ".",
+        "paths": {
+          "*": ["serveur/node_modules/*", "serveur/src/types/*"]
+        },
+        "typeRoots": ["./serveur/node_modules/@types", "./serveur/src/types"],
+        "types": ["node", "express","geojson"]
       },
-      "typeRoots": ["./node_modules/@types", "./src/types"],
-      "types": ["node", "express","geojson"]
-    },
-    "include": ["src/**/*"],
-    "exclude": ["node_modules", "dist"]
-  }
+      "include": ["serveur/src/**/*"],
+      "exclude": ["serveur/node_modules", "serveur/dist"]
+    }

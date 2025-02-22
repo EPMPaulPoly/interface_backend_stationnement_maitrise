@@ -8,8 +8,6 @@ dependencies:
   - pandas
   - geopandas
   - typing
-  - pytorch
-  - jupyterlab
   - scikit-image
   - lxml
   - openpyxl

@@ -19,8 +19,8 @@ services:
 
   serveur:
     build:
-      context: ./serveur
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: serveur/Dockerfile
     ports:
       - "5000:5000"
       - "9229:9229"
@@ -39,17 +39,10 @@ services:
       - app-network
     volumes:
       - ./serveur:/app
+      - ./serveur_calcul_python:/app/serveur_calcul_python
       - /app/node_modules
     command: npm run dev 
 
-  serveur_calcul_python:
-    build: 
-      context: ./serveur_calcul_python
-      dockerfile: Dockerfile
-    volumes:
-      - ./serveur_calcul_python:/app
-    environment:
-      - CONDA_ENV=serveur_calcul_python
 volumes:
   client_node_modules:
 networks:

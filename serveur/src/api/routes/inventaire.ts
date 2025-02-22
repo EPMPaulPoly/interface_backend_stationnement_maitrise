@@ -1,6 +1,6 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { Pool } from 'pg';
-import { DbInventaire,ParamsQuartier } from 'database';
+import { DbInventaire,ParamsQuartier } from '../../types/database';
 // Types pour les requêtes
 import { Polygon,MultiPolygon } from 'geojson';
 import path from 'path';
@@ -58,14 +58,42 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
 
   const calculInventairePythonQuartier: RequestHandler<ParamsQuartier> = async(req,res): Promise<void> =>{
     const {id} = req.params;
-    const scriptPath = path.resolve(__dirname, "../backend_python/calcul_par_quartier.py");
+    const scriptPath = path.resolve(__dirname, "../../../serveur_calcul_python/calcul_par_quartier.py");
 
-    const pythonProcess = spawn("python3",[scriptPath,id])
+    // Chemin direct vers l'interpréteur Python dans l'environnement Conda
+    const pythonExecutable = '/opt/conda/envs/serveur_calcul_python/bin/python3';
+
+    // Exécuter le script Python avec l'interpréteur de l'environnement
+    const pythonProcess = spawn(pythonExecutable, [scriptPath, id]);
+    let outputData = '';
+    let errorData = '';
+  
+    // Capturer l'output standard
+    pythonProcess.stdout.on('data', (data) => {
+      outputData += data.toString();
+    });
+  
+    // Capturer les erreurs standard
+    pythonProcess.stderr.on('data', (data) => {
+      errorData += data.toString();
+    });
+  
+    // Capturer la fin du processus
+    pythonProcess.on('close', (code) => {
+      if (code === 0) {
+        console.log(`Output: ${outputData}`)
+        console.log(`Processus enfant terminé avec succès.`);
+        res.status(200).send(`Output: ${outputData}`);
+      } else {
+        console.error(`Processus enfant échoué avec le code : ${code}`);
+        res.status(500).send(`Erreur: ${errorData}`);
+      }
+    });
   };
 
   // Routes
   router.get('/quartier/:id', obtiensInventaireParQuartier);
-  router.get('/calculate/quartier/:id',calculInventairePythonQuartier)
+  router.get('/calcul/quartier/:id',calculInventairePythonQuartier)
 
   return router;
 };

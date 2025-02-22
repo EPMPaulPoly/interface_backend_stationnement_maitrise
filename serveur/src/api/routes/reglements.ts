@@ -1,6 +1,6 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { Pool } from 'pg';
-import { DbDefReglement, DbEnteteReglement, DbReglementComplet } from 'database';
+import { DbDefReglement, DbEnteteReglement, DbReglementComplet } from '../../types/database';
 
 
 export const creationRouteurReglements = (pool: Pool): Router => {

@@ -61,6 +61,12 @@ const VisualisationInventaire: React.FC = () => {
         }
     }
 
+    const gestCalculInventaire= async()=>{
+        if (quartier != -1){
+            const inventaire = await serviceInventaire.recalculeQuartierComplet(quartier)
+        }
+    }
+
     
 
     const gestChoro=()=>{
@@ -80,6 +86,9 @@ const VisualisationInventaire: React.FC = () => {
                         </option>
                     ))}
                 </select>
+                <button onClick={gestCalculInventaire}>
+                    Calcul de stationnement
+                </button>
                 <label 
                     htmlFor="show-all-lots" 
                     className="label-show-all-lots">
