@@ -5,6 +5,7 @@ import { FeatureCollection, Geometry,Feature } from 'geojson';
 import { ensemble_reglement_territoire, inventaireGeoJSONProps, reglement_complet } from '../types/DataTypes';
 import TableauInventaireUnique from './TableauInventaireUnique';
 import recalculeInventaireLot from '../utils/recalculeInventaireLot';
+import ObtRegLots from '../utils/obtRegLots';
 const CompoModifInventaire: React.FC<TableRevueProps> = (props) => {
     const emptyFeature: Feature<Geometry | null, inventaireGeoJSONProps> = {
         type: "Feature",
@@ -50,7 +51,8 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props) => {
         if (!modifEnMarche){
             defModifEnMarche(true)
             if (optionCalcul===2){
-
+                const ids = [...new Set (props.donneesRole.features.map(x => x.properties.id_provinc))]
+                const partialRuleSets = ObtRegLots(ids)
             }
         } else {
             defModifEnMarche(false)

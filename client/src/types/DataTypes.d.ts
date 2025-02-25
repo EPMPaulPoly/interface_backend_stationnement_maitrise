@@ -128,6 +128,11 @@ export interface roleFoncierGeoJsonProps{
     rl0404a:number,
 }
 
+export interface comboERRoleFoncier{
+    ERs:ensemble_reglement_territoire,
+    TDs: roleFoncierGeoJsonProps[]
+}
+
 
 export interface inventaire_stationnement{
     g_no_lot:string,
