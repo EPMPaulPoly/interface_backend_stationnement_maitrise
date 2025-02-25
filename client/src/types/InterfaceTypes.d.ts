@@ -1,7 +1,7 @@
 import {LatLng, LatLngExpression} from "leaflet";
 import { SetStateAction } from "react";
 import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties } from "./DataTypes";
-import { FeatureCollection } from "geojson";
+import { FeatureCollection, Geometry } from "geojson";
 // --------------------------------------------------------------------------
 // ------------------------- Interface --------------------------------------
 // --------------------------------------------------------------------------
@@ -109,8 +109,8 @@ export interface TableRevueProps{
     defEnsRegRegard:React.Dispatch<SetStateAction<number>>,
     roleRegard:string,
     defRoleRegard:React.Dispatch<SetStateAction<string>>,
-    modifEnCours: boolean,
-    defModifEnCours:React.Dispatch<SetStateAction<boolean>>
+    panneauModifVisible: boolean,
+    defPanneauModifVisible:React.Dispatch<SetStateAction<boolean>>
 }
 
 export interface selectLotProps{
@@ -136,6 +136,16 @@ export interface selectLotProps{
     defRoleRegard:React.Dispatch<SetStateAction<string>>,
 }
 
+export interface TableauInventaireUniqueProps{
+    inventaire: GeoJSON.Feature<Geometry|null,inventaireGeoJSONProps>
+}
+
+export interface calculateRegLotInventoryProps{
+    lots:FeatureCollection<Geometry,inventaireGeoJSONProps>
+    modifEnMarche:boolean,
+    defInventaireProp:Feature<Geometry,inventaireGeoJSONProps>
+    defNvInvRegATrait:React.Dispatch<SetStateAction<boolean>>
+}
 // ------------------------------------------------------------------------------
 // ---------------------------- Historique --------------------------------------
 // ------------------------------------------------------------------------------
@@ -237,4 +247,13 @@ export interface CarteEnsRegTerrProps{
     defCentre: React.Dispatch<SetStateAction<LatLngExpression>>
     zoom: number,
     defZoom:React.Dispatch<SetStateAction<number>>
+}
+
+// ----------------------------------------------------------------------------
+// -------------------- Graphiques Comparaison Règlements ---------------------
+// ---------------------------------------------------------------------------- 
+
+export interface GraphiqueProps{
+    listeReglements:number[],
+    defListeReglements:React.Dispatch<SetStateAction<number[]>>
 }

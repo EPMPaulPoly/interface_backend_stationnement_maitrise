@@ -42,7 +42,7 @@ const VisualisationInventaire: React.FC = () => {
     });
     const [regSelect,defRegSelect] = useState<reglement_complet[]>([]);// reglement complet
     const [ensRegSelect,defEnsRegSelect] = useState<ensemble_reglements_stationnement[]>([]);// ensembles de reglement complet
-    const [modifEnCours,defModifEnCours] = useState<boolean>(false);
+    const [panneauModifVisible,defPanneauModifVisible] = useState<boolean>(false);
     const [optionCouleur,defOptionCouleur] = useState<number>(-1);
     // Va chercher les quartiers pertinents
     useEffect(() => {
@@ -115,7 +115,34 @@ const VisualisationInventaire: React.FC = () => {
             </div>
             <div className="inventaire-carte-conteneur">
                 
-                {modifEnCours ? <CompoModifInventaire
+                {panneauModifVisible ? 
+                (<><CarteInventaire
+                startPosition={positionDepart}
+                setStartPosition={defPositionDepart}
+                startZoom={zoomDepart}
+                setStartZoom={defZoomDepart}
+                inventaire={inventaire}
+                defInventaire={defInventaire}
+                itemSelect={itemSelect}
+                defItemSelect={defItemSelect}
+                lots={lotSelect}
+                defLots={defLotSelect}
+                donneesRole={roleSelect}
+                defDonneesRole={defRoleSelect}
+                ensemblesReglements={ensRegSelect}
+                defEnsemblesReglements={defEnsRegSelect}
+                reglements={regSelect}
+                defReglements={defRegSelect}
+                roleRegard={roleARegarder}
+                defRoleRegard={defRoleARegarder}
+                methodeEstimeRegard={methodeEstimeARegarder}
+                defMethodeEstimeRegard={defMethodeEstimeARegarder}
+                regRegard={regARegarder}
+                defRegRegard={defRegARegarder}
+                ensRegRegard={ensRegARegarder}
+                defEnsRegRegard={defEnsRegARegarder}
+                />
+                <CompoModifInventaire
                     lots={lotSelect}
                     defLots={defLotSelect}
                     donneesRole={roleSelect}
@@ -134,9 +161,9 @@ const VisualisationInventaire: React.FC = () => {
                     defRegRegard={defRegARegarder}
                     ensRegRegard={ensRegARegarder}
                     defEnsRegRegard={defEnsRegARegarder}
-                    modifEnCours={modifEnCours}
-                    defModifEnCours={defModifEnCours}
-                />: <CarteInventaire
+                    panneauModifVisible={panneauModifVisible}
+                    defPanneauModifVisible={defPanneauModifVisible}
+                /></>): <CarteInventaire
                 startPosition={positionDepart}
                 setStartPosition={defPositionDepart}
                 startZoom={zoomDepart}
@@ -183,8 +210,8 @@ const VisualisationInventaire: React.FC = () => {
                     defRegRegard={defRegARegarder}
                     ensRegRegard={ensRegARegarder}
                     defEnsRegRegard={defEnsRegARegarder}
-                    modifEnCours={modifEnCours}
-                    defModifEnCours={defModifEnCours}
+                    panneauModifVisible={panneauModifVisible}
+                    defPanneauModifVisible={defPanneauModifVisible}
                 />
                 </div>
 

@@ -7,7 +7,6 @@ import GeoJSON,{FeatureCollection,Geometry} from 'geojson';
 import ControlEnsRegTerr from '../components/ControlEnsRegTerr';
 import { serviceHistorique } from '../services';
 import CarteEnsRegTerr from '../components/carteEnsRegTerr';
-import {MapViewState} from '@deck.gl/core';
 import { LatLngExpression } from 'leaflet';
 
 const EnsRegTerritoire: React.FC =()=>{

@@ -110,13 +110,14 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
 
   const calculInventairePythonLot:RequestHandler<ParamsLot> = async(req,res):Promise<void>=>{
     const {id} = req.params;
-    const scriptPath = path.resolve(__dirname, "../../../serveur_calcul_python/calcul_par_quartier.py");
+    const decipheredId = id.replace(/_/g, " ");
+    const scriptPath = path.resolve(__dirname, "../../../serveur_calcul_python/calcul_par_lot.py");
 
     // Chemin direct vers l'interpréteur Python dans l'environnement Conda
     const pythonExecutable = '/opt/conda/envs/serveur_calcul_python/bin/python3';
 
     // Exécuter le script Python avec l'interpréteur de l'environnement
-    const pythonProcess = spawn(pythonExecutable, [scriptPath, id]);
+    const pythonProcess = spawn(pythonExecutable, [scriptPath, decipheredId]);
     let outputData = '';
     let errorData = '';
   
@@ -133,12 +134,28 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
     // Capturer la fin du processus
     pythonProcess.on('close', (code) => {
       if (code === 0) {
-        console.log(`Output: ${outputData}`)
+        //console.log(`Output: ${outputData}`)
         console.log(`Processus enfant terminé avec succès.`);
-        res.status(200).send(`Output: ${outputData}`);
+        try {
+          // 🔹 Extract JSON by finding the first `{` (start of JSON)
+          const jsonStartIndex = outputData.indexOf('[');
+          if (jsonStartIndex !== -1) {
+            const jsonString = outputData.slice(jsonStartIndex).trim();
+            const jsonData = JSON.parse(jsonString);
+            
+            //console.log('Parsed JSON:', jsonData);
+            return res.status(200).json({success:true,data:jsonData});  //  Send JSON response
+          } else {
+            console.error('No JSON found in output:', outputData);
+            return res.status(500).send('Erreur: No valid JSON found in output.');
+          }
+        } catch (err) {
+          console.error('Failed to parse JSON:', err);
+          return res.status(500).send('Erreur: JSON parsing failed.');
+        }
       } else {
         console.error(`Processus enfant échoué avec le code : ${code}`);
-        res.status(500).send(`Erreur: ${errorData}`);
+        return res.status(500).send(`Erreur: ${errorData}`);
       }
     });
   };

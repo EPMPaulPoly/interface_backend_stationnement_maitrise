@@ -29,5 +29,5 @@ if __name__=="__main__":
         print(json_inventaire_quartier)
     except OperationalError as e:
         print(f"Erreur de connexion : {e}")
-        breakpoint()
+        #breakpoint()
     

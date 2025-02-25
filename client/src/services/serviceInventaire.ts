@@ -132,5 +132,60 @@ export const serviceInventaire = {
             }
             throw error; // Re-throw if necessary
         }
+    },
+
+    recalculeLotSpecifique: async(id_lot:string) : Promise<ReponseInventaire>=>{
+        try {
+            console.log('recalcul lot specifique')
+            const formattedId = id_lot.replace(/ /g, "_");
+            const response= await api.get<ReponseDBInventaire>(`/inventaire/calcul/lot/${formattedId}`);
+
+            const reponseGeomLots= await api.get<ReponseDBCadastreGeoSeul>(`/cadastre/lot/${formattedId}`)
+           
+            console.log('obtenu resultats')
+            const data_res = response.data.data; 
+            const data_geom = reponseGeomLots.data.data;
+            const featureCollection: FeatureCollection<Geometry, inventaireGeoJSONProps> = {
+                type: "FeatureCollection",
+                features: data_res
+                    .map((item): Feature<Geometry, inventaireGeoJSONProps> | null => {
+                        const foundGeom = data_geom.find(o => o.g_no_lot === item.g_no_lot);
+                        const geometry: Geometry | null = foundGeom?.geojson_geometry 
+                            ? JSON.parse(foundGeom.geojson_geometry) as Geometry 
+                            : null; // Ensure it's typed correctly
+            
+                        if (!geometry) return null; // Skip features with no geometry
+            
+                        return {
+                            type: "Feature",
+                            geometry, 
+                            properties: {
+                                g_no_lot: item.g_no_lot,
+                                n_places_min: item.n_places_min,
+                                n_places_max: item.n_places_max,
+                                n_places_estime: item.n_places_estime,
+                                n_places_mesure: item.n_places_mesure,
+                                methode_estime: item.methode_estime,
+                                cubf: item.cubf,
+                                id_er: item.id_er,
+                                id_reg_stat: item.id_reg_stat,
+                                commentaire: item.commentaire
+                            }
+                        };
+                    })
+                    .filter((feature): feature is Feature<Geometry, inventaireGeoJSONProps> => feature !== null) // Type guard to remove nulls
+            };
+            console.log('Recu Inventaire')
+            return {success:response.data.success,data:featureCollection};
+        } catch (error: any) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
     }
 };

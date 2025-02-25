@@ -50,10 +50,8 @@ const TableRevueInventaire: React.FC<TableRevueProps> =(props:TableRevueProps) =
     }
 
     const gestModifInventaire  =() =>{
-        if (!props.modifEnCours){
-            props.defModifEnCours(true)
-        } else{
-            props.defModifEnCours(false)
+        if (!props.panneauModifVisible){
+            props.defPanneauModifVisible(true)
         }
     }
 
@@ -201,7 +199,7 @@ const TableRevueInventaire: React.FC<TableRevueProps> =(props:TableRevueProps) =
                         ))
                         }
                     </select>
-                    <button onClick={gestModifInventaire}>Modifier Inventaire</button>
+                    <button onClick={gestModifInventaire} disabled={props.panneauModifVisible}>Modifier Inventaire</button>
                 </div>
                    <table>
                        <thead>
