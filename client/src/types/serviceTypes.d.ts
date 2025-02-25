@@ -1,4 +1,4 @@
-import {periode,territoire,quartiers_analyse,inventaire_stationnement,territoireGeoJsonProperties,entete_reglement_stationnement, reglement_complet,entete_ensembles_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties, roleFoncierGeoJsonProps, lotCadastralDB, roleFoncierDB} from './DataTypes'
+import {periode,territoire,quartiers_analyse,inventaire_stationnement,territoireGeoJsonProperties,entete_reglement_stationnement, reglement_complet,entete_ensembles_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties, roleFoncierGeoJsonProps, lotCadastralDB, roleFoncierDB, lotCadastralGeomSeulDb} from './DataTypes'
 import { Feature, FeatureCollection,Geometry } from 'geojson';
 
 export interface ApiResponse<T> {
@@ -21,3 +21,4 @@ export type ReponseCadastre = ApiResponse<FeatureCollection<Geometry,lotCadastra
 export type ReponseRole = ApiResponse<FeatureCollection<Geometry,roleFoncierGeoJsonProps>>
 export type ReponseDBCadastre = ApiResponse<lotCadastralDB[]>
 export type ReponseDBRole = ApiResponse<roleFoncierDB[]>
+export type ReponseDBCadastreGeoSeul = ApiResponse<lotCadastralGeomSeulDb[]>

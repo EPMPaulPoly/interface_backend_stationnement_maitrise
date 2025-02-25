@@ -36,6 +36,11 @@ export interface DbCadastre{
     g_va_suprf:number,
 }
 
+export interface DbCadastreGeomIdOnly{
+    g_no_lot:string,
+    geometry:string
+}
+
 export interface DbHistoriqueGeopol{
     id_periode:number,
     nom_periode:string,
@@ -117,5 +122,9 @@ export interface ParamsCadastre extends ParamsDictionary{
 }
 
 export interface ParamsTerritoire extends ParamsDictionary{
+    id:string;
+}
+
+export interface ParamsLot extends ParamsDictionary{
     id:string;
 }

@@ -1,5 +1,5 @@
 import os
-print(os.getcwd())
+#print(os.getcwd())
 import pandas as pd
 import geopandas as gpd
 from sqlalchemy import create_engine,text,Engine,MetaData,Table
@@ -15,6 +15,7 @@ from classes import reg_set_territory as RST
 from classes import parking_reg_sets as PRS
 from classes import parking_regs as PR
 import webbrowser
+
 
 from typing import Union
 
@@ -38,9 +39,7 @@ class ParkingInventory():
        
     def __repr__(self):
         return f'N_lots ={len(self.parking_frame[config_db.db_column_lot_id].unique())}, N_places_min = {self.parking_frame['n_places_min'].agg('sum')}'
-    
-    
-                
+           
     def concat(self,inventory_2:Self)->Self:
         logger = logging.getLogger(__name__)
         if self.parking_frame.empty==False and inventory_2.parking_frame.empty ==False:
@@ -64,6 +63,9 @@ class ParkingInventory():
             con = db_alchemy.create_engine(config_db.pg_string)
         self.parking_frame.to_sql(config_db.db_table_parking_inventory,con=con,if_exists='replace',index=False)
 
+    def to_json(self)->str :
+        return self.parking_frame.to_json(orient='records',force_ascii=False)
+    
     def merge_lot_data(self:Self)->None:
         '''
         #merge_lot_data
@@ -233,7 +235,7 @@ def inventory_duplicates_agg_function(x:pd.DataFrame):
     d['methode_estime'] = x['methode_estime'].values[0]
     return pd.Series(d,index = [config_db.db_column_land_use_id,config_db.db_column_reg_sets_id,config_db.db_column_parking_regs_id,'n_places_min','n_places_max','commentaire','methode_estime'])
 
-def calculate_inventory_by_analysis_sector(sector_to_calculate:int, create_html:bool = False,overwrite:int=0):
+def calculate_inventory_by_analysis_sector(sector_to_calculate:int, create_html:bool = False,overwrite:int=0)->ParkingInventory:
     '''
         # calculate_inventory_by_analysis_sector
         Permet de calculer le stationnement pour chaque lot danas un quartier d'analyse donné
@@ -251,28 +253,9 @@ def calculate_inventory_by_analysis_sector(sector_to_calculate:int, create_html:
     final_parking_inventory = PI.dissolve_list(parking_inventories)
     logging.info('Merging inventories for a given lot')
     final_parking_inventory.merge_lot_data()
-    return_value_save = PI.to_sql(final_parking_inventory,overwrite=overwrite)
-    if create_html:
-        path = './data/tax.html'
-        # display the points
-        m1 = tax_data_to_analyse.explore(file=path)
-        path_url = 'file://' + os.path.realpath(path)
-        webbrowser.open(path_url)
-        # display the points as confirmation.
-        reg_tax_foliums = RST.explore_RST_TD(RSTs,TDs)
-        folium_test = reg_tax_foliums[-1]
-        path_rst = 'data/RST_test.html'
-        folium_test.save(path_rst)
-        webbrowser.open('file://'+os.path.realpath(path_rst))
-        logging.info('Creating html file to save for data visualization')
-        path_inventory = f'./data/inventory_{sector_to_calculate}.html'
-        lot_data = tax_data_to_analyse.lot_table[[config_db.db_column_lot_id,config_db.db_geom_lots]]
-        data_frame_to_explore:gpd.GeoDataFrame = lot_data.merge(final_parking_inventory.parking_frame, how='inner',on=config_db.db_column_lot_id)
-        folium_to_explore= data_frame_to_explore.explore(column='n_places_min')
-        folium_to_explore.save(path_inventory)
-        webbrowser.open('file://'+os.path.realpath(path_inventory))
+    return final_parking_inventory
 
-def calculate_inventory_by_lot(lot_to_calculate:str, create_html:bool = False,overwrite:int=0):
+def calculate_inventory_by_lot(lot_to_calculate:str, create_html:bool = False,overwrite:int=0)->ParkingInventory:
     '''
         # calculate_inventory_by_lot
             calculates the inventory for a lot
@@ -281,7 +264,6 @@ def calculate_inventory_by_lot(lot_to_calculate:str, create_html:bool = False,ov
     logging.info(f'Starting parking inventory calculation for lot: {lot_to_calculate}')
     logging.info('Getting tax data sets within neighbourhoods')
     tax_data_to_analyse = TD.tax_database_from_lot_id(lot_to_calculate)
-
     # find all territories that touch the data
     logging.info('Finding relevant parking rulesets')
     [RSTs,TDs] = RST.get_rst_by_tax_data(tax_data_to_analyse)
@@ -292,7 +274,7 @@ def calculate_inventory_by_lot(lot_to_calculate:str, create_html:bool = False,ov
     final_parking_inventory = PI.dissolve_list(parking_inventories)
     logging.info('Merging inventories for a given lot')
     final_parking_inventory.merge_lot_data()
-    return_value_save = PI.to_sql(final_parking_inventory,overwrite=overwrite)
+    return final_parking_inventory
 
 def to_sql(inventory_to_save:ParkingInventory,engine:sqlalchemy.Engine=None,overwrite:int=0):
     ''' # to_sql

@@ -18,3 +18,4 @@ dependencies:
   - git
   - typing-extensions
   - matplotlib
+  - debugpy

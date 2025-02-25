@@ -34,6 +34,6 @@ COPY . .
 COPY ../serveur_calcul_python /app/serveur_calcul_python
 
 RUN npm run build
-EXPOSE 5000 9229
+EXPOSE 5000 9229 5678
 
 CMD ["nodemon"]

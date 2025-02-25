@@ -100,6 +100,11 @@ export interface lotCadastralDB extends lotCadastralGeoJsonProperties{
     geojson_geometry:string;
 }
 
+export interface lotCadastralGeomSeulDb {
+    g_no_lot:string;
+    geojson_geometry:string;
+}
+
 export interface lotCadastralGeoJsonProperties{
     g_no_lot:string,
     g_va_superf:number,

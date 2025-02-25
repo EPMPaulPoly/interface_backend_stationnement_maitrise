@@ -109,6 +109,8 @@ export interface TableRevueProps{
     defEnsRegRegard:React.Dispatch<SetStateAction<number>>,
     roleRegard:string,
     defRoleRegard:React.Dispatch<SetStateAction<string>>,
+    modifEnCours: boolean,
+    defModifEnCours:React.Dispatch<SetStateAction<boolean>>
 }
 
 export interface selectLotProps{

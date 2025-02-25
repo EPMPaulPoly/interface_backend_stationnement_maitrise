@@ -11,6 +11,7 @@ import CarteInventaire from '../components/carteInventaire';
 import TableRevueInventaire from '../components/RevueInventaire';
 import './inventaire.css';
 import './common.css';
+import CompoModifInventaire from '../components/modifInventaire';
 
 const position: LatLngExpression = [45.5017, -73.5673]; // Montreal coordinates
 
@@ -41,6 +42,8 @@ const VisualisationInventaire: React.FC = () => {
     });
     const [regSelect,defRegSelect] = useState<reglement_complet[]>([]);// reglement complet
     const [ensRegSelect,defEnsRegSelect] = useState<ensemble_reglements_stationnement[]>([]);// ensembles de reglement complet
+    const [modifEnCours,defModifEnCours] = useState<boolean>(false);
+    const [optionCouleur,defOptionCouleur] = useState<number>(-1);
     // Va chercher les quartiers pertinents
     useEffect(() => {
         const fetchData = async () => {
@@ -111,23 +114,18 @@ const VisualisationInventaire: React.FC = () => {
                 </select>
             </div>
             <div className="inventaire-carte-conteneur">
-                <CarteInventaire
-                    startPosition={positionDepart}
-                    setStartPosition={defPositionDepart}
-                    startZoom={zoomDepart}
-                    setStartZoom={defZoomDepart}
-                    inventaire={inventaire}
-                    defInventaire={defInventaire}
-                    itemSelect={itemSelect}
-                    defItemSelect={defItemSelect}
+                
+                {modifEnCours ? <CompoModifInventaire
                     lots={lotSelect}
                     defLots={defLotSelect}
                     donneesRole={roleSelect}
                     defDonneesRole={defRoleSelect}
-                    ensemblesReglements={ensRegSelect}
-                    defEnsemblesReglements={defEnsRegSelect}
                     reglements={regSelect}
                     defReglements={defRegSelect}
+                    ensemblesReglements={ensRegSelect}
+                    defEnsemblesReglements={defEnsRegSelect}
+                    inventaire={itemSelect}
+                    defInventaire={defItemSelect}
                     roleRegard={roleARegarder}
                     defRoleRegard={defRoleARegarder}
                     methodeEstimeRegard={methodeEstimeARegarder}
@@ -136,7 +134,35 @@ const VisualisationInventaire: React.FC = () => {
                     defRegRegard={defRegARegarder}
                     ensRegRegard={ensRegARegarder}
                     defEnsRegRegard={defEnsRegARegarder}
-                />
+                    modifEnCours={modifEnCours}
+                    defModifEnCours={defModifEnCours}
+                />: <CarteInventaire
+                startPosition={positionDepart}
+                setStartPosition={defPositionDepart}
+                startZoom={zoomDepart}
+                setStartZoom={defZoomDepart}
+                inventaire={inventaire}
+                defInventaire={defInventaire}
+                itemSelect={itemSelect}
+                defItemSelect={defItemSelect}
+                lots={lotSelect}
+                defLots={defLotSelect}
+                donneesRole={roleSelect}
+                defDonneesRole={defRoleSelect}
+                ensemblesReglements={ensRegSelect}
+                defEnsemblesReglements={defEnsRegSelect}
+                reglements={regSelect}
+                defReglements={defRegSelect}
+                roleRegard={roleARegarder}
+                defRoleRegard={defRoleARegarder}
+                methodeEstimeRegard={methodeEstimeARegarder}
+                defMethodeEstimeRegard={defMethodeEstimeARegarder}
+                regRegard={regARegarder}
+                defRegRegard={defRegARegarder}
+                ensRegRegard={ensRegARegarder}
+                defEnsRegRegard={defEnsRegARegarder}
+            />}
+                
                 <div className="barre-details-inventaire">
                 <TableRevueInventaire
                     lots={lotSelect}
@@ -157,6 +183,8 @@ const VisualisationInventaire: React.FC = () => {
                     defRegRegard={defRegARegarder}
                     ensRegRegard={ensRegARegarder}
                     defEnsRegRegard={defEnsRegARegarder}
+                    modifEnCours={modifEnCours}
+                    defModifEnCours={defModifEnCours}
                 />
                 </div>
 

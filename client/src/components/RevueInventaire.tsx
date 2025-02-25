@@ -49,6 +49,14 @@ const TableRevueInventaire: React.FC<TableRevueProps> =(props:TableRevueProps) =
         props.defEnsRegRegard(e)
     }
 
+    const gestModifInventaire  =() =>{
+        if (!props.modifEnCours){
+            props.defModifEnCours(true)
+        } else{
+            props.defModifEnCours(false)
+        }
+    }
+
     return(
         <div className="panneau-detail-inventaire-lot" ref={panelRef}>
             <div className="resize-handle-right-panel" onMouseDown={handleMouseDown}></div>
@@ -193,6 +201,7 @@ const TableRevueInventaire: React.FC<TableRevueProps> =(props:TableRevueProps) =
                         ))
                         }
                     </select>
+                    <button onClick={gestModifInventaire}>Modifier Inventaire</button>
                 </div>
                    <table>
                        <thead>

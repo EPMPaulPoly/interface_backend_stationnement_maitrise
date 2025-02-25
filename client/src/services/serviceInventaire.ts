@@ -1,9 +1,9 @@
 
-import { ReponseInventaire,ReponseDBInventaire } from '../types/serviceTypes';
+import { ReponseInventaire,ReponseDBInventaire, ReponseDBCadastreGeoSeul} from '../types/serviceTypes';
 import api from './api';
 import axios,{AxiosResponse} from 'axios';
-import { FeatureCollection,Geometry } from 'geojson';
-import { inventaireGeoJSONProps } from '../types/DataTypes';
+import { FeatureCollection,Geometry,Feature } from 'geojson';
+import { inventaireGeoJSONProps ,} from '../types/DataTypes';
 
 export const serviceInventaire = {
     obtientInventaireParQuartier: async(id_quartier:number) : Promise<ReponseInventaire> => {
@@ -82,27 +82,44 @@ export const serviceInventaire = {
 
     recalculeQuartierComplet:async(id_quartier:number) : Promise<ReponseInventaire> =>{
         try {
-            const response: AxiosResponse<ReponseDBInventaire> = await api.get(`/inventaire/calcul/quartier/${id_quartier}`);
-            const data_res = response.data.data;
+            console.log('recalcul Quarier complet')
+            const response= await api.get<ReponseDBInventaire>(`/inventaire/calcul/quartier/${id_quartier}`);
+
+            const reponseGeomLots= await api.get<ReponseDBCadastreGeoSeul>(`/cadastre/lot/quartier-ana/${id_quartier}`)
+           
+            console.log('obtenu resultats')
+            const data_res = response.data.data; 
+            const data_geom = reponseGeomLots.data.data;
             const featureCollection: FeatureCollection<Geometry, inventaireGeoJSONProps> = {
-                            type: "FeatureCollection",
-                            features: data_res.map((item) => ({
-                                type: "Feature",
-                                geometry: JSON.parse(item.geojson_geometry),
-                                properties: {
-                                    g_no_lot:item.g_no_lot,
-                                    n_places_min: item.n_places_min,
-                                    n_places_max: item.n_places_max,
-                                    n_places_estime: item.n_places_estime,
-                                    n_places_mesure:item.n_places_mesure,
-                                    methode_estime:item.methode_estime,
-                                    cubf:item.cubf,
-                                    id_er:item.id_er,
-                                    id_reg_stat:item.id_reg_stat,
-                                    commentaire: item.commentaire
-                                }
-                            }))
+                type: "FeatureCollection",
+                features: data_res
+                    .map((item): Feature<Geometry, inventaireGeoJSONProps> | null => {
+                        const foundGeom = data_geom.find(o => o.g_no_lot === item.g_no_lot);
+                        const geometry: Geometry | null = foundGeom?.geojson_geometry 
+                            ? JSON.parse(foundGeom.geojson_geometry) as Geometry 
+                            : null; // Ensure it's typed correctly
+            
+                        if (!geometry) return null; // Skip features with no geometry
+            
+                        return {
+                            type: "Feature",
+                            geometry, 
+                            properties: {
+                                g_no_lot: item.g_no_lot,
+                                n_places_min: item.n_places_min,
+                                n_places_max: item.n_places_max,
+                                n_places_estime: item.n_places_estime,
+                                n_places_mesure: item.n_places_mesure,
+                                methode_estime: item.methode_estime,
+                                cubf: item.cubf,
+                                id_er: item.id_er,
+                                id_reg_stat: item.id_reg_stat,
+                                commentaire: item.commentaire
+                            }
                         };
+                    })
+                    .filter((feature): feature is Feature<Geometry, inventaireGeoJSONProps> => feature !== null) // Type guard to remove nulls
+            };
             console.log('Recu Inventaire')
             return {success:response.data.success,data:featureCollection};
         } catch (error: any) {
