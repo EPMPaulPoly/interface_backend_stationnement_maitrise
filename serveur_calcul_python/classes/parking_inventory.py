@@ -190,7 +190,7 @@ def subset_operation(inventory_1:ParkingInventory,operator,inventory_2:ParkingIn
             case 5:
                 raise NotImplementedError('Obsolete operator')
             case 6:
-                logger.info('Entrée dans l''opération de subset par défaut')
+                logger.info('Entrée dans l''opération OU SIMPLE')
                 parking_frame_out = pd.DataFrame()
                 parking_frame_out = inventory_1.parking_frame[[config_db.db_column_lot_id,'n_places_min','n_places_max']].copy()
                 parking_frame_out.rename(columns={'n_places_min':'n_places_min_left','n_places_max':'n_places_max_left'},inplace=True)
@@ -198,12 +198,12 @@ def subset_operation(inventory_1:ParkingInventory,operator,inventory_2:ParkingIn
                 parking_frame_right.rename(columns={'n_places_min':'n_places_min_right','n_places_max':'n_places_max_right'},inplace=True)
                 parking_frame_out = parking_frame_out.merge(parking_frame_right,on=config_db.db_column_lot_id)
                 # implémenté comme prenant le minimum des requis minimaux. Ceci et mis en place selon la logique qu'un développeur immobilier voudrait potentiellement 
-                # Cas 1 la gauche est plus petit: min_final = min_left, max_final = max_left
+                # Cas 1 la gauche_min est plus petit: min_final = min_left, max_final = max_left
                 parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_min_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_min_left']
                 parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_max_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_max_left']
-                # Cas 1 la droite est plus petit: min_final = min_right, max_final = max_right
-                parking_frame_out.loc[parking_frame_out['n_places_min_left']>=parking_frame_out['n_places_min_right'],'n_places_min_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_min_right']
-                parking_frame_out.loc[parking_frame_out['n_places_min_left']>=parking_frame_out['n_places_min_right'],'n_places_max_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_max_right']
+                # Cas 2 la droite_min est plus petit: min_final = min_right, max_final = max_right
+                parking_frame_out.loc[parking_frame_out['n_places_min_left']>=parking_frame_out['n_places_min_right'],'n_places_min_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']>=parking_frame_out['n_places_min_right'],'n_places_min_right']
+                parking_frame_out.loc[parking_frame_out['n_places_min_left']>=parking_frame_out['n_places_min_right'],'n_places_max_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']>=parking_frame_out['n_places_min_right'],'n_places_max_right']
                 # ramène le vieux frame
                 old_parking_frame = inventory_1.parking_frame.copy()
                 # drop gauche/droite
