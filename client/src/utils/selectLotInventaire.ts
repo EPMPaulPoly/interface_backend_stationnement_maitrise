@@ -32,7 +32,8 @@ const selectLotInventaire = async (props:selectLotProps): Promise<void> => {
                 cubf: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.cubf ?? '' : '',
                 id_er: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.id_er ?? '' : '',
                 id_reg_stat: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.id_reg_stat ?? '' : '',
-                commentaire: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.commentaire ?? '' : ''
+                commentaire: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.commentaire ?? '' : '',
+                id_inv: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.id_inv ?? 0 : 0
             }
             }]
         }

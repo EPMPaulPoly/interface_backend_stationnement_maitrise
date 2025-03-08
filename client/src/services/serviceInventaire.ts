@@ -3,7 +3,8 @@ import { ReponseInventaire,ReponseDBInventaire, ReponseDBCadastreGeoSeul} from '
 import api from './api';
 import axios,{AxiosResponse} from 'axios';
 import { FeatureCollection,Geometry,Feature } from 'geojson';
-import { inventaireGeoJSONProps ,} from '../types/DataTypes';
+import { inventaire_stationnement, inventaireGeoJSONProps ,} from '../types/DataTypes';
+import { isNumberObject } from 'util/types';
 
 export const serviceInventaire = {
     obtientInventaireParQuartier: async(id_quartier:number) : Promise<ReponseInventaire> => {
@@ -25,7 +26,8 @@ export const serviceInventaire = {
                                     cubf:item.cubf,
                                     id_er:item.id_er,
                                     id_reg_stat:item.id_reg_stat,
-                                    commentaire: item.commentaire
+                                    commentaire: item.commentaire,
+                                    id_inv: item.id_inv
                                 }
                             }))
                         };
@@ -62,7 +64,8 @@ export const serviceInventaire = {
                         cubf:item.cubf,
                         id_er:item.id_er,
                         id_reg_stat:item.id_reg_stat,
-                        commentaire:item.commentaire
+                        commentaire:item.commentaire,
+                        id_inv:item.id_inv
                     }
                 }))
             };
@@ -114,7 +117,8 @@ export const serviceInventaire = {
                                 cubf: item.cubf,
                                 id_er: item.id_er,
                                 id_reg_stat: item.id_reg_stat,
-                                commentaire: item.commentaire
+                                commentaire: item.commentaire,
+                                id_inv:null
                             }
                         };
                     })
@@ -169,7 +173,8 @@ export const serviceInventaire = {
                                 cubf: item.cubf,
                                 id_er: item.id_er,
                                 id_reg_stat: item.id_reg_stat,
-                                commentaire: item.commentaire
+                                commentaire: item.commentaire,
+                                id_inv: item.id_inv
                             }
                         };
                     })
@@ -178,6 +183,38 @@ export const serviceInventaire = {
             console.log('Recu Inventaire')
             return {success:response.data.success,data:featureCollection};
         } catch (error: any) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    },
+
+    modifieInventaire:async(id_inv:number|null,inventaireAEnvoyer:Feature<Geometry|null, inventaireGeoJSONProps>) :Promise<boolean>=>{
+        try {
+            if (!isNaN(Number(id_inv))){
+                const dbData: Partial<inventaire_stationnement> = {
+                    ...(inventaireAEnvoyer.properties.g_no_lot && { g_no_lot: inventaireAEnvoyer.properties.g_no_lot }),
+                    ...(inventaireAEnvoyer.properties.n_places_min && { n_places_min: inventaireAEnvoyer.properties.n_places_min }),
+                    ...(inventaireAEnvoyer.properties.n_places_max && { n_places_max: inventaireAEnvoyer.properties.n_places_max  }),
+                    ...(inventaireAEnvoyer.properties.n_places_estime && { n_places_estime: inventaireAEnvoyer.properties.n_places_estime}),
+                    ...(inventaireAEnvoyer.properties.n_places_mesure && { n_places_mesure: inventaireAEnvoyer.properties.n_places_mesure }),
+                    ...(inventaireAEnvoyer.properties.id_er && { id_er: inventaireAEnvoyer.properties.id_er }),
+                    ...(inventaireAEnvoyer.properties.id_reg_stat && { id_reg_stat: inventaireAEnvoyer.properties.id_reg_stat }),
+                    ...(inventaireAEnvoyer.properties.commentaire && { commentaire: inventaireAEnvoyer.properties.commentaire  }),
+                    ...(inventaireAEnvoyer.properties.methode_estime && { methode_estime: inventaireAEnvoyer.properties.methode_estime  }),
+                    ...(inventaireAEnvoyer.properties.cubf && { methode_estime: inventaireAEnvoyer.properties.methode_estime  }),
+                  };
+                const reponseMAJInv = await api.post(`/inventaire/${id_inv}`,dbData);
+                return reponseMAJInv.data.success
+            } else{
+                throw new Error("id_inv doit être défini pour cette fonction");
+            }
+        } catch (error:any) {
             if (axios.isAxiosError(error)) {
                 console.error('Axios Error:', error.response?.data);
                 console.error('Axios Error Status:', error.response?.status);

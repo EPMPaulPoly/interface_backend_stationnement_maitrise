@@ -21,6 +21,7 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props) => {
           id_reg_stat: '',
           cubf: '',
           commentaire: '',
+          id_inv:null
         },
       };
     const [optionCalcul,defOptionCalcul] = useState<number>(-1);
@@ -68,6 +69,20 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props) => {
         console.log('a implementer')
     }
 
+    const gestSauvegardeNvInv=async()=>{
+        const id_modif = renvoiInventaireReg().properties.id_inv;
+        const reussi = await serviceInventaire.modifieInventaire(id_modif,inventaireProp);
+        console.log(`Mise à jour réussie ?: ${reussi}`)
+        if (reussi){
+            setNewRegInvToProc(false);
+            defInventaireProp(emptyFeature);
+            defModifEnMarche(false);
+            alert('Calcul sauvegardé');
+        } else{
+            alert('Sauvegarde échouée');
+        }
+    }
+
     const renduInventaireApprobation = ()=>{
         if (newRegInvToProc){
             return(
@@ -86,7 +101,7 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props) => {
                             />
                         </div>
                     </div>
-                    <button>Écraser ancien inventaire</button>
+                    <button onClick={gestSauvegardeNvInv}>Écraser ancien inventaire</button>
                 </div>
                 
             )
@@ -103,6 +118,7 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props) => {
             defNvInvRegATrait:setNewRegInvToProc
         }
         recalculeInventaireLot(propsCalcul)
+        console.log('Calcul complet, mise en page')
     }
 
     const renderForm = () => {

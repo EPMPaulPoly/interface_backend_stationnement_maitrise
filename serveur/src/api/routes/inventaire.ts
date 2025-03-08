@@ -1,6 +1,6 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { Pool } from 'pg';
-import { DbInventaire,ParamsQuartier,ParamsLot } from '../../types/database';
+import { DbInventaire,ParamsQuartier,ParamsLot,ParamsInventaire,RequeteInventaire } from '../../types/database';
 // Types pour les requêtes
 import { Polygon,MultiPolygon } from 'geojson';
 import path from 'path';
@@ -28,7 +28,8 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
             i.id_reg_stat,
             i.commentaire,
             i.methode_estime,
-            i.cubf
+            i.cubf,
+            i.id_inv
         FROM 
             public.cadastre c
         RIGHT JOIN
@@ -159,9 +160,43 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
       }
     });
   };
+
+  const metAJourInventaire:RequestHandler<ParamsInventaire, any, RequeteInventaire> = async (req, res, next) => {
+    try {
+      const { id_inv } = req.params;
+      const { g_no_lot, n_places_min, n_places_max, n_places_estime,n_places_mesure,id_er,id_reg_stat,commentaire,methode_estime } = req.body;
+      const client = await pool.connect();
+      const result = await client.query<DbInventaire>(
+        `UPDATE public.inventaire_stationnement SET 
+            g_no_lot = $1, 
+            n_places_min = $2, 
+            n_places_max = $3, 
+            n_places_estime = $4,
+            n_places_mesure = $5,
+            id_er = $6,
+            id_reg_stat = $7,
+            commentaire = $8,
+            methode_estime= $9
+          WHERE 
+            id_inv = $10 
+          RETURNING 
+            *`,
+        [g_no_lot, n_places_min, n_places_max, n_places_estime, n_places_mesure,id_er,id_reg_stat,commentaire,methode_estime,id_inv]
+      );
+      if (result.rows.length === 0) {
+        res.status(404).json({ success: false, error: 'Entry not found' });
+        return;
+      }
+      res.json({ success: true, data: result.rows[0] });
+      client.release();
+    } catch (err) {
+      next(err);
+    }
+  }
   // Routes
   router.get('/quartier/:id', obtiensInventaireParQuartier);
   router.get('/calcul/quartier/:id',calculInventairePythonQuartier);
   router.get('/calcul/lot/:id',calculInventairePythonLot); 
+  router.post('/:id_inv',metAJourInventaire)
   return router;
 };
