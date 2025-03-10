@@ -145,3 +145,7 @@ export interface ParamsLot extends ParamsDictionary{
 export interface ParamsInventaire extends ParamsDictionary{
     id_inv:string;
 }
+
+export interface ParamsRole extends ParamsDictionary{
+    id_role:string;
+}

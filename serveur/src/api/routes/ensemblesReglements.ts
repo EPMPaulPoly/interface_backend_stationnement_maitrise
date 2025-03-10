@@ -1,6 +1,6 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { Pool } from 'pg';
-import { DbAssociationReglementUtilSol, DbEnteteEnsembleReglement, DbUtilisationSol, DbEnteteReglement, ParamsTerritoire } from '../../types/database';
+import { DbAssociationReglementUtilSol, DbEnteteEnsembleReglement, DbUtilisationSol, DbEnteteReglement, ParamsTerritoire, ParamsRole, DbReglementComplet } from '../../types/database';
 
 
 export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
@@ -150,11 +150,43 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
     }
   };
 
+  const obtiensEnsRegCompletParRole: RequestHandler<ParamsRole> = async (req,res):Promise<void>=>{
+    console.log('obtention ens-reg par role - Implémentation incomplète')
+    let client;
+    try{
+      client = await pool.connect();
+      const {id_role} = req.params;
+      const query = `
+        WITH role AS (
+          SELECT 
+            * 
+          FROM
+            public.role_foncier
+          WHERE
+            id_provinc 
+          IN
+           ( $1)
+        ) SELECT
+            role.id_provinc
+          FROM 
+            role
+      `;
+      const result = await client.query<DbReglementComplet>(query, [id_role]);
+      res.json({ success: true, data: result.rows });
+    }catch(err){
+      res.status(500).json({ success: false, error: 'Database error test' });
+    } finally{
+      if (client){
+        client.release()
+      }
+    }
+  };
 
   // Routes
   router.get('/entete', obtiensTousEntetesEnsemblesReglements);
   router.get('/complet/:id',obtiensEnsembleReglementCompletParId)
   router.get('/regs-associes/:id',obtiensReglementsPourEnsReg);
   router.get('/entete-par-territoire/:id',obtiensEntetesParTerritoire)
+  router.get('/par-role/:ids')
   return router;
 };

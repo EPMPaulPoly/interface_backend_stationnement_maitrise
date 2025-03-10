@@ -146,6 +146,35 @@ export interface calculateRegLotInventoryProps{
     defInventaireProp:Feature<Geometry,inventaireGeoJSONProps>
     defNvInvRegATrait:React.Dispatch<SetStateAction<boolean>>
 }
+
+export interface ComparaisonInventaireQuartierProps{
+    ancienInventaireReg:FeatureCollection<Geometry,inventaireGeoJSONProps>,
+    defAncienInventaireReg:React.Dispatch<SetStateAction<FeatureCollection<Geometry,inventaireGeoJSONProps>>>,
+    nouvelInventaireReg: FeatureCollection<Geometry,inventaireGeoJSONProps>,
+    defNouvelInventaireReg: React.Dispatch<SetStateAction<FeatureCollection<Geometry,inventaireGeoJSONProps>>>,
+    validationInventaireQuartier:boolean,
+    defValidationInventaireQuartier:React.Dispatch<SetStateAction<boolean>>
+    chargement:boolean,
+    defChargement:React.Dispatch<SetStateAction<boolean>>
+}
+
+export interface MenuInventaireProps{
+    nouvelInventaireReg: FeatureCollection<Geometry,inventaireGeoJSONProps>,
+    defNouvelInventaireReg: React.Dispatch<SetStateAction<FeatureCollection<Geometry,inventaireGeoJSONProps>>>,
+    inventaireActuel: FeatureCollection<Geometry,inventaireGeoJSONProps>,
+    defInventaireActuel: React.Dispatch<SetStateAction<FeatureCollection<Geometry,inventaireGeoJSONProps>>>,
+    positionDepart: LatLngExpression;
+    defPositionDepart:React.Dispatch<SetStateAction<LatLngExpression>>;
+    zoomDepart: number;
+    defZoomDepart: React.Dispatch<SetStateAction<number>>;
+    optionsQuartier:quartiers_analyse[];
+    quartier:number,
+    defQuartier:React.Dispatch<SetStateAction<number>>;
+    defPanneauComparInventaireQuartierVis:React.Dispatch<SetStateAction<boolean>>;
+    defNouvelInventaireQuartier:React.Dispatch<SetStateAction<FeatureCollection<Geometry,inventaireGeoJSONProps>>>;
+    chargement:boolean,
+    defChargement:React.Dispatch<SetStateAction<boolean>>
+}
 // ------------------------------------------------------------------------------
 // ---------------------------- Historique --------------------------------------
 // ------------------------------------------------------------------------------
