@@ -75,6 +75,7 @@ const TableInventaire:React.FC<TableInventaireProps>=(props:TableInventaireProps
                     <table className="table-inventaire-rendu">
                         <thead>
                             <tr>
+                                <th>ID inv</th>
                                 <th>ID Lot</th>
                                 <th>Places Min</th>
                                 <th>Places Max</th>
@@ -87,25 +88,26 @@ const TableInventaire:React.FC<TableInventaireProps>=(props:TableInventaireProps
                             </tr>
                         </thead>
                         <tbody>
-                            {props.inventaire.features.map((item_inventaire,index) => (
-                                item_inventaire.properties && (
+                            {props.inventaire.map((item_inventaire,index) => (
+                                item_inventaire && (
                                 <tr 
-                                    key={item_inventaire.properties.g_no_lot}
-                                    data-key={item_inventaire.properties.g_no_lot}
-                                    ref={el => { rowRefs.current[item_inventaire.properties.g_no_lot] = el; }}
-                                    onClick={(e: React.MouseEvent) => handleRowClick(item_inventaire.properties.g_no_lot)}
-                                    className={props.lots.features[0]?.properties.g_no_lot === item_inventaire.properties.g_no_lot ? 'selected-row' : ''}
+                                    key={item_inventaire.g_no_lot}
+                                    data-key={item_inventaire.g_no_lot}
+                                    ref={el => { rowRefs.current[item_inventaire.g_no_lot] = el; }}
+                                    onClick={(e: React.MouseEvent) => handleRowClick(item_inventaire.g_no_lot)}
+                                    className={props.lots.features[0]?.properties.g_no_lot === item_inventaire.g_no_lot ? 'selected-row' : ''}
                                     
                                 >
-                                    <td>{item_inventaire.properties?.g_no_lot}</td>
-                                    <td>{typeof(item_inventaire.properties?.n_places_min) == 'number'? item_inventaire.properties?.n_places_min.toFixed(2):item_inventaire.properties.n_places_min}</td>
-                                    <td>{item_inventaire.properties?.n_places_max}</td>
-                                    <td>{item_inventaire.properties?.n_places_mesure}</td>
-                                    <td>{item_inventaire.properties?.n_places_estime}</td>
-                                    <td>{item_inventaire.properties?.methode_estime}</td>
-                                    <td>{item_inventaire.properties?.id_er}</td>
-                                    <td>{item_inventaire.properties?.id_reg_stat}</td>
-                                    <td>{item_inventaire.properties?.cubf}</td>
+                                    <td>{item_inventaire?.id_inv}</td>
+                                    <td>{item_inventaire?.g_no_lot}</td>
+                                    <td>{typeof(item_inventaire?.n_places_min) == 'number'? item_inventaire?.n_places_min.toFixed(2):item_inventaire.n_places_min}</td>
+                                    <td>{item_inventaire?.n_places_max}</td>
+                                    <td>{item_inventaire?.n_places_mesure}</td>
+                                    <td>{item_inventaire?.n_places_estime}</td>
+                                    <td>{item_inventaire?.methode_estime}</td>
+                                    <td>{item_inventaire?.id_er}</td>
+                                    <td>{item_inventaire?.id_reg_stat}</td>
+                                    <td>{item_inventaire?.cubf}</td>
                                 </tr>
                             )))}
                         </tbody>

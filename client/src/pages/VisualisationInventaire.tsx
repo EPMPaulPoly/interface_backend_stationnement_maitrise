@@ -6,7 +6,7 @@ import { ensemble_reglements_stationnement, entete_ensembles_reglement_stationne
 import { serviceQuartiersAnalyse, } from '../services/serviceQuartiersAnalyse';
 import {serviceInventaire} from '../services/serviceInventaire';
 import { FeatureCollection,Geometry } from 'geojson';
-import { inventaireGeoJSONProps,lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps } from '../types/DataTypes';
+import { lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps,lotCadastralAvecBoolInvGeoJsonProperties } from '../types/DataTypes';
 import CarteInventaire from '../components/carteInventaire';
 import TableRevueInventaire from '../components/RevueInventaire';
 import './inventaire.css';
@@ -18,7 +18,7 @@ import MenuInventaire from '../components/MenuInventaire';
 const position: LatLngExpression = [45.5017, -73.5673]; // Montreal coordinates
 
 const VisualisationInventaire: React.FC = () => {
-    const[chargement,defChargement] = useState<boolean>(false);
+    const[chargement,defChargement] = useState<boolean>(false); // Chargement
     const[positionDepart,defPositionDepart] = useState<LatLngExpression>([46.85,-71]);// position depart
     const[zoomDepart,defZoomDepart] = useState<number>(10); // zoom depart
     const [quartier,defQuartierAnalyse] = useState<number>(-1); // quartier d'analyse pour aller chercher l'inventaire
@@ -26,15 +26,14 @@ const VisualisationInventaire: React.FC = () => {
     const [roleARegarder,defRoleARegarder] = useState<string>('');//état pour l'entrée du rôle à regarder dans le panneau de détails
     const [regARegarder,defRegARegarder] = useState<number>(-1);// état pour le règlement à regarder dans le panneau de détails
     const [ensRegARegarder,defEnsRegARegarder] = useState<number>(-1); // état pour l'ensemble de règlement à regarder dans le peannu de téail
-    const [methodeEstimeARegarder,defMethodeEstimeARegarder] = useState<number>(-1);
-    const [inventaire,defInventaire] = useState<FeatureCollection<Geometry,inventaireGeoJSONProps>>({//inventaire
-        type: "FeatureCollection",
-        features: []
-    });
-    const [itemSelect,defItemSelect] = useState<FeatureCollection<Geometry,inventaireGeoJSONProps>>({//inventaire
-        type: "FeatureCollection",
-        features: []
-    });
+    const [methodeEstimeARegarder,defMethodeEstimeARegarder] = useState<number>(-1); // État pour aller rechercher un type d'estimé
+    const [lotsDuQuartier,defLotsDuQuartier] = useState<FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>({
+        type:"FeatureCollection",
+        features:[]
+    })
+    const [inventaire,defInventaire] = useState<inventaire_stationnement[]>([]);
+    const [inventaireSelect,defInventaireSelect] = useState<inventaire_stationnement[]>([]);
+
     const [lotSelect,defLotSelect] = useState<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>({//lot selectionné
         type: "FeatureCollection",
         features: []
@@ -47,10 +46,7 @@ const VisualisationInventaire: React.FC = () => {
     const [ensRegSelect,defEnsRegSelect] = useState<ensemble_reglements_stationnement[]>([]);// ensembles de reglement complet
     const [panneauModifVisible,defPanneauModifVisible] = useState<boolean>(false);// Binaire pour afficher le panneau permettant de créer un inventaire sur un lot particulier
     const [panneauComparInventaireQuartierVis,defPanneauComparInventaireQuartierVis] = useState<boolean>(false);// binaire pour montrer le panneau de comparaison 
-    const [nouvelInventaireQuartier,defNouvelInventaireQuartier] = useState<FeatureCollection<Geometry,inventaireGeoJSONProps>>({//items du role
-        type: "FeatureCollection",
-        features: []
-    });
+    const [nouvelInventaireQuartier,defNouvelInventaireQuartier] = useState<inventaire_stationnement[]>([]);
     const [optionCouleur,defOptionCouleur] = useState<number>(-1);
     // Va chercher les quartiers pertinents
     useEffect(() => {
@@ -65,6 +61,8 @@ const VisualisationInventaire: React.FC = () => {
         <div className="page-inventaire">
             <MenuBar/>
             <MenuInventaire
+                lotsDuQuartier={lotsDuQuartier}
+                defLotsDuQuartier={defLotsDuQuartier}
                 inventaireActuel={inventaire}
                 defInventaireActuel={defInventaire}
                 nouvelInventaireReg={nouvelInventaireQuartier}
@@ -98,14 +96,16 @@ const VisualisationInventaire: React.FC = () => {
                 :(panneauModifVisible ? 
                 (<>
                 <CarteInventaire
+                    lotsDuQuartier={lotsDuQuartier}
+                    defLotsDuQuartiers={defLotsDuQuartier}
                     startPosition={positionDepart}
                     setStartPosition={defPositionDepart}
                     startZoom={zoomDepart}
                     setStartZoom={defZoomDepart}
                     inventaire={inventaire}
                     defInventaire={defInventaire}
-                    itemSelect={itemSelect}
-                    defItemSelect={defItemSelect}
+                    itemSelect={inventaireSelect}
+                    defItemSelect={defInventaireSelect}
                     lots={lotSelect}
                     defLots={defLotSelect}
                     donneesRole={roleSelect}
@@ -132,8 +132,8 @@ const VisualisationInventaire: React.FC = () => {
                     defReglements={defRegSelect}
                     ensemblesReglements={ensRegSelect}
                     defEnsemblesReglements={defEnsRegSelect}
-                    inventaire={itemSelect}
-                    defInventaire={defItemSelect}
+                    inventaire={inventaireSelect}
+                    defInventaire={defInventaireSelect}
                     roleRegard={roleARegarder}
                     defRoleRegard={defRoleARegarder}
                     methodeEstimeRegard={methodeEstimeARegarder}
@@ -155,8 +155,8 @@ const VisualisationInventaire: React.FC = () => {
                     defReglements={defRegSelect}
                     ensemblesReglements={ensRegSelect}
                     defEnsemblesReglements={defEnsRegSelect}
-                    inventaire={itemSelect}
-                    defInventaire={defItemSelect}
+                    inventaire={inventaireSelect}
+                    defInventaire={defInventaireSelect}
                     roleRegard={roleARegarder}
                     defRoleRegard={defRoleARegarder}
                     methodeEstimeRegard={methodeEstimeARegarder}
@@ -170,30 +170,32 @@ const VisualisationInventaire: React.FC = () => {
                 />
                 </div></>)
                 : (<><CarteInventaire
-                startPosition={positionDepart}
-                setStartPosition={defPositionDepart}
-                startZoom={zoomDepart}
-                setStartZoom={defZoomDepart}
-                inventaire={inventaire}
-                defInventaire={defInventaire}
-                itemSelect={itemSelect}
-                defItemSelect={defItemSelect}
-                lots={lotSelect}
-                defLots={defLotSelect}
-                donneesRole={roleSelect}
-                defDonneesRole={defRoleSelect}
-                ensemblesReglements={ensRegSelect}
-                defEnsemblesReglements={defEnsRegSelect}
-                reglements={regSelect}
-                defReglements={defRegSelect}
-                roleRegard={roleARegarder}
-                defRoleRegard={defRoleARegarder}
-                methodeEstimeRegard={methodeEstimeARegarder}
-                defMethodeEstimeRegard={defMethodeEstimeARegarder}
-                regRegard={regARegarder}
-                defRegRegard={defRegARegarder}
-                ensRegRegard={ensRegARegarder}
-                defEnsRegRegard={defEnsRegARegarder}
+                    lotsDuQuartier={lotsDuQuartier}
+                    defLotsDuQuartiers={defLotsDuQuartier}
+                    startPosition={positionDepart}
+                    setStartPosition={defPositionDepart}
+                    startZoom={zoomDepart}
+                    setStartZoom={defZoomDepart}
+                    inventaire={inventaire}
+                    defInventaire={defInventaire}
+                    itemSelect={inventaireSelect}
+                    defItemSelect={defInventaireSelect}
+                    lots={lotSelect}
+                    defLots={defLotSelect}
+                    donneesRole={roleSelect}
+                    defDonneesRole={defRoleSelect}
+                    ensemblesReglements={ensRegSelect}
+                    defEnsemblesReglements={defEnsRegSelect}
+                    reglements={regSelect}
+                    defReglements={defRegSelect}
+                    roleRegard={roleARegarder}
+                    defRoleRegard={defRoleARegarder}
+                    methodeEstimeRegard={methodeEstimeARegarder}
+                    defMethodeEstimeRegard={defMethodeEstimeARegarder}
+                    regRegard={regARegarder}
+                    defRegRegard={defRegARegarder}
+                    ensRegRegard={ensRegARegarder}
+                    defEnsRegRegard={defEnsRegARegarder}
             /><div className="barre-details-inventaire">
             <TableRevueInventaire
                 lots={lotSelect}
@@ -204,8 +206,8 @@ const VisualisationInventaire: React.FC = () => {
                 defReglements={defRegSelect}
                 ensemblesReglements={ensRegSelect}
                 defEnsemblesReglements={defEnsRegSelect}
-                inventaire={itemSelect}
-                defInventaire={defItemSelect}
+                inventaire={inventaireSelect}
+                defInventaire={defInventaireSelect}
                 roleRegard={roleARegarder}
                 defRoleRegard={defRoleARegarder}
                 methodeEstimeRegard={methodeEstimeARegarder}
@@ -237,8 +239,8 @@ const VisualisationInventaire: React.FC = () => {
                 defEnsemblesReglements={defEnsRegSelect}
                 reglements={regSelect}
                 defReglements={defRegSelect}
-                itemSelect={itemSelect}
-                defItemSelect={defItemSelect}
+                itemSelect={inventaireSelect}
+                defItemSelect={defInventaireSelect}
                 roleRegard={roleARegarder}
                 defRoleRegard={defRoleARegarder}
                 methodeEstimeRegard={methodeEstimeARegarder}

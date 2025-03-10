@@ -1,5 +1,5 @@
 import { MenuInventaireProps } from "../types/InterfaceTypes";
-import { serviceInventaire } from "../services";
+import { serviceInventaire,serviceCadastre } from "../services";
 import L, { LatLngExpression } from 'leaflet';
 const MenuInventaire:React.FC<MenuInventaireProps>=(props:MenuInventaireProps)=>{
 
@@ -7,9 +7,11 @@ const MenuInventaire:React.FC<MenuInventaireProps>=(props:MenuInventaireProps)=>
     const gestSelectQuartier = async (quartier_selectionne:number) =>{
         props.defQuartier(quartier_selectionne)
         const inventaire = await serviceInventaire.obtientInventaireParQuartier(quartier_selectionne)
-        if (inventaire.success){
+        const lots = await serviceCadastre.obtiensCadastreParQuartier(quartier_selectionne)
+        if (lots.success && inventaire.success){
+            props.defLotsDuQuartier(lots.data)
             props.defInventaireActuel(inventaire.data)
-            const center = new L.GeoJSON(inventaire.data).getBounds().getCenter();
+            const center = new L.GeoJSON(lots.data).getBounds().getCenter();
             props.defPositionDepart(center);
             props.defZoomDepart(12);
         }

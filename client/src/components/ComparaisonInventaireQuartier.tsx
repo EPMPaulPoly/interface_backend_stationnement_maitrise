@@ -8,10 +8,7 @@ import { Delete } from "@mui/icons-material";
 const ComparaisonInventaireQuartier:React.FC<ComparaisonInventaireQuartierProps>=(props:ComparaisonInventaireQuartierProps)=>{
     const gestAnnulCalculQuartier=()=>{
         console.log('Annuldation calcul Quartier')
-        props.defNouvelInventaireReg({//inventaire vide
-            type: "FeatureCollection",
-            features: []
-        })
+        props.defNouvelInventaireReg([])
         props.defValidationInventaireQuartier(false)
     }
     const gestAnnulerItem=(noLot:string)=>{
@@ -55,20 +52,20 @@ const ComparaisonInventaireQuartier:React.FC<ComparaisonInventaireQuartierProps>
                         </tr>
                     </thead>
                     <tbody>
-                        {props.nouvelInventaireReg.features.map((itemNouvelInventaire)=>(
-                            itemNouvelInventaire.properties && (
-                                <tr key={itemNouvelInventaire.properties.g_no_lot}>
-                                    <td>{itemNouvelInventaire.properties.g_no_lot}</td>
-                                    <td>{itemNouvelInventaire.properties.n_places_min}</td>
-                                    <td>{itemNouvelInventaire.properties.n_places_max}</td>
-                                    <td>{itemNouvelInventaire.properties.id_er}</td>
-                                    <td>{itemNouvelInventaire.properties.id_reg_stat}</td>
-                                    <td>{props.ancienInventaireReg.features.find((o)=>((o.properties.g_no_lot===itemNouvelInventaire.properties.g_no_lot)&&(o.properties.methode_estime===itemNouvelInventaire.properties.methode_estime)))?.properties.n_places_min}</td>
-                                    <td>{props.ancienInventaireReg.features.find((o)=>((o.properties.g_no_lot===itemNouvelInventaire.properties.g_no_lot)&&(o.properties.methode_estime===itemNouvelInventaire.properties.methode_estime)))?.properties.n_places_max}</td>
-                                    <td>{props.ancienInventaireReg.features.find((o)=>((o.properties.g_no_lot===itemNouvelInventaire.properties.g_no_lot)&&(o.properties.methode_estime===itemNouvelInventaire.properties.methode_estime)))?.properties.id_er}</td>
-                                    <td>{props.ancienInventaireReg.features.find((o)=>((o.properties.g_no_lot===itemNouvelInventaire.properties.g_no_lot)&&(o.properties.methode_estime===itemNouvelInventaire.properties.methode_estime)))?.properties.id_reg_stat}</td>
-                                    <td onClick={() => gestApprouverItem(itemNouvelInventaire.properties.g_no_lot)}><CheckIcon style={{ color: "#FFFFFF" }}/></td>
-                                    <td onClick={() => gestAnnulerItem(itemNouvelInventaire.properties.g_no_lot)}><DeleteIcon style={{ color: "#FFFFFF" }}/></td>
+                        {props.nouvelInventaireReg.map((itemNouvelInventaire)=>(
+                            itemNouvelInventaire && (
+                                <tr key={itemNouvelInventaire.g_no_lot}>
+                                    <td>{itemNouvelInventaire.g_no_lot}</td>
+                                    <td>{itemNouvelInventaire.n_places_min}</td>
+                                    <td>{itemNouvelInventaire.n_places_max}</td>
+                                    <td>{itemNouvelInventaire.id_er}</td>
+                                    <td>{itemNouvelInventaire.id_reg_stat}</td>
+                                    <td>{props.ancienInventaireReg.find((o)=>((o.g_no_lot===itemNouvelInventaire.g_no_lot)&&(o.methode_estime===itemNouvelInventaire.methode_estime)))?.n_places_min}</td>
+                                    <td>{props.ancienInventaireReg.find((o)=>((o.g_no_lot===itemNouvelInventaire.g_no_lot)&&(o.methode_estime===itemNouvelInventaire.methode_estime)))?.n_places_max}</td>
+                                    <td>{props.ancienInventaireReg.find((o)=>((o.g_no_lot===itemNouvelInventaire.g_no_lot)&&(o.methode_estime===itemNouvelInventaire.methode_estime)))?.id_er}</td>
+                                    <td>{props.ancienInventaireReg.find((o)=>((o.g_no_lot===itemNouvelInventaire.g_no_lot)&&(o.methode_estime===itemNouvelInventaire.methode_estime)))?.id_reg_stat}</td>
+                                    <td onClick={() => gestApprouverItem(itemNouvelInventaire.g_no_lot)}><CheckIcon style={{ color: "#FFFFFF" }}/></td>
+                                    <td onClick={() => gestAnnulerItem(itemNouvelInventaire.g_no_lot)}><DeleteIcon style={{ color: "#FFFFFF" }}/></td>
                                 </tr>
                             )
                         ))}

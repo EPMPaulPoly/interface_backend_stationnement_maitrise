@@ -96,9 +96,6 @@ export interface ensemble_reglement_territoire{
     ens_reg: ensembles_reglements_stationnement
 }
 
-export interface lotCadastralDB extends lotCadastralGeoJsonProperties{
-    geojson_geometry:string;
-}
 
 export interface lotCadastralGeomSeulDb {
     g_no_lot:string;
@@ -112,7 +109,15 @@ export interface lotCadastralGeoJsonProperties{
     g_nb_coo_1:number
 }
 
-export interface roleFoncierDB extends roleFoncierGeoJsonProps{
+export interface lotCadastralDB extends lotCadastralGeoJsonProperties{
+    geojson_geometry:string;
+}
+
+export interface lotCadastralAvecBoolInvGeoJsonProperties extends lotCadastralGeoJsonProperties{
+    bool_inv:boolean
+}
+
+export interface lotCadastralBoolInvDB extends lotCadastralAvecBoolInvGeoJsonProperties{
     geojson_geometry:string;
 }
 
@@ -128,10 +133,15 @@ export interface roleFoncierGeoJsonProps{
     rl0404a:number,
 }
 
+export interface roleFoncierDB extends roleFoncierGeoJsonProps{
+    geojson_geometry:string;
+}
+
 export interface comboERRoleFoncier{
     ERs:ensemble_reglement_territoire,
     TDs: roleFoncierGeoJsonProps[]
 }
+
 
 
 export interface inventaire_stationnement{
@@ -144,24 +154,10 @@ export interface inventaire_stationnement{
     id_er: string,
     id_reg_stat:string,
     cubf:string,
-    geojson_geometry:Geometry,
     commentaire:string,
     id_inv:number|null,
 }
 
-export interface inventaireGeoJSONProps{
-    g_no_lot:string,
-    n_places_min:number,
-    n_places_max:number,
-    n_places_mesure:number,
-    n_places_estime:number,
-    methode_estime:number,
-    id_er: string,
-    id_reg_stat:string,
-    cubf:string,
-    commentaire:string,
-    id_inv:number|null,
-}
 
 export interface quartiers_analyse{
     id_quartier:number,

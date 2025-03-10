@@ -21,7 +21,6 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
       client = await pool.connect();
       const query =`SELECT
             c.g_no_lot,
-            ST_AsGeoJSON(c.geometry) AS geojson_geometry,
             i.n_places_min,
             i.n_places_max,
             i.id_er,
@@ -43,7 +42,7 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
                 WHERE id_quartier = $1
                 LIMIT 1)  -- Limiting to one geometry result
         );`
-    const result = await client.query<DbInventaire>(
+    const result = await client.query(
         query,
         [id]
       );

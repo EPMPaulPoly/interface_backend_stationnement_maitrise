@@ -1,6 +1,6 @@
 import {LatLng, LatLngExpression} from "leaflet";
 import { SetStateAction } from "react";
-import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties } from "./DataTypes";
+import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties, lotCadastralAvecBoolInvGeoJsonProperties } from "./DataTypes";
 import { FeatureCollection, Geometry } from "geojson";
 // --------------------------------------------------------------------------
 // ------------------------- Interface --------------------------------------
@@ -41,8 +41,8 @@ export interface TableInventaireProps{
     defQuartier:  React.Dispatch<SetStateAction<number>>;
     optionsQuartiers: quartiers_analyse[];
     defOptionsQuartiers: React.Dispatch<SetStateAction<quartiers_analyse[]>>;
-    inventaire: GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>;
-    defInventaire: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>>>
+    inventaire: inventaire_stationnement[];
+    defInventaire: React.Dispatch<SetStateAction<inventaire_stationnement[]>>
     lots:GeoJSON.FeatureCollection<GeoJSON.Geometry,lotCadastralGeoJsonProperties>,
     defLots: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,lotCadastralGeoJsonProperties>>>,
     donneesRole: GeoJSON.FeatureCollection<GeoJSON.Geometry,roleFoncierGeoJsonProperties>,
@@ -51,8 +51,8 @@ export interface TableInventaireProps{
     defEnsemblesReglements: React.Dispatch<SetStateAction<ensemble_reglements_stationnement[]>>,
     reglements: reglement_complet[],
     defReglements: React.Dispatch<SetStateAction<reglement_complet[]>>,
-    itemSelect: GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>;
-    defItemSelect :React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>>>,
+    itemSelect: inventaire_stationnement[];
+    defItemSelect :React.Dispatch<SetStateAction<inventaire_stationnement[]>>,
     methodeEstimeRegard:number,
     defMethodeEstimeRegard:React.Dispatch<SetStateAction<number>>,
     regRegard:number,
@@ -64,10 +64,12 @@ export interface TableInventaireProps{
 }
 
 export interface CarteInventaireProps{
-    inventaire:GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>;
-    defInventaire: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>>>;
-    itemSelect: GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>;
-    defItemSelect :React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>>>,
+    lotsDuQuartier:GeoJSON.FeatureCollection<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>,
+    defLotsDuQuartiers:  React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>,
+    inventaire:inventaire_stationnement[];
+    defInventaire: React.Dispatch<SetStateAction<inventaire_stationnement[]>>;
+    itemSelect: inventaire_stationnement[];
+    defItemSelect :React.Dispatch<SetStateAction<inventaire_stationnement[]>>,
     startPosition: LatLngExpression;
     setStartPosition:React.Dispatch<SetStateAction<LatLngExpression>>;
     startZoom: number;
@@ -99,8 +101,8 @@ export interface TableRevueProps{
     defEnsemblesReglements: React.Dispatch<SetStateAction<ensemble_reglements_stationnement[]>>,
     reglements: reglement_complet[],
     defReglements: React.Dispatch<SetStateAction<reglement_complet[]>>
-    inventaire: GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>,
-    defInventaire: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>>>
+    inventaire: inventaire_stationnement[],
+    defInventaire: React.Dispatch<SetStateAction<inventaire_stationnement[]>>
     methodeEstimeRegard:number,
     defMethodeEstimeRegard:React.Dispatch<SetStateAction<number>>,
     regRegard:number,
@@ -118,14 +120,14 @@ export interface selectLotProps{
     defLotAnalyse: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,lotCadastralGeoJsonProperties>>>,
     roleAnalyse:GeoJSON.FeatureCollection<GeoJSON.Geometry,roleFoncierGeoJsonProps>,
     defRoleAnalyse: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,roleFoncierGeoJsonProps>>>,
-    inventaireAnalyse: GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>,
-    defInventaireAnalyse: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>>>,
+    inventaireAnalyse: inventaire_stationnement[],
+    defInventaireAnalyse: React.Dispatch<SetStateAction<inventaire_stationnement[]>>,
     reglementsAnalyse: reglement_complet[],
     defReglementsAnalyse: React.Dispatch<SetStateAction<reglement_complet[]>>,
     ensemblesAnalyse: ensemble_reglements_stationnement[],
     defEnsemblesAnalyse: React.Dispatch<SetStateAction<ensemble_reglements_stationnement[]>>,
     numLot: string,
-    inventaireComplet: GeoJSON.FeatureCollection<GeoJSON.Geometry,inventaireGeoJSONProps>
+    inventaireComplet: inventaire_stationnement[],
     methodeEstimeRegard:number,
     defMethodeEstimeRegard:React.Dispatch<SetStateAction<number>>,
     regRegard:number,
@@ -137,21 +139,21 @@ export interface selectLotProps{
 }
 
 export interface TableauInventaireUniqueProps{
-    inventaire: GeoJSON.Feature<Geometry|null,inventaireGeoJSONProps>
+    inventaire: inventaire_stationnement
 }
 
 export interface calculateRegLotInventoryProps{
-    lots:FeatureCollection<Geometry,inventaireGeoJSONProps>
+    lots:inventaire_stationnement[],
     modifEnMarche:boolean,
-    defInventaireProp:Feature<Geometry,inventaireGeoJSONProps>
+    defInventaireProp:React.Dispatch<SetStateAction<inventaire_stationnement>>
     defNvInvRegATrait:React.Dispatch<SetStateAction<boolean>>
 }
 
 export interface ComparaisonInventaireQuartierProps{
-    ancienInventaireReg:FeatureCollection<Geometry,inventaireGeoJSONProps>,
-    defAncienInventaireReg:React.Dispatch<SetStateAction<FeatureCollection<Geometry,inventaireGeoJSONProps>>>,
-    nouvelInventaireReg: FeatureCollection<Geometry,inventaireGeoJSONProps>,
-    defNouvelInventaireReg: React.Dispatch<SetStateAction<FeatureCollection<Geometry,inventaireGeoJSONProps>>>,
+    ancienInventaireReg:inventaire_stationnement[],
+    defAncienInventaireReg:React.Dispatch<SetStateAction<inventaire_stationnement[]>>,
+    nouvelInventaireReg: inventaire_stationnement[],
+    defNouvelInventaireReg: React.Dispatch<SetStateAction<inventaire_stationnement[]>>,
     validationInventaireQuartier:boolean,
     defValidationInventaireQuartier:React.Dispatch<SetStateAction<boolean>>
     chargement:boolean,
@@ -159,10 +161,12 @@ export interface ComparaisonInventaireQuartierProps{
 }
 
 export interface MenuInventaireProps{
-    nouvelInventaireReg: FeatureCollection<Geometry,inventaireGeoJSONProps>,
-    defNouvelInventaireReg: React.Dispatch<SetStateAction<FeatureCollection<Geometry,inventaireGeoJSONProps>>>,
-    inventaireActuel: FeatureCollection<Geometry,inventaireGeoJSONProps>,
-    defInventaireActuel: React.Dispatch<SetStateAction<FeatureCollection<Geometry,inventaireGeoJSONProps>>>,
+    lotsDuQuartier: FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>,
+    defLotsDuQuartier: React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>,
+    nouvelInventaireReg: inventaire_stationnement[],
+    defNouvelInventaireReg: React.Dispatch<SetStateAction<inventaire_stationnement[],>>,
+    inventaireActuel: inventaire_stationnement[],
+    defInventaireActuel: React.Dispatch<SetStateAction<inventaire_stationnement[]>>,
     positionDepart: LatLngExpression;
     defPositionDepart:React.Dispatch<SetStateAction<LatLngExpression>>;
     zoomDepart: number;
@@ -171,7 +175,7 @@ export interface MenuInventaireProps{
     quartier:number,
     defQuartier:React.Dispatch<SetStateAction<number>>;
     defPanneauComparInventaireQuartierVis:React.Dispatch<SetStateAction<boolean>>;
-    defNouvelInventaireQuartier:React.Dispatch<SetStateAction<FeatureCollection<Geometry,inventaireGeoJSONProps>>>;
+    defNouvelInventaireQuartier:React.Dispatch<SetStateAction<inventaire_stationnement[]>>;
     chargement:boolean,
     defChargement:React.Dispatch<SetStateAction<boolean>>
 }
