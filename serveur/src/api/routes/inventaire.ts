@@ -23,6 +23,9 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
             c.g_no_lot,
             i.n_places_min,
             i.n_places_max,
+            i.n_places_estime,
+            i.n_places_mesure,
+            i.n_places_max,
             i.id_er,
             i.id_reg_stat,
             i.commentaire,
@@ -191,11 +194,33 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
     } catch (err) {
       next(err);
     }
+  };
+  const nouvelInventaire:RequestHandler<any, any, RequeteInventaire> = async (req, res, next) => {
+    try {
+      const { g_no_lot, n_places_min, n_places_max, n_places_estime,n_places_mesure,id_er,id_reg_stat,commentaire,methode_estime } = req.body;
+      const client = await pool.connect();
+      const result = await client.query<DbInventaire>(
+        `INSERT INTO public.inventaire_stationnement(g_no_lot,n_places_min,n_places_max,n_places_estime,n_places_mesure,id_er,id_reg_stat,commentaire,methode_estime)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)RETURNING *`,
+        [g_no_lot, n_places_min, n_places_max, n_places_estime, n_places_mesure,id_er,id_reg_stat,commentaire,methode_estime]
+      );
+      if (result.rows.length === 0) {
+        res.status(404).json({ success: false, error: 'Entry not found' });
+        return;
+      }
+      res.json({ success: true, data: result.rows[0] });
+      client.release();
+    } catch (err) {
+      next(err);
+    }
   }
+
+
   // Routes
   router.get('/quartier/:id', obtiensInventaireParQuartier);
   router.get('/calcul/quartier/:id',calculInventairePythonQuartier);
   router.get('/calcul/lot/:id',calculInventairePythonLot); 
   router.post('/:id_inv',metAJourInventaire)
+  router.put('/',nouvelInventaire)
   return router;
 };

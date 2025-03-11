@@ -68,21 +68,57 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
         const formData = new FormData(form);
         const inventaireASauvegarder = Number(formData.getAll("entree-manuelle-inventaire"));
         if (!isNaN(inventaireASauvegarder)) {
-            //if (props.lots.)
-            const FeatureASauvegarder: Partial<inventaire_stationnement>= {
-                  g_no_lot: props.inventaire.find((o)=>o.methode_estime===1)?.g_no_lot,
-                  n_places_min: 0,
-                  n_places_max: 0,
-                  n_places_mesure: inventaireASauvegarder,
-                  n_places_estime: 0,
-                  methode_estime: 1,
-                  id_er: '',
-                  id_reg_stat: '',
-                  cubf: '',
-                  commentaire: 'Relevé manuel',
-                  id_inv:props.inventaire.find((o)=>o.methode_estime===1)?.id_inv
-            };
-
+            if (props.inventaire.find((o)=>o.methode_estime===1)){
+                const featureASauvegarder:inventaire_stationnement={
+                    g_no_lot: props.inventaire.find((o)=>o.methode_estime===1)?.g_no_lot?? '',
+                    n_places_min: 0,
+                    n_places_max: 0,
+                    n_places_mesure: inventaireASauvegarder,
+                    n_places_estime: 0,
+                    methode_estime: 1,
+                    id_er: '',
+                    id_reg_stat: '',
+                    cubf: '',
+                    commentaire: 'Relevé manuel',
+                    id_inv:props.inventaire.find((o)=>o.methode_estime===1)?.id_inv??(-1)
+                }
+                if (featureASauvegarder.id_inv!= -1 && featureASauvegarder.g_no_lot!=''){
+                    const reussi = await serviceInventaire.modifieInventaire(featureASauvegarder.id_inv,featureASauvegarder)
+                    if (reussi){
+                        console.log(`Modification Réussie de l'entrée  ${featureASauvegarder.id_inv} de la table d'inventaire`)
+                    } else{
+                        throw new Error('Écriture Échouée')
+                    }
+                } else{
+                    throw new Error('Erreur d\'index aux inventaires dispo')
+                }
+            } else{
+                const FeatureASauvegarder: Omit<inventaire_stationnement,'id_inv'>= {
+                    g_no_lot: props.lots.features[0].properties.g_no_lot,
+                    n_places_min: 0,
+                    n_places_max: 0,
+                    n_places_mesure: inventaireASauvegarder,
+                    n_places_estime: 0,
+                    methode_estime: 1,
+                    id_er: '',
+                    id_reg_stat: '',
+                    cubf: '',
+                    commentaire: 'Relevé manuel',
+                };
+                const reussi = await serviceInventaire.nouvelInventaire(FeatureASauvegarder)
+                if (reussi){
+                    console.log(`Entrée dans la table réussie`)
+                    const rechargeInventaire = await serviceInventaire.obtientInventaireParQuartier(props.quartier_select)
+                    if (rechargeInventaire.success){
+                        props.defInventaireQuartier(rechargeInventaire.data)
+                        alert('Mise a jour réussie')
+                        props.defPanneauModifVisible(false)
+                        defModifEnMarche(false)
+                    }
+                } else{
+                    throw new Error('Écriture Échouée')
+                }
+            }
             console.log("La valeur convertie est :", inventaireASauvegarder);
             
         } else {

@@ -90,22 +90,50 @@ export const serviceInventaire = {
         try {
             if (!isNaN(Number(id_inv))){
                 const dbData: Partial<inventaire_stationnement> = {
-                    ...(inventaireAEnvoyer.g_no_lot && { g_no_lot: inventaireAEnvoyer.g_no_lot }),
-                    ...(inventaireAEnvoyer.n_places_min && { n_places_min: inventaireAEnvoyer.n_places_min }),
-                    ...(inventaireAEnvoyer.n_places_max && { n_places_max: inventaireAEnvoyer.n_places_max  }),
-                    ...(inventaireAEnvoyer.n_places_estime && { n_places_estime: inventaireAEnvoyer.n_places_estime}),
-                    ...(inventaireAEnvoyer.n_places_mesure && { n_places_mesure: inventaireAEnvoyer.n_places_mesure }),
-                    ...(inventaireAEnvoyer.id_er && { id_er: inventaireAEnvoyer.id_er }),
-                    ...(inventaireAEnvoyer.id_reg_stat && { id_reg_stat: inventaireAEnvoyer.id_reg_stat }),
-                    ...(inventaireAEnvoyer.commentaire && { commentaire: inventaireAEnvoyer.commentaire  }),
-                    ...(inventaireAEnvoyer.methode_estime && { methode_estime: inventaireAEnvoyer.methode_estime  }),
-                    ...(inventaireAEnvoyer.cubf && { methode_estime: inventaireAEnvoyer.methode_estime  }),
+                    g_no_lot: inventaireAEnvoyer.g_no_lot,
+                    n_places_min: inventaireAEnvoyer.n_places_min,
+                    n_places_max: inventaireAEnvoyer.n_places_max,
+                    n_places_estime: inventaireAEnvoyer.n_places_estime,
+                    n_places_mesure: inventaireAEnvoyer.n_places_mesure,
+                    id_er: inventaireAEnvoyer.id_er,
+                    id_reg_stat: inventaireAEnvoyer.id_reg_stat,
+                    commentaire: inventaireAEnvoyer.commentaire,
+                    methode_estime: inventaireAEnvoyer.methode_estime,
+                    cubf: inventaireAEnvoyer.cubf
                   };
                 const reponseMAJInv = await api.post(`/inventaire/${id_inv}`,dbData);
                 return reponseMAJInv.data.success
             } else{
                 throw new Error("id_inv doit être défini pour cette fonction");
             }
+        } catch (error:any) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    },
+
+    nouvelInventaire:async(nouvelInventaire:Omit<inventaire_stationnement,'id_inv'>):Promise<boolean>=>{
+        try {
+            const dbData: Partial<inventaire_stationnement> = {
+                g_no_lot: nouvelInventaire.g_no_lot ,
+                n_places_min: nouvelInventaire.n_places_min,
+                n_places_max: nouvelInventaire.n_places_max,
+                n_places_estime: nouvelInventaire.n_places_estime,
+                n_places_mesure: nouvelInventaire.n_places_mesure,
+                id_er: nouvelInventaire.id_er,
+                id_reg_stat: nouvelInventaire.id_reg_stat,
+                commentaire: nouvelInventaire.commentaire ,
+                methode_estime: nouvelInventaire.methode_estime,
+                cubf: nouvelInventaire.cubf
+                };
+            const reponseMAJInv = await api.put(`/inventaire/`,dbData);
+            return reponseMAJInv.data.success
         } catch (error:any) {
             if (axios.isAxiosError(error)) {
                 console.error('Axios Error:', error.response?.data);

@@ -144,6 +144,8 @@ const VisualisationInventaire: React.FC = () => {
                     defEnsRegRegard={defEnsRegARegarder}
                     panneauModifVisible={panneauModifVisible}
                     defPanneauModifVisible={defPanneauModifVisible}
+                    quartier_select={quartier}
+                    defInventaireQuartier={defInventaire}
                 />
                     <div className="barre-details-inventaire">
                 <TableRevueInventaire
@@ -167,6 +169,8 @@ const VisualisationInventaire: React.FC = () => {
                     defEnsRegRegard={defEnsRegARegarder}
                     panneauModifVisible={panneauModifVisible}
                     defPanneauModifVisible={defPanneauModifVisible}
+                    quartier_select={quartier}
+                    defInventaireQuartier={defInventaire}
                 />
                 </div></>)
                 : (<><CarteInventaire
@@ -218,6 +222,8 @@ const VisualisationInventaire: React.FC = () => {
                 defEnsRegRegard={defEnsRegARegarder}
                 panneauModifVisible={panneauModifVisible}
                 defPanneauModifVisible={defPanneauModifVisible}
+                quartier_select={quartier}
+                defInventaireQuartier={defInventaire}
             />
             </div></>)
             )}

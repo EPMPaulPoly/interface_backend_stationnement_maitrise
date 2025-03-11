@@ -112,7 +112,9 @@ export interface TableRevueProps{
     roleRegard:string,
     defRoleRegard:React.Dispatch<SetStateAction<string>>,
     panneauModifVisible: boolean,
-    defPanneauModifVisible:React.Dispatch<SetStateAction<boolean>>
+    defPanneauModifVisible:React.Dispatch<SetStateAction<boolean>>,
+    quartier_select:number,
+    defInventaireQuartier:React.Dispatch<SetStateAction<inventaire_stationnement[]>>
 }
 
 export interface selectLotProps{
