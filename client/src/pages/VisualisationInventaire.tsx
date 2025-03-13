@@ -94,6 +94,9 @@ const VisualisationInventaire: React.FC = () => {
                         defValidationInventaireQuartier={defPanneauComparInventaireQuartierVis}
                         chargement={chargement}
                         defChargement={defChargement}
+                        quartierSelect={quartier}
+                        defLotsDuQuartier={defLotsDuQuartier}
+                        defPanneauComparInventaireQuartierVis={defPanneauComparInventaireQuartierVis}
                     />
                 </>)
                 :(panneauModifVisible ? 
@@ -261,6 +264,7 @@ const VisualisationInventaire: React.FC = () => {
                 ensRegRegard={ensRegARegarder}
                 defEnsRegRegard={defEnsRegARegarder}
                 lotsDuQuartier={lotsDuQuartier}
+                quartierSelect={quartier}
             />}
             
         </div>

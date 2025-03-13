@@ -61,7 +61,8 @@ export interface TableInventaireProps{
     defEnsRegRegard:React.Dispatch<SetStateAction<number>>,
     roleRegard:string,
     defRoleRegard:React.Dispatch<SetStateAction<string>>,
-    lotsDuQuartier: GeoJSON.FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>
+    lotsDuQuartier: GeoJSON.FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>,
+    quartierSelect:number,
 }
 
 export interface CarteInventaireProps{
@@ -135,7 +136,10 @@ export interface ComparaisonInventaireQuartierProps{
     validationInventaireQuartier:boolean,
     defValidationInventaireQuartier:React.Dispatch<SetStateAction<boolean>>
     chargement:boolean,
-    defChargement:React.Dispatch<SetStateAction<boolean>>
+    defChargement:React.Dispatch<SetStateAction<boolean>>,
+    quartierSelect:number,
+    defLotsDuQuartier: React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>,
+    defPanneauComparInventaireQuartierVis:React.Dispatch<SetStateAction<boolean>>;
 }
 
 export interface MenuInventaireProps{

@@ -2,19 +2,24 @@ import { MenuInventaireProps } from "../types/InterfaceTypes";
 import { serviceInventaire,serviceCadastre } from "../services";
 import L, { LatLngExpression } from 'leaflet';
 import { inventaire_stationnement } from "../types/DataTypes";
+import { MAJLotsInventaireProps } from "../types/utilTypes";
+import metAJourLotsInventaire from "../utils/metAJourLotsInventaire";
 const MenuInventaire:React.FC<MenuInventaireProps>=(props:MenuInventaireProps)=>{
 
     // Gestion de selection de quartier
     const gestSelectQuartier = async (quartier_selectionne:number) =>{
         props.defQuartier(quartier_selectionne)
-        const inventaire = await serviceInventaire.obtientInventaireParQuartier(quartier_selectionne)
-        const lots = await serviceCadastre.obtiensCadastreParQuartier(quartier_selectionne)
-        if (lots.success && inventaire.success){
-            props.defLotsDuQuartier(lots.data)
-            props.defInventaireActuel(inventaire.data)
-            const center = new L.GeoJSON(lots.data).getBounds().getCenter();
+        const propsMAJ:MAJLotsInventaireProps= {
+            defInventaire:props.defInventaireActuel,
+            defLotsDuQuartier:props.defLotsDuQuartier
+        }
+        const succes = await metAJourLotsInventaire(quartier_selectionne,propsMAJ)
+        if (succes){
+            const center = new L.GeoJSON(props.lotsDuQuartier).getBounds().getCenter();
             props.defPositionDepart(center);
             props.defZoomDepart(12);
+        } else{
+            alert('obtention inventaire échouée')
         }
     }
 
@@ -65,7 +70,7 @@ const MenuInventaire:React.FC<MenuInventaireProps>=(props:MenuInventaireProps)=>
                     ))}
                 </select>
                 <button onClick={gestCalculInventaire}>
-                    Calcul de stationnement
+                    Recalcule Inventaire Quartier
                 </button>
                 <label 
                     htmlFor="show-all-lots" 

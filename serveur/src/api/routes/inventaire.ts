@@ -166,7 +166,7 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
   const metAJourInventaire:RequestHandler<ParamsInventaire, any, RequeteInventaire> = async (req, res, next) => {
     try {
       const { id_inv } = req.params;
-      const { g_no_lot, n_places_min, n_places_max, n_places_estime,n_places_mesure,id_er,id_reg_stat,commentaire,methode_estime } = req.body;
+      const { g_no_lot, n_places_min, n_places_max, n_places_estime,n_places_mesure,id_er,id_reg_stat,commentaire,methode_estime,cubf } = req.body;
       const client = await pool.connect();
       const result = await client.query<DbInventaire>(
         `UPDATE public.inventaire_stationnement SET 
@@ -178,12 +178,13 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
             id_er = $6,
             id_reg_stat = $7,
             commentaire = $8,
-            methode_estime= $9
+            methode_estime= $9,
+            cubf=$10
           WHERE 
-            id_inv = $10 
+            id_inv = $11 
           RETURNING 
             *`,
-        [g_no_lot, n_places_min, n_places_max, n_places_estime, n_places_mesure,id_er,id_reg_stat,commentaire,methode_estime,id_inv]
+        [g_no_lot, n_places_min, n_places_max, n_places_estime, n_places_mesure,id_er,id_reg_stat,commentaire,methode_estime,cubf,id_inv]
       );
       if (result.rows.length === 0) {
         res.status(404).json({ success: false, error: 'Entry not found' });
@@ -197,12 +198,12 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
   };
   const nouvelInventaire:RequestHandler<any, any, RequeteInventaire> = async (req, res, next) => {
     try {
-      const { g_no_lot, n_places_min, n_places_max, n_places_estime,n_places_mesure,id_er,id_reg_stat,commentaire,methode_estime } = req.body;
+      const { g_no_lot, n_places_min, n_places_max, n_places_estime,n_places_mesure,id_er,id_reg_stat,commentaire,methode_estime,cubf } = req.body;
       const client = await pool.connect();
       const result = await client.query<DbInventaire>(
-        `INSERT INTO public.inventaire_stationnement(g_no_lot,n_places_min,n_places_max,n_places_estime,n_places_mesure,id_er,id_reg_stat,commentaire,methode_estime)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)RETURNING *`,
-        [g_no_lot, n_places_min, n_places_max, n_places_estime, n_places_mesure,id_er,id_reg_stat,commentaire,methode_estime]
+        `INSERT INTO public.inventaire_stationnement(g_no_lot,n_places_min,n_places_max,n_places_estime,n_places_mesure,id_er,id_reg_stat,commentaire,methode_estime,cubf)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9,$10)RETURNING *`,
+        [g_no_lot, n_places_min, n_places_max, n_places_estime, n_places_mesure,id_er,id_reg_stat,commentaire,methode_estime,cubf]
       );
       if (result.rows.length === 0) {
         res.status(404).json({ success: false, error: 'Entry not found' });

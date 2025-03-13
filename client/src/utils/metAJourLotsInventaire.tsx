@@ -7,6 +7,9 @@ const metAJourLotsInventaire = async(quartier_selection:number, props:MAJLotsInv
     if (lots.success && inventaire.success){
         props.defLotsDuQuartier(lots.data)
         props.defInventaire(inventaire.data)
+        return true
+    } else{
+        return false
     }
 }
 

@@ -6,6 +6,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { Delete } from "@mui/icons-material";
 import { inventaire_stationnement } from "../types/DataTypes";
 import { serviceInventaire } from "../services";
+import metAJourLotsInventaire from "../utils/metAJourLotsInventaire";
+import { MAJLotsInventaireProps } from "../types/utilTypes";
 
 const ComparaisonInventaireQuartier:React.FC<ComparaisonInventaireQuartierProps>=(props:ComparaisonInventaireQuartierProps)=>{
     const gestAnnulCalculQuartier=()=>{
@@ -17,6 +19,9 @@ const ComparaisonInventaireQuartier:React.FC<ComparaisonInventaireQuartierProps>
         const nouvelNouvelInventaire = props.nouvelInventaireReg.filter((o)=>o.g_no_lot!== noLot)
         props.defNouvelInventaireReg(nouvelNouvelInventaire)
         console.log('annulation item',noLot)
+        if (nouvelNouvelInventaire.length===0){
+            props.defPanneauComparInventaireQuartierVis(false)
+        }
     }
     const gestApprouverItem= async(noLot:string)=>{
         console.log('A implementer - get approuver item')
@@ -41,6 +46,9 @@ const ComparaisonInventaireQuartier:React.FC<ComparaisonInventaireQuartierProps>
             if (reussi){
                 const nouvelNouvelInventaire = props.nouvelInventaireReg.filter((o)=>o.g_no_lot!== noLot)
                 props.defNouvelInventaireReg(nouvelNouvelInventaire)
+                if (nouvelNouvelInventaire.length===0){
+                    props.defPanneauComparInventaireQuartierVis(false)
+                }
             } else{
                 alert('sauvegarde non réussie')
             }
@@ -61,6 +69,17 @@ const ComparaisonInventaireQuartier:React.FC<ComparaisonInventaireQuartierProps>
             if (reussi){
                 const nouvelNouvelInventaire = props.nouvelInventaireReg.filter((o)=>o.g_no_lot!== noLot)
                 props.defNouvelInventaireReg(nouvelNouvelInventaire)
+                const propMAJ:MAJLotsInventaireProps={
+                    defInventaire:props.defAncienInventaireReg,
+                    defLotsDuQuartier:props.defLotsDuQuartier
+                };
+                const succes = await metAJourLotsInventaire(props.quartierSelect,propMAJ)
+                if (nouvelNouvelInventaire.length===0){
+                    props.defPanneauComparInventaireQuartierVis(false)
+                }
+                if (succes){
+                    alert('Sauvegarde Reussie, inventaire mis a jour')
+                }
             } else{
                 alert('sauvegarde non réussie')
             }
