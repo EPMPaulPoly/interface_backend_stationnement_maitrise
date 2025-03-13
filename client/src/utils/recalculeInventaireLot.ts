@@ -1,5 +1,5 @@
 import { serviceInventaire } from "../services";
-import { calculateRegLotInventoryProps } from "../types/InterfaceTypes";
+import { calculateRegLotInventoryProps } from "../types/utilTypes";
 
 const recalculeInventaireLot = async (props:calculateRegLotInventoryProps): Promise<void> => {
     console.log('Commencement calcul Automatique');

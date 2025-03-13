@@ -144,5 +144,22 @@ export const serviceInventaire = {
             }
             throw error; // Re-throw if necessary
         }
+    },
+
+    supprimerEntreeInventaire:async(inventaireASupprimer:number):Promise<boolean>=>{
+        try {
+            
+            const reponseMAJInv = await api.delete(`/inventaire/${inventaireASupprimer}`);
+            return reponseMAJInv.data.success
+        } catch (error:any) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
     }
 };

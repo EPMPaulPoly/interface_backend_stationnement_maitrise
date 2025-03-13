@@ -4,7 +4,7 @@ import { CarteInventaireProps } from '../types/InterfaceTypes';
 import "leaflet/dist/leaflet.css";
 import L, { LeafletEvent } from 'leaflet';
 import selectLotInventaire from '../utils/selectLotInventaire';
-import { selectLotProps } from '../types/InterfaceTypes';
+import { selectLotProps } from '../types/utilTypes';
 import {  lotCadastralAvecBoolInvGeoJsonProperties } from '../types/DataTypes';
 const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
   const handleLotClick = (e: LeafletEvent) => {
@@ -12,8 +12,8 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
     const propsLot: selectLotProps = {
       inventaireComplet: props.inventaire,
       numLot: key,
-      lotAnalyse: props.lots,
-      defLotAnalyse: props.defLots,
+      lotAnalyse: props.lotSelect,
+      defLotAnalyse: props.defLotSelect,
       inventaireAnalyse: props.itemSelect,
       defInventaireAnalyse: props.defItemSelect,
       roleAnalyse: props.donneesRole,
@@ -29,7 +29,8 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
       ensRegRegard: props.ensRegRegard,
       defEnsRegRegard: props.defEnsRegRegard,
       roleRegard: props.roleRegard,
-      defRoleRegard: props.defRoleRegard
+      defRoleRegard: props.defRoleRegard,
+      lotsDuQuartier: props.lotsDuQuartier
     }
     selectLotInventaire(propsLot)
   }
@@ -47,9 +48,10 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
 
         if (props.lotsDuQuartier && props.lotsDuQuartier.features.length > 0) {
           // Create a new GeoJSON layer from props.geoJsondata
-          const geoJsonLayer = L.geoJSON(props.lotsDuQuartier, {
+          const lotsAMontrer = !props.montrerTousLots? props.lotsDuQuartier.features.filter((o)=>o.properties.bool_inv===true):props.lotsDuQuartier;
+          const geoJsonLayer = L.geoJSON(lotsAMontrer, {
             style: (feature) => {
-              const isLotInAnalyse = feature && props.itemSelect.some(lot => lot.g_no_lot === feature.properties.g_no_lot);
+              const isLotInAnalyse = feature && props.lotSelect.features.some(lot => lot.properties.g_no_lot === feature.properties.g_no_lot);
               return {
                 color: isLotInAnalyse ? 'red' : 'blue', // Border color based on condition
                 weight: 2,     // Border thickness

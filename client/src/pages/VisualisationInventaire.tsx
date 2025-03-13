@@ -47,6 +47,7 @@ const VisualisationInventaire: React.FC = () => {
     const [panneauModifVisible,defPanneauModifVisible] = useState<boolean>(false);// Binaire pour afficher le panneau permettant de créer un inventaire sur un lot particulier
     const [panneauComparInventaireQuartierVis,defPanneauComparInventaireQuartierVis] = useState<boolean>(false);// binaire pour montrer le panneau de comparaison 
     const [nouvelInventaireQuartier,defNouvelInventaireQuartier] = useState<inventaire_stationnement[]>([]);
+    const [montrerTousLots,defMontrerTousLots] = useState<boolean>(false);
     const [optionCouleur,defOptionCouleur] = useState<number>(-1);
     // Va chercher les quartiers pertinents
     useEffect(() => {
@@ -78,6 +79,8 @@ const VisualisationInventaire: React.FC = () => {
                 defQuartier={defQuartierAnalyse}
                 chargement={chargement}
                 defChargement={defChargement}
+                montrerTousLots={montrerTousLots}
+                defMontrerTousLots={defMontrerTousLots}
             />
             <div className="panneau-haut">
                 {panneauComparInventaireQuartierVis?
@@ -106,8 +109,8 @@ const VisualisationInventaire: React.FC = () => {
                     defInventaire={defInventaire}
                     itemSelect={inventaireSelect}
                     defItemSelect={defInventaireSelect}
-                    lots={lotSelect}
-                    defLots={defLotSelect}
+                    lotSelect={lotSelect}
+                    defLotSelect={defLotSelect}
                     donneesRole={roleSelect}
                     defDonneesRole={defRoleSelect}
                     ensemblesReglements={ensRegSelect}
@@ -122,6 +125,7 @@ const VisualisationInventaire: React.FC = () => {
                     defRegRegard={defRegARegarder}
                     ensRegRegard={ensRegARegarder}
                     defEnsRegRegard={defEnsRegARegarder}
+                    montrerTousLots={montrerTousLots}
                 />
                 <CompoModifInventaire
                     lots={lotSelect}
@@ -184,8 +188,8 @@ const VisualisationInventaire: React.FC = () => {
                     defInventaire={defInventaire}
                     itemSelect={inventaireSelect}
                     defItemSelect={defInventaireSelect}
-                    lots={lotSelect}
-                    defLots={defLotSelect}
+                    lotSelect={lotSelect}
+                    defLotSelect={defLotSelect}
                     donneesRole={roleSelect}
                     defDonneesRole={defRoleSelect}
                     ensemblesReglements={ensRegSelect}
@@ -200,6 +204,7 @@ const VisualisationInventaire: React.FC = () => {
                     defRegRegard={defRegARegarder}
                     ensRegRegard={ensRegARegarder}
                     defEnsRegRegard={defEnsRegARegarder}
+                    montrerTousLots={montrerTousLots}
             /><div className="barre-details-inventaire">
             <TableRevueInventaire
                 lots={lotSelect}
@@ -255,6 +260,7 @@ const VisualisationInventaire: React.FC = () => {
                 defRegRegard={defRegARegarder}
                 ensRegRegard={ensRegARegarder}
                 defEnsRegRegard={defEnsRegARegarder}
+                lotsDuQuartier={lotsDuQuartier}
             />}
             
         </div>

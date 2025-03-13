@@ -213,6 +213,24 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
     } catch (err) {
       next(err);
     }
+  };
+  const supprimerInventaire:RequestHandler<ParamsInventaire> =  async(req,res,next): Promise<void>=>{
+    try {
+      const{id_inv} = req.params
+      const client = await pool.connect();
+      const result = await client.query<DbInventaire>(
+        `DELETE FROM public.inventaire_stationnement WHERE id_inv= $1;`,
+        [id_inv]
+      );
+      if (result.rowCount === 0) {
+        res.status(404).json({ success: false, error: 'Entry not found' });
+        return;
+      }
+      res.json({ success: true, data: [] });
+      client.release();
+    } catch (err) {
+      next(err);
+    }
   }
 
 
@@ -222,5 +240,6 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
   router.get('/calcul/lot/:id',calculInventairePythonLot); 
   router.post('/:id_inv',metAJourInventaire)
   router.put('/',nouvelInventaire)
+  router.delete('/:id_inv',supprimerInventaire)
   return router;
 };

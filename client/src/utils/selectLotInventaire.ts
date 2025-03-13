@@ -1,6 +1,6 @@
 import React from 'react';
 import { LeafletEvent } from 'leaflet';
-import {  selectLotProps } from '../types/InterfaceTypes';
+import {  selectLotProps } from '../types/utilTypes';
 import { Feature, FeatureCollection,Geometry } from 'geojson';
 import { inventaire_stationnement } from '../types/DataTypes';
 import { serviceReglements,serviceCadastre, serviceEnsemblesReglements } from '../services';
@@ -41,7 +41,7 @@ const selectLotInventaire = async (props:selectLotProps): Promise<void> => {
             const ensReg = await serviceEnsemblesReglements.chercheEnsembleReglementParId(rulesetsToGet[0])
             props.defEnsemblesAnalyse(ensReg.data);
         }
-        const idLot = inventaireTest.find((o)=>o.methode_estime===2)?.g_no_lot
+        const idLot = props.numLot
         if (idLot){
             const lot = await serviceCadastre.obtiensCadastreParId(idLot)
             const role = await serviceCadastre.chercheRoleAssocieParId(idLot)
@@ -49,6 +49,22 @@ const selectLotInventaire = async (props:selectLotProps): Promise<void> => {
             console.log('Obtenu role',role)
             props.defLotAnalyse(lot.data)
             props.defRoleAnalyse(role.data)
+        }
+        props.defRoleRegard('')
+        props.defEnsRegRegard(-1)
+        props.defRegRegard(-1)
+        props.defMethodeEstimeRegard(-1)
+    } else{
+        const idLot = props.numLot
+        if (idLot){
+            const lot = await serviceCadastre.obtiensCadastreParId(idLot)
+            const role = await serviceCadastre.chercheRoleAssocieParId(idLot)
+            console.log('Obtenu lot',lot) 
+            console.log('Obtenu role',role)
+            props.defLotAnalyse(lot.data)
+            props.defRoleAnalyse(role.data)
+            props.defReglementsAnalyse([]);
+            props.defEnsemblesAnalyse([]);
         }
         props.defRoleRegard('')
         props.defEnsRegRegard(-1)

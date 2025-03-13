@@ -1,5 +1,6 @@
 import React, { useState, useEffect,useCallback } from 'react';
-import { calculateRegLotInventoryProps, TableRevueProps } from '../types/InterfaceTypes';
+import { calculateRegLotInventoryProps } from '../types/utilTypes';
+import { TableRevueProps } from '../types/InterfaceTypes';
 import { serviceInventaire } from '../services';
 import { FeatureCollection, Geometry,Feature } from 'geojson';
 import { ensemble_reglement_territoire, inventaire_stationnement,  reglement_complet } from '../types/DataTypes';
@@ -222,7 +223,7 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
                 <option value={1}>Calcul Règlementaire Automatique</option>
                 <option value={2}>Calcul Règlementaire Valeurs Manuelles</option>
             </select>
-            <button onClick={gestDemarrerCalcul}>{!modifEnMarche? 'Démarrer option choisie':'Annuler'}</button>
+            {!modifEnMarche?(<button onClick={gestDemarrerCalcul}>Démarrer option choisie</button>):(<button onClick={gestAnnulModifs}> Annuler</button>)}
             </div>
             <div className="panneau-modif-inventaire-lot">
             {modifEnMarche && (

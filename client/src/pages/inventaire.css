@@ -142,15 +142,21 @@
             flex:1 1;
             position:relative;
             max-height:100%;
+            padding:20px;
+            padding-bottom: 30px;
         }
         
         .conteneur-table-comparaison-quartier {
             max-height: 100%; /* Adjust this value as needed */
             overflow:auto;
         }
-        .table-comparaison-inventaire-quartier{
-            height:100%;
-            overflow:auto;
+        .table-comparaison-inventaire-quartier {
+            overflow: scroll;
+            flex: 1;
+            width: 95vw; /* Full width of the viewport */
+            padding-left:20px;
+            border-spacing: 0;
+            padding-bottom: 30px;
         }
         .table-comparaison-inventaire-quartier thead {
             background-color: #f2f2f2;
@@ -158,4 +164,24 @@
             position: sticky;
             top: 0; /* Fix the header at the top */
             z-index: 1; /* Ensure the header is above the table body */
+            
         }   
+        .table-comparaison-inventaire-quartier  td {
+            padding-left: 15px;
+            padding-right:15px;
+            text-align: center;
+            border-left: 5px solid #ccc;
+            border-left: 5px solid #ccc;
+            justify-content: center;
+            height:30px;
+          }
+        .difference {
+        background-color: red; /* Couleur de fond pour les différences */
+        }
+        .old{
+            background-color: gold;
+            color:black;
+        }
+        .new{
+            background-color: blue;
+        }

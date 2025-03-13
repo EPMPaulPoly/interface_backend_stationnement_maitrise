@@ -39,6 +39,18 @@ const TableauInventaireUnique: React.FC<TableauInventaireUniqueProps> =(props:Ta
                         <td>{props.inventaire?.commentaire}</td>
                     </tr>
                     <tr>
+                        <td>ID ER</td>
+                        <td>{props.inventaire?.id_er}</td>
+                    </tr>
+                    <tr>
+                        <td>ID Reg Stat</td>
+                        <td>{props.inventaire?.id_reg_stat}</td>
+                    </tr>
+                    <tr>
+                        <td>CUBF</td>
+                        <td>{props.inventaire?.cubf}</td>
+                    </tr>
+                    <tr>
                         <td>ID inv</td>
                         <td>{props.inventaire?.id_inv}</td>
                     </tr>

@@ -1,8 +1,13 @@
 import React, {useState,useRef,useEffect} from 'react';
 import { inventaire_stationnement, quartiers_analyse } from '../types/DataTypes';
-import { TableInventaireProps,selectLotProps } from '../types/InterfaceTypes';
+import { TableInventaireProps } from '../types/InterfaceTypes';
+import { selectLotProps } from '../types/utilTypes';
 import { serviceInventaire } from '../services/serviceInventaire';
 import selectLotInventaire from '../utils/selectLotInventaire';
+import CheckIcon from '@mui/icons-material/Check';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Delete } from "@mui/icons-material";
+
 
 const TableInventaire:React.FC<TableInventaireProps>=(props:TableInventaireProps) =>{
     const panelRef = useRef<HTMLDivElement>(null);
@@ -29,10 +34,22 @@ const TableInventaire:React.FC<TableInventaireProps>=(props:TableInventaireProps
               ensRegRegard:props.ensRegRegard,
               defEnsRegRegard:props.defEnsRegRegard,
               roleRegard:props.roleRegard,
-              defRoleRegard:props.defRoleRegard
+              defRoleRegard:props.defRoleRegard,
+              lotsDuQuartier:props.lotsDuQuartier
             }
         selectLotInventaire(propsLot)
     };
+
+    const deleteInventoryEntry = async(id_inv:number|null)=>{
+        if (id_inv){
+            const reussi = await serviceInventaire.supprimerEntreeInventaire(id_inv)
+            if (!reussi){
+                alert('Suppression annulée')
+            } else{
+                alert('Suppression Réussie')
+            }
+        }
+    }
 
     const handleMouseDown = (e: React.MouseEvent) => {
         const startY = e.clientY;
@@ -85,6 +102,7 @@ const TableInventaire:React.FC<TableInventaireProps>=(props:TableInventaireProps
                                 <th>ID Ens. Reg</th>
                                 <th>ID Reg. </th>
                                 <th>CUBF</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -108,6 +126,7 @@ const TableInventaire:React.FC<TableInventaireProps>=(props:TableInventaireProps
                                     <td>{item_inventaire?.id_er}</td>
                                     <td>{item_inventaire?.id_reg_stat}</td>
                                     <td>{item_inventaire?.cubf}</td>
+                                    <td onClick={(e: React.MouseEvent) => deleteInventoryEntry(item_inventaire.id_inv)}><DeleteIcon style={{ color: "#FFFFFF" }}/></td>
                                 </tr>
                             )))}
                         </tbody>
