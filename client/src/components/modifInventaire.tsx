@@ -27,6 +27,7 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
     const [newRegInvToProc,setNewRegInvToProc] = useState<boolean>(false);
     const [regPertinents,defRegPertinents] = useState<reglement_complet[]>([]);
     const [ensRegPertinents,defEnsRegPertinents] = useState<ensemble_reglement_territoire[]>([]);
+    const [reglementUnites,defReglementsUnites] = useState<>
 
     const renvoiInventaireReg = (): inventaire_stationnement => {
         const foundItem = props.inventaire.find(item => item.methode_estime === 2);
@@ -95,7 +96,7 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
                 }
             } else{
                 const FeatureASauvegarder: Omit<inventaire_stationnement,'id_inv'>= {
-                    g_no_lot: props.lots.features[0].properties.g_no_lot,
+                    g_no_lot: props.lots.properties.g_no_lot,
                     n_places_min: 0,
                     n_places_max: 0,
                     n_places_mesure: inventaireASauvegarder,
@@ -178,6 +179,10 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
         }
         recalculeInventaireLot(propsCalcul)
         console.log('Calcul complet, mise en page')
+    }
+
+    const renduReglementsPossibles =()=>{
+        
     }
 
     const renderForm = () => {

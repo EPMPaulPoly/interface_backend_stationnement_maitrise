@@ -51,7 +51,7 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
           const lotsAMontrer = !props.montrerTousLots? props.lotsDuQuartier.features.filter((o)=>o.properties.bool_inv===true):props.lotsDuQuartier;
           const geoJsonLayer = L.geoJSON(lotsAMontrer, {
             style: (feature) => {
-              const isLotInAnalyse = feature && props.lotSelect.features.some(lot => lot.properties.g_no_lot === feature.properties.g_no_lot);
+              const isLotInAnalyse = feature && props.lotSelect.properties.g_no_lot===feature.properties.g_no_lot;
               return {
                 color: isLotInAnalyse ? 'red' : 'blue', // Border color based on condition
                 weight: 2,     // Border thickness

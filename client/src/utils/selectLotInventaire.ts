@@ -16,6 +16,7 @@ const checkAvailable = (inventaireComplet: inventaire_stationnement[],key:string
 }
 
 const selectLotInventaire = async (props: selectLotProps): Promise<void> => {
+    console.time('selectLotInventaire');
     const idLot = props.numLot;
     let inventaireTest: inventaire_stationnement[] = [];
 
@@ -31,11 +32,12 @@ const selectLotInventaire = async (props: selectLotProps): Promise<void> => {
         console.log('Regles a obtenir: ', rulesToGet);
         console.log('Ens. Reg a obtenir: ', rulesetsToGet);
         console.log('Démarrage Service');
-
+        console.time('fetchRegulations');
         const [reg, ensReg] = await Promise.all([
             serviceReglements.chercheReglementComplet(rulesToGet.length > 1 ? rulesToGet : rulesToGet[0]),
             serviceEnsemblesReglements.chercheEnsembleReglementParId(rulesetsToGet.length > 1 ? rulesetsToGet : rulesetsToGet[0])
         ]);
+        console.timeEnd('fetchRegulations');
 
         props.defReglementsAnalyse(reg.data);
         props.defEnsemblesAnalyse(ensReg.data);
@@ -46,22 +48,37 @@ const selectLotInventaire = async (props: selectLotProps): Promise<void> => {
     }
 
     if (idLot) {
-        const [lot, role] = await Promise.all([
-            serviceCadastre.obtiensCadastreParId(idLot),
-            serviceCadastre.chercheRoleAssocieParId(idLot)
-        ]);
-
-        console.log('Obtenu lot', lot);
-        console.log('Obtenu role', role);
-
-        props.defLotAnalyse(lot.data);
-        props.defRoleAnalyse(role.data);
+        console.time('fetchLotAndRole');
+    
+        // Find the lot from the features array
+        const lot2 = props.lotsDuQuartier.features.find((o) => o.properties.g_no_lot === idLot);
+    
+        try {
+            // Fetch the role associated with the lot ID
+            const role = await serviceCadastre.chercheRoleAssocieParId(idLot);
+    
+            console.timeEnd('fetchLotAndRole');
+            console.log('Obtenu lot', lot2);
+            console.log('Obtenu role', role);
+    
+            // Set the lot and role for analysis
+            if (lot2) {
+                props.defLotAnalyse(lot2);
+            } else {
+                console.warn('Lot not found for idLot:', idLot);
+            }
+            props.defRoleAnalyse(role.data);
+        } catch (error) {
+            console.error('Error fetching role:', error);
+            console.timeEnd('fetchLotAndRole');
+        }
     }
 
     props.defRoleRegard('');
     props.defEnsRegRegard(-1);
     props.defRegRegard(-1);
     props.defMethodeEstimeRegard(-1);
+    console.timeEnd('selectLotInventaire');
 };
 
 

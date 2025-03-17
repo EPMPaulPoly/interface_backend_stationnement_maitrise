@@ -71,27 +71,19 @@ const TableRevueInventaire: React.FC<TableRevueProps> =(props:TableRevueProps) =
                         <tbody>
                             <tr>
                                 <td>Id Lot</td>
-                                <td>{props.lots.features.map(item => 
-                                    item.properties.g_no_lot
-                                )}</td>
+                                <td>{props.lots.properties.g_no_lot}</td>
                             </tr>
                             <tr>
                                 <td>Superficie</td>
-                                <td>{props.lots.features.map(item => 
-                                    item.properties.g_va_superf
-                                )}</td>
+                                <td>{props.lots.properties.g_va_suprf}</td>
                             </tr>
                             <tr>
                                 <td>Latitude</td>
-                                <td>{props.lots.features.map(item => 
-                                    item.properties.g_nb_coo_1
-                                )}</td>
+                                <td>{props.lots.properties.g_nb_coo_1}</td>
                             </tr>
                             <tr>
                                 <td>Longitude</td>
-                                <td>{props.lots.features.map(item => 
-                                    item.properties.g_nb_coord
-                                )}</td>
+                                <td>{props.lots.properties.g_nb_coord}</td>
                             </tr>
                         </tbody>
                     </table>

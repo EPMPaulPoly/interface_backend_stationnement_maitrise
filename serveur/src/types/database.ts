@@ -122,6 +122,23 @@ export interface RequeteInventaire{
     cubf:string,
 }
 
+export interface DbDonneesRequetesCalculValeursManuelles{
+    rl0105a:string,
+    rl0307a:string,
+    id_er:number,
+    description_er:string,
+    id_periode_geo:number,
+    ville_sec:string,
+    id_provincial_list:string,
+    rl0308a_somme:number,
+    rl0311a_somme:number,
+    rl0312a_somme:number,
+    id_reg_stat:number,
+    description_reg_stat:string,
+    unite:number,
+    desc_unite:string
+}
+
 export interface ParamsQuartier extends ParamsDictionary {
     id: string;
 }

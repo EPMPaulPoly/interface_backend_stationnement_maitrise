@@ -104,7 +104,7 @@ export interface lotCadastralGeomSeulDb {
 
 export interface lotCadastralGeoJsonProperties{
     g_no_lot:string,
-    g_va_superf:number,
+    g_va_suprf:number,
     g_nb_coord:number,
     g_nb_coo_1:number
 }
@@ -162,4 +162,20 @@ export interface inventaire_stationnement{
 export interface quartiers_analyse{
     id_quartier:number,
     nom_quartier:string,
+}
+
+export interface informations_reglementaire_manuelle{
+    cubf:number,
+    description_cubf:string,
+    id_er:number,
+    description_er:string,
+    ville_sec:string,
+    id_provinc_list:string,
+    rl0308a_somme:number,
+    rl0311a_somme:number,
+    rl0404a_somme:number,
+    id_reg_stat:number,
+    description_reg_stat:string,
+    unite:number,
+    description_unite:string
 }

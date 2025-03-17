@@ -1,6 +1,8 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { Pool } from 'pg';
 import { DbDefReglement, DbEnteteReglement, DbReglementComplet } from '../../types/database';
+import path from 'path';
+import {spawn} from 'child_process';
 
 
 export const creationRouteurReglements = (pool: Pool): Router => {
@@ -84,11 +86,64 @@ export const creationRouteurReglements = (pool: Pool): Router => {
     }
   };
 
+  const obtiensUnitesParLot: RequestHandler = async(req,res):Promise<void>=>{
+    
+    const {id} = req.params;
+    const decipheredId = id.replace(/_/g, " ");
+    console.log(`obtention des unités pour les règlements s'appliquant au lot : ${decipheredId}`)
+    const scriptPath = path.resolve(__dirname, "../../../serveur_calcul_python/obtention_reglements_lot.py");
 
+    // Chemin direct vers l'interpréteur Python dans l'environnement Conda
+    const pythonExecutable = '/opt/conda/envs/serveur_calcul_python/bin/python3';
+
+    // Exécuter le script Python avec l'interpréteur de l'environnement
+    const pythonProcess = spawn(pythonExecutable, [scriptPath, decipheredId]);
+    let outputData = '';
+    let errorData = '';
+  
+    // Capturer l'output standard
+    pythonProcess.stdout.on('data', (data) => {
+      outputData += data.toString();
+    });
+  
+    // Capturer les erreurs standard
+    pythonProcess.stderr.on('data', (data) => {
+      errorData += data.toString();
+    });
+  
+    // Capturer la fin du processus
+    pythonProcess.on('close', (code) => {
+      if (code === 0) {
+        //console.log(`Output: ${outputData}`)
+        console.log(`Processus enfant terminé avec succès.`);
+        try {
+          // 🔹 Extract JSON by finding the first `{` (start of JSON)
+          const jsonStartIndex = outputData.indexOf('[');
+          if (jsonStartIndex !== -1) {
+            const jsonString = outputData.slice(jsonStartIndex).trim();
+            const jsonData = JSON.parse(jsonString);
+            
+            //console.log('Parsed JSON:', jsonData);
+            return res.status(200).json({success:true,data:jsonData});  //  Send JSON response
+          } else {
+            console.error('No JSON found in output:', outputData);
+            return res.status(500).send('Erreur: No valid JSON found in output.');
+          }
+        } catch (err) {
+          console.error('Failed to parse JSON:', err);
+          return res.status(500).send('Erreur: JSON parsing failed.');
+        }
+      } else {
+        console.error(`Processus enfant échoué avec le code : ${code}`);
+        return res.status(500).send(`Erreur: ${errorData}`);
+      }
+    });
+  };
 
   // Routes
   router.get('/entete', obtiensTousEntetesReglements);
   router.get('/complet/:idToSplit', obtiensReglementCompletParId);
+  router.get('/unites/:id',obtiensUnitesParLot)
 
   return router;
 };

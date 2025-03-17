@@ -1,4 +1,5 @@
 from classes.parking_regs import ParkingRegulations 
+from classes.parking_regs import get_units_for_regs
 import pandas as pd
 import numpy as np
 from typing import Optional, Union
@@ -199,6 +200,65 @@ def run_sql_requests(ruleset_id,con:sqlalchemy.Connection):
     return rulesets_header_table,rules_association_table,relevant_rules_def,relevant_rules_heads,units_table,land_use_table
 
 
+def get_parking_reg_for_lot(lot_id:str)->pd.DataFrame:
+    NotImplementedError('Not Yet Implemented')
+    query = f"""SELECT 
+                    rf.RL0105A::int,
+                    coalesce(rf.rl0307A::int,0) as rl0307a,
+                    PRS.id_er,
+                    PRS.description_er,
+                    cs.id_periode_geo,
+                    cs.ville_sec,
+                    STRING_AGG(rf.id_provinc::text, ',') AS id_provinc_list,
+                    SUM(rf.RL0308A) as rl0308a_somme,
+                    SUM(rf.rl0311a) as rl0311a_somme,
+                    SUM(rf.rl0312a) as rl0312a_somme,
+                    SUM(rf.rl0404a) as rl0404a_somme
+                FROM
+                    public.association_cadastre_role AS cad
+                JOIN
+                    public.role_foncier AS rf ON cad.id_provinc = rf.id_provinc
+                JOIN
+                    public.cartographie_secteurs AS cs ON ST_Intersects(rf.geometry, cs.geometry)
+                JOIN
+                    public.historique_geopol AS hg ON cs.id_periode = hg.id_periode
+                JOIN
+                    public.association_er_territoire AS ass ON ass.id_periode_geo = cs.id_periode_geo
+                JOIN
+                    public.ensembles_reglements_stat AS PRS ON ass.id_er = PRS.id_er
+                WHERE
+                    cad.g_no_lot = '{lot_id}' AND
+                    (hg.date_debut_periode <= COALESCE(rf.RL0307A::int, 0) OR hg.date_debut_periode IS NULL) AND
+                    (hg.date_fin_periode >= COALESCE(rf.RL0307A::int, 0) OR hg.date_fin_periode IS NULL) AND
+                    (PRS.date_debut_er <= COALESCE(rf.RL0307A::int, 0) OR PRS.date_debut_er IS NULL) AND
+                    (PRS.date_fin_er >= COALESCE(rf.RL0307A::int, 0) OR PRS.date_fin_er IS NULL)
+                GROUP BY
+                    rf.RL0105A,
+                    PRS.id_er,
+                    PRS.description_er,
+                    cs.id_periode_geo,
+                    cs.ville_sec,
+                    rf.rl0307a;
+            """
+    engine = create_engine(config_db.pg_string)
+    with engine.connect() as con:
+        rulesets_association_data = pd.read_sql_query(query,con)
+    rulesets_to_obtain = rulesets_association_data[config_db.db_column_reg_sets_id].unique().tolist()
+    relevant_rulesets = from_sql(rulesets_to_obtain)
+    association_with_rule = pd.DataFrame()
+    for ruleset in relevant_rulesets:
+        relevant_associations = rulesets_association_data.loc[rulesets_association_data[config_db.db_column_reg_sets_id]==ruleset.ruleset_id].copy()
+        association_final = relevant_associations.merge(ruleset.expanded_table, left_on=config_db.db_column_tax_land_use,right_on=config_db.db_column_land_use_id,how="left")
+        association_final = association_final.merge(ruleset.reg_head[[config_db.db_column_parking_regs_id,config_db.db_column_parking_description]],on=config_db.db_column_parking_regs_id,how="inner")
+        association_final.rename(columns={'description':'description_reg_stat'},inplace=True)
+        association_final = association_final.merge(ruleset.land_use_table,how='left', on=config_db.db_column_land_use_id)
+        if association_with_rule.empty:
+            association_with_rule = association_final
+        else:
+            association_with_rule = pd.concat(association_with_rule,association_final)
+    units = get_units_for_regs(association_with_rule[config_db.db_column_parking_regs_id].to_list())
+    association_with_rule= association_with_rule.merge(units,how='left',on=config_db.db_column_parking_regs_id)
+    return association_with_rule
 
 if __name__=="__main__":
     #entete_reglement = pd.DataFrame([[100,"test",1995,2009,"VQZ3","Annexe D","3.1-st-sacrement","CUQ"],
@@ -221,12 +281,14 @@ if __name__=="__main__":
     #test_reg = ParkingRegulationSet(entete_reglement,reg_def,"id_reg_stat",1995,None,"Test",#association_table)
     #is_valid,invalid_values = test_reg.validate_dates()
     #print(is_valid)
-    parking_reg_test = from_sql(1)[0]
-    print("testing baseline")
+    #parking_reg_test = from_sql(1)[0]
+    #print("testing baseline")
     #print(parking_reg_test.verify_minimum_fill())
     #parking_reg_test.expand_land_use_table()
     #print("dropping cubf 9")
     #parking_reg_test_dropped:ParkingRegulationSet = copy.deepcopy(parking_reg_test)
     #parking_reg_test_dropped.association_table.drop(parking_reg_test.association_table.loc[parking_reg_test.association_table["cubf"]==9].index,inplace=True)
     #print(parking_reg_test_dropped.verify_minimum_fill())
-    print(parking_reg_test)
+    #print(parking_reg_test)
+    values = get_parking_reg_for_lot('PC-32889')
+    print(values)

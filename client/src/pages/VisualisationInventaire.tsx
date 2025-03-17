@@ -5,7 +5,7 @@ import TableInventaire from '../components/TableInventaire';
 import { ensemble_reglements_stationnement, entete_ensembles_reglement_stationnement, inventaire_stationnement, quartiers_analyse, reglement_complet } from '../types/DataTypes';
 import { serviceQuartiersAnalyse, } from '../services/serviceQuartiersAnalyse';
 import {serviceInventaire} from '../services/serviceInventaire';
-import { FeatureCollection,Geometry } from 'geojson';
+import { FeatureCollection,Geometry,Feature } from 'geojson';
 import { lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps,lotCadastralAvecBoolInvGeoJsonProperties } from '../types/DataTypes';
 import CarteInventaire from '../components/carteInventaire';
 import TableRevueInventaire from '../components/RevueInventaire';
@@ -34,9 +34,19 @@ const VisualisationInventaire: React.FC = () => {
     const [inventaire,defInventaire] = useState<inventaire_stationnement[]>([]);
     const [inventaireSelect,defInventaireSelect] = useState<inventaire_stationnement[]>([]);
 
-    const [lotSelect,defLotSelect] = useState<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>({//lot selectionné
-        type: "FeatureCollection",
-        features: []
+    const [lotSelect,defLotSelect] = useState<Feature<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>({//lot selectionné
+        type: "Feature",
+        properties: {
+            g_no_lot: '',
+            g_nb_coo_1: 0,
+            g_nb_coord: 0,
+            g_va_suprf: 0,
+            bool_inv: false,
+        },
+        geometry: {
+            type: "Point",
+            coordinates: [0, 0]
+        }
     });
     const [roleSelect,defRoleSelect] = useState<FeatureCollection<Geometry,roleFoncierGeoJsonProps>>({//items du role
         type: "FeatureCollection",

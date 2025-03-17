@@ -17,7 +17,7 @@ class ServiceCadastre {
                     geometry: JSON.parse(item.geojson_geometry),
                     properties: {
                         g_no_lot:item.g_no_lot,
-                        g_va_superf:item.g_va_superf,
+                        g_va_suprf:item.g_va_suprf,
                         g_nb_coo_1:item.g_nb_coo_1,
                         g_nb_coord:item.g_nb_coord,
                     }
@@ -47,7 +47,7 @@ class ServiceCadastre {
                     geometry: JSON.parse(item.geojson_geometry),
                     properties: {
                         g_no_lot:item.g_no_lot,
-                        g_va_superf:item.g_va_superf,
+                        g_va_suprf:item.g_va_suprf,
                         g_nb_coo_1:item.g_nb_coo_1,
                         g_nb_coord:item.g_nb_coord,
                     }
@@ -112,7 +112,7 @@ class ServiceCadastre {
                     geometry: JSON.parse(item.geojson_geometry),
                     properties: {
                         g_no_lot:item.g_no_lot,
-                        g_va_superf:item.g_va_superf,
+                        g_va_suprf:item.g_va_suprf,
                         g_nb_coo_1:item.g_nb_coo_1,
                         g_nb_coord:item.g_nb_coord,
                         bool_inv:item.bool_inv

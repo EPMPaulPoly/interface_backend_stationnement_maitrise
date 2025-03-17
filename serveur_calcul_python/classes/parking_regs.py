@@ -6,6 +6,7 @@ import numpy as np
 from config import config_db
 from sqlalchemy import create_engine,text
 import logging
+from typing import Optional, Union
 class ParkingRegulations():
     def __init__(self,reg_head:pd.DataFrame,reg_def:pd.DataFrame,units_table:pd.DataFrame)->None:
         self.reg_head = reg_head
@@ -95,7 +96,39 @@ def _(indice_:list):
         units_table = pd.read_sql(command,con)
     object_out = ParkingRegulations(reg_head,reg_def,units_table)
     return object_out
-    
+
+def get_units_for_regs(regs_units_for:Union[list[int],int])->pd.DataFrame:
+    query = ''
+    if isinstance(regs_units_for,list):
+        query=f'''
+            SELECT DISTINCT
+                rse.id_reg_stat,
+                rse.unite,
+                mfc.desc_unite
+            FROM
+                public.reg_stationnement_empile as rse
+            JOIN
+                public.multiplicateur_facteurs_colonnes as mfc on mfc.id_unite = rse.unite 
+            WHERE 
+                rse.id_reg_stat IN ({','.join(map(str,regs_units_for))})
+            '''    
+    else:
+        query=f'''
+            SELECT DISTINCT
+                rse.id_reg_stat,
+                rse.unite,
+                mfc.desc_unite
+            FROM
+                public.reg_stationnement_empile as rse
+            JOIN
+                public.multiplicateur_facteurs_colonnes as mfc on mfc.id_unite = rse.unite 
+            WHERE 
+                rse.id_reg_stat = {regs_units_for}
+            '''    
+    engine = create_engine(config_db.pg_string)
+    with engine.connect() as con:
+        units = pd.read_sql_query(query,con)
+    return units
 
 if __name__ =="__main__":
     table = config_db.db_table_parking_reg_headers

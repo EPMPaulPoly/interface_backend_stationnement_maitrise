@@ -14,12 +14,29 @@ const MenuInventaire:React.FC<MenuInventaireProps>=(props:MenuInventaireProps)=>
             defLotsDuQuartier:props.defLotsDuQuartier
         }
         const succes = await metAJourLotsInventaire(quartier_selectionne,propsMAJ)
-        if (succes){
-            const center = new L.GeoJSON(props.lotsDuQuartier).getBounds().getCenter();
-            props.defPositionDepart(center);
-            props.defZoomDepart(12);
-        } else{
-            alert('obtention inventaire échouée')
+        if (succes) {
+            // Ensure lotsDuQuartier is updated before proceeding
+            // This might require a slight delay or a state update callback
+            await new Promise(resolve => setTimeout(resolve, 0)); // Wait for the next tick
+    
+            // Check if lotsDuQuartier is defined and has features
+            if (props.lotsDuQuartier && props.lotsDuQuartier.features.length > 0) {
+                const geoJsonLayer = new L.GeoJSON(props.lotsDuQuartier);
+                const bounds = geoJsonLayer.getBounds();
+    
+                // Check if bounds are valid
+                if (bounds.isValid()) {
+                    const center = bounds.getCenter();
+                    props.defPositionDepart(center);
+                    props.defZoomDepart(12);
+                } else {
+                    console.error('Bounds are not valid');
+                }
+            } else {
+                console.error('lotsDuQuartier is not defined or has no features');
+            }
+        } else {
+            alert('Obtention inventaire échouée');
         }
     }
 
