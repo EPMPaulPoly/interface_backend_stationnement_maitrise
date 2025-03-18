@@ -122,6 +122,13 @@ export interface RequeteInventaire{
     cubf:string,
 }
 
+export interface RequeteCalculeInventaireRegMan{
+    cubf:number,
+    id_reg_stat:number,
+    unite:number,
+    valeur:number
+}
+
 export interface DbDonneesRequetesCalculValeursManuelles{
     rl0105a:string,
     rl0307a:string,

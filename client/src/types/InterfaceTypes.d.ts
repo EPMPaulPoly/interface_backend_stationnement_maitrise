@@ -1,6 +1,6 @@
 import {LatLng, LatLngExpression} from "leaflet";
 import { SetStateAction } from "react";
-import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties, lotCadastralAvecBoolInvGeoJsonProperties } from "./DataTypes";
+import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties, lotCadastralAvecBoolInvGeoJsonProperties, informations_reglementaire_manuelle } from "./DataTypes";
 import { FeatureCollection, Geometry } from "geojson";
 // --------------------------------------------------------------------------
 // ------------------------- Interface --------------------------------------
@@ -162,6 +162,10 @@ export interface MenuInventaireProps{
     defChargement:React.Dispatch<SetStateAction<boolean>>
     montrerTousLots:boolean,
     defMontrerTousLots:React.Dispatch<SetStateAction<boolean>>,
+}
+
+export interface PropsInformationReglementaireManuelle{
+    defInformationRegManuel:React.Dispatch<SetStateAction<informations_reglementaire_manuelle[]>>
 }
 // ------------------------------------------------------------------------------
 // ---------------------------- Historique --------------------------------------

@@ -1,6 +1,6 @@
 import axios,{ AxiosResponse } from 'axios';
 import { entete_reglement_stationnement,  } from '../types/DataTypes';
-import { ReponseEntetesReglements, ReponseReglementComplet} from '../types/serviceTypes';
+import { ReponseEntetesReglements, ReponseReglementComplet,ReponseDBInfoInventaireReglementManuel} from '../types/serviceTypes';
 import api from './api';
 import { promises } from 'dns';
 
@@ -46,6 +46,22 @@ class ServiceReglements {
         }
     }
 
+    async obtiensUnitesReglementsParLot(id:string):Promise<ReponseDBInfoInventaireReglementManuel>{
+        try{
+            const parseId = id.replace(/ /g, "_");
+            const response:AxiosResponse<ReponseDBInfoInventaireReglementManuel> = await api.get(`/reglements/unites/${parseId}`)
+            return{success:response.data.success,data:response.data.data}
+        }catch(error){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
 }
 
 export const serviceReglements =  new ServiceReglements();

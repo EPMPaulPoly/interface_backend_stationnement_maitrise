@@ -619,3 +619,8 @@ def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subs
 
 def check_neighborhood_inventory()->bool:
     NotImplementedError('Not Yet implemented')
+
+def calculate_inventory_from_manual_entry(donnees_calcul:pd.DataFrame)->ParkingInventory:
+    parking_frame = pd.DataFrame({'g_no_lot':[''],'n_places_min':[0],'n_places_max':[0],'n_places_mesure':[0],'n_places_estime':[0],'methode_estime':[3],'id_er':[0],'id_reg_stat':[0],'commentaire':['Défaut vider']})
+    output = ParkingInventory(parking_frame)
+    return output

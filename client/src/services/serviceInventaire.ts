@@ -3,7 +3,7 @@ import { ReponseInventaire,ReponseDBInventaire, ReponseDBCadastreGeoSeul} from '
 import api from './api';
 import axios,{AxiosResponse} from 'axios';
 import { FeatureCollection,Geometry,Feature } from 'geojson';
-import { inventaire_stationnement } from '../types/DataTypes';
+import { inventaire_stationnement, requete_calcul_manuel_reg } from '../types/DataTypes';
 import { isNumberObject } from 'util/types';
 
 export const serviceInventaire = {
@@ -75,6 +75,24 @@ export const serviceInventaire = {
             console.log('Recu Inventaire')
             return {success:response.data.success,data:data_res};
         } catch (error: any) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    },
+    
+    calculeInventaireValeursManuelles:async(requete:requete_calcul_manuel_reg[]):Promise<ReponseInventaire>=>{
+        try{
+            console.log("Calcule d'un inventaire avec valeurs manuelles")
+            const reponse = await api.post<ReponseDBInventaire>('/inventaire/calcul/reg-val-man',requete)
+            console.log('Recu Inventaire')
+            return {success:reponse.data.success,data:reponse.data.data};
+        }catch(error){
             if (axios.isAxiosError(error)) {
                 console.error('Axios Error:', error.response?.data);
                 console.error('Axios Error Status:', error.response?.status);

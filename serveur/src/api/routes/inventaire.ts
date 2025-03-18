@@ -1,6 +1,6 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { Pool } from 'pg';
-import { DbInventaire,ParamsQuartier,ParamsLot,ParamsInventaire,RequeteInventaire } from '../../types/database';
+import { DbInventaire,ParamsQuartier,ParamsLot,ParamsInventaire,RequeteInventaire,RequeteCalculeInventaireRegMan} from '../../types/database';
 // Types pour les requêtes
 import { Polygon,MultiPolygon } from 'geojson';
 import path from 'path';
@@ -232,13 +232,68 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
     } catch (err) {
       next(err);
     }
-  }
+  };
+  const calculeInventaireValeursManuelles:RequestHandler<any, any, RequeteCalculeInventaireRegMan> =  async(req,res,next):Promise<void>=>{
+    const scriptPath = path.resolve(__dirname, "../../../serveur_calcul_python/calcul_entree_manuelle.py");
+
+    // Chemin direct vers l'interpréteur Python dans l'environnement Conda
+    const pythonExecutable = '/opt/conda/envs/serveur_calcul_python/bin/python3';
+
+    // Exécuter le script Python avec l'interpréteur de l'environnement
+    const pythonProcess = spawn(pythonExecutable, [scriptPath]);
+
+    const jsonData = JSON.stringify(req.body);
+    pythonProcess.stdin.write(jsonData);
+    pythonProcess.stdin.end();
+
+    let outputData = '';
+    let errorData = '';
+  
+    // Capturer l'output standard
+    pythonProcess.stdout.on('data', (data) => {
+      outputData += data.toString();
+    });
+  
+    // Capturer les erreurs standard
+    pythonProcess.stderr.on('data', (data) => {
+      errorData += data.toString();
+    });
+  
+    // Capturer la fin du processus
+    pythonProcess.on('close', (code) => {
+      if (code === 0) {
+        //console.log(`Output: ${outputData}`)
+        console.log(`Processus enfant terminé avec succès.`);
+        try {
+          // 🔹 Extract JSON by finding the first `{` (start of JSON)
+          const jsonStartIndex = outputData.indexOf('[');
+          if (jsonStartIndex !== -1) {
+            const jsonString = outputData.slice(jsonStartIndex).trim();
+            const jsonData = JSON.parse(jsonString);
+            
+            //console.log('Parsed JSON:', jsonData);
+            return res.status(200).json({success:true,data:jsonData});  //  Send JSON response
+          } else {
+            console.error('No JSON found in output:', outputData);
+            return res.status(500).send('Erreur: No valid JSON found in output.');
+          }
+        } catch (err) {
+          console.error('Failed to parse JSON:', err);
+          return res.status(500).send('Erreur: JSON parsing failed.');
+        }
+      } else {
+        console.error(`Processus enfant échoué avec le code : ${code}`);
+        return res.status(500).send(`Erreur: ${errorData}`);
+      }
+    });
+  };
 
 
   // Routes
   router.get('/quartier/:id', obtiensInventaireParQuartier);
   router.get('/calcul/quartier/:id',calculInventairePythonQuartier);
-  router.get('/calcul/lot/:id',calculInventairePythonLot); 
+  router.get('/calcul/lot/:id',calculInventairePythonLot);
+  router.post('/calcul/reg-val-man',calculeInventaireValeursManuelles) 
   router.post('/:id_inv',metAJourInventaire)
   router.put('/',nouvelInventaire)
   router.delete('/:id_inv',supprimerInventaire)

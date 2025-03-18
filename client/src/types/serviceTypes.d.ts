@@ -25,3 +25,4 @@ export type ReponseDBCadastreBoolInv = ApiResponse<lotCadastralBoolInvDB[]>
 export type ReponseDBRole = ApiResponse<roleFoncierDB[]>
 export type ReponseDBCadastreGeoSeul = ApiResponse<lotCadastralGeomSeulDb[]>
 export type ReponseComboERsRoleFoncier = ApiResponse<comboERRoleFoncier[]>
+export type ReponseDBInfoInventaireReglementManuel = ApiResponse<informations_reglementaire_manuelle[]>

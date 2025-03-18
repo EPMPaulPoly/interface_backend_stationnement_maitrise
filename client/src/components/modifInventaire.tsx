@@ -3,10 +3,16 @@ import { calculateRegLotInventoryProps } from '../types/utilTypes';
 import { TableRevueProps } from '../types/InterfaceTypes';
 import { serviceInventaire } from '../services';
 import { FeatureCollection, Geometry,Feature } from 'geojson';
-import { ensemble_reglement_territoire, inventaire_stationnement,  reglement_complet } from '../types/DataTypes';
+import { ensemble_reglement_territoire, informations_reglementaire_manuelle, inventaire_stationnement,  reglement_complet,requete_calcul_manuel_reg } from '../types/DataTypes';
 import TableauInventaireUnique from './TableauInventaireUnique';
 import recalculeInventaireLot from '../utils/recalculeInventaireLot';
 import ObtRegLots from '../utils/obtRegLots';
+import obtRegManuel from '../utils/obtRegManuel';
+
+// Define the structure of the input values state
+interface InputValues {
+    [key:string]:{valeur:number}
+}
 const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) => {
     const emptyFeature: inventaire_stationnement = {
           g_no_lot: '',
@@ -27,16 +33,31 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
     const [newRegInvToProc,setNewRegInvToProc] = useState<boolean>(false);
     const [regPertinents,defRegPertinents] = useState<reglement_complet[]>([]);
     const [ensRegPertinents,defEnsRegPertinents] = useState<ensemble_reglement_territoire[]>([]);
-    const [reglementUnites,defReglementsUnites] = useState<>
+    const [reglementUnites,defReglementsUnites] = useState<informations_reglementaire_manuelle[]>([]);
+    const [obtentionEnCoursReg,defObtentionEnCoursReg] = useState<boolean>(false);
 
     const renvoiInventaireReg = (): inventaire_stationnement => {
         const foundItem = props.inventaire.find(item => item.methode_estime === 2);
         return foundItem ?? emptyFeature;
     }
+    const [inputValues, setInputValues] = useState<InputValues>({});
+
+    const handleInputChange = (cubf: number, unite: number, id_reg_stat: number, value: string) => {
+        const key = `${cubf}-${unite}-${id_reg_stat}`;
+        setInputValues((prevValues) => ({
+            ...prevValues,
+            [key]: {
+                valeur: Number(value)
+            }
+        }));
+        console.log(inputValues)
+    };
+
     const gestAnnulModifs = () =>{
         defModifEnMarche(false)
         setNewRegInvToProc(false)
         defInventaireProp(emptyFeature)
+        setInputValues({})
     }
 
     const gestAnnulPanneau = () =>{
@@ -45,12 +66,14 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
         defInventaireProp(emptyFeature)
         props.defPanneauModifVisible(false)
     }
-    const gestDemarrerCalcul = () =>{
+    const gestDemarrerCalcul = async() =>{
         if (!modifEnMarche){
             defModifEnMarche(true)
             if (optionCalcul===2){
-                const ids = [...new Set (props.donneesRole.features.map(x => x.properties.id_provinc))]
-                const partialRuleSets = ObtRegLots(ids)
+                defObtentionEnCoursReg(true)
+                const resultats = await obtRegManuel(props.lots.properties.g_no_lot)
+                defReglementsUnites(resultats)
+                defObtentionEnCoursReg(false)
             }
         } else {
             defModifEnMarche(false)
@@ -181,8 +204,58 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
         console.log('Calcul complet, mise en page')
     }
 
+    const gestLancementCalculRegEntManuelle=()=>{
+        const matchCalcul: requete_calcul_manuel_reg[] = reglementUnites.map((item) => {
+            const key:string = `${item.cubf}-${item.unite}-${item.id_reg_stat}`;
+            return {
+                cubf: item.cubf,
+                id_reg_stat: item.id_reg_stat,
+                unite: item.unite,
+                valeur: inputValues[key]?.valeur || 0, // Use the input value or default to 0
+            };
+        });
+        console.log(`Processing following lot:\n ${matchCalcul.map((item)=>`${item.cubf.toString()} - ${item.id_reg_stat} - ${item.unite} : ${item.valeur}\n`)}`)
+    }
+
     const renduReglementsPossibles =()=>{
-        
+        if(obtentionEnCoursReg && !newRegInvToProc) {
+            return(<><p>Obtention règlement en cours</p></>)
+        } else if(!newRegInvToProc) {
+            
+            return(
+                <>
+                    <table>
+                        <thead>
+                            <th>CUBF</th>
+                            <th>ID Reg</th>
+                            <th>Unite</th>
+                            <th>Valeur</th>
+                        </thead>
+                        <tbody>
+                            {reglementUnites.map((item)=>{
+                                const key = `${item.cubf}-${item.unite}-${item.id_reg_stat}`;
+                                return(
+                                <tr key={key}>
+                                    <td>{item.cubf}</td>
+                                    <td>{item.id_reg_stat}</td>
+                                    <td>{item.desc_unite}</td>
+                                    <td><input
+                                    type='text'
+                                    value={inputValues[key]?.valeur != null ? inputValues[key]?.valeur.toString() : ''}
+                                    onChange={(e) => handleInputChange(item.cubf,item.unite,item.id_reg_stat, e.target.value)}
+                                    /></td>
+                                </tr>
+                                );
+                            })
+                        }
+                        </tbody>
+                    </table>
+                    <button onClick={gestLancementCalculRegEntManuelle}>Completer</button>
+                </>
+            )
+        } else{
+
+        }
     }
 
     const renderForm = () => {
@@ -209,7 +282,7 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
             case 2:
                 return (
                     <>
-                        <p>Vous pouvez ajuster les valeurs avant validation.</p>
+                        {renduReglementsPossibles()}
                         
                     </>
                 );

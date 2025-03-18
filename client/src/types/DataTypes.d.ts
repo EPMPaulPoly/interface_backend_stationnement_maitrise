@@ -177,5 +177,12 @@ export interface informations_reglementaire_manuelle{
     id_reg_stat:number,
     description_reg_stat:string,
     unite:number,
-    description_unite:string
+    desc_unite:string
+}
+
+export interface requete_calcul_manuel_reg{
+    cubf:number,
+    id_reg_stat:number,
+    unite:number,
+    valeur:number,
 }
