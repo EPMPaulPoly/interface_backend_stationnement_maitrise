@@ -181,6 +181,7 @@ export interface informations_reglementaire_manuelle{
 }
 
 export interface requete_calcul_manuel_reg{
+    g_no_lot:string,
     cubf:number,
     id_reg_stat:number,
     unite:number,

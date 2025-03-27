@@ -8,6 +8,7 @@ import TableauInventaireUnique from './TableauInventaireUnique';
 import recalculeInventaireLot from '../utils/recalculeInventaireLot';
 import ObtRegLots from '../utils/obtRegLots';
 import obtRegManuel from '../utils/obtRegManuel';
+import { LockTwoTone } from '@mui/icons-material';
 
 // Define the structure of the input values state
 interface InputValues {
@@ -42,8 +43,8 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
     }
     const [inputValues, setInputValues] = useState<InputValues>({});
 
-    const handleInputChange = (cubf: number, unite: number, id_reg_stat: number, value: string) => {
-        const key = `${cubf}-${unite}-${id_reg_stat}`;
+    const handleInputChange = (cubf: number, unite: number, id_reg_stat: number, id_er:number,value: string) => {
+        const key = `${cubf}-${unite}-${id_reg_stat}-${id_er}`;
         setInputValues((prevValues) => ({
             ...prevValues,
             [key]: {
@@ -78,7 +79,6 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
         } else {
             defModifEnMarche(false)
         }
-        
     }
     const gestMethodeCalcul =(e: React.ChangeEvent<HTMLSelectElement>)=>{
         const valeur = Number(e.target.value); // Convertit en nombre
@@ -204,10 +204,11 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
         console.log('Calcul complet, mise en page')
     }
 
-    const gestLancementCalculRegEntManuelle=()=>{
+    const gestLancementCalculRegEntManuelle=async()=>{
         const matchCalcul: requete_calcul_manuel_reg[] = reglementUnites.map((item) => {
-            const key:string = `${item.cubf}-${item.unite}-${item.id_reg_stat}`;
+            const key:string = `${item.cubf}-${item.unite}-${item.id_reg_stat}-${item.id_er}`;
             return {
+                g_no_lot:props.lots.properties.g_no_lot,
                 cubf: item.cubf,
                 id_reg_stat: item.id_reg_stat,
                 unite: item.unite,
@@ -215,13 +216,19 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
             };
         });
         console.log(`Processing following lot:\n ${matchCalcul.map((item)=>`${item.cubf.toString()} - ${item.id_reg_stat} - ${item.unite} : ${item.valeur}\n`)}`)
+        
+        const inventaire = await serviceInventaire.calculeInventaireValeursManuelles(matchCalcul)
+        if (inventaire.success){
+            setNewRegInvToProc(true)
+            defInventaireProp(inventaire.data[0])
+        }
+        console.log('recu un inventaire')
     }
 
     const renduReglementsPossibles =()=>{
         if(obtentionEnCoursReg && !newRegInvToProc) {
             return(<><p>Obtention règlement en cours</p></>)
         } else if(!newRegInvToProc) {
-            
             return(
                 <>
                     <table>
@@ -233,7 +240,7 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
                         </thead>
                         <tbody>
                             {reglementUnites.map((item)=>{
-                                const key = `${item.cubf}-${item.unite}-${item.id_reg_stat}`;
+                                const key = `${item.cubf}-${item.unite}-${item.id_reg_stat}-${item.id_er}`;
                                 return(
                                 <tr key={key}>
                                     <td>{item.cubf}</td>
@@ -242,7 +249,7 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
                                     <td><input
                                     type='text'
                                     value={inputValues[key]?.valeur != null ? inputValues[key]?.valeur.toString() : ''}
-                                    onChange={(e) => handleInputChange(item.cubf,item.unite,item.id_reg_stat, e.target.value)}
+                                    onChange={(e) => handleInputChange(item.cubf,item.unite,item.id_reg_stat,item.id_er, e.target.value)}
                                     /></td>
                                 </tr>
                                 );
@@ -254,7 +261,11 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
                 </>
             )
         } else{
-
+            return(
+                <>
+                {renduInventaireApprobation()}
+                </>
+            );
         }
     }
 

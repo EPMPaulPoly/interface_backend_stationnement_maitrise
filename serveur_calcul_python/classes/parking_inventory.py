@@ -15,7 +15,7 @@ from classes import reg_set_territory as RST
 from classes import parking_reg_sets as PRS
 from classes import parking_regs as PR
 import webbrowser
-
+from classes import parking_inventory_inputs as PII
 
 from typing import Union
 
@@ -400,7 +400,7 @@ def calculate_parking_specific_reg(reg_to_calculate: PR.ParkingRegulations,tax_d
                     subset_inventory = calculate_parking_specific_reg_subset(reg_to_calculate,iter_subset_id,tax_data,rule_set_to_transfer)
                     parking_inventory = subset_operation(parking_inventory,operator=operator,inventory_2 = subset_inventory) # if subsequen subset, you need to check which operator it is for the subset and choose which inventory to keep
     return parking_inventory
-        
+
 def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subset:int,tax_data:TD.TaxDataset,rule_set_id:int)->ParkingInventory:
     '''
         # calculate_parking_minimum_subset
@@ -438,12 +438,12 @@ def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subs
         n_other_operators = 1
     # Throw error if tehre's more than one operator if not, setup operation as the first value in the other_operators list
     if n_other_operators==1:
-            run_assessment=True
-            if isinstance(other_operators,int):
-                operation = other_operators
-            else:
-                operation = int(other_operators.iloc[0])
-            logger.info(f'Operation being performed for subset {subset} of rule #{parking_subset[config_db.db_column_parking_regs_id].iloc[0]}: {operation} (1:sum, 4: change of rule based on threshold)')
+        run_assessment=True
+        if isinstance(other_operators,int):
+            operation = other_operators
+        else:
+            operation = int(other_operators.iloc[0])
+        logger.info(f'Operation being performed for subset {subset} of rule #{parking_subset[config_db.db_column_parking_regs_id].iloc[0]}: {operation} (1:sum, 4: change of rule based on threshold)')
     else:
         raise ValueError('Too many operators. Multiple operators not supported within subset except for first')
     '''operations options: 
@@ -621,6 +621,158 @@ def check_neighborhood_inventory()->bool:
     NotImplementedError('Not Yet implemented')
 
 def calculate_inventory_from_manual_entry(donnees_calcul:pd.DataFrame)->ParkingInventory:
-    parking_frame = pd.DataFrame({'g_no_lot':[''],'n_places_min':[0],'n_places_max':[0],'n_places_mesure':[0],'n_places_estime':[0],'methode_estime':[3],'id_er':[0],'id_reg_stat':[0],'commentaire':['Défaut vider']})
+    
+    ids_reglements_obtenir:list[int] = donnees_calcul[config_db.db_column_parking_regs_id].unique().tolist()
+    reglements:PR.ParkingRegulations = PR.from_postgis(ids_reglements_obtenir)
+    parking_out= []
+    for id_reglement in ids_reglements_obtenir:
+        donnees_pertinentes:pd.DataFrame = donnees_calcul.loc[donnees_calcul[config_db.db_column_parking_regs_id]==id_reglement]
+        reglement:PR.ParkingRegulations = reglements.get_reg_by_id(id_reglement)
+        unites = reglement.get_units()
+        unites_donnees:list[int] = donnees_pertinentes.loc[donnees_pertinentes[config_db.db_column_parking_regs_id]==id_reglement,config_db.db_column_parking_unit_id].unique().tolist()
+        if unites==unites_donnees:
+            parking_last = calculate_parking_specific_reg_manual_entry(reglement,donnees_pertinentes)
+            parking_out.append(parking_last)
+    parking_final = dissolve_list(parking_out)
+    return parking_final
+
+def calculate_parking_specific_reg_manual_entry(reg_to_calculate:PR.ParkingRegulations,provided_inputs:PII.ParkingCalculationInputs)->ParkingInventory:
+    print('Not yet implemented')
+    parking_frame = pd.DataFrame({'g_no_lot':[''],'n_places_min':[0],'n_places_max':[0],'n_places_mesure':[0],'n_places_estime':[0],'methode_estime':[3],'id_er':[0],'id_reg_stat':[0],'commentaire':['Fonction non implem - vide'],'cubf':[0]})
     output = ParkingInventory(parking_frame)
-    return output
+    if reg_to_calculate.check_only_one_regulation():
+        subsets = reg_to_calculate.get_subset_numbers()
+        relevant_data = provided_inputs.get_by_reg(reg_to_calculate.get_reg_id())
+        for inx,subset in enumerate(subsets):
+            parking_inventory_subset:ParkingInventory = calculate_parking_subset_manual(reg_to_calculate,subset,relevant_data)
+            if inx ==0:
+                parking_out:ParkingInventory = parking_inventory_subset
+            else:
+                parking_out =subset_operation(parking_out,reg_to_calculate.get_subset_inter_operation_type(subset),parking_inventory_subset)
+    return parking_out
+
+def calculate_parking_subset_manual(reg_to_calculate:PR.ParkingRegulations,subset:int,relevant_inputs:PII.ParkingCalculationInputs)->ParkingInventory:
+    if reg_to_calculate.check_only_one_regulation():
+        match reg_to_calculate.get_subset_intra_operation_type(subset):
+            case 1:
+                inventory = calculate_addition_based_subset(reg_to_calculate,subset,relevant_inputs)
+                #NotImplementedError('Not yet Implemented')
+            case 2:
+                AttributeError('Operation 2  deprecated and no longer in use. Use operator 4 instead')
+            case 3:
+                AttributeError('Operation 3 not supported within one subset')
+            case 4:
+                inventory = calculate_threshold_based_subset(reg_to_calculate,subset,relevant_inputs)
+            case 5:
+                AttributeError('Operation 5 not supported within one subset')
+            case 6:
+                AttributeError('Operation 6 not supported within one subset')
+        return inventory
+    else:
+        ValueError('Can only calculate one rule at a time')
+
+def calculate_threshold_based_subset(reg_to_calculate:PR.ParkingRegulations,subset:int,data:PII.ParkingCalculationInputs):
+    if reg_to_calculate.check_subset_exists(subset) and reg_to_calculate.check_only_one_regulation():
+        units = reg_to_calculate.get_subset_units(subset)
+        operator = reg_to_calculate.get_subset_intra_operation_type(subset)
+        if len(units)==1 and operator ==4:
+            thresholds = reg_to_calculate.get_subset_thresholds(subset)
+            previous_threshold = None
+            parking_final = pd.DataFrame()
+            for threshold in thresholds:
+                lower_thresh = float(threshold)
+                if previous_threshold is not None:
+                    upper_thresh = float(previous_threshold)
+                else:
+                    upper_thresh = previous_threshold
+                relevant_data = data.get_by_reg(reg_to_calculate.get_reg_id()).get_by_units(units[0]).filter_by_threshold(lower_thresh, upper_thresh)
+                line_def = reg_to_calculate.get_line_item_by_subset_threshold(subset,threshold)
+                parking_frame_thresh = pd.DataFrame()
+                parking_frame_thresh[config_db.db_column_lot_id] = relevant_data[config_db.db_column_lot_id]
+                parking_frame_thresh['n_places_min'] = line_def[config_db.db_column_parking_zero_crossing_min] + line_def[config_db.db_column_parking_slope_min] * relevant_data['valeur']
+                parking_frame_thresh['n_places_max'] = line_def[config_db.db_column_parking_zero_crossing_max] + line_def[config_db.db_column_parking_slope_max] * relevant_data['valeur']
+                parking_frame_thresh['n_places_mesure'] = None
+                parking_frame_thresh['n_places_estime'] = None
+                parking_frame_thresh['methode_estime'] = 3
+                parking_frame_thresh[config_db.db_column_parking_regs_id] = relevant_data[config_db.db_column_parking_regs_id]
+                parking_frame_thresh[config_db.db_column_reg_sets_id] = relevant_data[config_db.db_column_reg_sets_id]
+                parking_frame_thresh[config_db.db_column_land_use_id] = relevant_data[config_db.db_column_land_use_id]
+                parking_frame_thresh['commentaire'] = relevant_data.apply(lambda x: f'Calc. reg. man. : valeur {x['valeur']}')
+                if parking_final.empty:
+                    parking_final = parking_frame_thresh
+                else:
+                    parking_final = pd.concat([parking_final,parking_frame_thresh])
+            parking_out = ParkingInventory(parking_final)
+            return parking_out
+        else:
+            ValueError('subset should have operator 4 and only one unit') 
+    else:
+        ValueError('Can only calculate one rule at a time')
+
+def calculate_addition_based_subset(reg_to_calculate:PR.ParkingRegulations,subset:int,data:PII.ParkingCalculationInputs):
+    if reg_to_calculate.check_subset_exists(subset) and reg_to_calculate.check_only_one_regulation():
+        operator = reg_to_calculate.get_subset_intra_operation_type(subset)
+        if operator==1:
+            subset_def = reg_to_calculate.get_subset_def(subset)
+            relevant_data = data.get_by_reg(reg_to_calculate.get_reg_id())
+            reg_units = reg_to_calculate.get_subset_units(subset)
+
+            if relevant_data.check_units_present(reg_units):
+                inventory = pd.DataFrame(relevant_data.loc[relevant_data[config_db.db_column_parking_unit_id].isin(reg_units)].merge(subset_def,on=[config_db.db_column_parking_regs_id,config_db.db_column_parking_unit_id],how='left'))
+                
+                # Create a mask for rows where both conditions are not None
+                mask_both_min_not_none = (
+                    inventory[config_db.db_column_parking_zero_crossing_min].notna() & 
+                    inventory[config_db.db_column_parking_slope_min].notna()
+                )
+                mask_both_max_not_note = (
+                    inventory[config_db.db_column_parking_zero_crossing_max].notna() & 
+                    inventory[config_db.db_column_parking_slope_max].notna()
+                )
+                # Create a mask for rows where both conditions are not None
+                mask_crossing_min_not_none = (
+                    inventory[config_db.db_column_parking_zero_crossing_min].notna()& 
+                    inventory[config_db.db_column_parking_slope_min].isna()
+                )
+                mask_crossing_max_not_none = (
+                    inventory[config_db.db_column_parking_zero_crossing_max].notna()& 
+                    inventory[config_db.db_column_parking_slope_max].isna()
+                )
+
+                mask_both_min_none = (
+                    inventory[config_db.db_column_parking_zero_crossing_min].isna()& 
+                    inventory[config_db.db_column_parking_slope_min].isna()
+                )
+                mask_both_max_none = (
+                    inventory[config_db.db_column_parking_zero_crossing_max].isna()& 
+                    inventory[config_db.db_column_parking_slope_max].isna()
+                )
+
+                inventory.loc[mask_both_min_not_none,'n_places_min'] = inventory.loc[mask_both_min_not_none,
+                        config_db.db_column_parking_zero_crossing_min] + inventory.loc[mask_both_min_not_none,
+                            config_db.db_column_parking_slope_min] * inventory.loc[mask_both_min_not_none,'valeur']
+                inventory.loc[mask_crossing_min_not_none,'n_places_min'] = inventory.loc[mask_crossing_min_not_none,config_db.db_column_parking_zero_crossing_min]
+                inventory.loc[mask_both_min_none,'n_places_min'] = np.nan
+
+                inventory.loc[mask_both_max_not_note,'n_places_max'] = inventory.loc[mask_both_max_not_note,
+                        config_db.db_column_parking_zero_crossing_max] + inventory.loc[mask_both_max_not_note,
+                            config_db.db_column_parking_slope_max] * inventory.loc[mask_both_max_not_note,'valeur']
+                inventory.loc[mask_crossing_max_not_none,'n_places_max'] = inventory.loc[mask_crossing_max_not_none,config_db.db_column_parking_zero_crossing_max]
+                inventory.loc[mask_both_max_none,'n_places_max'] = np.nan
+                inventory.drop(columns=['id_reg_stat_emp','ss_ensemble','seuil','oper','cases_fix_min','cases_fix_max','pente_min','pente_max'],inplace=True)
+                inventory['commentaire'] = inventory.apply(lambda x: f'Unite: {x['unite']}Val Man: {x['valeur']}', axis=1)
+                agg_dict = {
+                    config_db.db_column_land_use_id: lambda x: ', '.join(map(str, x)),
+                    config_db.db_column_parking_regs_id: lambda x: ', '.join(map(str, x)),
+                    config_db.db_column_reg_sets_id: lambda x: ', '.join(map(str, x)), 
+                    'commentaire': lambda x: ', '.join(set(x)),    # Concatenate unique names
+                    'n_places_min': 'sum',
+                    'n_places_max':'sum'                         # Sum the values
+                }
+                inventory_out = inventory.groupby(by=config_db.db_column_lot_id).agg(agg_dict).reset_index()
+                inventory_out['methode_estime'] = 3
+                inventory_out['n_places_mesure'] = np.nan
+                inventory_out['n_places_estime'] = np.nan
+                return ParkingInventory(inventory_out)
+            else:
+                ValueError('You need to provide all relevant units for a regulation')

@@ -8,7 +8,7 @@ const MenuBar: React.FC<{}> = () => {
 
     return(
         <div className="menu-bar">
-            <h1>Interface Stationnement</h1>
+            <h1>Immobilisation</h1>
             <Link className="menu-links" to="/historique">Histoire</Link>
             <Link className="menu-links"to="/reg">Règlements</Link>
             <Link className="menu-links"to="/ens-reg">Ens. Règ</Link>
