@@ -10,7 +10,7 @@ Created on Thu Jul 22 2024
 # la version de la base de donnees est 
 
 #variables a modifier:
-pg_host = 'localhost' #defaut localhost host.docker.internal
+pg_host = 'host.docker.internal' #defaut localhost host.docker.internal
 pg_port = '5432' #defaut 5432
 pg_dbname = 'parking_regs_test'# specifique a l'application
 pg_username = 'postgres' # defaut postgres
