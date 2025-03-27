@@ -37,8 +37,8 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
     const [reglementUnites,defReglementsUnites] = useState<informations_reglementaire_manuelle[]>([]);
     const [obtentionEnCoursReg,defObtentionEnCoursReg] = useState<boolean>(false);
 
-    const renvoiInventaireReg = (): inventaire_stationnement => {
-        const foundItem = props.inventaire.find(item => item.methode_estime === 2);
+    const renvoiInventaireReg = (methodeAMontrer:number): inventaire_stationnement => {
+        const foundItem = props.inventaire.find(item => item.methode_estime === methodeAMontrer);
         return foundItem ?? emptyFeature;
     }
     const [inputValues, setInputValues] = useState<InputValues>({});
@@ -70,7 +70,7 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
     const gestDemarrerCalcul = async() =>{
         if (!modifEnMarche){
             defModifEnMarche(true)
-            if (optionCalcul===2){
+            if (optionCalcul===3){
                 defObtentionEnCoursReg(true)
                 const resultats = await obtRegManuel(props.lots.properties.g_no_lot)
                 defReglementsUnites(resultats)
@@ -153,9 +153,14 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
     }
 
     const gestSauvegardeNvInv=async()=>{
-        const id_modif = renvoiInventaireReg().id_inv;
-        const reussi = await serviceInventaire.modifieInventaire(id_modif,inventaireProp);
-        console.log(`Mise à jour réussie ?: ${reussi}`)
+        const id_modif = renvoiInventaireReg(optionCalcul).id_inv;
+        let reussi;
+        if (id_modif){
+            reussi = await serviceInventaire.modifieInventaire(id_modif,inventaireProp);
+            console.log(`Mise à jour réussie ?: ${reussi}`)
+        }else{
+            reussi = await serviceInventaire.nouvelInventaire(inventaireProp);
+        }
         if (reussi){
             setNewRegInvToProc(false);
             defInventaireProp(emptyFeature);
@@ -174,7 +179,7 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
                         <div className="compare-inventaire-old">
                             <p>Ancien</p>
                             <TableauInventaireUnique
-                                inventaire={renvoiInventaireReg()}
+                                inventaire={renvoiInventaireReg(optionCalcul)}
                             />
                         </div>
                         <div className="compare-inventaire-new">
@@ -211,6 +216,7 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
                 g_no_lot:props.lots.properties.g_no_lot,
                 cubf: item.cubf,
                 id_reg_stat: item.id_reg_stat,
+                id_er:item.id_er,
                 unite: item.unite,
                 valeur: inputValues[key]?.valeur || 0, // Use the input value or default to 0
             };
@@ -271,7 +277,7 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
 
     const renderForm = () => {
         switch (optionCalcul) {
-            case 0:
+            case 1:
                 return (
                     <>
                         <form onSubmit={gestEntreeManuelle}>
@@ -282,7 +288,7 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
                         </form>
                     </>
                 );
-            case 1:
+            case 2:
                 return (
                     <>
                         <p>Le calcul règlementaire automatique à partir du rôle sera lancé.</p>
@@ -290,7 +296,7 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
                         {renduInventaireApprobation()}
                     </>
                 );
-            case 2:
+            case 3:
                 return (
                     <>
                         {renduReglementsPossibles()}
@@ -308,9 +314,9 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
             <button onClick={gestAnnulPanneau}>Annuler Modifs</button>
             <select onChange={gestMethodeCalcul} value={optionCalcul} disabled={modifEnMarche}>
                 <option value={-1} disabled>Choisissez une option</option>
-                <option value={0}>Entrée Manuelle</option>
-                <option value={1}>Calcul Règlementaire Automatique</option>
-                <option value={2}>Calcul Règlementaire Valeurs Manuelles</option>
+                <option value={1}>Entrée Manuelle</option>
+                <option value={2}>Calcul Règlementaire Automatique</option>
+                <option value={3}>Calcul Règlementaire Valeurs Manuelles</option>
             </select>
             {!modifEnMarche?(<button onClick={gestDemarrerCalcul}>Démarrer option choisie</button>):(<button onClick={gestAnnulModifs}> Annuler</button>)}
             </div>

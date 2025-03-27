@@ -131,7 +131,7 @@ class ParkingRegulations():
         else: 
             return False
     def get_subset_units(self,subset:int)->list[int]:
-        print('not yet implemented')
+        #print('not yet implemented')
         if self.check_only_one_regulation() and self.check_subset_exists(subset):
             units = self.reg_def.loc[self.reg_def[config_db.db_column_parking_subset_id]==subset,config_db.db_column_parking_unit_id].unique().tolist()
             return units

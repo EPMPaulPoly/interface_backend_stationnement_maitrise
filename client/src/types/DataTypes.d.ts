@@ -184,6 +184,7 @@ export interface requete_calcul_manuel_reg{
     g_no_lot:string,
     cubf:number,
     id_reg_stat:number,
+    id_er:number,
     unite:number,
     valeur:number,
 }

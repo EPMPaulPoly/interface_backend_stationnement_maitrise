@@ -78,7 +78,7 @@ class ParkingInventory():
         lots_list_to_purge_from_self = lots_to_clean_up[config_db.db_column_lot_id].unique().tolist()
         if len(lots_list_to_purge_from_self)>0:
             aggregate_parking_data = lots_to_clean_up.groupby([config_db.db_column_lot_id]).apply(inventory_duplicates_agg_function).reset_index()
-            aggregate_parking_data.loc[(aggregate_parking_data['n_places_min']>aggregate_parking_data['n_places_max']) & (aggregate_parking_data['n_places_max']==0.0),'n_places_max'] =None
+            aggregate_parking_data.loc[(aggregate_parking_data['n_places_min']>aggregate_parking_data['n_places_max']) |(aggregate_parking_data['n_places_max']==0.0),'n_places_max'] =None
             new_parking_frame = self.parking_frame.drop(self.parking_frame[self.parking_frame[config_db.db_column_lot_id].isin(lots_list_to_purge_from_self)].index)
             new_parking_frame = pd.concat([new_parking_frame,aggregate_parking_data])
 
@@ -231,7 +231,7 @@ def inventory_duplicates_agg_function(x:pd.DataFrame):
     d[config_db.db_column_parking_regs_id] = '/'.join(map(str, x[config_db.db_column_parking_regs_id]))
     d['n_places_min'] = x['n_places_min'].sum()
     d['n_places_max'] = x['n_places_max'].sum()
-    d['commentaire'] = x['commentaire'].values[0]
+    d['commentaire'] = '/'.join(map(str, x['commentaire']))
     d['methode_estime'] = x['methode_estime'].values[0]
     return pd.Series(d,index = [config_db.db_column_land_use_id,config_db.db_column_reg_sets_id,config_db.db_column_parking_regs_id,'n_places_min','n_places_max','commentaire','methode_estime'])
 
@@ -634,12 +634,10 @@ def calculate_inventory_from_manual_entry(donnees_calcul:pd.DataFrame)->ParkingI
             parking_last = calculate_parking_specific_reg_manual_entry(reglement,donnees_pertinentes)
             parking_out.append(parking_last)
     parking_final = dissolve_list(parking_out)
+    parking_final.merge_lot_data()
     return parking_final
 
 def calculate_parking_specific_reg_manual_entry(reg_to_calculate:PR.ParkingRegulations,provided_inputs:PII.ParkingCalculationInputs)->ParkingInventory:
-    print('Not yet implemented')
-    parking_frame = pd.DataFrame({'g_no_lot':[''],'n_places_min':[0],'n_places_max':[0],'n_places_mesure':[0],'n_places_estime':[0],'methode_estime':[3],'id_er':[0],'id_reg_stat':[0],'commentaire':['Fonction non implem - vide'],'cubf':[0]})
-    output = ParkingInventory(parking_frame)
     if reg_to_calculate.check_only_one_regulation():
         subsets = reg_to_calculate.get_subset_numbers()
         relevant_data = provided_inputs.get_by_reg(reg_to_calculate.get_reg_id())
@@ -685,23 +683,40 @@ def calculate_threshold_based_subset(reg_to_calculate:PR.ParkingRegulations,subs
                     upper_thresh = float(previous_threshold)
                 else:
                     upper_thresh = previous_threshold
+                
                 relevant_data = data.get_by_reg(reg_to_calculate.get_reg_id()).get_by_units(units[0]).filter_by_threshold(lower_thresh, upper_thresh)
-                line_def = reg_to_calculate.get_line_item_by_subset_threshold(subset,threshold)
-                parking_frame_thresh = pd.DataFrame()
-                parking_frame_thresh[config_db.db_column_lot_id] = relevant_data[config_db.db_column_lot_id]
-                parking_frame_thresh['n_places_min'] = line_def[config_db.db_column_parking_zero_crossing_min] + line_def[config_db.db_column_parking_slope_min] * relevant_data['valeur']
-                parking_frame_thresh['n_places_max'] = line_def[config_db.db_column_parking_zero_crossing_max] + line_def[config_db.db_column_parking_slope_max] * relevant_data['valeur']
-                parking_frame_thresh['n_places_mesure'] = None
-                parking_frame_thresh['n_places_estime'] = None
-                parking_frame_thresh['methode_estime'] = 3
-                parking_frame_thresh[config_db.db_column_parking_regs_id] = relevant_data[config_db.db_column_parking_regs_id]
-                parking_frame_thresh[config_db.db_column_reg_sets_id] = relevant_data[config_db.db_column_reg_sets_id]
-                parking_frame_thresh[config_db.db_column_land_use_id] = relevant_data[config_db.db_column_land_use_id]
-                parking_frame_thresh['commentaire'] = relevant_data.apply(lambda x: f'Calc. reg. man. : valeur {x['valeur']}')
-                if parking_final.empty:
-                    parking_final = parking_frame_thresh
-                else:
-                    parking_final = pd.concat([parking_final,parking_frame_thresh])
+                previous_threshold=threshold
+                if not relevant_data.empty:
+                    line_def = reg_to_calculate.get_line_item_by_subset_threshold(subset,threshold)
+                    zero_crossing_min = line_def[config_db.db_column_parking_zero_crossing_min].values[0]
+                    zero_crossing_max = line_def[config_db.db_column_parking_zero_crossing_max].values[0]
+                    slope_min = line_def[config_db.db_column_parking_slope_min].values[0]
+                    slope_max = line_def[config_db.db_column_parking_slope_max].values[0]
+                    parking_frame_thresh = pd.DataFrame()
+                    parking_frame_thresh[config_db.db_column_lot_id] = relevant_data[config_db.db_column_lot_id]
+                    if zero_crossing_min is not None and slope_min is not None:
+                        parking_frame_thresh['n_places_min'] = zero_crossing_min + slope_min * relevant_data['valeur']
+                    elif zero_crossing_min is not None:
+                        parking_frame_thresh['n_places_min'] = zero_crossing_min
+                    else:
+                        parking_frame_thresh['n_places_min'] = None
+                    if zero_crossing_max is not None and slope_max is not None:
+                        parking_frame_thresh['n_places_max'] = zero_crossing_max + slope_max * relevant_data['valeur']
+                    elif zero_crossing_max is not None:
+                        parking_frame_thresh['n_places_max'] = zero_crossing_max
+                    else: 
+                        parking_frame_thresh['n_places_max'] = None
+                    parking_frame_thresh['n_places_mesure'] = None
+                    parking_frame_thresh['n_places_estime'] = None
+                    parking_frame_thresh['methode_estime'] = 3
+                    parking_frame_thresh[config_db.db_column_parking_regs_id] = relevant_data[config_db.db_column_parking_regs_id]
+                    parking_frame_thresh[config_db.db_column_reg_sets_id] = relevant_data[config_db.db_column_reg_sets_id]
+                    parking_frame_thresh[config_db.db_column_land_use_id] = relevant_data[config_db.db_column_land_use_id]
+                    parking_frame_thresh['commentaire'] = relevant_data.apply(lambda x: f'Calc. reg. man. : valeur {x['valeur']}',axis=1)
+                    if parking_final.empty:
+                        parking_final = parking_frame_thresh
+                    else:
+                        parking_final = pd.concat([parking_final,parking_frame_thresh])
             parking_out = ParkingInventory(parking_final)
             return parking_out
         else:
