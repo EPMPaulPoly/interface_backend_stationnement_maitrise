@@ -47,6 +47,9 @@ const TableInventaire:React.FC<TableInventaireProps>=(props:TableInventaireProps
                 alert('Suppression annulée')
             } else{
                 alert('Suppression Réussie')
+                props.defInventaire((prevInventaire) => 
+                    prevInventaire.filter((item) => item.id_inv !== id_inv)
+                )
             }
         }
     }
