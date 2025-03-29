@@ -179,5 +179,43 @@ export const serviceInventaire = {
             }
             throw error; // Re-throw if necessary
         }
+    },
+
+    modifiePlusieursInventaires:async(inventaireAMAJ:inventaire_stationnement[]):Promise<ReponseInventaire>=>{
+        try {
+            // Check that all items have an id_inv
+            inventaireAMAJ.forEach((item, index) => {
+                if (!item.id_inv) {
+                    throw new Error(`Item with g_no_lot ${item.g_no_lot} is missing id_inv`);
+                }
+            });
+            const reponseMAJInv = await api.post(`/inventaire/maj-en-gros/`,inventaireAMAJ);
+            return {success:reponseMAJInv.data.success,data:reponseMAJInv.data.data};
+        } catch (error:any) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    },
+
+    plusieursNouveauxInventaires:async(nouvelInventaire:Omit<inventaire_stationnement[],'id_inv'>):Promise<ReponseInventaire>=>{
+        try {
+            const reponseMAJInv = await api.put(`/inventaire/nouv-en-gros`,nouvelInventaire);
+            return reponseMAJInv.data.success
+        } catch (error:any) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
     }
 };

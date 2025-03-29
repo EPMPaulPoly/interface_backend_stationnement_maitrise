@@ -85,8 +85,37 @@ const ComparaisonInventaireQuartier:React.FC<ComparaisonInventaireQuartierProps>
             }
         }
     }
+
+    const splitNewVsUpdate = () => {
+        const updatedItems:inventaire_stationnement[] = [];
+        const newItems:inventaire_stationnement[] = [];
+      
+        // Iterate over each item in nouvelInventaireReg
+        props.nouvelInventaireReg.forEach(newItem => {
+          const matchIndex = props.ancienInventaireReg.findIndex(
+            oldItem => oldItem.g_no_lot === newItem.g_no_lot
+          );
+      
+          if (matchIndex !== -1) {
+            // If a match is found, update the id_inv and add to updatedItems
+            const updatedItem = {
+              ...newItem,
+              id_inv: props.ancienInventaireReg[matchIndex].id_inv // Assuming you want to update id_inv with the new item's id_inv
+            };
+            updatedItems.push(updatedItem);
+          } else {
+            // If no match is found, add the new item to newItems
+            newItems.push(newItem);
+          }
+        });
+      
+        return { updatedItems, newItems };
+      };
+
     const gestApprobationMasse=()=>{
-        console.log('A implementer - gest approbation masse')
+        const { updatedItems: inventaireMAJ, newItems: nouvelItems } = splitNewVsUpdate();
+        console.log('Separation entre les nouveaux items et les items à mettre à jour complétée')
+        const [reussiMAJ,reussiNouveau] = await Promise.all([serviceInventaire.modifiePlusieursInventaires(inventaireMAJ),serviceInventaire.plusieursNouveauxInventaires(nouvelItems)])
     }
     return(
         <div className="panneau-confirmation-inventaire-quartier">

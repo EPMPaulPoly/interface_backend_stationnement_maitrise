@@ -41,15 +41,26 @@ const MenuInventaire:React.FC<MenuInventaireProps>=(props:MenuInventaireProps)=>
     }
 
     const filtrerInventairePourChangements = (nouvelInventairePotentiel:inventaire_stationnement[])=>{
-        const filtreStationnementMin = nouvelInventairePotentiel.filter((o)=>
-            o.n_places_min!==props.inventaireActuel.find((i)=>i.g_no_lot===o.g_no_lot && i.methode_estime===2)?.n_places_min || 
-            o.n_places_max!==props.inventaireActuel.find((i)=>i.g_no_lot===o.g_no_lot && i.methode_estime===2)?.n_places_max ||
-            o.id_er!==props.inventaireActuel.find((i)=>i.g_no_lot===o.g_no_lot && i.methode_estime===2)?.id_er ||
-            o.id_reg_stat!==props.inventaireActuel.find((i)=>i.g_no_lot===o.g_no_lot && i.methode_estime===2)?.id_reg_stat ||
-            o.cubf!==props.inventaireActuel.find((i)=>i.g_no_lot===o.g_no_lot && i.methode_estime===2)?.cubf
-        )
-        return filtreStationnementMin
+        // Create a Map for quick lookup of items in props.inventaireActuel
+  const inventaireActuelMap = new Map(
+    props.inventaireActuel
+        .filter(item => item.methode_estime === 2)
+        .map(item => [item.g_no_lot, item])
+    );
 
+    const filtreStationnementMin = nouvelInventairePotentiel.filter((o) => {
+        const matchingItem = inventaireActuelMap.get(o.g_no_lot);
+
+        // Return true if no matching item is found or if any of the specified fields have changed
+        return !matchingItem ||
+            o.n_places_min !== matchingItem.n_places_min ||
+            o.n_places_max !== matchingItem.n_places_max ||
+            o.id_er !== matchingItem.id_er ||
+            o.id_reg_stat !== matchingItem.id_reg_stat ||
+            o.cubf !== matchingItem.cubf;
+    });
+
+    return filtreStationnementMin;
     }
 
     const gestCalculInventaire= async()=>{
@@ -57,6 +68,9 @@ const MenuInventaire:React.FC<MenuInventaireProps>=(props:MenuInventaireProps)=>
         if (props.quartier != -1){
             props.defPanneauComparInventaireQuartierVis(true)
             const inventaire = await serviceInventaire.recalculeQuartierComplet(props.quartier)
+            //console.log(inventaire.data);
+            //const test = inventaire.data.filter((item) => item.g_no_lot === '4 040 053');
+            //console.log(test);
             const inventaireFiltre = filtrerInventairePourChangements(inventaire.data)
             props.defNouvelInventaireQuartier(inventaireFiltre)
         }

@@ -353,7 +353,7 @@ def calculate_parking_specific_reg_set(reg_set:PRS.ParkingRegulationSet,tax_data
     logger.info('-----------------------------------------------------------------------------------------------')
     land_uses_to_get_regs_for = tax_data.get_land_uses_in_set()
     unique_parking_regs = reg_set.get_unique_reg_ids_using_land_use(land_uses_to_get_regs_for) 
-    parking_inventory_final = PI.ParkingInventory(pd.DataFrame(columns=[config_db.db_column_lot_id,config_db.db_column_reg_sets_id,config_db.db_column_parking_regs_id,config_db.db_column_land_use_id,'n_places_min','n_places_max','methode_estime','commentaire']))
+    parking_inventory_final = PI.ParkingInventory(pd.DataFrame(columns=[config_db.db_column_lot_id,config_db.db_column_reg_sets_id,config_db.db_column_parking_regs_id,config_db.db_column_land_use_id,'n_places_min','n_places_max','methode_estime','commentaire','n_places_mesure','n_places_estime']))
     for reg_id in unique_parking_regs:
         relevant_land_uses = reg_set.expanded_table.loc[reg_set.expanded_table[config_db.db_column_parking_regs_id]== reg_id,config_db.db_column_land_use_id].tolist()
         with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
@@ -612,6 +612,8 @@ def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subs
         parking_inventory_df_agg.rename(inplace=True,columns={config_db.db_column_tax_land_use:config_db.db_column_land_use_id })
         if parking_subset[config_db.db_column_parking_regs_id].values[0]=='1182':
             logger.debug('Debugging rule 1182 - exit point')
+        parking_inventory_df_agg['n_places_mesure']=None
+        parking_inventory_df_agg['n_places_estime']=None
         parking_inventory_object = ParkingInventory(parking_inventory_df_agg)
         return parking_inventory_object
     else:
