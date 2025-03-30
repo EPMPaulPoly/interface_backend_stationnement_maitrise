@@ -112,10 +112,34 @@ const ComparaisonInventaireQuartier:React.FC<ComparaisonInventaireQuartierProps>
         return { updatedItems, newItems };
       };
 
-    const gestApprobationMasse=()=>{
+    const gestApprobationMasse=async()=>{
         const { updatedItems: inventaireMAJ, newItems: nouvelItems } = splitNewVsUpdate();
         console.log('Separation entre les nouveaux items et les items à mettre à jour complétée')
         const [reussiMAJ,reussiNouveau] = await Promise.all([serviceInventaire.modifiePlusieursInventaires(inventaireMAJ),serviceInventaire.plusieursNouveauxInventaires(nouvelItems)])
+        console.log('Mis les choses dans la base de données')
+        const updatedItems = reussiMAJ?.data ?? [];
+        const newItems = reussiNouveau?.data ?? [];
+
+        // Merge the results into the state
+        props.defAncienInventaireReg((prev: inventaire_stationnement[]) => {
+                // Replace existing items based on id_inv
+                const updatedMap = new Map(prev.map(item => [item.id_inv, item]));
+
+                // Iterate safely
+                (updatedItems ?? []).forEach((item: inventaire_stationnement) => {
+                    updatedMap.set(item.id_inv, item);  // Replace existing items
+                });
+
+                (newItems ?? []).forEach((item: inventaire_stationnement) => {
+                    updatedMap.set(item.id_inv, item);  // Add new ones
+                });
+
+                // Convert the map back to an array
+                return Array.from(updatedMap.values());
+            }
+        );
+        props.defNouvelInventaireReg([])
+        props.defValidationInventaireQuartier(false)
     }
     return(
         <div className="panneau-confirmation-inventaire-quartier">

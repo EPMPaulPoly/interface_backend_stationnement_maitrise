@@ -121,6 +121,29 @@ export interface RequeteInventaire{
     methode_estime:number,
     cubf:string,
 }
+export interface RequeteNouvelInventaireGros{
+    data: RequeteInventaire[]
+}
+
+
+export interface RequeteInventaireGrosItem{
+    id_inv:number,
+    g_no_lot:string,
+    n_places_min:number,
+    n_places_max:number,
+    n_places_mesure:number,
+    n_places_estime:number,
+    id_er:string,
+    id_reg_stat:string,
+    commentaire:string,
+    methode_estime:number,
+    cubf:string,
+}
+
+export interface RequeteInventaireGros{
+    data: RequeteInventaireGrosItem[]
+}
+
 
 export interface RequeteCalculeInventaireRegMan{
     cubf:number,

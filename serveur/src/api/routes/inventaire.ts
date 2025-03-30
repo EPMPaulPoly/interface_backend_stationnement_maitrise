@@ -1,6 +1,6 @@
 import { Router, Request, Response, RequestHandler } from 'express';
-import { Pool } from 'pg';
-import { DbInventaire,ParamsQuartier,ParamsLot,ParamsInventaire,RequeteInventaire,RequeteCalculeInventaireRegMan} from '../../types/database';
+import { Pool,PoolClient } from 'pg';
+import { DbInventaire,ParamsQuartier,ParamsLot,ParamsInventaire,RequeteInventaire,RequeteCalculeInventaireRegMan,RequeteInventaireGros,RequeteNouvelInventaireGros} from '../../types/database';
 // Types pour les requêtes
 import { Polygon,MultiPolygon } from 'geojson';
 import path from 'path';
@@ -164,11 +164,12 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
   };
 
   const metAJourInventaire:RequestHandler<ParamsInventaire, any, RequeteInventaire> = async (req, res, next) => {
+    let client;
     try {
       const { id_inv } = req.params;
       const { g_no_lot, n_places_min, n_places_max, n_places_estime,n_places_mesure,id_er,id_reg_stat,commentaire,methode_estime,cubf } = req.body;
-      const client = await pool.connect();
-      const result = await client.query<DbInventaire>(
+      client = await pool.connect();
+      const result = await client.query(
         `UPDATE public.inventaire_stationnement SET 
             g_no_lot = $1, 
             n_places_min = $2, 
@@ -191,16 +192,21 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
         return;
       }
       res.json({ success: true, data: result.rows[0] });
-      client.release();
+      
     } catch (err) {
       next(err);
+    } finally{
+      if(client){
+        client.release();
+      }
     }
   };
   const nouvelInventaire:RequestHandler<any, any, RequeteInventaire> = async (req, res, next) => {
+    let client;
     try {
       const { g_no_lot, n_places_min, n_places_max, n_places_estime,n_places_mesure,id_er,id_reg_stat,commentaire,methode_estime,cubf } = req.body;
-      const client = await pool.connect();
-      const result = await client.query<DbInventaire>(
+      client = await pool.connect();
+      const result = await client.query(
         `INSERT INTO public.inventaire_stationnement(g_no_lot,n_places_min,n_places_max,n_places_estime,n_places_mesure,id_er,id_reg_stat,commentaire,methode_estime,cubf)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9,$10)RETURNING *`,
         [g_no_lot, n_places_min, n_places_max, n_places_estime, n_places_mesure,id_er,id_reg_stat,commentaire,methode_estime,cubf]
@@ -210,16 +216,21 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
         return;
       }
       res.json({ success: true, data: result.rows[0] });
-      client.release();
+      
     } catch (err) {
       next(err);
+    } finally{
+      if(client){
+        client.release();
+      }
     }
   };
   const supprimerInventaire:RequestHandler<ParamsInventaire> =  async(req,res,next): Promise<void>=>{
+    let client;
     try {
       const{id_inv} = req.params
-      const client = await pool.connect();
-      const result = await client.query<DbInventaire>(
+      client = await pool.connect();
+      const result = await client.query(
         `DELETE FROM public.inventaire_stationnement WHERE id_inv= $1;`,
         [id_inv]
       );
@@ -228,9 +239,13 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
         return;
       }
       res.json({ success: true, data: [] });
-      client.release();
+      
     } catch (err) {
       next(err);
+    } finally{
+      if (client){
+        client.release();
+      }
     }
   };
   const calculeInventaireValeursManuelles:RequestHandler<any, any, RequeteCalculeInventaireRegMan> =  async(req,res,next):Promise<void>=>{
@@ -287,6 +302,92 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
       }
     });
   };
+  
+  const metAJourInventaireEnGros:RequestHandler<any,any,RequeteInventaireGros> = async(req,res,next):Promise<void>=>{
+    let client;
+    try {
+      const data = req.body;
+
+      if (!Array.isArray(data) || data.length === 0) {
+        res.status(400).json({success:false, error: 'Invalid or empty data' });
+        throw new Error('empty array provided')
+      }
+      client = await pool.connect();
+      await client.query('BEGIN');
+
+      // Prepare the values for bulk insert and update
+      const values = data.map(item =>
+        `(${item.id_inv}, '${item.g_no_lot}', ${item.n_places_min}, ${item.n_places_max}, ${item.n_places_mesure}, ${item.n_places_estime}, '${item.id_er}', '${item.id_reg_stat}', '${item.commentaire}', ${item.methode_estime}, '${item.cubf}')`
+      ).join(', ');
+
+      // Insert new items or update existing ones
+      const insertQuery = `
+        INSERT INTO public.inventaire_stationnement (id_inv, g_no_lot, n_places_min, n_places_max, n_places_mesure, n_places_estime, id_er, id_reg_stat, commentaire, methode_estime, cubf)
+        VALUES ${values}
+        ON CONFLICT (id_inv) DO UPDATE
+        SET g_no_lot = EXCLUDED.g_no_lot,
+            n_places_min = EXCLUDED.n_places_min,
+            n_places_max = EXCLUDED.n_places_max,
+            n_places_mesure = EXCLUDED.n_places_mesure,
+            n_places_estime = EXCLUDED.n_places_estime,
+            id_er = EXCLUDED.id_er,
+            id_reg_stat = EXCLUDED.id_reg_stat,
+            commentaire = EXCLUDED.commentaire,
+            methode_estime = EXCLUDED.methode_estime,
+            cubf = EXCLUDED.cubf
+        RETURNING *;
+      `;
+
+      const result = await client.query(insertQuery);
+      await client.query('COMMIT');
+
+      res.json({ success: true, data: result.rows });
+    } catch (err) {
+      next(err);
+    }finally{
+      if (client){
+        client.release()
+      }
+    }
+  };
+
+  const nouvelInventaireEnGros:RequestHandler<any,any,RequeteNouvelInventaireGros> = async(req,res,next):Promise<void>=>{
+    const client = await pool.connect();
+    try {
+      const data = req.body;
+
+      if (!Array.isArray(data) || data.length === 0) {
+        res.status(400).json({success:false, error: 'Invalid or empty data' });
+        throw new Error('empty array provided')
+      }
+
+      await client.query('BEGIN');
+
+      // Prepare the values for bulk insert and update
+      const values = data.map(item =>
+        `('${item.g_no_lot}', ${item.n_places_min}, ${item.n_places_max}, ${item.n_places_mesure}, ${item.n_places_estime}, '${item.id_er}', '${item.id_reg_stat}', '${item.commentaire}', ${item.methode_estime}, '${item.cubf}')`
+      ).join(', ');
+
+      // Insert new items or update existing ones
+      const insertQuery = `
+        INSERT INTO public.inventaire_stationnement (g_no_lot, n_places_min, n_places_max, n_places_mesure, n_places_estime, id_er, id_reg_stat, commentaire, methode_estime, cubf)
+        VALUES ${values}
+        ON CONFLICT (g_no_lot, methode_estime) DO NOTHING
+        RETURNING *;
+      `;
+
+      const result = await client.query(insertQuery);
+      await client.query('COMMIT');
+
+      res.json({ success: true, data: result.rows });
+    } catch (err) {
+      next(err);
+    } finally{
+      if(client){
+        client.release();
+      }
+    }
+  };
 
 
   // Routes
@@ -294,8 +395,10 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
   router.get('/calcul/quartier/:id',calculInventairePythonQuartier);
   router.get('/calcul/lot/:id',calculInventairePythonLot);
   router.post('/calcul/reg-val-man',calculeInventaireValeursManuelles) 
+  router.post('/maj-en-gros',metAJourInventaireEnGros)
   router.post('/:id_inv',metAJourInventaire)
   router.put('/',nouvelInventaire)
+  router.put('/nouv-en-gros',nouvelInventaireEnGros)
   router.delete('/:id_inv',supprimerInventaire)
   return router;
 };
