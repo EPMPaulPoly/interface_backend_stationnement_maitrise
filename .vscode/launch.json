@@ -45,11 +45,33 @@
             "args":["16"],
             "console": "integratedTerminal"
         },
+        {
+            "name": "Python: Attach Docker",
+            "type": "debugpy",
+            "request": "attach",
+            "connect": {
+                "host": "localhost",
+                "port": 5678
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}/serveur_calcul_python",
+                    "remoteRoot": "/app/serveur_calcul_python"
+                }
+            ],
+            "subProcess": true,
+            "justMyCode": false
+
+        }
     ],
     "compounds": [
         {
             "name": "Full Stack: Frontend + Backend",
             "configurations": ["Debug Frontend", "Debug Backend"]
+        },
+        {
+            "name": "Full Stack: Frontend + Backend + Python",
+            "configurations": ["Debug Frontend", "Debug Backend", "Python: Attach Docker"]
         }
     ]
 }

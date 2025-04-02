@@ -36,6 +36,11 @@ export interface DbCadastre{
     g_va_suprf:number,
 }
 
+export interface DbCadastreGeomIdOnly{
+    g_no_lot:string,
+    geometry:string
+}
+
 export interface DbHistoriqueGeopol{
     id_periode:number,
     nom_periode:string,
@@ -104,6 +109,66 @@ export interface DbAssociationReglementUtilSol{
     id_er:number
 }
 
+export interface RequeteInventaire{
+    g_no_lot:string,
+    n_places_min:number,
+    n_places_max:number,
+    n_places_mesure:number,
+    n_places_estime:number,
+    id_er:string,
+    id_reg_stat:string,
+    commentaire:string,
+    methode_estime:number,
+    cubf:string,
+}
+export interface RequeteNouvelInventaireGros{
+    data: RequeteInventaire[]
+}
+
+
+export interface RequeteInventaireGrosItem{
+    id_inv:number,
+    g_no_lot:string,
+    n_places_min:number,
+    n_places_max:number,
+    n_places_mesure:number,
+    n_places_estime:number,
+    id_er:string,
+    id_reg_stat:string,
+    commentaire:string,
+    methode_estime:number,
+    cubf:string,
+}
+
+export interface RequeteInventaireGros{
+    data: RequeteInventaireGrosItem[]
+}
+
+
+export interface RequeteCalculeInventaireRegMan{
+    cubf:number,
+    id_reg_stat:number,
+    unite:number,
+    valeur:number
+}
+
+export interface DbDonneesRequetesCalculValeursManuelles{
+    rl0105a:string,
+    rl0307a:string,
+    id_er:number,
+    description_er:string,
+    id_periode_geo:number,
+    ville_sec:string,
+    id_provincial_list:string,
+    rl0308a_somme:number,
+    rl0311a_somme:number,
+    rl0312a_somme:number,
+    id_reg_stat:number,
+    description_reg_stat:string,
+    unite:number,
+    desc_unite:string
+}
+
 export interface ParamsQuartier extends ParamsDictionary {
     id: string;
 }
@@ -118,4 +183,16 @@ export interface ParamsCadastre extends ParamsDictionary{
 
 export interface ParamsTerritoire extends ParamsDictionary{
     id:string;
+}
+
+export interface ParamsLot extends ParamsDictionary{
+    id:string;
+}
+
+export interface ParamsInventaire extends ParamsDictionary{
+    id_inv:string;
+}
+
+export interface ParamsRole extends ParamsDictionary{
+    id_role:string;
 }

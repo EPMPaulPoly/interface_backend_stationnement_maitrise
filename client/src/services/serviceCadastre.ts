@@ -1,6 +1,6 @@
 import axios,{ AxiosResponse } from 'axios';
-import { lotCadastralGeoJsonProperties, quartiers_analyse, roleFoncierGeoJsonProps } from '../types/DataTypes';
-import { ReponseCadastre, ReponseRole,ReponseDBCadastre,ReponseDBRole } from '../types/serviceTypes';
+import { lotCadastralGeoJsonProperties, quartiers_analyse, roleFoncierGeoJsonProps,lotCadastralAvecBoolInvGeoJsonProperties } from '../types/DataTypes';
+import { ReponseCadastre, ReponseRole,ReponseDBCadastre,ReponseDBRole, ReponseDBCadastreBoolInv,ReponseCadastreBoolInv } from '../types/serviceTypes';
 import api from './api';
 import {FeatureCollection, Geometry } from 'geojson';
 
@@ -17,7 +17,7 @@ class ServiceCadastre {
                     geometry: JSON.parse(item.geojson_geometry),
                     properties: {
                         g_no_lot:item.g_no_lot,
-                        g_va_superf:item.g_va_superf,
+                        g_va_suprf:item.g_va_suprf,
                         g_nb_coo_1:item.g_nb_coo_1,
                         g_nb_coord:item.g_nb_coord,
                     }
@@ -47,7 +47,7 @@ class ServiceCadastre {
                     geometry: JSON.parse(item.geojson_geometry),
                     properties: {
                         g_no_lot:item.g_no_lot,
-                        g_va_superf:item.g_va_superf,
+                        g_va_suprf:item.g_va_suprf,
                         g_nb_coo_1:item.g_nb_coo_1,
                         g_nb_coord:item.g_nb_coord,
                     }
@@ -85,6 +85,37 @@ class ServiceCadastre {
                         rl0311a:item.rl0311a,
                         rl0312a:item.rl0312a,
                         rl0404a:item.rl0404a
+                    }
+                }))
+            };
+            return {success:response.data.success,data:featureCollection};
+        } catch (error: any) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
+
+    async obtiensCadastreParQuartier(id:number):Promise<ReponseCadastreBoolInv>{
+        try {
+            const response: AxiosResponse<ReponseDBCadastreBoolInv> = await api.get(`/cadastre/lot/quartier-ana/${id}`);
+            const data_res = response.data.data;
+            const featureCollection: FeatureCollection<Geometry, lotCadastralAvecBoolInvGeoJsonProperties> = {
+                type: "FeatureCollection",
+                features: data_res.map((item) => ({
+                    type: "Feature",
+                    geometry: JSON.parse(item.geojson_geometry),
+                    properties: {
+                        g_no_lot:item.g_no_lot,
+                        g_va_suprf:item.g_va_suprf,
+                        g_nb_coo_1:item.g_nb_coo_1,
+                        g_nb_coord:item.g_nb_coord,
+                        bool_inv:item.bool_inv
                     }
                 }))
             };

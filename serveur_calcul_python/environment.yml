@@ -1,0 +1,21 @@
+name: serveur_calcul_python
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.12
+  - numpy
+  - pandas
+  - geopandas
+  - typing
+  - scikit-image
+  - lxml
+  - openpyxl
+  - psycopg2
+  - sqlalchemy
+  - geoalchemy2
+  - xlrd
+  - git
+  - typing-extensions
+  - matplotlib
+  - debugpy

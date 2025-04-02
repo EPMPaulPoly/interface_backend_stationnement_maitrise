@@ -1,6 +1,6 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { Pool } from 'pg';
-import { DbTerritoire, ParamsCadastre, ParamsPeriode,DbRole,DbCadastre } from 'database';
+import { DbTerritoire, ParamsCadastre, ParamsPeriode,DbRole,DbCadastre,ParamsQuartier,DbCadastreGeomIdOnly } from '../../types/database';
 // Types pour les requêtes
 import { Polygon,MultiPolygon } from 'geojson';
 interface GeometryBody {
@@ -82,9 +82,45 @@ export const creationRouteurCadastre = (pool: Pool): Router => {
     }
   }
 
+  const obtiensLotsParIdQuartier:RequestHandler<ParamsQuartier> = async(req,res):Promise<void>=>{
+    let client;
+    try {
+      const { id } = req.params;
+      console.log(`obtention lots pour quartier: ${id}`);
+      client = await pool.connect();
+      const query = `
+        SELECT 
+          cad.g_no_lot,
+          cad.g_va_suprf,
+          cad.g_nb_coo_1,
+          cad.g_nb_coord,
+          EXISTS (
+                SELECT 1
+                FROM inventaire_stationnement AS inv
+                WHERE inv.g_no_lot = cad.g_no_lot
+            ) AS bool_inv,
+          ST_AsGeoJSON(cad.geometry) AS geojson_geometry
+        FROM
+          public.cadastre AS cad
+        JOIN 
+          public.sec_analyse AS polygons
+          ON ST_Intersects(cad.geometry, polygons.geometry)
+          AND polygons.id_quartier = $1
+        `;
+
+      const result = await client.query(query, [id]);
+      res.json({ success: true, data: result.rows });
+    } catch (err) {
+      res.status(500).json({ success: false, error: 'Database error' });
+    } finally{
+      if (client){
+        client.release()
+      }
+    }
+  }
   // Routes
+  router.get('/lot/quartier-ana/:id',obtiensLotsParIdQuartier)
   router.get('/lot/:id', obtiensLotParId)
   router.get('/role-associe/:id',obtiensRoleParIdLot)
-
   return router;
 };

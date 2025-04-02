@@ -74,6 +74,7 @@ body,html{
 .control-dds{
     display:flex;
     flex-direction:column;
+    padding-right:30px;
 }
 
 

@@ -1,5 +1,5 @@
 import axios,{ AxiosResponse } from 'axios';
-import {ReponseEnsembleReglementComplet, ReponseEntetesEnsemblesReglement, ReponseEntetesReglements, } from '../types/serviceTypes';
+import {ReponseEnsembleReglementComplet, ReponseEntetesEnsemblesReglement, ReponseEntetesReglements, ReponseComboERsRoleFoncier} from '../types/serviceTypes';
 import api from './api';
 
 
@@ -68,6 +68,23 @@ class ServiceEnsemblesReglements {
             const response: AxiosResponse<ReponseEntetesEnsemblesReglement>= await api.get(`/ens-reg/entete-par-territoire/${idPeriodeGeo}`)
             const data_res = response.data.data
             return{success:response.data.success,data:data_res}
+        }catch(error){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
+
+    async chercheEnsRegPourRole(ids:string[]):Promise<ReponseComboERsRoleFoncier>{
+        try{
+            const response: AxiosResponse<ReponseEntetesEnsemblesReglement>= await api.get(`/ens-reg/par-role/${ids.join(',')}`)
+            const data_res = response.data.data
+            return{success:response.data.success,data:[]}
         }catch(error){
             if (axios.isAxiosError(error)) {
                 console.error('Axios Error:', error.response?.data);

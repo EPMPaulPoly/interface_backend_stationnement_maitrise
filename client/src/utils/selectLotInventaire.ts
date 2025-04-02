@@ -1,12 +1,12 @@
 import React from 'react';
 import { LeafletEvent } from 'leaflet';
-import {  selectLotProps } from '../types/InterfaceTypes';
+import {  selectLotProps } from '../types/utilTypes';
 import { Feature, FeatureCollection,Geometry } from 'geojson';
-import { inventaireGeoJSONProps } from '../types/DataTypes';
+import { inventaire_stationnement } from '../types/DataTypes';
 import { serviceReglements,serviceCadastre, serviceEnsemblesReglements } from '../services';
 
-const checkAvailable = (inventaireComplet: FeatureCollection<Geometry,inventaireGeoJSONProps>,key:string) : boolean =>{
-    const check = inventaireComplet.features.find((o)=>o.properties.g_no_lot===key);
+const checkAvailable = (inventaireComplet: inventaire_stationnement[],key:string) : boolean =>{
+    const check = inventaireComplet.find((o)=>o.g_no_lot===key);
     if (check){
         return true
     } else {
@@ -15,62 +15,71 @@ const checkAvailable = (inventaireComplet: FeatureCollection<Geometry,inventaire
 
 }
 
-const selectLotInventaire = async (props:selectLotProps): Promise<void> => {
-    if (checkAvailable(props.inventaireComplet,props.numLot)){
-        const inventaireTest: FeatureCollection<Geometry, inventaireGeoJSONProps> = {
-            type: "FeatureCollection",
-            features: [{
-            type: "Feature",
-            geometry: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.geometry as Geometry : { type: "Point", coordinates: [0, 0] },
-            properties: {
-                g_no_lot:checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.g_no_lot ?? '' : '',
-                n_places_min: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.n_places_min ?? 0 : 0,
-                n_places_max: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.n_places_max ?? 0 : 0,
-                n_places_estime: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.n_places_estime ?? 0 : 0,
-                n_places_mesure: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.n_places_mesure ?? 0 : 0,
-                methode_estime: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.methode_estime ?? 0 : 0,
-                cubf: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.cubf ?? '' : '',
-                id_er: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.id_er ?? '' : '',
-                id_reg_stat: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.id_reg_stat ?? '' : '',
-                commentaire: checkAvailable(props.inventaireComplet,props.numLot) ? props.inventaireComplet.features.find((o) => o.properties.g_no_lot === props.numLot)?.properties.commentaire ?? '' : ''
-            }
-            }]
-        }
-        props.defInventaireAnalyse(inventaireTest)
-        const idRegStat = inventaireTest.features[0].properties.id_reg_stat || '';
+const selectLotInventaire = async (props: selectLotProps): Promise<void> => {
+    console.time('selectLotInventaire');
+    const idLot = props.numLot;
+    let inventaireTest: inventaire_stationnement[] = [];
+
+    if (checkAvailable(props.inventaireComplet, idLot)) {
+        inventaireTest = props.inventaireComplet.filter(o => o.g_no_lot === idLot);
+        props.defInventaireAnalyse(inventaireTest);
+
+        const idRegStat = inventaireTest.find(o => o.methode_estime === 2)?.id_reg_stat || '';
         const rulesToGet = Array.from(new Set(idRegStat.split(/,|\//).map(Number)));
-        const idEr = inventaireTest.features[0].properties.id_er || '';
+        const idEr = inventaireTest.find(o => o.methode_estime === 2)?.id_er || '';
         const rulesetsToGet = Array.from(new Set(idEr.split(/,|\//).map(Number)));
-        console.log('Regles a obtenir: ',rulesToGet)
-        console.log('Ens. Reg a obtenir: ',rulesetsToGet)
-        console.log('Démarrage Service')
-        if (rulesToGet.length>1){
-            const reg = await serviceReglements.chercheReglementComplet(rulesToGet);
-            props.defReglementsAnalyse(reg.data);
-        }else{
-            const reg = await serviceReglements.chercheReglementComplet(rulesToGet[0])
-            props.defReglementsAnalyse(reg.data);
-        }
-        if (rulesetsToGet.length>1){
-            const ensReg = await serviceEnsemblesReglements.chercheEnsembleReglementParId(rulesetsToGet);
-            props.defEnsemblesAnalyse(ensReg.data);
-        }else{
-            const ensReg = await serviceEnsemblesReglements.chercheEnsembleReglementParId(rulesetsToGet[0])
-            props.defEnsemblesAnalyse(ensReg.data);
-        }
-        const idLot = inventaireTest.features[0].properties.g_no_lot
-        const lot = await serviceCadastre.obtiensCadastreParId(idLot)
-        const role = await serviceCadastre.chercheRoleAssocieParId(idLot)
-        console.log('Obtenu lot',lot) 
-        console.log('Obtenu role',role)
-        props.defLotAnalyse(lot.data)
-        props.defRoleAnalyse(role.data)
-        props.defRoleRegard('')
-        props.defEnsRegRegard(-1)
-        props.defRegRegard(-1)
-        props.defMethodeEstimeRegard(-1)
+
+        console.log('Regles a obtenir: ', rulesToGet);
+        console.log('Ens. Reg a obtenir: ', rulesetsToGet);
+        console.log('Démarrage Service');
+        console.time('fetchRegulations');
+        const [reg, ensReg] = await Promise.all([
+            serviceReglements.chercheReglementComplet(rulesToGet.length > 1 ? rulesToGet : rulesToGet[0]),
+            serviceEnsemblesReglements.chercheEnsembleReglementParId(rulesetsToGet.length > 1 ? rulesetsToGet : rulesetsToGet[0])
+        ]);
+        console.timeEnd('fetchRegulations');
+
+        props.defReglementsAnalyse(reg.data);
+        props.defEnsemblesAnalyse(ensReg.data);
+    } else {
+        props.defInventaireAnalyse([]);
+        props.defReglementsAnalyse([]);
+        props.defEnsemblesAnalyse([]);
     }
-}
+
+    if (idLot) {
+        console.time('fetchLotAndRole');
+    
+        // Find the lot from the features array
+        const lot2 = props.lotsDuQuartier.features.find((o) => o.properties.g_no_lot === idLot);
+    
+        try {
+            // Fetch the role associated with the lot ID
+            const role = await serviceCadastre.chercheRoleAssocieParId(idLot);
+    
+            console.timeEnd('fetchLotAndRole');
+            console.log('Obtenu lot', lot2);
+            console.log('Obtenu role', role);
+    
+            // Set the lot and role for analysis
+            if (lot2) {
+                props.defLotAnalyse(lot2);
+            } else {
+                console.warn('Lot not found for idLot:', idLot);
+            }
+            props.defRoleAnalyse(role.data);
+        } catch (error) {
+            console.error('Error fetching role:', error);
+            console.timeEnd('fetchLotAndRole');
+        }
+    }
+
+    props.defRoleRegard('');
+    props.defEnsRegRegard(-1);
+    props.defRegRegard(-1);
+    props.defMethodeEstimeRegard(-1);
+    console.timeEnd('selectLotInventaire');
+};
 
 
 export default selectLotInventaire;

@@ -10,7 +10,7 @@ Created on Thu Jul 22 2024
 # la version de la base de donnees est 
 
 #variables a modifier:
-pg_host = 'localhost' #defaut localhost
+pg_host = 'host.docker.internal' #defaut localhost host.docker.internal
 pg_port = '5432' #defaut 5432
 pg_dbname = 'parking_regs_test'# specifique a l'application
 pg_username = 'postgres' # defaut postgres
@@ -78,8 +78,8 @@ db_column_reg_sets_end_year = 'date_fin_er'
 # utilsiation du territoire
 db_column_land_use_id = 'cubf'
 #territoire d'analyse
-db_column_analysis_territory_id = 'ID'
-db_column_analysis_territory_name = 'NOM'
+db_column_analysis_territory_id = 'id_quartier'
+db_column_analysis_territory_name = 'nom_quartier'
 
 # colonnes de géométrie
 db_geom_analysis ='geometry'

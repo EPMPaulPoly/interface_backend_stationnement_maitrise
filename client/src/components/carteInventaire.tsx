@@ -4,16 +4,16 @@ import { CarteInventaireProps } from '../types/InterfaceTypes';
 import "leaflet/dist/leaflet.css";
 import L, { LeafletEvent } from 'leaflet';
 import selectLotInventaire from '../utils/selectLotInventaire';
-import { selectLotProps } from '../types/InterfaceTypes';
-import { inventaireGeoJSONProps } from '../types/DataTypes';
+import { selectLotProps } from '../types/utilTypes';
+import {  lotCadastralAvecBoolInvGeoJsonProperties } from '../types/DataTypes';
 const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
   const handleLotClick = (e: LeafletEvent) => {
     const key = e.target.feature.properties.g_no_lot;
     const propsLot: selectLotProps = {
       inventaireComplet: props.inventaire,
       numLot: key,
-      lotAnalyse: props.lots,
-      defLotAnalyse: props.defLots,
+      lotAnalyse: props.lotSelect,
+      defLotAnalyse: props.defLotSelect,
       inventaireAnalyse: props.itemSelect,
       defInventaireAnalyse: props.defItemSelect,
       roleAnalyse: props.donneesRole,
@@ -29,13 +29,14 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
       ensRegRegard: props.ensRegRegard,
       defEnsRegRegard: props.defEnsRegRegard,
       roleRegard: props.roleRegard,
-      defRoleRegard: props.defRoleRegard
+      defRoleRegard: props.defRoleRegard,
+      lotsDuQuartier: props.lotsDuQuartier
     }
     selectLotInventaire(propsLot)
   }
 
   const geoJsonLayerGroupRef = useRef<L.LayerGroup | null>(null); // Refe
-  const prevInventaireRef = useRef<GeoJSON.FeatureCollection<GeoJSON.Geometry, inventaireGeoJSONProps> | null>(null);
+  const prevInventaireRef = useRef<GeoJSON.FeatureCollection<GeoJSON.Geometry, lotCadastralAvecBoolInvGeoJsonProperties> | null>(null);
   const MapComponent = () => {
     const map = useMap(); // Access the map instance
 
@@ -45,11 +46,12 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
           geoJsonLayerGroupRef.current.clearLayers(); // Clear previous vector layers
         }
 
-        if (props.inventaire && props.inventaire.features.length > 0) {
+        if (props.lotsDuQuartier && props.lotsDuQuartier.features.length > 0) {
           // Create a new GeoJSON layer from props.geoJsondata
-          const geoJsonLayer = L.geoJSON(props.inventaire, {
+          const lotsAMontrer = !props.montrerTousLots? props.lotsDuQuartier.features.filter((o)=>o.properties.bool_inv===true):props.lotsDuQuartier;
+          const geoJsonLayer = L.geoJSON(lotsAMontrer, {
             style: (feature) => {
-              const isLotInAnalyse = feature && props.itemSelect.features.some(lot => lot.properties.g_no_lot === feature.properties.g_no_lot);
+              const isLotInAnalyse = feature && props.lotSelect.properties.g_no_lot===feature.properties.g_no_lot;
               return {
                 color: isLotInAnalyse ? 'red' : 'blue', // Border color based on condition
                 weight: 2,     // Border thickness
@@ -59,13 +61,6 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
             },
             onEachFeature: (feature: any, layer: any) => {
               if (feature.properties) {
-                const { g_no_lot, n_places_min, n_places_max } = feature.properties; // Destructure properties
-                const formattedPopupContent = `
-                  <strong>No Lot:</strong> ${g_no_lot} <br/>
-                  <strong>Places Min:</strong> ${n_places_min} <br/>
-                  <strong>Places Max:</strong> ${n_places_max} <br/>
-                  `;
-                layer.bindPopup(formattedPopupContent);
                 layer.on({
                   click: handleLotClick
                 });
@@ -80,18 +75,18 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
           geoJsonLayer.addTo(geoJsonLayerGroupRef.current); // Add the new layer to the group
 
           // Check if inventaire has changed before adjusting bounds
-          if (prevInventaireRef.current !== props.inventaire) {
+          if (prevInventaireRef.current !== props.lotsDuQuartier) {
             const bounds = geoJsonLayer.getBounds();
             if (bounds.isValid()) {
               map.fitBounds(bounds);
             }
           }
 
-          prevInventaireRef.current = props.inventaire;
+          prevInventaireRef.current = props.lotsDuQuartier;
 
         }
       }
-      }, [props.inventaire, map]); // Dependency on props.geoJsondata and map
+      }, [props.lotsDuQuartier, map]); // Dependency on props.geoJsondata and map
 
     return null; // No need to render anything for the map component itself
   };
@@ -107,10 +102,6 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
       {props.inventaire && (<>
-        {props.inventaire.features?.map((feature, index) => {
-          //console.log(`Feature ${index + 1}:`, feature);
-          return null; // We return null because we're only logging, not rendering anything here.
-        })}
         <MapComponent />
       </>
       )}

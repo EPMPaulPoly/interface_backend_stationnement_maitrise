@@ -1,5 +1,5 @@
 import os
-print(os.getcwd())
+#print(os.getcwd())
 import pandas as pd
 import geopandas as gpd
 from sqlalchemy import create_engine,text,Engine,MetaData,Table
@@ -15,6 +15,7 @@ from classes import reg_set_territory as RST
 from classes import parking_reg_sets as PRS
 from classes import parking_regs as PR
 import webbrowser
+from classes import parking_inventory_inputs as PII
 
 from typing import Union
 
@@ -38,9 +39,7 @@ class ParkingInventory():
        
     def __repr__(self):
         return f'N_lots ={len(self.parking_frame[config_db.db_column_lot_id].unique())}, N_places_min = {self.parking_frame['n_places_min'].agg('sum')}'
-    
-    
-                
+           
     def concat(self,inventory_2:Self)->Self:
         logger = logging.getLogger(__name__)
         if self.parking_frame.empty==False and inventory_2.parking_frame.empty ==False:
@@ -64,6 +63,9 @@ class ParkingInventory():
             con = db_alchemy.create_engine(config_db.pg_string)
         self.parking_frame.to_sql(config_db.db_table_parking_inventory,con=con,if_exists='replace',index=False)
 
+    def to_json(self)->str :
+        return self.parking_frame.to_json(orient='records',force_ascii=False)
+    
     def merge_lot_data(self:Self)->None:
         '''
         #merge_lot_data
@@ -76,7 +78,7 @@ class ParkingInventory():
         lots_list_to_purge_from_self = lots_to_clean_up[config_db.db_column_lot_id].unique().tolist()
         if len(lots_list_to_purge_from_self)>0:
             aggregate_parking_data = lots_to_clean_up.groupby([config_db.db_column_lot_id]).apply(inventory_duplicates_agg_function).reset_index()
-            aggregate_parking_data.loc[(aggregate_parking_data['n_places_min']>aggregate_parking_data['n_places_max']) & (aggregate_parking_data['n_places_max']==0.0),'n_places_max'] =None
+            aggregate_parking_data.loc[(aggregate_parking_data['n_places_min']>aggregate_parking_data['n_places_max']) |(aggregate_parking_data['n_places_max']==0.0),'n_places_max'] =None
             new_parking_frame = self.parking_frame.drop(self.parking_frame[self.parking_frame[config_db.db_column_lot_id].isin(lots_list_to_purge_from_self)].index)
             new_parking_frame = pd.concat([new_parking_frame,aggregate_parking_data])
 
@@ -188,7 +190,7 @@ def subset_operation(inventory_1:ParkingInventory,operator,inventory_2:ParkingIn
             case 5:
                 raise NotImplementedError('Obsolete operator')
             case 6:
-                logger.info('Entrée dans l''opération de subset par défaut')
+                logger.info('Entrée dans l''opération OU SIMPLE')
                 parking_frame_out = pd.DataFrame()
                 parking_frame_out = inventory_1.parking_frame[[config_db.db_column_lot_id,'n_places_min','n_places_max']].copy()
                 parking_frame_out.rename(columns={'n_places_min':'n_places_min_left','n_places_max':'n_places_max_left'},inplace=True)
@@ -196,12 +198,12 @@ def subset_operation(inventory_1:ParkingInventory,operator,inventory_2:ParkingIn
                 parking_frame_right.rename(columns={'n_places_min':'n_places_min_right','n_places_max':'n_places_max_right'},inplace=True)
                 parking_frame_out = parking_frame_out.merge(parking_frame_right,on=config_db.db_column_lot_id)
                 # implémenté comme prenant le minimum des requis minimaux. Ceci et mis en place selon la logique qu'un développeur immobilier voudrait potentiellement 
-                # Cas 1 la gauche est plus petit: min_final = min_left, max_final = max_left
+                # Cas 1 la gauche_min est plus petit: min_final = min_left, max_final = max_left
                 parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_min_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_min_left']
                 parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_max_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_max_left']
-                # Cas 1 la droite est plus petit: min_final = min_right, max_final = max_right
-                parking_frame_out.loc[parking_frame_out['n_places_min_left']>=parking_frame_out['n_places_min_right'],'n_places_min_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_min_right']
-                parking_frame_out.loc[parking_frame_out['n_places_min_left']>=parking_frame_out['n_places_min_right'],'n_places_max_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']<parking_frame_out['n_places_min_right'],'n_places_max_right']
+                # Cas 2 la droite_min est plus petit: min_final = min_right, max_final = max_right
+                parking_frame_out.loc[parking_frame_out['n_places_min_left']>=parking_frame_out['n_places_min_right'],'n_places_min_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']>=parking_frame_out['n_places_min_right'],'n_places_min_right']
+                parking_frame_out.loc[parking_frame_out['n_places_min_left']>=parking_frame_out['n_places_min_right'],'n_places_max_final'] = parking_frame_out.loc[parking_frame_out['n_places_min_left']>=parking_frame_out['n_places_min_right'],'n_places_max_right']
                 # ramène le vieux frame
                 old_parking_frame = inventory_1.parking_frame.copy()
                 # drop gauche/droite
@@ -229,11 +231,11 @@ def inventory_duplicates_agg_function(x:pd.DataFrame):
     d[config_db.db_column_parking_regs_id] = '/'.join(map(str, x[config_db.db_column_parking_regs_id]))
     d['n_places_min'] = x['n_places_min'].sum()
     d['n_places_max'] = x['n_places_max'].sum()
-    d['commentaire'] = x['commentaire'].values[0]
+    d['commentaire'] = '/'.join(map(str, x['commentaire']))
     d['methode_estime'] = x['methode_estime'].values[0]
     return pd.Series(d,index = [config_db.db_column_land_use_id,config_db.db_column_reg_sets_id,config_db.db_column_parking_regs_id,'n_places_min','n_places_max','commentaire','methode_estime'])
 
-def calculate_inventory_by_analysis_sector(sector_to_calculate:int, create_html:bool = False,overwrite:int=0):
+def calculate_inventory_by_analysis_sector(sector_to_calculate:int, create_html:bool = False,overwrite:int=0)->ParkingInventory:
     '''
         # calculate_inventory_by_analysis_sector
         Permet de calculer le stationnement pour chaque lot danas un quartier d'analyse donné
@@ -251,28 +253,9 @@ def calculate_inventory_by_analysis_sector(sector_to_calculate:int, create_html:
     final_parking_inventory = PI.dissolve_list(parking_inventories)
     logging.info('Merging inventories for a given lot')
     final_parking_inventory.merge_lot_data()
-    return_value_save = PI.to_sql(final_parking_inventory,overwrite=overwrite)
-    if create_html:
-        path = './data/tax.html'
-        # display the points
-        m1 = tax_data_to_analyse.explore(file=path)
-        path_url = 'file://' + os.path.realpath(path)
-        webbrowser.open(path_url)
-        # display the points as confirmation.
-        reg_tax_foliums = RST.explore_RST_TD(RSTs,TDs)
-        folium_test = reg_tax_foliums[-1]
-        path_rst = 'data/RST_test.html'
-        folium_test.save(path_rst)
-        webbrowser.open('file://'+os.path.realpath(path_rst))
-        logging.info('Creating html file to save for data visualization')
-        path_inventory = f'./data/inventory_{sector_to_calculate}.html'
-        lot_data = tax_data_to_analyse.lot_table[[config_db.db_column_lot_id,config_db.db_geom_lots]]
-        data_frame_to_explore:gpd.GeoDataFrame = lot_data.merge(final_parking_inventory.parking_frame, how='inner',on=config_db.db_column_lot_id)
-        folium_to_explore= data_frame_to_explore.explore(column='n_places_min')
-        folium_to_explore.save(path_inventory)
-        webbrowser.open('file://'+os.path.realpath(path_inventory))
+    return final_parking_inventory
 
-def calculate_inventory_by_lot(lot_to_calculate:str, create_html:bool = False,overwrite:int=0):
+def calculate_inventory_by_lot(lot_to_calculate:str, create_html:bool = False,overwrite:int=0)->ParkingInventory:
     '''
         # calculate_inventory_by_lot
             calculates the inventory for a lot
@@ -281,7 +264,6 @@ def calculate_inventory_by_lot(lot_to_calculate:str, create_html:bool = False,ov
     logging.info(f'Starting parking inventory calculation for lot: {lot_to_calculate}')
     logging.info('Getting tax data sets within neighbourhoods')
     tax_data_to_analyse = TD.tax_database_from_lot_id(lot_to_calculate)
-
     # find all territories that touch the data
     logging.info('Finding relevant parking rulesets')
     [RSTs,TDs] = RST.get_rst_by_tax_data(tax_data_to_analyse)
@@ -292,7 +274,7 @@ def calculate_inventory_by_lot(lot_to_calculate:str, create_html:bool = False,ov
     final_parking_inventory = PI.dissolve_list(parking_inventories)
     logging.info('Merging inventories for a given lot')
     final_parking_inventory.merge_lot_data()
-    return_value_save = PI.to_sql(final_parking_inventory,overwrite=overwrite)
+    return final_parking_inventory
 
 def to_sql(inventory_to_save:ParkingInventory,engine:sqlalchemy.Engine=None,overwrite:int=0):
     ''' # to_sql
@@ -371,7 +353,7 @@ def calculate_parking_specific_reg_set(reg_set:PRS.ParkingRegulationSet,tax_data
     logger.info('-----------------------------------------------------------------------------------------------')
     land_uses_to_get_regs_for = tax_data.get_land_uses_in_set()
     unique_parking_regs = reg_set.get_unique_reg_ids_using_land_use(land_uses_to_get_regs_for) 
-    parking_inventory_final = PI.ParkingInventory(pd.DataFrame(columns=[config_db.db_column_lot_id,config_db.db_column_reg_sets_id,config_db.db_column_parking_regs_id,config_db.db_column_land_use_id,'n_places_min','n_places_max','methode_estime','commentaire']))
+    parking_inventory_final = PI.ParkingInventory(pd.DataFrame(columns=[config_db.db_column_lot_id,config_db.db_column_reg_sets_id,config_db.db_column_parking_regs_id,config_db.db_column_land_use_id,'n_places_min','n_places_max','methode_estime','commentaire','n_places_mesure','n_places_estime']))
     for reg_id in unique_parking_regs:
         relevant_land_uses = reg_set.expanded_table.loc[reg_set.expanded_table[config_db.db_column_parking_regs_id]== reg_id,config_db.db_column_land_use_id].tolist()
         with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
@@ -418,7 +400,7 @@ def calculate_parking_specific_reg(reg_to_calculate: PR.ParkingRegulations,tax_d
                     subset_inventory = calculate_parking_specific_reg_subset(reg_to_calculate,iter_subset_id,tax_data,rule_set_to_transfer)
                     parking_inventory = subset_operation(parking_inventory,operator=operator,inventory_2 = subset_inventory) # if subsequen subset, you need to check which operator it is for the subset and choose which inventory to keep
     return parking_inventory
-        
+
 def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subset:int,tax_data:TD.TaxDataset,rule_set_id:int)->ParkingInventory:
     '''
         # calculate_parking_minimum_subset
@@ -456,12 +438,12 @@ def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subs
         n_other_operators = 1
     # Throw error if tehre's more than one operator if not, setup operation as the first value in the other_operators list
     if n_other_operators==1:
-            run_assessment=True
-            if isinstance(other_operators,int):
-                operation = other_operators
-            else:
-                operation = int(other_operators.iloc[0])
-            logger.info(f'Operation being performed for subset {subset} of rule #{parking_subset[config_db.db_column_parking_regs_id].iloc[0]}: {operation} (1:sum, 4: change of rule based on threshold)')
+        run_assessment=True
+        if isinstance(other_operators,int):
+            operation = other_operators
+        else:
+            operation = int(other_operators.iloc[0])
+        logger.info(f'Operation being performed for subset {subset} of rule #{parking_subset[config_db.db_column_parking_regs_id].iloc[0]}: {operation} (1:sum, 4: change of rule based on threshold)')
     else:
         raise ValueError('Too many operators. Multiple operators not supported within subset except for first')
     '''operations options: 
@@ -630,6 +612,8 @@ def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subs
         parking_inventory_df_agg.rename(inplace=True,columns={config_db.db_column_tax_land_use:config_db.db_column_land_use_id })
         if parking_subset[config_db.db_column_parking_regs_id].values[0]=='1182':
             logger.debug('Debugging rule 1182 - exit point')
+        parking_inventory_df_agg['n_places_mesure']=None
+        parking_inventory_df_agg['n_places_estime']=None
         parking_inventory_object = ParkingInventory(parking_inventory_df_agg)
         return parking_inventory_object
     else:
@@ -637,3 +621,175 @@ def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subs
 
 def check_neighborhood_inventory()->bool:
     NotImplementedError('Not Yet implemented')
+
+def calculate_inventory_from_manual_entry(donnees_calcul:pd.DataFrame)->ParkingInventory:
+    
+    ids_reglements_obtenir:list[int] = donnees_calcul[config_db.db_column_parking_regs_id].unique().tolist()
+    reglements:PR.ParkingRegulations = PR.from_postgis(ids_reglements_obtenir)
+    parking_out= []
+    for id_reglement in ids_reglements_obtenir:
+        donnees_pertinentes:pd.DataFrame = donnees_calcul.loc[donnees_calcul[config_db.db_column_parking_regs_id]==id_reglement]
+        reglement:PR.ParkingRegulations = reglements.get_reg_by_id(id_reglement)
+        unites = reglement.get_units()
+        unites_donnees:list[int] = donnees_pertinentes.loc[donnees_pertinentes[config_db.db_column_parking_regs_id]==id_reglement,config_db.db_column_parking_unit_id].unique().tolist()
+        if unites==unites_donnees:
+            parking_last = calculate_parking_specific_reg_manual_entry(reglement,donnees_pertinentes)
+            parking_out.append(parking_last)
+    parking_final = dissolve_list(parking_out)
+    parking_final.merge_lot_data()
+    return parking_final
+
+def calculate_parking_specific_reg_manual_entry(reg_to_calculate:PR.ParkingRegulations,provided_inputs:PII.ParkingCalculationInputs)->ParkingInventory:
+    if reg_to_calculate.check_only_one_regulation():
+        subsets = reg_to_calculate.get_subset_numbers()
+        relevant_data = provided_inputs.get_by_reg(reg_to_calculate.get_reg_id())
+        for inx,subset in enumerate(subsets):
+            parking_inventory_subset:ParkingInventory = calculate_parking_subset_manual(reg_to_calculate,subset,relevant_data)
+            if inx ==0:
+                parking_out:ParkingInventory = parking_inventory_subset
+            else:
+                parking_out =subset_operation(parking_out,reg_to_calculate.get_subset_inter_operation_type(subset),parking_inventory_subset)
+    return parking_out
+
+def calculate_parking_subset_manual(reg_to_calculate:PR.ParkingRegulations,subset:int,relevant_inputs:PII.ParkingCalculationInputs)->ParkingInventory:
+    if reg_to_calculate.check_only_one_regulation():
+        match reg_to_calculate.get_subset_intra_operation_type(subset):
+            case 1:
+                inventory = calculate_addition_based_subset(reg_to_calculate,subset,relevant_inputs)
+                #NotImplementedError('Not yet Implemented')
+            case 2:
+                AttributeError('Operation 2  deprecated and no longer in use. Use operator 4 instead')
+            case 3:
+                AttributeError('Operation 3 not supported within one subset')
+            case 4:
+                inventory = calculate_threshold_based_subset(reg_to_calculate,subset,relevant_inputs)
+            case 5:
+                AttributeError('Operation 5 not supported within one subset')
+            case 6:
+                AttributeError('Operation 6 not supported within one subset')
+        return inventory
+    else:
+        ValueError('Can only calculate one rule at a time')
+
+def calculate_threshold_based_subset(reg_to_calculate:PR.ParkingRegulations,subset:int,data:PII.ParkingCalculationInputs):
+    if reg_to_calculate.check_subset_exists(subset) and reg_to_calculate.check_only_one_regulation():
+        units = reg_to_calculate.get_subset_units(subset)
+        operator = reg_to_calculate.get_subset_intra_operation_type(subset)
+        if len(units)==1 and operator ==4:
+            thresholds = reg_to_calculate.get_subset_thresholds(subset)
+            previous_threshold = None
+            parking_final = pd.DataFrame()
+            for threshold in thresholds:
+                lower_thresh = float(threshold)
+                if previous_threshold is not None:
+                    upper_thresh = float(previous_threshold)
+                else:
+                    upper_thresh = previous_threshold
+                
+                relevant_data = data.get_by_reg(reg_to_calculate.get_reg_id()).get_by_units(units[0]).filter_by_threshold(lower_thresh, upper_thresh)
+                previous_threshold=threshold
+                if not relevant_data.empty:
+                    line_def = reg_to_calculate.get_line_item_by_subset_threshold(subset,threshold)
+                    zero_crossing_min = line_def[config_db.db_column_parking_zero_crossing_min].values[0]
+                    zero_crossing_max = line_def[config_db.db_column_parking_zero_crossing_max].values[0]
+                    slope_min = line_def[config_db.db_column_parking_slope_min].values[0]
+                    slope_max = line_def[config_db.db_column_parking_slope_max].values[0]
+                    parking_frame_thresh = pd.DataFrame()
+                    parking_frame_thresh[config_db.db_column_lot_id] = relevant_data[config_db.db_column_lot_id]
+                    if zero_crossing_min is not None and slope_min is not None:
+                        parking_frame_thresh['n_places_min'] = zero_crossing_min + slope_min * relevant_data['valeur']
+                    elif zero_crossing_min is not None:
+                        parking_frame_thresh['n_places_min'] = zero_crossing_min
+                    else:
+                        parking_frame_thresh['n_places_min'] = None
+                    if zero_crossing_max is not None and slope_max is not None:
+                        parking_frame_thresh['n_places_max'] = zero_crossing_max + slope_max * relevant_data['valeur']
+                    elif zero_crossing_max is not None:
+                        parking_frame_thresh['n_places_max'] = zero_crossing_max
+                    else: 
+                        parking_frame_thresh['n_places_max'] = None
+                    parking_frame_thresh['n_places_mesure'] = None
+                    parking_frame_thresh['n_places_estime'] = None
+                    parking_frame_thresh['methode_estime'] = 3
+                    parking_frame_thresh[config_db.db_column_parking_regs_id] = relevant_data[config_db.db_column_parking_regs_id]
+                    parking_frame_thresh[config_db.db_column_reg_sets_id] = relevant_data[config_db.db_column_reg_sets_id]
+                    parking_frame_thresh[config_db.db_column_land_use_id] = relevant_data[config_db.db_column_land_use_id]
+                    parking_frame_thresh['commentaire'] = relevant_data.apply(lambda x: f'Calc. reg. man. : valeur {x['valeur']}',axis=1)
+                    if parking_final.empty:
+                        parking_final = parking_frame_thresh
+                    else:
+                        parking_final = pd.concat([parking_final,parking_frame_thresh])
+            parking_out = ParkingInventory(parking_final)
+            return parking_out
+        else:
+            ValueError('subset should have operator 4 and only one unit') 
+    else:
+        ValueError('Can only calculate one rule at a time')
+
+def calculate_addition_based_subset(reg_to_calculate:PR.ParkingRegulations,subset:int,data:PII.ParkingCalculationInputs):
+    if reg_to_calculate.check_subset_exists(subset) and reg_to_calculate.check_only_one_regulation():
+        operator = reg_to_calculate.get_subset_intra_operation_type(subset)
+        if operator==1:
+            subset_def = reg_to_calculate.get_subset_def(subset)
+            relevant_data = data.get_by_reg(reg_to_calculate.get_reg_id())
+            reg_units = reg_to_calculate.get_subset_units(subset)
+
+            if relevant_data.check_units_present(reg_units):
+                inventory = pd.DataFrame(relevant_data.loc[relevant_data[config_db.db_column_parking_unit_id].isin(reg_units)].merge(subset_def,on=[config_db.db_column_parking_regs_id,config_db.db_column_parking_unit_id],how='left'))
+                
+                # Create a mask for rows where both conditions are not None
+                mask_both_min_not_none = (
+                    inventory[config_db.db_column_parking_zero_crossing_min].notna() & 
+                    inventory[config_db.db_column_parking_slope_min].notna()
+                )
+                mask_both_max_not_note = (
+                    inventory[config_db.db_column_parking_zero_crossing_max].notna() & 
+                    inventory[config_db.db_column_parking_slope_max].notna()
+                )
+                # Create a mask for rows where both conditions are not None
+                mask_crossing_min_not_none = (
+                    inventory[config_db.db_column_parking_zero_crossing_min].notna()& 
+                    inventory[config_db.db_column_parking_slope_min].isna()
+                )
+                mask_crossing_max_not_none = (
+                    inventory[config_db.db_column_parking_zero_crossing_max].notna()& 
+                    inventory[config_db.db_column_parking_slope_max].isna()
+                )
+
+                mask_both_min_none = (
+                    inventory[config_db.db_column_parking_zero_crossing_min].isna()& 
+                    inventory[config_db.db_column_parking_slope_min].isna()
+                )
+                mask_both_max_none = (
+                    inventory[config_db.db_column_parking_zero_crossing_max].isna()& 
+                    inventory[config_db.db_column_parking_slope_max].isna()
+                )
+
+                inventory.loc[mask_both_min_not_none,'n_places_min'] = inventory.loc[mask_both_min_not_none,
+                        config_db.db_column_parking_zero_crossing_min] + inventory.loc[mask_both_min_not_none,
+                            config_db.db_column_parking_slope_min] * inventory.loc[mask_both_min_not_none,'valeur']
+                inventory.loc[mask_crossing_min_not_none,'n_places_min'] = inventory.loc[mask_crossing_min_not_none,config_db.db_column_parking_zero_crossing_min]
+                inventory.loc[mask_both_min_none,'n_places_min'] = np.nan
+
+                inventory.loc[mask_both_max_not_note,'n_places_max'] = inventory.loc[mask_both_max_not_note,
+                        config_db.db_column_parking_zero_crossing_max] + inventory.loc[mask_both_max_not_note,
+                            config_db.db_column_parking_slope_max] * inventory.loc[mask_both_max_not_note,'valeur']
+                inventory.loc[mask_crossing_max_not_none,'n_places_max'] = inventory.loc[mask_crossing_max_not_none,config_db.db_column_parking_zero_crossing_max]
+                inventory.loc[mask_both_max_none,'n_places_max'] = np.nan
+                inventory.drop(columns=['id_reg_stat_emp','ss_ensemble','seuil','oper','cases_fix_min','cases_fix_max','pente_min','pente_max'],inplace=True)
+                inventory['commentaire'] = inventory.apply(lambda x: f'Unite: {x['unite']}Val Man: {x['valeur']}', axis=1)
+                agg_dict = {
+                    config_db.db_column_land_use_id: lambda x: ', '.join(map(str, x)),
+                    config_db.db_column_parking_regs_id: lambda x: ', '.join(map(str, x)),
+                    config_db.db_column_reg_sets_id: lambda x: ', '.join(map(str, x)), 
+                    'commentaire': lambda x: ', '.join(set(x)),    # Concatenate unique names
+                    'n_places_min': 'sum',
+                    'n_places_max':'sum'                         # Sum the values
+                }
+                inventory_out = inventory.groupby(by=config_db.db_column_lot_id).agg(agg_dict).reset_index()
+                inventory_out['methode_estime'] = 3
+                inventory_out['n_places_mesure'] = np.nan
+                inventory_out['n_places_estime'] = np.nan
+                return ParkingInventory(inventory_out)
+            else:
+                ValueError('You need to provide all relevant units for a regulation')

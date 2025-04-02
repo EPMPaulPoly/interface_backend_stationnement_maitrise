@@ -96,18 +96,28 @@ export interface ensemble_reglement_territoire{
     ens_reg: ensembles_reglements_stationnement
 }
 
-export interface lotCadastralDB extends lotCadastralGeoJsonProperties{
+
+export interface lotCadastralGeomSeulDb {
+    g_no_lot:string;
     geojson_geometry:string;
 }
 
 export interface lotCadastralGeoJsonProperties{
     g_no_lot:string,
-    g_va_superf:number,
+    g_va_suprf:number,
     g_nb_coord:number,
     g_nb_coo_1:number
 }
 
-export interface roleFoncierDB extends roleFoncierGeoJsonProps{
+export interface lotCadastralDB extends lotCadastralGeoJsonProperties{
+    geojson_geometry:string;
+}
+
+export interface lotCadastralAvecBoolInvGeoJsonProperties extends lotCadastralGeoJsonProperties{
+    bool_inv:boolean
+}
+
+export interface lotCadastralBoolInvDB extends lotCadastralAvecBoolInvGeoJsonProperties{
     geojson_geometry:string;
 }
 
@@ -123,6 +133,16 @@ export interface roleFoncierGeoJsonProps{
     rl0404a:number,
 }
 
+export interface roleFoncierDB extends roleFoncierGeoJsonProps{
+    geojson_geometry:string;
+}
+
+export interface comboERRoleFoncier{
+    ERs:ensemble_reglement_territoire,
+    TDs: roleFoncierGeoJsonProps[]
+}
+
+
 
 export interface inventaire_stationnement{
     g_no_lot:string,
@@ -134,24 +154,37 @@ export interface inventaire_stationnement{
     id_er: string,
     id_reg_stat:string,
     cubf:string,
-    geojson_geometry:Geometry,
-    commentaire:string
+    commentaire:string,
+    id_inv:number|null,
 }
 
-export interface inventaireGeoJSONProps{
-    g_no_lot:string,
-    n_places_min:number,
-    n_places_max:number,
-    n_places_mesure:number,
-    n_places_estime:number,
-    methode_estime:number,
-    id_er: string,
-    id_reg_stat:string,
-    cubf:string,
-    commentaire:string
-}
 
 export interface quartiers_analyse{
     id_quartier:number,
     nom_quartier:string,
+}
+
+export interface informations_reglementaire_manuelle{
+    cubf:number,
+    description_cubf:string,
+    id_er:number,
+    description_er:string,
+    ville_sec:string,
+    id_provinc_list:string,
+    rl0308a_somme:number,
+    rl0311a_somme:number,
+    rl0404a_somme:number,
+    id_reg_stat:number,
+    description_reg_stat:string,
+    unite:number,
+    desc_unite:string
+}
+
+export interface requete_calcul_manuel_reg{
+    g_no_lot:string,
+    cubf:number,
+    id_reg_stat:number,
+    id_er:number,
+    unite:number,
+    valeur:number,
 }

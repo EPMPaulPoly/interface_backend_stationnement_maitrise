@@ -8,7 +8,7 @@ const MenuBar: React.FC<{}> = () => {
 
     return(
         <div className="menu-bar">
-            <h1>Interface Stationnement</h1>
+            <h1>Immobilisation</h1>
             <Link className="menu-links" to="/historique">Histoire</Link>
             <Link className="menu-links"to="/reg">Règlements</Link>
             <Link className="menu-links"to="/ens-reg">Ens. Règ</Link>
@@ -18,10 +18,11 @@ const MenuBar: React.FC<{}> = () => {
             <Link className="menu-links"to="/comp-quartiers">Comp. Quartiers</Link>
             <div className="control-dds">
                 <div className="ville-control">
-                <label 
-                            htmlFor="ville-control-dd" 
-                            className="label-ville-control">
-                                Centre</label>
+                    <label 
+                        htmlFor="ville-control-dd" 
+                        className="label-ville-control">
+                            Centre
+                    </label>
                     <select className="ville-control-dd" id="select-quartier" name="select-quartier">
                         <option value="">Selection RMR</option>
                         <option value="1">Québec</option>
@@ -29,16 +30,17 @@ const MenuBar: React.FC<{}> = () => {
                     </select>
                 </div>
                 <div className="map-bground-control">
-                        <label 
-                            htmlFor="fond-de-carte" 
-                            className="label-fond-de-carte">
-                                Tuiles</label>
-                        <select id="fond-de-carte" name="fond-de-carte" onChange={gestFondDeCarte}>
-                            <option>OSM</option>
-                            <option>Géodésie Québec</option>
-                        </select>
-                    </div>
+                    <label 
+                        htmlFor="fond-de-carte" 
+                        className="label-fond-de-carte">
+                            Tuiles
+                    </label>
+                    <select id="fond-de-carte" name="fond-de-carte" onChange={gestFondDeCarte}>
+                        <option>OSM</option>
+                        <option>Géodésie Québec</option>
+                    </select>
                 </div>
+            </div>
         </div>
     )
 }

@@ -19,11 +19,12 @@ services:
 
   serveur:
     build:
-      context: ./serveur
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: serveur/Dockerfile
     ports:
       - "5000:5000"
       - "9229:9229"
+      - "5678:5678"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
@@ -35,13 +36,14 @@ services:
       - SERVER_PORT=5000
       - CHOKIDAR_USEPOLLING=true  
       - NODE_ENV=development
+      - DEBUGPY_CALC_ENABLE=false
     networks:
       - app-network
     volumes:
       - ./serveur:/app
+      - ./serveur_calcul_python:/app/serveur_calcul_python
       - /app/node_modules
     command: npm run dev 
-
 
 volumes:
   client_node_modules:

@@ -49,6 +49,12 @@ const TableRevueInventaire: React.FC<TableRevueProps> =(props:TableRevueProps) =
         props.defEnsRegRegard(e)
     }
 
+    const gestModifInventaire  =() =>{
+        if (!props.panneauModifVisible){
+            props.defPanneauModifVisible(true)
+        }
+    }
+
     return(
         <div className="panneau-detail-inventaire-lot" ref={panelRef}>
             <div className="resize-handle-right-panel" onMouseDown={handleMouseDown}></div>
@@ -65,27 +71,19 @@ const TableRevueInventaire: React.FC<TableRevueProps> =(props:TableRevueProps) =
                         <tbody>
                             <tr>
                                 <td>Id Lot</td>
-                                <td>{props.lots.features.map(item => 
-                                    item.properties.g_no_lot
-                                )}</td>
+                                <td>{props.lots.properties.g_no_lot}</td>
                             </tr>
                             <tr>
                                 <td>Superficie</td>
-                                <td>{props.lots.features.map(item => 
-                                    item.properties.g_va_superf
-                                )}</td>
+                                <td>{props.lots.properties.g_va_suprf}</td>
                             </tr>
                             <tr>
                                 <td>Latitude</td>
-                                <td>{props.lots.features.map(item => 
-                                    item.properties.g_nb_coo_1
-                                )}</td>
+                                <td>{props.lots.properties.g_nb_coo_1}</td>
                             </tr>
                             <tr>
                                 <td>Longitude</td>
-                                <td>{props.lots.features.map(item => 
-                                    item.properties.g_nb_coord
-                                )}</td>
+                                <td>{props.lots.properties.g_nb_coord}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -185,14 +183,15 @@ const TableRevueInventaire: React.FC<TableRevueProps> =(props:TableRevueProps) =
                             value={-1}>
                             Selection inventaire
                             </option>
-                        {props.inventaire.features.map(inventaire=>(
+                        {props.inventaire.map(inventaire=>(
                             <option 
-                                key={inventaire.properties.methode_estime} value={inventaire.properties.methode_estime} >
-                                {inventaire.properties.methode_estime}
+                                key={inventaire.methode_estime} value={inventaire.methode_estime} >
+                                {inventaire.methode_estime}
                             </option>
                         ))
                         }
                     </select>
+                    <button onClick={gestModifInventaire} disabled={props.panneauModifVisible}>Modifier Inventaire</button>
                 </div>
                    <table>
                        <thead>
@@ -204,39 +203,39 @@ const TableRevueInventaire: React.FC<TableRevueProps> =(props:TableRevueProps) =
                        <tbody>
                            <tr>
                                <td>No Lot</td>
-                               <td>{props.inventaire.features.find(item => 
-                                   item.properties.methode_estime===props.methodeEstimeRegard
-                               )?.properties.g_no_lot}</td>
+                               <td>{props.inventaire.find(item => 
+                                   item.methode_estime===props.methodeEstimeRegard
+                               )?.g_no_lot}</td>
                            </tr>
                            <tr>
                                <td>N place min</td>
-                               <td>{props.inventaire.features.find(item => 
-                                   item.properties.methode_estime===props.methodeEstimeRegard
-                               )?.properties.n_places_min}</td>
+                               <td>{props.inventaire.find(item => 
+                                   item.methode_estime===props.methodeEstimeRegard
+                               )?.n_places_min}</td>
                            </tr>
                            <tr>
                                <td>N place max</td>
-                               <td>{props.inventaire.features.find(item => 
-                                   item.properties.methode_estime===props.methodeEstimeRegard
-                               )?.properties.n_places_max}</td>
+                               <td>{props.inventaire.find(item => 
+                                   item.methode_estime===props.methodeEstimeRegard
+                               )?.n_places_max}</td>
                            </tr>
                            <tr>
                                <td>N place comptees</td>
-                               <td>{props.inventaire.features.find(item => 
-                                   item.properties.methode_estime===props.methodeEstimeRegard
-                               )?.properties.n_places_mesure}</td>
+                               <td>{props.inventaire.find(item => 
+                                   item.methode_estime===props.methodeEstimeRegard
+                               )?.n_places_mesure}</td>
                            </tr>
                            <tr>
                                <td>N place estimee</td>
-                               <td>{props.inventaire.features.find(item => 
-                                   item.properties.methode_estime===props.methodeEstimeRegard
-                               )?.properties.n_places_estime}</td>
+                               <td>{props.inventaire.find(item => 
+                                   item.methode_estime===props.methodeEstimeRegard
+                               )?.n_places_estime}</td>
                            </tr>
                            <tr>
                                <td>Commentaire</td>
-                               <td>{props.inventaire.features.find(item => 
-                                   item.properties.methode_estime===props.methodeEstimeRegard
-                               )?.properties.commentaire}</td>
+                               <td>{props.inventaire.find(item => 
+                                   item.methode_estime===props.methodeEstimeRegard
+                               )?.commentaire}</td>
                            </tr>
                        </tbody>
                    </table>
