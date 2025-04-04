@@ -196,3 +196,6 @@ export interface ParamsInventaire extends ParamsDictionary{
 export interface ParamsRole extends ParamsDictionary{
     id_role:string;
 }
+export interface ParamsAnaQuartierTot extends ParamsDictionary{
+    ordreEstime:string
+}

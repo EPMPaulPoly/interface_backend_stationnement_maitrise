@@ -1,0 +1,22 @@
+.page-comp-quart {
+    display: flex;
+    flex-direction: column; /* Stack vertically if necessary */
+    height: 100vh; /* Full height of the page */
+    overflow: hidden; /* Prevent overflow (no scrollbars) */
+    background-color: #1f1f1f;
+}
+.conteneur-resultat-comp-quartier{
+    display: flex;
+    flex-direction: column; /* Stack vertically if necessary */
+    background-color: #1f1f1f;
+    height: 100%;
+}
+
+.menu-selection-couleur{
+    padding:5px;
+}
+
+.carte-quartiers{
+    height: 100%;
+    flex-grow: 1;
+}
