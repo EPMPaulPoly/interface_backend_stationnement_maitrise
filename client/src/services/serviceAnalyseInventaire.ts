@@ -39,22 +39,22 @@ export const serviceAnalyseInventaire = {
     },
     obtientInventaireAgregeParQuartierParSuperf:async(ordre:number[]) : Promise<ReponseInventaireAgregQuartParSuperf>=>{
         try {
-            const response: AxiosResponse<ReponseDBInventaireAgregQuartParSuperf> = await api.get(`/ana-quartier/carto/stat-sup/${ordre.join(",")}`);
+            const response: AxiosResponse<ReponseDBInventaireAgregQuartParSuperf> = await api.get(`/ana-par-quartier/carto/stat-sup/${ordre.join(",")}`);
             const data_res = response.data.data;
             console.log('Recu Inventaire')
             const featureCollection: FeatureCollection<Geometry, GeoJSONPropsAnaQuartier> = {
-                            type: "FeatureCollection",
-                            features: data_res.map((item) => ({
-                                type: "Feature",
-                                geometry: JSON.parse(item.geojson_geometry),
-                                properties: {
-                                    id_quartier:item.id_quartier,
-                                    description: item.description,
-                                    valeur:item.valeur,
-                                    superficie_quartier:item.superf_quartier
-                                }
-                            }))
-                        };
+                type: "FeatureCollection",
+                features: data_res.map((item) => ({
+                    type: "Feature",
+                    geometry: JSON.parse(item.geojson_geometry),
+                    properties: {
+                        id_quartier:item.id_quartier,
+                        description: item.description,
+                        valeur:item.valeur,
+                        superficie_quartier:item.superf_quartier
+                    }
+                }))
+            };
             return {success:response.data.success,data:featureCollection};
         } catch (error: any) {
             if (axios.isAxiosError(error)) {
@@ -69,7 +69,7 @@ export const serviceAnalyseInventaire = {
     },
     obtientInventaireAgregeParQuartierPourcentTerritoire:async(ordre:number[]) : Promise<ReponseInventaireAgregQuartParSuperf>=>{
         try {
-            const response: AxiosResponse<ReponseDBInventaireAgregQuartParSuperf> = await api.get(`/ana-quartier/carto/stat-perc/${ordre.join(",")}`);
+            const response: AxiosResponse<ReponseDBInventaireAgregQuartParSuperf> = await api.get(`/ana-par-quartier/carto/stat-perc/${ordre.join(",")}`);
             const data_res = response.data.data;
             console.log('Recu Inventaire')
             const featureCollection: FeatureCollection<Geometry, GeoJSONPropsAnaQuartier> = {

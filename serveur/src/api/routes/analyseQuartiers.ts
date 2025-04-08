@@ -229,10 +229,10 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
         )
         SELECT 
             ap.id_quartier,
-            'Pourcentage Territoire Stationnement' as description
+            'Pourcentage Territoire Stationnement' as description,
             15 * 100 * ap.total_parking  / ap.superf_quartier AS valeur,
             ap.superf_quartier,
-            ST_AsGeoJSON(ap.quartier_geometry) AS geojson_geometry
+            ST_AsGeoJSON(ap.geometry) AS geojson_geometry
         FROM AggregatedParking ap
         ORDER BY ap.id_quartier;
       `;
@@ -241,7 +241,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       res.json({ success: true, data: result.rows });
     } catch (err) {
       res.status(500).json({ success: false, error: 'Database error' });
-      console.log('fourré dans la fonction obtention')
+      console.log('fourré dans la fonction obtention pourcentage')
     } finally{
       if (client){
         client.release()

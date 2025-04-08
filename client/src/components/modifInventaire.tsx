@@ -200,7 +200,7 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
 
     const gestCalculLotInvReg = ()=>{
         const propsCalcul:calculateRegLotInventoryProps = {
-            lots:props.inventaire,
+            lots:props.lots,
             modifEnMarche:modifEnMarche,
             defInventaireProp:defInventaireProp,
             defNvInvRegATrait:setNewRegInvToProc

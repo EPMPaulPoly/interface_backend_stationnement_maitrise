@@ -89,9 +89,9 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
                             }
                         });
 
-                        if (!geoJsonLayerGroupRef.current) {
+                        //if (!geoJsonLayerGroupRef.current) {
                             geoJsonLayerGroupRef.current = L.layerGroup().addTo(map); // Create the layer group if it doesn't exist
-                        }
+                        //}
 
                         geoJsonLayer.addTo(geoJsonLayerGroupRef.current); // Add the new layer to the group
                         
@@ -147,7 +147,7 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
                 console.log('Pas encore implémenté quartier par voiture ')
                 break;
             case 3:
-                console.log('Pas encore implémnenté quartier par habitant')
+                console.log('Pas encore implémenté quartier par habitant')
                 break;
             case 4:
                 CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierPourcentTerritoire(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
