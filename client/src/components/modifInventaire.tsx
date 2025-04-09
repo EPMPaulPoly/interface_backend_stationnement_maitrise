@@ -165,6 +165,11 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
             setNewRegInvToProc(false);
             defInventaireProp(emptyFeature);
             defModifEnMarche(false);
+            const rechargeInventaire = await serviceInventaire.obtientInventaireParQuartier(props.quartier_select)
+            if (rechargeInventaire.success){
+                props.defInventaireQuartier(rechargeInventaire.data)
+                props.defPanneauModifVisible(false)
+            }
             alert('Calcul sauvegardé');
         } else{
             alert('Sauvegarde échouée');
