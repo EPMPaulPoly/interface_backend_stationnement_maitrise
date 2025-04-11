@@ -346,7 +346,7 @@ def calculate_parking_for_reg_set_territories(reg_set_territories:Union[RST.RegS
     return parking_inventory_list
 
 
-def calculate_parking_specific_reg_set(reg_set:PRS.ParkingRegulationSet,tax_data:TD.TaxDataset,reg_set_territory_to_transfer:int=0)->PI.ParkingInventory:
+def calculate_parking_specific_reg_set( reg_set:PRS.ParkingRegulationSet,tax_data:TD.TaxDataset,reg_set_territory_to_transfer:int=0)->PI.ParkingInventory:
     logger = logging.getLogger(__name__)
     logger.info('-----------------------------------------------------------------------------------------------')
     logger.info(f'Starting inventory for regset: {reg_set}')
@@ -373,7 +373,7 @@ def calculate_parking_specific_reg(reg_to_calculate: PR.ParkingRegulations,tax_d
     logger = logging.getLogger(__name__)
     
     # Only compute if there's one reg. Inefficient but easy to handle at the moment
-    if len(reg_to_calculate.reg_head[config_db.db_column_parking_regs_id].unique().tolist())>1:
+    if reg_to_calculate.check_only_one_regulation()==False:
         raise IndexError('Should only have one regulation at a time')
     else:
         # number of subsets
@@ -382,16 +382,15 @@ def calculate_parking_specific_reg(reg_to_calculate: PR.ParkingRegulations,tax_d
         reg_to_calculate.reg_head.style.set_properties(**{'text-align': 'left'})
         logger.info(f'Description of parking regulation: {reg_to_calculate.reg_head[config_db.db_column_parking_description].values[0]}')
         logger.info(f'Using tax data for {tax_data}')
-        n_ensembles = len(reg_to_calculate.reg_def[config_db.db_column_parking_subset_id].unique().tolist())
+        ensembles = reg_to_calculate.get_subset_numbers()
+        n_ensembles = len(ensembles)
         if n_ensembles == 1:
             # straight assessment if only one subset in the rule
-            subset_id = reg_to_calculate.reg_def[config_db.db_column_parking_subset_id].iloc[0]
+            subset_id = ensembles[0]
             parking_inventory = calculate_parking_specific_reg_subset(reg_to_calculate,subset_id,tax_data,rule_set_to_transfer)
         else:
-            if parking_reg_id=='1182':
-                logger.info('Debugging 1182 - subset interpretation')
             # loop through subsets and manage operators between
-            for iter_subset_id in reg_to_calculate.reg_def[config_db.db_column_parking_subset_id].unique().tolist():
+            for iter_subset_id in ensembles:
                 if iter_subset_id == 1: # if first subset, set as inventory to start
                     subset_inventory = calculate_parking_specific_reg_subset(reg_to_calculate,iter_subset_id,tax_data,rule_set_to_transfer)
                     parking_inventory = subset_inventory
@@ -408,44 +407,14 @@ def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subs
     '''
     logger = logging.getLogger(__name__)
     # get the subset that is relevant. only need definition
-    parking_subset = parking_reg.reg_def.loc[parking_reg.reg_def[config_db.db_column_parking_subset_id]==subset].copy().sort_values(by=config_db.db_column_stacked_parking_id)
+    parking_subset = parking_reg.get_subset_def(subset).sort_values(by=config_db.db_column_stacked_parking_id)
     # Bool check to see stop run 
     run_assessment = False
     # number of rows in parking rule subset
     n_rows = len(parking_subset)
     # get a subset number (1...n)
-    parking_subset_number = parking_subset[config_db.db_column_parking_subset_id].iloc[0]
-    # check data format before application
-    if n_rows>1 and parking_subset_number>1: # if this is a second subset, need to split out operators between one that applies between subsets to one that applies within subset. There should be only one operator within subset
-        operators = parking_subset[config_db.db_column_parking_operation]
-        first_operator = operators.iloc[0]
-        other_operators = operators.iloc[1:]
-        n_other_operators = len(other_operators.unique().tolist())
-    elif n_rows==1 and parking_subset_number ==1: # if it's the frist subset, you can just create a dummy addition subset operation and 
-        operators = parking_subset[config_db.db_column_parking_operation]
-        first_operator = 1 # simple addition on first set
-        other_operators =1 # simple addition on first set if there's only one row
-        n_other_operators = 1
-    elif n_rows>1 and parking_subset_number ==1: # first subset multiple conditions
-        operators = parking_subset[config_db.db_column_parking_operation]
-        first_operator = 1 # simple add on ruleset operation
-        other_operators = operators.iloc[1:]
-        n_other_operators = len(other_operators.unique().tolist())
-    else: # in thise case it's nothe first requirement and there's only one line in the thing
-        operators = parking_subset[config_db.db_column_parking_operation]
-        first_operator = operators.iloc[0]
-        other_operators = 1 # simple addition
-        n_other_operators = 1
-    # Throw error if tehre's more than one operator if not, setup operation as the first value in the other_operators list
-    if n_other_operators==1:
-        run_assessment=True
-        if isinstance(other_operators,int):
-            operation = other_operators
-        else:
-            operation = int(other_operators.iloc[0])
-        logger.info(f'Operation being performed for subset {subset} of rule #{parking_subset[config_db.db_column_parking_regs_id].iloc[0]}: {operation} (1:sum, 4: change of rule based on threshold)')
-    else:
-        raise ValueError('Too many operators. Multiple operators not supported within subset except for first')
+    operation = parking_reg.get_subset_intra_operation_type(subset)
+    run_assessment= True
     '''operations options: 
         1: + absolu
         2: obsolete
@@ -468,8 +437,6 @@ def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subs
         parking_inventory_df = parking_inventory_df.merge(tax_data.lot_association[[config_db.db_column_lot_id,config_db.db_column_tax_id]],how='left',on=config_db.db_column_tax_id)
         land_use_id_joins:pd.DataFrame = tax_data.lot_association[[config_db.db_column_lot_id,config_db.db_column_tax_id]].merge(tax_data.tax_table[[config_db.db_column_tax_id,config_db.db_column_tax_land_use]],on=config_db.db_column_tax_id,how='left')
         land_use_id_joins_agg = land_use_id_joins.groupby([config_db.db_column_lot_id])[config_db.db_column_tax_land_use].unique().apply(lambda x: ','.join(map(str, x))).reset_index()
-        if parking_subset[config_db.db_column_parking_regs_id].values[0]=='1182':
-            logger.debug('Debugging rule 1182 before any subset operations')
         match operation:
             case 1:
                 # simple addition, run through the lines and add to the total
@@ -480,8 +447,8 @@ def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subs
                     
                         parking_inventory_df['column_to_use'] = column_in_tax_data # bump the column to use to whold frame
                         parking_inventory_df['unconverted_value'] = tax_data.tax_table[column_in_tax_data].copy() # copy the column to use
-                        conversion_zero_crossing = parking_reg.units_table[config_db.db_column_tax_data_conversion_zero].values[0]
-                        conversion_slope = parking_reg.units_table[config_db.db_column_tax_data_conversion_slope].values[0]
+                        conversion_zero_crossing:float = parking_reg.units_table.loc[parking_reg.units_table[config_db.db_column_units_id]==subset_reg[config_db.db_column_parking_unit_id],config_db.db_column_tax_data_conversion_zero].values[0]
+                        conversion_slope:float = parking_reg.units_table.loc[parking_reg.units_table[config_db.db_column_units_id]==subset_reg[config_db.db_column_parking_unit_id],config_db.db_column_tax_data_conversion_slope].values[0]
                         parking_inventory_df['converted_assessement_column'] = conversion_zero_crossing+parking_inventory_df['unconverted_value'] * conversion_slope # infer converted value
                         # calculate the parking
                         # get the slopes for the linear estimate
@@ -514,7 +481,9 @@ def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subs
                     parking_inventory_df['column_to_use'] = column_in_tax_data # bump the column to use to whold frame
                     parking_inventory_df = parking_inventory_df.merge(tax_data.tax_table[[config_db.db_column_tax_id,column_in_tax_data]],on=config_db.db_column_tax_id,how='left')
                     parking_inventory_df['unconverted_value'] = parking_inventory_df[column_in_tax_data]
-                    parking_inventory_df['converted_assessement_column'] = parking_reg.units_table[config_db.db_column_tax_data_conversion_zero].values[0]+parking_inventory_df['unconverted_value'] * parking_reg.units_table[config_db.db_column_tax_data_conversion_slope].values[0] # infer converted value
+                    conversion_zero_crossing:float = parking_reg.units_table.loc[parking_reg.units_table[config_db.db_column_units_id]==parking_subset[config_db.db_column_parking_unit_id].values[0],config_db.db_column_tax_data_conversion_zero].values[0]
+                    conversion_slope:float = parking_reg.units_table.loc[parking_reg.units_table[config_db.db_column_units_id]==parking_subset[config_db.db_column_parking_unit_id].values[0],config_db.db_column_tax_data_conversion_slope].values[0]
+                    parking_inventory_df['converted_assessement_column'] = conversion_zero_crossing+parking_inventory_df['unconverted_value'] * conversion_slope # infer converted value
                     zero_crossing_min = parking_subset[config_db.db_column_parking_zero_crossing_min].values[0]
                     zero_crossing_max = parking_subset[config_db.db_column_parking_zero_crossing_max].values[0]
                     slope_min = parking_subset[config_db.db_column_parking_slope_min].values[0] 
@@ -549,7 +518,9 @@ def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subs
                     parking_inventory_df = parking_inventory_df.merge(tax_data.tax_table[[config_db.db_column_tax_id,column_in_tax_data]],on=config_db.db_column_tax_id,how='left')
                     parking_inventory_df['unconverted_value'] = parking_inventory_df[column_in_tax_data]
                         # copy the column to use
-                    parking_inventory_df['converted_assessement_column'] = parking_reg.units_table[config_db.db_column_tax_data_conversion_zero].values[0]+parking_inventory_df['unconverted_value'] * parking_reg.units_table[config_db.db_column_tax_data_conversion_slope].values[0] # infer converted value
+                    conversion_zero_crossing:float = parking_reg.units_table.loc[parking_reg.units_table[config_db.db_column_units_id]==parking_subset[config_db.db_column_parking_unit_id].values[0],config_db.db_column_tax_data_conversion_zero].values[0]
+                    conversion_slope:float = parking_reg.units_table.loc[parking_reg.units_table[config_db.db_column_units_id]==parking_subset[config_db.db_column_parking_unit_id].values[0],config_db.db_column_tax_data_conversion_slope].values[0]
+                    parking_inventory_df['converted_assessement_column'] = conversion_zero_crossing+parking_inventory_df['unconverted_value'] * conversion_slope # infer converted value
                     # Aggregate the  converted assessement column in order to properly apply the regulatiosn for undivided coops
                     parking_inventory_df_agg = parking_inventory_df.groupby(by=config_db.db_column_lot_id).agg({'converted_assessement_column':'sum'})
                     # Iterate through lower bounds
