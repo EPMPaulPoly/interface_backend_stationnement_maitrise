@@ -7,6 +7,7 @@ import config.config_db as cf_db
 import debugpy
 import time
 import os
+import sqlalchemy
 
 if __name__=="__main__":
     #print(sys.argv)
@@ -22,7 +23,8 @@ if __name__=="__main__":
             # Établir la connexion
             connection = psycopg2.connect(cf_db.pg_string)
             print("Connexion à la base de données réussie")
-        vap:VAP.VehicleAccumulationProfile = VAP.calculate_VAP_from_database_data(quartier_a_analyser)
+        con = sqlalchemy.create_engine(cf_db.pg_string)
+        vap:VAP.VehicleAccumulationProfile = VAP.calculate_VAP_from_database_data(quartier_a_analyser,con=con)
         #print(inventaire_quartier)
         json_vap = vap.to_json()
         #breakpoint()

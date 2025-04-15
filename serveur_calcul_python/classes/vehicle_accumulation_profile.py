@@ -1,14 +1,15 @@
 import pandas as pd
 import geopandas as gpd
 from shapely.geometry import Point,Polygon,LineString
-from shapely import Geometry
+from shapely import Geometry,wkb
 from typing import Self
 import os
-import dotenv
+#import dotenv
 from psycopg2 import connect
 import sqlalchemy
 import math
 import matplotlib.pyplot as plt
+import config.config_db as cf_db
 
 class VehicleAccumulationProfile():
 
@@ -46,14 +47,12 @@ class VehicleAccumulationProfile():
     def filter_by_sector_location(self,location_option:str = 'hh') ->Self:
         self.set_geometry_column(location_option)
         data_out:gpd.GeoDataFrame = self.geo_od.loc[self.geo_od.within(self.sector_geometry.geometry.iloc[0])]
-        data_out = data_out.drop(columns=["geom_logis","geom_ori","geom_des"])
         data_out_VAP = VehicleAccumulationProfile(od_data=pd.DataFrame(data_out),sector_geom=self.sector_geometry)
         return data_out_VAP
 
     def household_head_return(self)->Self:
         data_out = self.geo_od.loc[self.geo_od['tlog']==1]
-        data_out = data_out.drop(columns=["geom_logis","geom_ori","geom_des"])
-        data_out_vap = VehicleAccumulationProfile(od_data=pd.DataFrame(data_out),sector_geom=self.sector_geometry)
+        data_out_vap = VehicleAccumulationProfile(od_data=data_out,sector_geom=self.sector_geometry)
         return data_out_vap
 
     def filter_relevant_households_interacting_with_sector(self):
@@ -65,7 +64,6 @@ class VehicleAccumulationProfile():
             self.geo_od.set_geometry(col='geom_des').within(sector_geom_only),
             'clepersonne'].unique().tolist()
         data_out = self.geo_od.loc[self.geo_od['clepersonne'].isin(relevant_person_list)]
-        data_out = pd.DataFrame(data_out.drop(columns=["geom_logis","geom_ori","geom_des"]))
         data_out_vap = VehicleAccumulationProfile(data_out,self.sector_geometry)
         return data_out_vap
 
@@ -91,7 +89,7 @@ class VehicleAccumulationProfile():
                 relevant_trips = self.get_car_trips_in_hour(heure)
                 n_outgoing_trips = calculate_outgoing_trips(relevant_trips,sector_geometry_only)
                 n_incoming_trips = calculate_incoming_trips(relevant_trips,sector_geometry_only)
-                current_cars = previous_cars-n_outgoing_trips+n_incoming_trips
+                current_cars = math.ceil(previous_cars-n_outgoing_trips+n_incoming_trips)
                 output.append(current_cars)
         final_out_dict = {'hour': heures_pertinentes,
                             'cars': output}
@@ -197,7 +195,13 @@ def get_data_for_sector_from_database(quartier:int,engine:sqlalchemy.Engine)->Ve
                         id_quartier = {quartier}'''
     with engine.connect() as conn:
         data_od_survey = gpd.read_postgis(query,geom_col='geom_logis',con=conn)
-        data_territory = pd.read_sql(query,geom_col='geometry',con=conn)
+        data_territory = gpd.read_postgis(query_territory,geom_col='geometry',con=conn)
+    # Convert the other geometry columns from WKB (they are not automatically parsed)
+    other_geom_cols = ['geom_ori', 'geom_des', 'trip_line']
+
+    for col in other_geom_cols:
+        if data_od_survey[col].dtype == object:
+            data_od_survey[col] = data_od_survey[col].apply(lambda x: wkb.loads(x, hex=True) if isinstance(x, (str, bytes)) else None)
     vap_to_return = VehicleAccumulationProfile(data_od_survey,data_territory)
     return vap_to_return
     
@@ -211,14 +215,7 @@ def calculate_VAP_from_database_data(quartier:int,con:sqlalchemy.Engine)->Self:
 if __name__=="__main__":
     path_od = r'C:\Users\paulc\Documents\01-Poly Msc\Recherche\DonneesOD\od17_extrait_2025049.csv'
     raw_od = pd.read_csv(path_od)
-    dotenv.load_dotenv()
-    pg_username = os.getenv('PG_USERNAME')
-    pg_password = os.getenv('PG_PASSWORD')
-    pg_host = os.getenv('PG_HOST')
-    pg_port = os.getenv('PG_PORT')
-    pg_dbname = os.getenv('PG_DBNAME')
-    pg_string = 'postgresql://' + pg_username + ':'  + pg_password + '@'  + pg_host + ':'  + pg_port + '/'  + pg_dbname
-    engine = sqlalchemy.create_engine(pg_string)
+    engine = sqlalchemy.create_engine(cf_db.pg_string)
     query = 'SELECT * FROM public.sec_analyse WHERE id_quartier =1'
     with engine.connect() as con:
         sector = gpd.read_postgis(query,geom_col='geometry',crs=4326,con=con)
