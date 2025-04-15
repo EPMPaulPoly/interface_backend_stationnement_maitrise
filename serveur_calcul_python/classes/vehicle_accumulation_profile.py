@@ -83,7 +83,7 @@ class VehicleAccumulationProfile():
         output = []
         for heure in heures_pertinentes:
             if heure==0:
-                output.append(self.calculate_resident_cars())
+                output.append(math.ceil(self.calculate_resident_cars()))
             else:
                 previous_cars = output[-1]
                 relevant_trips = self.get_car_trips_in_hour(heure)
