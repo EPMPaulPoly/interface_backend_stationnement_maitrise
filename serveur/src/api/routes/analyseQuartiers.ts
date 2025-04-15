@@ -16,69 +16,22 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       const { ordreEstime } = req.params;
       const numbers: number[] = ordreEstime.split(",").map(Number);
       const selectedIds = numbers.slice(0, 3);
+      const stringForReq = selectedIds.map(String).join('');
       console.log('Obtention stationnement agrégé par quartier');
       client = await pool.connect();
       const query = `
-        WITH LotNeighborhood AS (
-            -- Assign lots to a neighborhood based on 90% overlap
-            SELECT 
-              c.g_no_lot, 
-              s.id_quartier AS id_quartier,
-              s.superf_quartier,
-              s.geometry  -- Capture neighborhood geometry
-            FROM public.cadastre c
-            JOIN public.sec_analyse s 
-            ON ST_Area(ST_Intersection(s.geometry, c.geometry)) / ST_Area(c.geometry) > 0.9
-        ),
-        RankedInventory AS (
-            -- Rank parking estimates by priority per lot
-            SELECT 
-                i.g_no_lot,
-                ln.id_quartier,
-                ln.geometry,  -- Pass geometry forward
-                ln.superf_quartier,
-                -- Select the correct parking estimate column based on methode_estime
-                COALESCE(
-                    CASE 
-                        WHEN i.methode_estime = 1 THEN i.n_places_mesure
-                        ELSE i.n_places_min
-                    END, 0  -- Default to 0 if no estimate is available
-                ) AS parking_estimate,
-                i.methode_estime,
-                RANK() OVER (
-                    PARTITION BY i.g_no_lot 
-                    ORDER BY 
-                        CASE i.methode_estime
-                            WHEN $1 THEN 1  -- Manual Estimate (highest priority)
-                            WHEN $2 THEN 2  -- Auto Inventory + Manual Tax Data
-                            WHEN $3 THEN 3  -- Fully Automatic Inventory (lowest priority)
-                            ELSE 4
-                        END
-                ) AS rank
-            FROM inventaire_stationnement i
-            RIGHT JOIN LotNeighborhood ln ON i.g_no_lot = ln.g_no_lot  -- Use RIGHT JOIN to include all lots
-        ),
-        AggregatedParking AS (
-            SELECT 
-                r.id_quartier,
-                r.geometry,  -- Pass geometry forward
-                r.superf_quartier,
-                CEIL(SUM(r.parking_estimate)) AS total_parking
-            FROM RankedInventory r
-            WHERE r.rank = 1  -- Pick the best estimate per lot
-            GROUP BY r.id_quartier, r.geometry,r.superf_quartier
-        )
         SELECT 
-            ap.id_quartier,
+            id_quartier,
+            nom_quartier,
             'Stationnement Total du Quartier' AS description,
-            ap.total_parking AS valeur,
-            ap.superf_quartier,
-            ST_AsGeoJSON(ap.geometry) AS geojson_geometry
-        FROM AggregatedParking ap
-        ORDER BY ap.id_quartier;
+            inv_${stringForReq} AS valeur,
+            superf_quartier,
+            ST_AsGeoJSON(geom) AS geojson_geometry
+        FROM public.stat_agrege 
+        ORDER BY id_quartier;
       `;
 
-      const result = await client.query(query, selectedIds);
+      const result = await client.query(query);
       res.json({ success: true, data: result.rows });
     } catch (err) {
       res.status(500).json({ success: false, error: 'Database error' });
@@ -95,69 +48,22 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       const { ordreEstime } = req.params;
       const numbers: number[] = ordreEstime.split(",").map(Number);
       const selectedIds = numbers.slice(0, 3);
+      const stringForReq = selectedIds.map(String).join('');
       console.log('Obtention stationnement agrégé par quartier divisé par superficie');
       client = await pool.connect();
       const query = `
-        WITH LotNeighborhood AS (
-            -- Assign lots to a neighborhood based on 90% overlap
-            SELECT 
-              c.g_no_lot, 
-              s.id_quartier AS id_quartier,
-              s.superf_quartier,
-              s.geometry  -- Capture neighborhood geometry
-            FROM public.cadastre c
-            JOIN public.sec_analyse s 
-            ON ST_Area(ST_Intersection(s.geometry, c.geometry)) / ST_Area(c.geometry) > 0.9
-        ),
-        RankedInventory AS (
-            -- Rank parking estimates by priority per lot
-            SELECT 
-                i.g_no_lot,
-                ln.id_quartier,
-                ln.geometry,  -- Pass geometry forward
-                ln.superf_quartier,
-                -- Select the correct parking estimate column based on methode_estime
-                COALESCE(
-                    CASE 
-                        WHEN i.methode_estime = 1 THEN i.n_places_mesure
-                        ELSE i.n_places_min
-                    END, 0  -- Default to 0 if no estimate is available
-                ) AS parking_estimate,
-                i.methode_estime,
-                RANK() OVER (
-                    PARTITION BY i.g_no_lot 
-                    ORDER BY 
-                        CASE i.methode_estime
-                            WHEN $1 THEN 1  -- Manual Estimate (highest priority)
-                            WHEN $2 THEN 2  -- Auto Inventory + Manual Tax Data
-                            WHEN $3 THEN 3  -- Fully Automatic Inventory (lowest priority)
-                            ELSE 4
-                        END
-                ) AS rank
-            FROM inventaire_stationnement i
-            RIGHT JOIN LotNeighborhood ln ON i.g_no_lot = ln.g_no_lot  -- Use RIGHT JOIN to include all lots
-        ),
-        AggregatedParking AS (
-            SELECT 
-                r.id_quartier,
-                r.geometry,  -- Pass geometry forward
-                r.superf_quartier,
-                CEIL(SUM(r.parking_estimate)) AS total_parking
-            FROM RankedInventory r
-            WHERE r.rank = 1  -- Pick the best estimate per lot
-            GROUP BY r.id_quartier, r.geometry,r.superf_quartier
-        )
         SELECT 
-            ap.id_quartier,
-            'Places par Mètre Carré' as description,
-            ap.total_parking  / ap.superf_quartier AS valeur,
-            ap.superf_quartier,
-            ST_AsGeoJSON(ap.geometry) AS geojson_geometry
-        FROM AggregatedParking ap
-        ORDER BY ap.id_quartier;
+            id_quartier,
+            nom_quartier,
+            'Stationnement par mètre carré' AS description,
+            inv_${stringForReq} / superf_quartier AS valeur,
+            superf_quartier,
+            ST_AsGeoJSON(geom) AS geojson_geometry
+        FROM public.stat_agrege 
+        ORDER BY id_quartier;
       `;
 
-      const result = await client.query(query, selectedIds);
+      const result = await client.query(query);
       res.json({ success: true, data: result.rows });
     } catch (err) {
       res.status(500).json({ success: false, error: 'Database error' });
@@ -175,69 +81,21 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       const { ordreEstime } = req.params;
       const numbers: number[] = ordreEstime.split(",").map(Number);
       const selectedIds = numbers.slice(0, 3);
-      console.log('Obtention stationnement agrégé par quartier divisé par superficie');
+      const stringForReq = selectedIds.map(String).join('');
+      console.log('Obtention stationnement agrégé par quartier divisé par superficie fois aire stat moyenne');
       client = await pool.connect();
       const query = `
-        WITH LotNeighborhood AS (
-            -- Assign lots to a neighborhood based on 90% overlap
-            SELECT 
-              c.g_no_lot, 
-              s.id_quartier AS id_quartier,
-              s.superf_quartier,
-              s.geometry  -- Capture neighborhood geometry
-            FROM public.cadastre c
-            JOIN public.sec_analyse s 
-            ON ST_Area(ST_Intersection(s.geometry, c.geometry)) / ST_Area(c.geometry) > 0.9
-        ),
-        RankedInventory AS (
-            -- Rank parking estimates by priority per lot
-            SELECT 
-                i.g_no_lot,
-                ln.id_quartier,
-                ln.geometry,  -- Pass geometry forward
-                ln.superf_quartier,
-                -- Select the correct parking estimate column based on methode_estime
-                COALESCE(
-                    CASE 
-                        WHEN i.methode_estime = 1 THEN i.n_places_mesure
-                        ELSE i.n_places_min
-                    END, 0  -- Default to 0 if no estimate is available
-                ) AS parking_estimate,
-                i.methode_estime,
-                RANK() OVER (
-                    PARTITION BY i.g_no_lot 
-                    ORDER BY 
-                        CASE i.methode_estime
-                            WHEN $1 THEN 1  -- Manual Estimate (highest priority)
-                            WHEN $2 THEN 2  -- Auto Inventory + Manual Tax Data
-                            WHEN $3 THEN 3  -- Fully Automatic Inventory (lowest priority)
-                            ELSE 4
-                        END
-                ) AS rank
-            FROM inventaire_stationnement i
-            RIGHT JOIN LotNeighborhood ln ON i.g_no_lot = ln.g_no_lot  -- Use RIGHT JOIN to include all lots
-        ),
-        AggregatedParking AS (
-            SELECT 
-                r.id_quartier,
-                r.geometry,  -- Pass geometry forward
-                r.superf_quartier,
-                CEIL(SUM(r.parking_estimate)) AS total_parking
-            FROM RankedInventory r
-            WHERE r.rank = 1  -- Pick the best estimate per lot
-            GROUP BY r.id_quartier, r.geometry,r.superf_quartier
-        )
         SELECT 
-            ap.id_quartier,
-            'Pourcentage Territoire Stationnement' as description,
-            15 * 100 * ap.total_parking  / ap.superf_quartier AS valeur,
-            ap.superf_quartier,
-            ST_AsGeoJSON(ap.geometry) AS geojson_geometry
-        FROM AggregatedParking ap
-        ORDER BY ap.id_quartier;
+            id_quartier,
+            sa.nom_quartier,
+            'Pourcent secteur stationnement' AS description,
+            (inv_${stringForReq} * 15 *100) / superf_quartier AS valeur,
+            superf_quartier,
+            ST_AsGeoJSON(geom) AS geojson_geometry
+        FROM public.stat_agrege 
+        ORDER BY id_quartier;
       `;
-
-      const result = await client.query(query, selectedIds);
+      const result = await client.query(query);
       res.json({ success: true, data: result.rows });
     } catch (err) {
       res.status(500).json({ success: false, error: 'Database error' });
@@ -248,9 +106,279 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       }
     }
   };
+  const obtiensStationnementParVoiture: RequestHandler<ParamsTerritoire>  = async (req, res): Promise<void> => {
+    let client;
+    try {
+      const { ordreEstime } = req.params;
+      const numbers: number[] = ordreEstime.split(",").map(Number);
+      const selectedIds = numbers.slice(0, 3);
+      const stringForReq = selectedIds.map(String).join('');
+      console.log('Obtention stationnement agrégé par voiture résident');
+      client = await pool.connect();
+      const query = `
+        SELECT 
+            sa.id_quartier,
+            sa.nom_quartier,
+            'Places par voiture residents' AS description,
+            (sa.inv_${stringForReq} ) / mq.nb_voitures AS valeur,
+            sa.superf_quartier,
+            ST_AsGeoJSON(sa.geom) AS geojson_geometry
+        FROM public.stat_agrege sa
+        LEFT JOIN motorisation_par_quartier mq on sa.id_quartier::bigint = mq.id_quartier
+        ORDER BY id_quartier;
+      `;
+      const result = await client.query(query);
+      res.json({ success: true, data: result.rows });
+    } catch (err) {
+      res.status(500).json({ success: false, error: 'Database error' });
+      console.log('fourré dans la fonction obtention pourcentage')
+    } finally{
+      if (client){
+        client.release()
+      }
+    }
+  };
+  const obtiensStationnementParPersonne: RequestHandler<ParamsTerritoire>  = async (req, res): Promise<void> => {
+    let client;
+    try {
+      const { ordreEstime } = req.params;
+      const numbers: number[] = ordreEstime.split(",").map(Number);
+      const selectedIds = numbers.slice(0, 3);
+      const stringForReq = selectedIds.map(String).join('');
+      console.log('Obtention stationnement agrégé par personne');
+      client = await pool.connect();
+      const query = `
+        SELECT 
+            sa.id_quartier,
+            sa.nom_quartier,
+            'Places par resident' AS description,
+            (sa.inv_${stringForReq} ) / mq.pop_tot_2021 AS valeur,
+            sa.superf_quartier,
+            ST_AsGeoJSON(sa.geom) AS geojson_geometry
+        FROM public.stat_agrege sa
+        LEFT JOIN population_par_quartier mq on sa.id_quartier::bigint = mq.id_quartier
+        ORDER BY id_quartier;
+      `;
+      const result = await client.query(query);
+      res.json({ success: true, data: result.rows });
+    } catch (err) {
+      res.status(500).json({ success: false, error: 'Database error' });
+      console.log('fourré dans la fonction obtention pourcentage')
+    } finally{
+      if (client){
+        client.release()
+      }
+    }
+  };
+  const recalculeStationnementAgrege: RequestHandler<void> = async(_req,res): Promise<void>=>{
+    
+    let client
+    try {
+      console.log('Recalcul du stationnement en cours');
+      client = await pool.connect();
+      const query = `
+        DELETE FROM stat_agrege;
+        WITH LotNeighborhood AS (
+          SELECT 
+            c.g_no_lot, 
+            s.id_quartier,
+            s.superf_quartier,
+            s.geometry,
+            s.nom_quartier
+          FROM public.cadastre c
+          JOIN public.sec_analyse s 
+            ON ST_Area(ST_Intersection(s.geometry, c.geometry)) / ST_Area(c.geometry) > 0.9
+        ),
+
+        inv_123 AS (
+          SELECT ln.id_quartier, ln.geometry, ln.superf_quartier, ln.nom_quartier,
+                CEIL(SUM(COALESCE(sub.parking_estimate, 0))) AS inv_123
+          FROM LotNeighborhood ln
+          LEFT JOIN LATERAL (
+            SELECT 
+              COALESCE(
+                CASE WHEN i.methode_estime = 1 THEN i.n_places_mesure
+                    ELSE i.n_places_min
+                END, 0
+              ) AS parking_estimate
+            FROM inventaire_stationnement i
+            WHERE i.g_no_lot = ln.g_no_lot
+            ORDER BY CASE i.methode_estime
+                      WHEN 1 THEN 1
+                      WHEN 2 THEN 2
+                      WHEN 3 THEN 3
+                      ELSE 4
+                    END
+            LIMIT 1
+          ) sub ON true
+          GROUP BY ln.id_quartier, ln.geometry, ln.superf_quartier,ln.nom_quartier
+        ),
+
+        inv_132 AS (
+          SELECT ln.id_quartier, ln.geometry, ln.superf_quartier, 
+                CEIL(SUM(COALESCE(sub.parking_estimate, 0))) AS inv_132
+          FROM LotNeighborhood ln
+          LEFT JOIN LATERAL (
+            SELECT 
+              COALESCE(
+                CASE WHEN i.methode_estime = 1 THEN i.n_places_mesure
+                    ELSE i.n_places_min
+                END, 0
+              ) AS parking_estimate
+            FROM inventaire_stationnement i
+            WHERE i.g_no_lot = ln.g_no_lot
+            ORDER BY CASE i.methode_estime
+                      WHEN 1 THEN 1
+                      WHEN 3 THEN 2
+                      WHEN 2 THEN 3
+                      ELSE 4
+                    END
+            LIMIT 1
+          ) sub ON true
+          GROUP BY ln.id_quartier, ln.geometry, ln.superf_quartier
+        ),
+
+        inv_213 AS (
+          SELECT ln.id_quartier, ln.geometry, ln.superf_quartier, 
+                CEIL(SUM(COALESCE(sub.parking_estimate, 0))) AS inv_213
+          FROM LotNeighborhood ln
+          LEFT JOIN LATERAL (
+            SELECT 
+              COALESCE(
+                CASE WHEN i.methode_estime = 2 THEN i.n_places_min
+                    WHEN i.methode_estime = 1 THEN i.n_places_mesure
+                    ELSE i.n_places_min
+                END, 0
+              ) AS parking_estimate
+            FROM inventaire_stationnement i
+            WHERE i.g_no_lot = ln.g_no_lot
+            ORDER BY CASE i.methode_estime
+                      WHEN 2 THEN 1
+                      WHEN 1 THEN 2
+                      WHEN 3 THEN 3
+                      ELSE 4
+                    END
+            LIMIT 1
+          ) sub ON true
+          GROUP BY ln.id_quartier, ln.geometry, ln.superf_quartier
+        ),
+
+        inv_231 AS (
+          SELECT ln.id_quartier, ln.geometry, ln.superf_quartier, 
+                CEIL(SUM(COALESCE(sub.parking_estimate, 0))) AS inv_231
+          FROM LotNeighborhood ln
+          LEFT JOIN LATERAL (
+            SELECT 
+              COALESCE(
+                CASE WHEN i.methode_estime = 2 THEN i.n_places_min
+                    WHEN i.methode_estime = 1 THEN i.n_places_mesure
+                    ELSE i.n_places_min
+                END, 0
+              ) AS parking_estimate
+            FROM inventaire_stationnement i
+            WHERE i.g_no_lot = ln.g_no_lot
+            ORDER BY CASE i.methode_estime
+                      WHEN 2 THEN 1
+                      WHEN 3 THEN 2
+                      WHEN 1 THEN 3
+                      ELSE 4
+                    END
+            LIMIT 1
+          ) sub ON true
+          GROUP BY ln.id_quartier, ln.geometry, ln.superf_quartier
+        ),
+
+        inv_312 AS (
+          SELECT ln.id_quartier, ln.geometry, ln.superf_quartier, 
+                CEIL(SUM(COALESCE(sub.parking_estimate, 0))) AS inv_312
+          FROM LotNeighborhood ln
+          LEFT JOIN LATERAL (
+            SELECT 
+              COALESCE(
+                CASE WHEN i.methode_estime = 3 THEN i.n_places_min
+                    WHEN i.methode_estime = 1 THEN i.n_places_mesure
+                    ELSE i.n_places_min
+                END, 0
+              ) AS parking_estimate
+            FROM inventaire_stationnement i
+            WHERE i.g_no_lot = ln.g_no_lot
+            ORDER BY CASE i.methode_estime
+                      WHEN 3 THEN 1
+                      WHEN 1 THEN 2
+                      WHEN 2 THEN 3
+                      ELSE 4
+                    END
+            LIMIT 1
+          ) sub ON true
+          GROUP BY ln.id_quartier, ln.geometry, ln.superf_quartier
+        ),
+
+        inv_321 AS (
+          SELECT ln.id_quartier, ln.geometry, ln.superf_quartier, 
+                CEIL(SUM(COALESCE(sub.parking_estimate, 0))) AS inv_321
+          FROM LotNeighborhood ln
+          LEFT JOIN LATERAL (
+            SELECT 
+              COALESCE(
+                CASE WHEN i.methode_estime = 3 THEN i.n_places_min
+                    WHEN i.methode_estime = 2 THEN i.n_places_min
+                    ELSE i.n_places_mesure
+                END, 0
+              ) AS parking_estimate
+            FROM inventaire_stationnement i
+            WHERE i.g_no_lot = ln.g_no_lot
+            ORDER BY CASE i.methode_estime
+                      WHEN 3 THEN 1
+                      WHEN 2 THEN 2
+                      WHEN 1 THEN 3
+                      ELSE 4
+                    END
+            LIMIT 1
+          ) sub ON true
+          GROUP BY ln.id_quartier, ln.geometry, ln.superf_quartier
+        )
+
+
+        -- Final merge + insert
+        INSERT INTO stat_agrege (
+          id_quartier, geom, superf_quartier,nom_quartier,
+          inv_123, inv_132, inv_213, inv_231, inv_312, inv_321
+        )
+        SELECT 
+          i123.id_quartier,
+          i123.geometry,
+          i123.superf_quartier,
+          i123.nom_quartier,
+          i123.inv_123,
+          i132.inv_132,
+          i213.inv_213,
+          i231.inv_231,
+          i312.inv_312,
+          i321.inv_321
+        FROM inv_123 i123
+        LEFT JOIN inv_132 i132 ON i123.id_quartier = i132.id_quartier
+        LEFT JOIN inv_213 i213 ON i123.id_quartier = i213.id_quartier
+        LEFT JOIN inv_231 i231 ON i123.id_quartier = i231.id_quartier
+        LEFT JOIN inv_312 i312 ON i123.id_quartier = i312.id_quartier
+        LEFT JOIN inv_321 i321 ON i123.id_quartier = i321.id_quartier;
+      `;
+      const result = await client.query(query);
+      res.json({ success: true});
+    } catch (err) {
+      res.status(500).json({ success: false, error: 'Database error' });
+      console.log('Enjeux dans l agregation du stationnement')
+    } finally{
+      if (client){
+        client.release()
+      }
+    }
+  }
   // Routes
   router.get('/carto/stat-tot/:ordreEstime',obtiensStationnementTotalParQuartierCarto)
   router.get('/carto/stat-sup/:ordreEstime',obtiensStationnementParSuperfParQuartierCarto)
   router.get('/carto/stat-perc/:ordreEstime',obtiensStationnementPourcentParQuartierCarto)
+  router.get('/carto/stat-voit/:ordreEstime',obtiensStationnementParVoiture)
+  router.get('/carto/stat-popu/:ordreEstime',obtiensStationnementParPersonne)
+  router.get('/recalcule-stat-agreg',recalculeStationnementAgrege)
   return router;
 };

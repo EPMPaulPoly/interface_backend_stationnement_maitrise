@@ -1,3 +1,4 @@
+import { serviceAnalyseInventaire } from "../services/serviceAnalyseInventaire";
 import { MenuCompQuartiersProps } from "../types/InterfaceTypes";
 
 const MenuCompQuartiers:React.FC<MenuCompQuartiersProps>=(props:MenuCompQuartiersProps)=>{
@@ -6,6 +7,11 @@ const MenuCompQuartiers:React.FC<MenuCompQuartiersProps>=(props:MenuCompQuartier
     }
     const gestSelectPrioriteEstime=(idPriorite:number)=>{
         props.defPrioriteInventaire(idPriorite)
+    }
+    const gestRecalculStationnementAgreg=async()=>{
+        props.defCalculEnCours(true)
+        const succes = await serviceAnalyseInventaire.recalculeInventaireBackend()
+        props.defCalculEnCours(false)
     }
     return(
         <div className="menu-comp-quartiers">
@@ -26,6 +32,8 @@ const MenuCompQuartiers:React.FC<MenuCompQuartiersProps>=(props:MenuCompQuartier
                     </option>
                 ))}
             </select>
+            <label htmlFor="bouton-recalcul">Cliquer ici pour ré-agréger l'inventaire</label>
+            <button className="bouton-recalcul" onClick={gestRecalculStationnementAgreg}>Recalculer Inventaire Agrege (3min)</button>
         </div>
     )
 }

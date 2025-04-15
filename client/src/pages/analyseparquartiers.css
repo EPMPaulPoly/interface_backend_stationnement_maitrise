@@ -43,3 +43,23 @@
     opacity: 0.7;
     border-radius: 3px;
 }
+.conteneur-PAV{
+    display: flex;
+    flex-direction: column; /* Stack vertically if necessary */
+    background-color: #1f1f1f;
+    height: 100%;
+}
+
+.PAV{
+    width: 100%; /* or a fixed size */
+    height: 100%; /* adjust as needed */
+    overflow: hidden; /* prevent overflow */
+    flex: 1;
+}
+
+.conteneur-resultat-comp-quartier-PAV{
+    display: flex;
+    flex-direction: column; /* Stack vertically if necessary */
+    background-color: #1f1f1f;
+    height: 100%;
+}

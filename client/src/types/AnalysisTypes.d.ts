@@ -29,6 +29,7 @@ export interface GeoJSONPropsAnaQuartier{
     description:string,
     valeur:number,
     superficie_quartier:number,
+    nom_quartier:string
 }
 
 export interface StatTotalDBAnaQuartier extends GeoJSONPropsAnaQuartier{

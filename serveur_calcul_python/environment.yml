@@ -19,3 +19,4 @@ dependencies:
   - typing-extensions
   - matplotlib
   - debugpy
+  - python-dotenv 

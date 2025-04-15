@@ -290,10 +290,16 @@ export interface MenuCompQuartiersProps{
     methodesPossibles:TypesVisualisationAnalyseQuartier[],
     prioriteInventaire:number,
     defPrioriteInventaire:React.Dispatch<SetStateAction<number>>,
-    prioriteInventairePossibles:PrioriteEstimeQuartier[]
+    prioriteInventairePossibles:PrioriteEstimeQuartier[],
+    defCalculEnCours:React.Dispacth<SetStateAction<boolean>>
 }
 
 export interface AnalyseCartoQuartierProps{
+    prioriteInventaire:number,
+    prioriteInventairePossibles:PrioriteEstimeQuartier[]
+}
+
+export interface AnalysePAVQuartierProps{
     prioriteInventaire:number,
     prioriteInventairePossibles:PrioriteEstimeQuartier[]
 }

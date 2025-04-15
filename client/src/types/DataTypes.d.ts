@@ -96,6 +96,17 @@ export interface ensemble_reglement_territoire{
     ens_reg: ensembles_reglements_stationnement
 }
 
+export interface PAVQuartier{
+    id_quartier:number,
+    nom_quartier:string,
+    capacite_stat_quartier:number,
+    PAV:entreePAV[]
+}
+export interface entreePAV{
+    id_entree:number,
+    heure:number,
+    voitures:number
+}
 
 export interface lotCadastralGeomSeulDb {
     g_no_lot:string;

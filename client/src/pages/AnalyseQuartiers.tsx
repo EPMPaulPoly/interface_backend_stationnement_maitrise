@@ -6,11 +6,13 @@ import {  TypesVisualisationAnalyseQuartier,PrioriteEstimeInventaire } from '../
 import './common.css';
 import './analyseparquartiers.css'
 import AnalyseCartographiqueQuartiers from '../components/AnalyseCartographiqueQuartiers';
+import AnalyseProfilAccumulationVehiculeQuartiers from '../components/AnalyseProfilAccumulationVehicule';
 
 
 const AnalyseQuartiers:React.FC = () =>{
     const [methodeComp, defMethodeComp] = useState<number>(-1);
     const [prioriteEstimes,defPrioriteEstimes] = useState<number>(0);
+    const [agregEnCours,defAgregEnCours] = useState<boolean>(false);
     const methodesAnalyse: TypesVisualisationAnalyseQuartier[] = [
         {
             idAnalyse: 0,
@@ -60,8 +62,7 @@ const AnalyseQuartiers:React.FC = () =>{
             descriptionPriorite:"Reg. Manuel -> Manuel -> Reg. Rôle",
             listeMethodesOrdonnees:[3,1,2]
         },
-    ]
-
+    ];
 
     const renduComposanteAnalyse = () => {
         switch (methodeComp) {
@@ -75,16 +76,19 @@ const AnalyseQuartiers:React.FC = () =>{
             case 1:
                 return <div>Affichage de l'histogramme</div>;
             case 2:
-                return <div>Affichage du profile d'accumulation de véhicules</div>;
+                return (<div className="conteneur-resultat-comp-quartier-PAV">
+                    <AnalyseProfilAccumulationVehiculeQuartiers
+                        prioriteInventaire={prioriteEstimes}
+                        prioriteInventairePossibles={prioritesPossibles}
+                    />
+                </div>);
             default:
                 return <div>Veuillez sélectionner une méthode d'analyse</div>;
         }
     };
-
-
-    return(
-        <div className="page-comp-quart">
-            <MenuBar/>
+    const renduNormal=()=>{
+        return(
+            <>
             <MenuCompQuartiers
                 methodeAnalyse={methodeComp}
                 defMethodeAnalyse={defMethodeComp}
@@ -92,10 +96,17 @@ const AnalyseQuartiers:React.FC = () =>{
                 prioriteInventaire={prioriteEstimes}
                 defPrioriteInventaire={defPrioriteEstimes}
                 prioriteInventairePossibles={prioritesPossibles}
+                defCalculEnCours={defAgregEnCours}
             />
-            
-                {renduComposanteAnalyse()}
-            
+            {renduComposanteAnalyse()}
+            </>
+        )
+    };
+
+    return(
+        <div className="page-comp-quart">
+            <MenuBar/>
+            {agregEnCours?<p>Calcul en cours</p>:renduNormal()}
         </div>
     )
 }

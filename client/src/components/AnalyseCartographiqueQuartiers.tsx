@@ -64,7 +64,7 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
 
                         // Create a color scale from light yellow to dark red
                         const colorScale = chroma.scale(['#FFEDA0', '#E31A1C', '#800026']).domain([minValue, maxValue]);
-                        console.log('échelle')
+                        
                         const geoJsonLayer = L.geoJSON(lotsAMontrer, {
                             style: (feature) => {
                                 if (!feature || !feature.properties) {return {color: 'blue',
@@ -84,7 +84,8 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
                                 if (feature.properties) {
                                     const value = feature.properties.valeur ?? 'No data';
                                     const description = feature.properties.description ?? 'No data'
-                                    layer.bindPopup(`<b>${description}</b> ${value}`);
+                                    const name = feature.properties.nom_quartier ?? 'No data'
+                                    layer.bindPopup(`<h3>${name}</h3><b>${description}</b> ${value}`);
                                 }
                             }
                         });
@@ -144,10 +145,10 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
                 CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierParSuperf(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
                 break;
             case 2:
-                console.log('Pas encore implémenté quartier par voiture ')
+                CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierPlacesParVoiture(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
                 break;
             case 3:
-                console.log('Pas encore implémenté quartier par habitant')
+                CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierPlacesParPersonne(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
                 break;
             case 4:
                 CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierPourcentTerritoire(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
