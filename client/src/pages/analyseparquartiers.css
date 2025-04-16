@@ -54,6 +54,7 @@
     width: 100%; /* or a fixed size */
     height: 100%; /* adjust as needed */
     overflow: hidden; /* prevent overflow */
+    min-height: 300px;
     flex: 1;
 }
 

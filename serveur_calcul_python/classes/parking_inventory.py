@@ -603,7 +603,7 @@ def calculate_inventory_from_manual_entry(donnees_calcul:pd.DataFrame)->ParkingI
         reglement:PR.ParkingRegulations = reglements.get_reg_by_id(id_reglement)
         unites = reglement.get_units()
         unites_donnees:list[int] = donnees_pertinentes.loc[donnees_pertinentes[config_db.db_column_parking_regs_id]==id_reglement,config_db.db_column_parking_unit_id].unique().tolist()
-        if unites==unites_donnees:
+        if unites.sort()==unites_donnees.sort():
             parking_last = calculate_parking_specific_reg_manual_entry(reglement,donnees_pertinentes)
             parking_out.append(parking_last)
     parking_final = dissolve_list(parking_out)
