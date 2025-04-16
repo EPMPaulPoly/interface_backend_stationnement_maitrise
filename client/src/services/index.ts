@@ -5,4 +5,4 @@ export * from './serviceQuartiersAnalyse';
 export * from './serviceReglements';
 export * from './serviceEnsemblesReglements';
 export * from './serviceCadastre';
-export * from './servicePAV'
+export * from './servicePAV';

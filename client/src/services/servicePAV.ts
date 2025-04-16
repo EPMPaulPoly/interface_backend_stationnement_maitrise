@@ -43,4 +43,20 @@ export const servicePAV = {
             throw error; // Re-throw if necessary
         }
     },
+    sauvegardePAV:async(id_quartier:number,PAV:entreePAV[]):Promise<boolean>=>{
+        try {
+            const reponseMAJInv = await api.post(`/PAV/${id_quartier}`,PAV);
+            return reponseMAJInv.data.success
+
+        } catch (error:any) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
 };

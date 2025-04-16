@@ -2,7 +2,7 @@ import { Router, Request, Response, RequestHandler } from 'express';
 import { Pool } from 'pg';
 import { DbTerritoire, ParamsCadastre, ParamsPeriode, DbRole, DbCadastre, ParamsQuartier, DbCadastreGeomIdOnly, ParamsTerritoire } from '../../types/database';
 import path from 'path';
-import {spawn} from 'child_process';
+import { spawn } from 'child_process';
 // Types pour les requêtes
 import { Polygon, MultiPolygon } from 'geojson';
 interface GeometryBody {
@@ -21,14 +21,14 @@ export const creationRouteurProfileAccumVehiculeQuartier = (pool: Pool): Router 
             console.log('Obtention Profile Accumulation vehicule');
             client = await pool.connect();
             const query_total = `
-            SELECT 
-                id_quartier,
-                nom_quartier,
-                inv_${stringForReq} AS valeur,
-            FROM public.stat_agrege 
-            WHERE id_quartier = $1
-            ORDER BY id_quartier;
-        `;
+                SELECT 
+                    id_quartier,
+                    nom_quartier,
+                    inv_${stringForReq} AS valeur
+                FROM public.stat_agrege 
+                WHERE id_quartier = $1
+                ORDER BY id_quartier;
+            `;
 
             const result = await client.query(query_total, [id_quartier]);
             const query_PAV = `
@@ -46,10 +46,10 @@ export const creationRouteurProfileAccumVehiculeQuartier = (pool: Pool): Router 
                 PAV: result_PAV.rows.map(row => ({
                     id_ent_pav: row.id_ent_pav ?? 0,
                     heure: row.heure ?? 0,
-                    voiture: row.voitures ?? 0
+                    voitures: row.voitures ?? 0
                 }))
             };
-            res.json({ success: true, data: result.rows });
+            res.json({ success: true, data: output });
         } catch (err) {
             res.status(500).json({ success: false, error: 'Database error' });
             console.log('fourré dans la fonction obtention')
@@ -110,9 +110,48 @@ export const creationRouteurProfileAccumVehiculeQuartier = (pool: Pool): Router 
             }
         });
     };
+    const MAJPAV: RequestHandler<ParamsQuartier> = async (req, res,next): Promise<void> => {
+        const client = await pool.connect();
+        try {
+            const data = req.body;
+            const {id} = req.params
+            if (!Array.isArray(data) || data.length === 0) {
+                res.status(400).json({ success: false, error: 'Invalid or empty data' });
+                throw new Error('empty array provided')
+            }
+
+            await client.query('BEGIN');
+
+            // Prepare the values for bulk insert and update
+            const values = data.map(item =>
+                `(${item.heure},${id}, ${item.voitures})`
+            ).join(', ');
+
+            // Insert new items or update existing ones
+            const insertQuery = `
+                DELETE FROM public.profile_accumulation_vehicule WHERE id_quartier = ${id};
+                INSERT INTO public.profile_accumulation_vehicule (heure, id_quartier, voitures)
+                VALUES ${values}
+                ON CONFLICT (id_quartier, heure) DO NOTHING
+                RETURNING *;
+            `;
+
+            const result = await client.query(insertQuery);
+            await client.query('COMMIT');
+
+            res.json({ success: true, data: result.rows });
+        } catch (err) {
+            next(err);
+        } finally {
+            if (client) {
+                client.release();
+            }
+        }
+    }
 
     // Routes
     router.get('', obtientPAVQuartier)
-    router.get('/recalcule/:id',calculPAV)
+    router.get('/recalcule/:id', calculPAV)
+    router.post('/:id',MAJPAV)
     return router;
 };

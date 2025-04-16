@@ -91,8 +91,8 @@ class VehicleAccumulationProfile():
                 n_incoming_trips = calculate_incoming_trips(relevant_trips,sector_geometry_only)
                 current_cars = math.ceil(previous_cars-n_outgoing_trips+n_incoming_trips)
                 output.append(current_cars)
-        final_out_dict = {'hour': heures_pertinentes,
-                            'cars': output}
+        final_out_dict = {'heure': heures_pertinentes,
+                            'voitures': output}
         final_out = pd.DataFrame(final_out_dict)
         final_out['id_quartier'] = self.sector_geometry['id_quartier'].values[0]
         self.final_profile=final_out
