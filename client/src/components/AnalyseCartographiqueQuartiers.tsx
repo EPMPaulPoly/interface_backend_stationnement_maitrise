@@ -139,19 +139,19 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
         defChargement(true)
         switch (typeCarto) {
             case 0:
-                CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartier(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
+                CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierCarto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
                 break;
             case 1:
-                CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierParSuperf(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
+                CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierParSuperfCarto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
                 break;
             case 2:
-                CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierPlacesParVoiture(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
+                CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierPlacesParVoitureCarto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
                 break;
             case 3:
-                CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierPlacesParPersonne(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
+                CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierPlacesParPersonneCarto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
                 break;
             case 4:
-                CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierPourcentTerritoire(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
+                CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierPourcentTerritoireCarto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
                 break;
             default:
                 CartoRep = {success:false,data:{

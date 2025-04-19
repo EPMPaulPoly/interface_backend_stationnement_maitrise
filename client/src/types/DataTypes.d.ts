@@ -120,6 +120,18 @@ export interface lotCadastralGeoJsonProperties{
     g_nb_coo_1:number
 }
 
+export interface barChartDataSet{
+    valeurVille:number,
+    description:'',
+    donnees:barChartData[]
+}
+
+export interface barChartData{
+    id_quartier:number,
+    nom_quartier:string,
+    valeurs:number
+}
+
 export interface lotCadastralDB extends lotCadastralGeoJsonProperties{
     geojson_geometry:string;
 }

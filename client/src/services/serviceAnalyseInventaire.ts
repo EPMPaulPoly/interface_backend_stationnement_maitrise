@@ -3,11 +3,11 @@ import api from './api';
 import axios,{AxiosResponse} from 'axios';
 import { FeatureCollection,Geometry,Feature } from 'geojson';
 import { isNumberObject } from 'util/types';
-import { ReponseInventaireAgregQuartTotal } from '../types/serviceTypes';
+import { ReponseInventaireAgregQuartTotal,ReponseHistoAnalyse } from '../types/serviceTypes';
 import { GeoJSONPropsAnaQuartier,  } from '../types/AnalysisTypes';
-
+import { barChartDataSet } from '../types/DataTypes';
 export const serviceAnalyseInventaire = {
-    obtientInventaireAgregeParQuartier: async(ordre:number[]) : Promise<ReponseInventaireAgregQuartTotal> => {
+    obtientInventaireAgregeParQuartierCarto: async(ordre:number[]) : Promise<ReponseInventaireAgregQuartTotal> => {
         try {
             const response: AxiosResponse<ReponseDBInventaireAgregQuartTotal> = await api.get(`/ana-par-quartier/carto/stat-tot/${ordre.join(",")}`);
             const data_res = response.data.data;
@@ -38,7 +38,7 @@ export const serviceAnalyseInventaire = {
             throw error; // Re-throw if necessary
         }
     },
-    obtientInventaireAgregeParQuartierParSuperf:async(ordre:number[]) : Promise<ReponseInventaireAgregQuartParSuperf>=>{
+    obtientInventaireAgregeParQuartierParSuperfCarto:async(ordre:number[]) : Promise<ReponseInventaireAgregQuartParSuperf>=>{
         try {
             const response: AxiosResponse<ReponseDBInventaireAgregQuartParSuperf> = await api.get(`/ana-par-quartier/carto/stat-sup/${ordre.join(",")}`);
             const data_res = response.data.data;
@@ -69,7 +69,7 @@ export const serviceAnalyseInventaire = {
             throw error; // Re-throw if necessary
         }
     },
-    obtientInventaireAgregeParQuartierPourcentTerritoire:async(ordre:number[]) : Promise<ReponseInventaireAgregQuartParSuperf>=>{
+    obtientInventaireAgregeParQuartierPourcentTerritoireCarto:async(ordre:number[]) : Promise<ReponseInventaireAgregQuartParSuperf>=>{
         try {
             const response: AxiosResponse<ReponseDBInventaireAgregQuartParSuperf> = await api.get(`/ana-par-quartier/carto/stat-perc/${ordre.join(",")}`);
             const data_res = response.data.data;
@@ -100,7 +100,7 @@ export const serviceAnalyseInventaire = {
             throw error; // Re-throw if necessary
         }
     },
-    obtientInventaireAgregeParQuartierPlacesParVoiture:async(ordre:number[]) : Promise<ReponseInventaireAgregQuartParSuperf>=>{
+    obtientInventaireAgregeParQuartierPlacesParVoitureCarto:async(ordre:number[]) : Promise<ReponseInventaireAgregQuartParSuperf>=>{
         try {
             const response: AxiosResponse<ReponseDBInventaireAgregQuartParSuperf> = await api.get(`/ana-par-quartier/carto/stat-voit/${ordre.join(",")}`);
             const data_res = response.data.data;
@@ -131,7 +131,7 @@ export const serviceAnalyseInventaire = {
             throw error; // Re-throw if necessary
         }
     },
-    obtientInventaireAgregeParQuartierPlacesParPersonne:async(ordre:number[]) : Promise<ReponseInventaireAgregQuartParSuperf>=>{
+    obtientInventaireAgregeParQuartierPlacesParPersonneCarto:async(ordre:number[]) : Promise<ReponseInventaireAgregQuartParSuperf>=>{
         try {
             const response: AxiosResponse<ReponseDBInventaireAgregQuartParSuperf> = await api.get(`/ana-par-quartier/carto/stat-popu/${ordre.join(",")}`);
             const data_res = response.data.data;
@@ -176,5 +176,94 @@ export const serviceAnalyseInventaire = {
             }
             throw error; // Re-throw if necessary
         }
-    }
+    },
+    recalculeDonneesFoncieresBackend:async():Promise<boolean>=>{
+        return false
+    },
+    obtientInventaireAgregeParQuartierHisto: async(ordre:number[]) : Promise<ReponseHistoAnalyse> => {
+        try {
+            const response: AxiosResponse<ReponseHistoAnalyse> = await api.get(`/ana-par-quartier/histo/stat-tot/${ordre.join(",")}`);
+            const data_res = response.data.data;
+            console.log('Recu statistiques quartier')
+            return {success:response.data.success,data:data_res};
+        } catch (error: any) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    },
+    obtientInventaireAgregeParQuartierParSuperfHisto: async(ordre:number[]) : Promise<ReponseHistoAnalyse> => {
+        try {
+            const response: AxiosResponse<ReponseHistoAnalyse> = await api.get(`/ana-par-quartier/histo/stat-sup/${ordre.join(",")}`);
+            const data_res = response.data.data;
+            console.log('Recu statistiques quartier')
+            return {success:response.data.success,data:data_res};
+        } catch (error: any) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    },
+    obtientInventaireAgregeParQuartierPlacesParVoitureHisto: async(ordre:number[]) : Promise<ReponseHistoAnalyse> => {
+        try {
+            const response: AxiosResponse<ReponseHistoAnalyse> = await api.get(`/ana-par-quartier/histo/stat-voit/${ordre.join(",")}`);
+            const data_res = response.data.data;
+            console.log('Recu statistiques quartier')
+            return {success:response.data.success,data:data_res};
+        } catch (error: any) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    },
+    obtientInventaireAgregeParQuartierPlacesParPersonneHisto: async(ordre:number[]) : Promise<ReponseHistoAnalyse> => {
+        try {
+            const response: AxiosResponse<ReponseHistoAnalyse> = await api.get(`/ana-par-quartier/histo/stat-popu/${ordre.join(",")}`);
+            const data_res = response.data.data;
+            console.log('Recu statistiques quartier')
+            return {success:response.data.success,data:data_res};
+        } catch (error: any) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    },
+    obtientInventaireAgregeParQuartierPourcentTerritoireHisto: async(ordre:number[]) : Promise<ReponseHistoAnalyse> => {
+        try {
+            const response: AxiosResponse<ReponseHistoAnalyse> = await api.get(`/ana-par-quartier/histo/stat-perc/${ordre.join(",")}`);
+            const data_res = response.data.data;
+            console.log('Recu statistiques quartier')
+            return {success:response.data.success,data:data_res};
+        } catch (error: any) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    },
+
 };

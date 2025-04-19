@@ -7,6 +7,7 @@ import './common.css';
 import './analyseparquartiers.css'
 import AnalyseCartographiqueQuartiers from '../components/AnalyseCartographiqueQuartiers';
 import AnalyseProfilAccumulationVehiculeQuartiers from '../components/AnalyseProfilAccumulationVehicule';
+import AnalyseHistogrammeQuartier from '../components/AnalyseHistogrammeQuartier';
 
 
 const AnalyseQuartiers:React.FC = () =>{
@@ -74,7 +75,11 @@ const AnalyseQuartiers:React.FC = () =>{
                             />
                         </div>);
             case 1:
-                return <div>Affichage de l'histogramme</div>;
+                return (<div className="conteneur-resultat-comp-quartier-histo"><AnalyseHistogrammeQuartier
+                                prioriteInventaire={prioriteEstimes}
+                                prioriteInventairePossibles={prioritesPossibles}
+                            />
+                        </div>);
             case 2:
                 return (<div className="conteneur-resultat-comp-quartier-PAV">
                     <AnalyseProfilAccumulationVehiculeQuartiers

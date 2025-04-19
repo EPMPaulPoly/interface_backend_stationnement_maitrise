@@ -199,3 +199,16 @@ export interface ParamsRole extends ParamsDictionary{
 export interface ParamsAnaQuartierTot extends ParamsDictionary{
     ordreEstime:string
 }
+
+
+export interface donneesHisto{
+    valeurVille:number,
+    description:'',
+    donnees:barChartData[]
+}
+
+export interface barChartData{
+    id_quartier:number,
+    nom_quartier:string,
+    valeurs:number
+}

@@ -34,3 +34,4 @@ export type ReponseDBInventaireAgregQuartParSuperf = ApiResponse<StatTotalParSup
 export type ReponseInventaireAgregQuartParSuperf = ApiResponse<FeatureCollection<Geometry,GeoJSONPropsAnaQuartierTotalParSuperf>>
 export type ReponsePAVQuartier = ApiResponse<PAVQuartier>
 export type ReponsePAVNouveau = ApiResponse<entreePAV>
+export type ReponseHistoAnalyse = ApiResponse<barChartDataSet>
