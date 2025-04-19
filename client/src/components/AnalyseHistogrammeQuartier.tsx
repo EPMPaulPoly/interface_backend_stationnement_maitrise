@@ -1,15 +1,11 @@
 import { AnalyseHistoQuartierProps } from '../types/InterfaceTypes'
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Chart as ChartPlot,Bar } from 'react-chartjs-2'
-import { PAVQuartier, quartiers_analyse, entreePAV, barChartDataSet } from '../types/DataTypes';
-import { serviceQuartiersAnalyse, servicePAV } from '../services';
-import { yellow } from '@mui/material/colors';
-import { Chart, registerables } from 'chart.js';
-import { GeoJSONPropsAnaQuartier,TypesAnalysesCartographiqueQuartier } from '../types/AnalysisTypes';
-import { circle } from 'leaflet';
+import { barChartDataSet } from '../types/DataTypes';
+import { TypesAnalysesCartographiqueQuartier } from '../types/AnalysisTypes';
+
 import { barChartData } from '../types/DataTypes';
 import { serviceAnalyseInventaire } from '../services/serviceAnalyseInventaire';
-import { Feature, FeatureCollection,Geometry } from 'geojson';
 
 const AnalyseHistogrammeQuartier: React.FC<AnalyseHistoQuartierProps> = (props: AnalyseHistoQuartierProps) => {
     const [variableSelect,defVariableSelect] = useState<number>(-1);

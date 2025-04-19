@@ -8,6 +8,7 @@ import './analyseparquartiers.css'
 import AnalyseCartographiqueQuartiers from '../components/AnalyseCartographiqueQuartiers';
 import AnalyseProfilAccumulationVehiculeQuartiers from '../components/AnalyseProfilAccumulationVehicule';
 import AnalyseHistogrammeQuartier from '../components/AnalyseHistogrammeQuartier';
+import AnalyseXYQuartiers from '../components/AnalyseXYQuartiers';
 
 
 const AnalyseQuartiers:React.FC = () =>{
@@ -75,18 +76,26 @@ const AnalyseQuartiers:React.FC = () =>{
                             />
                         </div>);
             case 1:
-                return (<div className="conteneur-resultat-comp-quartier-histo"><AnalyseHistogrammeQuartier
+                return (<div className="conteneur-resultat-comp-quartier-histo">
+                            <AnalyseHistogrammeQuartier
                                 prioriteInventaire={prioriteEstimes}
                                 prioriteInventairePossibles={prioritesPossibles}
                             />
                         </div>);
             case 2:
                 return (<div className="conteneur-resultat-comp-quartier-PAV">
-                    <AnalyseProfilAccumulationVehiculeQuartiers
-                        prioriteInventaire={prioriteEstimes}
-                        prioriteInventairePossibles={prioritesPossibles}
-                    />
-                </div>);
+                            <AnalyseProfilAccumulationVehiculeQuartiers
+                                prioriteInventaire={prioriteEstimes}
+                                prioriteInventairePossibles={prioritesPossibles}
+                            />
+                        </div>);
+            case 3:
+                return (<div className='conteneur-resultat-comp-quartier-XY'>
+                            <AnalyseXYQuartiers
+                                prioriteInventaire={prioriteEstimes}
+                                prioriteInventairePossibles={prioritesPossibles}
+                            />
+                        </div>)
             default:
                 return <div>Veuillez sélectionner une méthode d'analyse</div>;
         }

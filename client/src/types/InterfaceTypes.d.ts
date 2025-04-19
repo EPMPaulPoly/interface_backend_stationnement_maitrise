@@ -308,3 +308,8 @@ export interface AnalyseHistoQuartierProps{
     prioriteInventaire:number,
     prioriteInventairePossibles:PrioriteEstimeQuartier[]
 }
+
+export interface AnalyseXYQuartierProps{
+    prioriteInventaire:number,
+    prioriteInventairePossibles:PrioriteEstimeQuartier[]
+}

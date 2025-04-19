@@ -20,6 +20,24 @@ export interface PrioriteEstimeInventaire{
     listeMethodesOrdonnees:number[]
 }
 
+
+export interface VariablesPossiblesGraphiqueXY{
+    idVariable:number,
+    descriptionVariable:string
+}
+export interface NhoodXYGraphDatasets{
+    idX:number,
+    descriptionX:string,
+    idY:number,
+    descriptionY:string,
+    donnees:NhoodXYGraphEntry[]
+}
+export interface NhoodXYGraphEntry{
+    id_quartier:number,
+    nom_quartier:string,
+    X:number,
+    Y:number
+}
 // ----------------------------------------------------------------
 // -------------------------- Donnees -----------------------------
 // ----------------------------------------------------------------
@@ -36,3 +54,4 @@ export interface StatTotalDBAnaQuartier extends GeoJSONPropsAnaQuartier{
     geojson_geometry: Geometry,
     superf_quartier:number
 }
+

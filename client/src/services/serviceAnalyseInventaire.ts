@@ -1,9 +1,7 @@
-import { ReponseInventaire,ReponseDBInventaire, ReponseDBInventaireAgregQuartTotal, ReponseInventaireAgregQuartParHab, ReponseDBInventaireAgregQuartParSuperf, ReponseInventaireAgregQuartParSuperf, } from '../types/serviceTypes';
+import { ReponseDBInventaireAgregQuartTotal,  ReponseDBInventaireAgregQuartParSuperf, ReponseInventaireAgregQuartParSuperf, ReponseXYAnalyseQuartier,ReponseInventaireAgregQuartTotal,ReponseHistoAnalyse } from '../types/serviceTypes';
 import api from './api';
 import axios,{AxiosResponse} from 'axios';
-import { FeatureCollection,Geometry,Feature } from 'geojson';
-import { isNumberObject } from 'util/types';
-import { ReponseInventaireAgregQuartTotal,ReponseHistoAnalyse } from '../types/serviceTypes';
+import { FeatureCollection,Geometry } from 'geojson';
 import { GeoJSONPropsAnaQuartier,  } from '../types/AnalysisTypes';
 import { barChartDataSet } from '../types/DataTypes';
 export const serviceAnalyseInventaire = {
@@ -265,5 +263,20 @@ export const serviceAnalyseInventaire = {
             throw error; // Re-throw if necessary
         }
     },
-
+    obtientDonneesGraphiqueXY:async(ordre:number[],XKey:string,YKey:string):Promise<ReponseXYAnalyseQuartier>=>{
+        try{
+            const reponse: AxiosResponse<ReponseXYAnalyseQuartier> = await api.get(`/ana-par-quartier/XY?ordre=${ordre.join(",")}&X=${XKey}&Y=${YKey}`)
+            console.log('Recu donnees graphique XY quartier')
+            return ({success:reponse.data.success,data:reponse.data.data})
+        } catch(error:any){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    },
 };
