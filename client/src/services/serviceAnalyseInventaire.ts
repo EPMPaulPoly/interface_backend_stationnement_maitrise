@@ -263,9 +263,17 @@ export const serviceAnalyseInventaire = {
             throw error; // Re-throw if necessary
         }
     },
-    obtientDonneesGraphiqueXY:async(ordre:number[],XKey:string,YKey:string):Promise<ReponseXYAnalyseQuartier>=>{
+    obtientDonneesGraphiqueXY:async(ordre:number[]|undefined,XKey:string,YKey:string):Promise<ReponseXYAnalyseQuartier>=>{
         try{
-            const reponse: AxiosResponse<ReponseXYAnalyseQuartier> = await api.get(`/ana-par-quartier/XY?ordre=${ordre.join(",")}&X=${XKey}&Y=${YKey}`)
+            let query_address;
+            if ((XKey.includes('stat') || YKey.includes('stat')) && (typeof ordre !== 'undefined') ){
+                query_address = `/ana-par-quartier/XY?ordre=${ordre.join(",")}&X=${XKey}&Y=${YKey}`
+            } else if((~XKey.includes('stat') || ~YKey.includes('stat'))){
+                query_address = `/ana-par-quartier/XY?X=${XKey}&Y=${YKey}`
+            } else{
+                throw new Error("Besoin de spécifier l'ordre de priorité si une variable de stationnement est requise")
+            }
+            const reponse: AxiosResponse<ReponseXYAnalyseQuartier> = await api.get(query_address)
             console.log('Recu donnees graphique XY quartier')
             return ({success:reponse.data.success,data:reponse.data.data})
         } catch(error:any){

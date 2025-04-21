@@ -85,3 +85,25 @@
     background-color: #1f1f1f;
     height: 100%;
 }
+
+.conteneur-xy{
+    display: flex;
+    flex-direction: column; /* Stack vertically if necessary */
+    background-color: #1f1f1f;
+    height: 100%;
+}
+
+.graphxy{
+    width: 100%; /* or a fixed size */
+    height: 100%; /* adjust as needed */
+    overflow: hidden; /* prevent overflow */
+    min-height: 300px;
+    flex: 1;
+}
+
+.conteneur-resultat-comp-quartier-XY{
+    display: flex;
+    flex-direction: column; /* Stack vertically if necessary */
+    background-color: #1f1f1f;
+    height: 100%;
+}

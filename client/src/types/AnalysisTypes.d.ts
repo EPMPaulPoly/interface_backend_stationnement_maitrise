@@ -23,20 +23,20 @@ export interface PrioriteEstimeInventaire{
 
 export interface VariablesPossiblesGraphiqueXY{
     idVariable:number,
-    descriptionVariable:string
+    descriptionVariable:string,
+    requiertOrdrePriorite:boolean,
+    queryKey:string
 }
 export interface NhoodXYGraphDatasets{
-    idX:number,
     descriptionX:string,
-    idY:number,
     descriptionY:string,
     donnees:NhoodXYGraphEntry[]
 }
 export interface NhoodXYGraphEntry{
     id_quartier:number,
     nom_quartier:string,
-    X:number,
-    Y:number
+    x:number,
+    y:number
 }
 // ----------------------------------------------------------------
 // -------------------------- Donnees -----------------------------

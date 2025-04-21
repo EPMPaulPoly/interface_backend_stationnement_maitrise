@@ -4,12 +4,118 @@ import { DbTerritoire, ParamsCadastre, ParamsPeriode,DbRole,DbCadastre,ParamsQua
 // Types pour les requêtes
 import { Polygon,MultiPolygon } from 'geojson';
 import { ParamsTerritoire } from '../../types/database';
+import {XYVariableInfo,TableDef} from '../../types/maps'
 interface GeometryBody {
   geometry: Polygon|MultiPolygon;  
 }
 
 export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
   const router = Router();
+  const variableMap: Record<string, XYVariableInfo> = {
+    'stat-tot': {
+      expression: (ordre) => `stag.inv_${getValidatedOrdre(ordre)}`,
+      joins:['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int'],
+      description: 'Stationnement Total',
+      requiresOrdre: true
+    },
+    'stat-sup': {
+      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(sa.superf_quartier/100000, 0))::float`,
+      joins:['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int'],
+      description: 'Stationnement par mètre carré',
+      requiresOrdre: true
+    },
+    'stat-popu': {
+      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(pq.pop_tot_2021, 0))::float`,
+      joins:['stat_agrege stag ON sa.id_quartier=stag.id_quartier','population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+      description: 'Stationnement par personne',
+      requiresOrdre: true
+    },
+    'stat-voit': {
+      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(mq.nb_voitures, 0))::float`,
+      joins:['stat_agrege stag ON sa.id_quartier=stag.id_quartier','motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+      description: 'Stationnement par voiture résident',
+      requiresOrdre: true
+    },
+    'stat-perc': {
+      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)}*15 / NULLIF(sa.superf_quartier, 0))::float`,
+      joins:['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int'],
+      description: 'Pourcentage territoire dédié au stationnement',
+      requiresOrdre: true
+    },
+    'superf': {
+      expression: () => `sa.superf_quartier/1000000`,
+      joins:[],
+      description: 'Superficie Quartier',
+      requiresOrdre: false
+    },
+    'popu': {
+      expression: () => `pq.pop_tot_2021`,
+      joins:['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+      description: 'Population',
+      requiresOrdre: false
+    },
+    'voit':{
+      expression: () => `pq.nb_voitures`,
+      joins:['motorisation_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+      description: 'Population',
+      requiresOrdre: false
+    },
+    'dens-pop': {
+      expression: () => `(pq.pop_tot_2021 / NULLIF(sa.superf_quartier/1000000, 0))::float`,
+      joins: ['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+      description: 'Densité Population',
+      requiresOrdre: false
+    },
+    'val-log-moy': {
+      expression: () => `dfa.valeur_moyenne_logement`,
+      joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
+      description: 'Valeur moyenne des logements',
+      requiresOrdre: false
+    },
+    'sup-log-moy': {
+      expression: () => `dfa.superf_moyenne_logement`,
+      joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
+      description: 'Superficie moyenne des logements',
+      requiresOrdre: false
+    },
+    'val-tot-quart': {
+      expression: () => `dfa.valeur_fonciere_totale`,
+      joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
+      description: 'Valeur Foncière totale',
+      requiresOrdre: false
+    },
+    'val-tot-log-quart':{
+      expression: () => `dfa.valeur_fonciere_logement_totale`,
+      joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
+      description: 'Valeur Foncière totale',
+      requiresOrdre: false
+    },
+    'val-tot-sup': {
+      expression: () => `(dfa.valeur_totale / NULLIF(sa.superf_quartier, 0))::float`,
+      joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
+      description: 'Valeur Foncière par superficie',
+      requiresOrdre: false
+    },
+    'nb-voit':{
+      expression: () => `(mq.nb_voitures)::float`,
+      joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq .id_quartier::int'],
+      description: 'Nombre de voitures',
+      requiresOrdre: false
+    }
+  };
+
+  const validOrdres = ['123', '132', '213', '231', '312', '321'];
+
+  const getValidatedOrdre = (ordre: string|undefined): string  => {
+    const ordreValue = ordre ?? '132';
+    const cleaned = ordreValue.replace(/[^0-9]/g, ''); // remove anything sketchy
+
+    if (validOrdres.includes(cleaned)) {
+      return cleaned;
+    }
+    return ordreValue;
+  };
+
   const obtiensStationnementTotalParQuartierCarto : RequestHandler<ParamsTerritoire> = async (req, res): Promise<void> => {
     let client;
     try {
@@ -551,6 +657,84 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       }
     }
   };
+
+  
+  const getQueryForXY = (
+    variableKey: string,
+    ordre?: string
+  ): { expression: string, joins: string[], description: string } => {
+    const config = variableMap[variableKey];
+    if (!config) throw new Error(`Variable ${variableKey} not found`);
+  
+    const ordreValue = ordre ?? ''; // Provide a fallback if ordre is undefined
+    if (config.requiresOrdre && !ordreValue) {
+      throw new Error(`Variable ${variableKey} requires ordre`);
+    }
+  
+    const expr = config.expression(ordreValue);
+    return { expression: expr, joins: config.joins, description: config.description };
+  };
+
+  const obtiensDonneesGraphiqueXY: RequestHandler<ParamsTerritoire> = async (req, res): Promise<void> => {
+    let client;
+    try {
+      const { ordre, X, Y } = req.query;
+      if (typeof X === 'string' && typeof Y === 'string') {
+        // Get the query fragments based on X and Y
+        let xQueryFragment ;
+        let yQueryFragment ;
+        if (typeof ordre ==='string'){
+          xQueryFragment = getQueryForXY(X, ordre);
+          yQueryFragment = getQueryForXY(Y, ordre);
+        } else{
+          xQueryFragment = getQueryForXY(X);
+          yQueryFragment = getQueryForXY(Y);
+        }
+        // Get the join fragments for X and Y
+        const Xjoins = xQueryFragment.joins
+        const Yjoins = yQueryFragment.joins
+
+        const allJoins =Xjoins.concat(Yjoins)
+        const uniqueJoins = [...new Set(allJoins)];
+
+
+          // Query for detailed data, including the necessary joins for both X and Y
+          const query = `
+            SELECT 
+              sa.id_quartier::int,
+              sa.nom_quartier,
+              ${xQueryFragment.expression}::float AS X,
+              ${yQueryFragment.expression}::float AS Y
+            FROM public.sec_analyse sa
+            ${uniqueJoins.map((join)=> `LEFT JOIN  ${join}`).join('\n')}
+            ORDER BY sa.id_quartier;
+          `;
+
+          console.log('Executing query for', X, Y);
+
+          
+          // Database connection
+          client = await pool.connect();
+  
+          // Queries
+
+          // Execute queries
+          const result = await client.query(query);
+          const output = {descriptionX:`${xQueryFragment.description}`,descriptionY: `${yQueryFragment.description}`, donnees:result.rows}
+  
+          res.json({ success: true, data: output });
+        }
+    } catch (err) {
+      // Error handling
+      res.status(500).json({ success: false, error: 'Database error' });
+      console.log('Error in data retrieval for percentage calculation:', err);
+    } finally {
+      // Ensure client release in case of error or success
+      if (client) {
+        client.release();
+      }
+    }
+  };
   // Routes
   router.get('/carto/stat-tot/:ordreEstime',obtiensStationnementTotalParQuartierCarto)
   router.get('/carto/stat-sup/:ordreEstime',obtiensStationnementParSuperfParQuartierCarto)
@@ -562,6 +746,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
   router.get('/histo/stat-perc/:ordreEstime',obtiensStationnementPourcentParQuartierHisto)
   router.get('/histo/stat-voit/:ordreEstime',obtiensStationnementParVoitureHisto)
   router.get('/histo/stat-popu/:ordreEstime',obtiensStationnementParPersonneHisto)
+  router.get('/XY',obtiensDonneesGraphiqueXY)
   router.get('/recalcule-stat-agreg',recalculeStationnementAgrege)
   return router;
 };
