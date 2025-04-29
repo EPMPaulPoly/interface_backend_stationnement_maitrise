@@ -37,15 +37,7 @@ const AnalyseHistogrammeQuartier: React.FC<AnalyseHistoQuartierProps> = (props: 
     
 
     const obtenirLegendeAxeY =()=>{
-        switch (variableSelect){
-            case 0: return options.find((item)=>item.idAnalyseCarto===0)?.descriptionAnalyseCarto
-            case 1: return options.find((item)=>item.idAnalyseCarto===1)?.descriptionAnalyseCarto
-            case 2: return options.find((item)=>item.idAnalyseCarto===2)?.descriptionAnalyseCarto
-            case 3: return options.find((item)=>item.idAnalyseCarto===3)?.descriptionAnalyseCarto
-            case 4: return options.find((item)=>item.idAnalyseCarto===3)?.descriptionAnalyseCarto
-            default: return ''
-        }
-             
+        return props.variablesPossibles.find((variable)=> variable.idVariable===variableSelect)?.descriptionVariable??'N/A'
     }
 
     const renduGraphique = () => {
@@ -132,24 +124,8 @@ const AnalyseHistogrammeQuartier: React.FC<AnalyseHistoQuartierProps> = (props: 
 
     const gestObtientVariable = async() =>{
         let HistoRep;
-        switch (variableSelect) {
-            case 0:
-                HistoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierHisto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
-                break;
-            case 1:
-                HistoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierParSuperfHisto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
-                break;
-            case 2:
-                HistoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierPlacesParVoitureHisto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
-                break;
-            case 3:
-                HistoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierPlacesParPersonneHisto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
-                break;
-            case 4:
-                HistoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierPourcentTerritoireHisto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
-                break;
-            default:
-                HistoRep = {success:false,data:{valeurVille:0,description:'',donnees:[]}}; 
+        if (variableSelect!==-1){
+            HistoRep = await serviceAnalyseInventaire.obtientVariableAgregeParQuartierHisto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2],props.variablesPossibles.find((variable)=>variable.idVariable===variableSelect)?.queryKey??'stat-tot')
         }
         if (HistoRep && HistoRep.success){
             defDonneesVariables(HistoRep.data)
@@ -170,9 +146,9 @@ const AnalyseHistogrammeQuartier: React.FC<AnalyseHistoQuartierProps> = (props: 
                 <label htmlFor="select-variable">Selectionner Variable</label>
                 <select id="select-variable" name="select-cariable" onChange={e => gestSelectVariable(Number(e.target.value))} value={variableSelect}>
                     <option value={-1}>Selection variable</option>
-                    {options.map(variable => (
-                        <option key={variable.idAnalyseCarto} value={variable.idAnalyseCarto} >
-                            {variable.descriptionAnalyseCarto}
+                    {props.variablesPossibles.map(variable => (
+                        <option key={variable.idVariable} value={variable.idVariable} >
+                            {variable.descriptionVariable}
                         </option>
                     ))}
                 </select>

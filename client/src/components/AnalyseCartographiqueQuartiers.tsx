@@ -137,27 +137,13 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
         let CartoRep;
         defCartoValide(false)
         defChargement(true)
-        switch (typeCarto) {
-            case 0:
-                CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierCarto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
-                break;
-            case 1:
-                CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierParSuperfCarto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
-                break;
-            case 2:
-                CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierPlacesParVoitureCarto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
-                break;
-            case 3:
-                CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierPlacesParPersonneCarto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
-                break;
-            case 4:
-                CartoRep = await serviceAnalyseInventaire.obtientInventaireAgregeParQuartierPourcentTerritoireCarto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2])
-                break;
-            default:
-                CartoRep = {success:false,data:{
-                    type: "FeatureCollection",
-                    features: []
-                } as FeatureCollection<Geometry,GeoJSONPropsAnaQuartier>}; 
+        if (typeCarto!==-1){
+            CartoRep = await serviceAnalyseInventaire.obtientVariableAgregeParQuartierCarto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2],props.variablesPossibles.find((item)=>item.idVariable===typeCarto)?.queryKey??'stat-tot')
+        } else{
+            CartoRep = {success:false,data:{
+                type: "FeatureCollection",
+                features: []
+            } as FeatureCollection<Geometry,GeoJSONPropsAnaQuartier>}
         }
         if (CartoRep && CartoRep.success){
             defCartoValide(true)
@@ -203,9 +189,9 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
             <label htmlFor="select-map-color">Type d'analyse cartographique</label>
             <select id="select-map-color" name="select-type" onChange={e => gestSelectMethodeAnalyse(Number(e.target.value))} value={typeCarto}>
                 <option value={-1}>Selection carto</option>
-                {options.map(methode=>(
-                    <option key={methode.idAnalyseCarto} value={methode.idAnalyseCarto} >
-                        {methode.descriptionAnalyseCarto}
+                {props.variablesPossibles.map(methode=>(
+                    <option key={methode.idVariable} value={methode.idVariable} >
+                        {methode.descriptionVariable}
                     </option>
                 ))}
             </select>

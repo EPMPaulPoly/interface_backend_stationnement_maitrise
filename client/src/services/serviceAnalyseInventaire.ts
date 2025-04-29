@@ -1,4 +1,4 @@
-import { ReponseDBInventaireAgregQuartTotal,  ReponseDBInventaireAgregQuartParSuperf, ReponseInventaireAgregQuartParSuperf, ReponseXYAnalyseQuartier,ReponseInventaireAgregQuartTotal,ReponseHistoAnalyse } from '../types/serviceTypes';
+import { ReponseDBInventaireAgregQuartTotal,  ReponseDBInventaireAgregQuartParSuperf, ReponseInventaireAgregQuartParSuperf, ReponseXYAnalyseQuartier,ReponseInventaireAgregQuartTotal,ReponseHistoAnalyse,ReponseDBVariableAgregQuart } from '../types/serviceTypes';
 import api from './api';
 import axios,{AxiosResponse} from 'axios';
 import { FeatureCollection,Geometry } from 'geojson';
@@ -178,13 +178,33 @@ export const serviceAnalyseInventaire = {
     recalculeDonneesFoncieresBackend:async():Promise<boolean>=>{
         return false
     },
-    obtientInventaireAgregeParQuartierHisto: async(ordre:number[]) : Promise<ReponseHistoAnalyse> => {
-        try {
-            const response: AxiosResponse<ReponseHistoAnalyse> = await api.get(`/ana-par-quartier/histo/stat-tot/${ordre.join(",")}`);
+    obtientVariableAgregeParQuartierCarto:async(ordre:number[]|undefined, variableKey:string):Promise<ReponseHistoAnalyse>=>{
+        try  {
+            let query;
+            if (typeof ordre=== 'undefined'){
+                query = `/ana-par-quartier/carto?variable=${variableKey}`
+            } else{
+                query = `/ana-par-quartier/carto?variable=${variableKey}&ordre=${ordre.join(",")}`
+            }
+            const response:AxiosResponse<ReponseDBVariableAgregQuart> = await api.get(query)
             const data_res = response.data.data;
-            console.log('Recu statistiques quartier')
-            return {success:response.data.success,data:data_res};
-        } catch (error: any) {
+            console.log('Recu Inventaire')
+            const featureCollection: FeatureCollection<Geometry, GeoJSONPropsAnaQuartier> = {
+                type: "FeatureCollection",
+                features: data_res.map((item) => ({
+                    type: "Feature",
+                    geometry: JSON.parse(item.geojson_geometry),
+                    properties: {
+                        id_quartier:item.id_quartier,
+                        description: item.description,
+                        valeur:item.valeur,
+                        superficie_quartier:item.superf_quartier,
+                        nom_quartier:item.nom_quartier
+                    }
+                }))
+            };
+            return {success:response.data.success,data:featureCollection};
+        }catch(error:any){
             if (axios.isAxiosError(error)) {
                 console.error('Axios Error:', error.response?.data);
                 console.error('Axios Error Status:', error.response?.status);
@@ -195,13 +215,17 @@ export const serviceAnalyseInventaire = {
             throw error; // Re-throw if necessary
         }
     },
-    obtientInventaireAgregeParQuartierParSuperfHisto: async(ordre:number[]) : Promise<ReponseHistoAnalyse> => {
-        try {
-            const response: AxiosResponse<ReponseHistoAnalyse> = await api.get(`/ana-par-quartier/histo/stat-sup/${ordre.join(",")}`);
-            const data_res = response.data.data;
-            console.log('Recu statistiques quartier')
-            return {success:response.data.success,data:data_res};
-        } catch (error: any) {
+    obtientVariableAgregeParQuartierHisto:async(ordre:number[]|undefined, variableKey:string):Promise<ReponseHistoAnalyse>=>{
+        try  {
+            let query;
+            if (typeof ordre=== 'undefined'){
+                query = `/ana-par-quartier/histo?variable=${variableKey}`
+            } else{
+                query = `/ana-par-quartier/histo?variable=${variableKey}&ordre=${ordre.join(",")}`
+            }
+            const response:AxiosResponse<ReponseHistoAnalyse> = await api.get(query)
+            return {success:response.data.success,data:response.data.data};
+        }catch(error:any){
             if (axios.isAxiosError(error)) {
                 console.error('Axios Error:', error.response?.data);
                 console.error('Axios Error Status:', error.response?.status);
@@ -212,57 +236,7 @@ export const serviceAnalyseInventaire = {
             throw error; // Re-throw if necessary
         }
     },
-    obtientInventaireAgregeParQuartierPlacesParVoitureHisto: async(ordre:number[]) : Promise<ReponseHistoAnalyse> => {
-        try {
-            const response: AxiosResponse<ReponseHistoAnalyse> = await api.get(`/ana-par-quartier/histo/stat-voit/${ordre.join(",")}`);
-            const data_res = response.data.data;
-            console.log('Recu statistiques quartier')
-            return {success:response.data.success,data:data_res};
-        } catch (error: any) {
-            if (axios.isAxiosError(error)) {
-                console.error('Axios Error:', error.response?.data);
-                console.error('Axios Error Status:', error.response?.status);
-                console.error('Axios Error Data:', error.response?.data);
-            } else {
-                console.error('Unexpected Error:', error);
-            }
-            throw error; // Re-throw if necessary
-        }
-    },
-    obtientInventaireAgregeParQuartierPlacesParPersonneHisto: async(ordre:number[]) : Promise<ReponseHistoAnalyse> => {
-        try {
-            const response: AxiosResponse<ReponseHistoAnalyse> = await api.get(`/ana-par-quartier/histo/stat-popu/${ordre.join(",")}`);
-            const data_res = response.data.data;
-            console.log('Recu statistiques quartier')
-            return {success:response.data.success,data:data_res};
-        } catch (error: any) {
-            if (axios.isAxiosError(error)) {
-                console.error('Axios Error:', error.response?.data);
-                console.error('Axios Error Status:', error.response?.status);
-                console.error('Axios Error Data:', error.response?.data);
-            } else {
-                console.error('Unexpected Error:', error);
-            }
-            throw error; // Re-throw if necessary
-        }
-    },
-    obtientInventaireAgregeParQuartierPourcentTerritoireHisto: async(ordre:number[]) : Promise<ReponseHistoAnalyse> => {
-        try {
-            const response: AxiosResponse<ReponseHistoAnalyse> = await api.get(`/ana-par-quartier/histo/stat-perc/${ordre.join(",")}`);
-            const data_res = response.data.data;
-            console.log('Recu statistiques quartier')
-            return {success:response.data.success,data:data_res};
-        } catch (error: any) {
-            if (axios.isAxiosError(error)) {
-                console.error('Axios Error:', error.response?.data);
-                console.error('Axios Error Status:', error.response?.status);
-                console.error('Axios Error Data:', error.response?.data);
-            } else {
-                console.error('Unexpected Error:', error);
-            }
-            throw error; // Re-throw if necessary
-        }
-    },
+
     obtientDonneesGraphiqueXY:async(ordre:number[]|undefined,XKey:string,YKey:string):Promise<ReponseXYAnalyseQuartier>=>{
         try{
             let query_address;

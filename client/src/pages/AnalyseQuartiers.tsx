@@ -2,7 +2,7 @@ import React from 'react';
 import MenuBar from '../components/MenuBar';
 import MenuCompQuartiers from '../components/MenuCompQuartiers';
 import { useState } from 'react';
-import {  TypesVisualisationAnalyseQuartier,PrioriteEstimeInventaire } from '../types/AnalysisTypes';
+import {  TypesVisualisationAnalyseQuartier,PrioriteEstimeInventaire, VariablesPossibles } from '../types/AnalysisTypes';
 import './common.css';
 import './analyseparquartiers.css'
 import AnalyseCartographiqueQuartiers from '../components/AnalyseCartographiqueQuartiers';
@@ -33,6 +33,86 @@ const AnalyseQuartiers:React.FC = () =>{
             descriptionAnalyse:"Graphique XY"
         }
     ];
+    const variablesPossibles: VariablesPossibles[]= [
+            {
+                idVariable:0,
+                descriptionVariable:'Stationnement Total',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-tot'
+            },
+            {
+                idVariable:1,
+                descriptionVariable:'Stationnement par mètre carré',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-sup'
+            },
+            {
+                idVariable:2,
+                descriptionVariable:'Stationnement par personne',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-popu'
+            },
+            {
+                idVariable:3,
+                descriptionVariable:'Stationnement par voiture résident',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-voit'
+            },
+            {
+                idVariable:4,
+                descriptionVariable:'Pourcentage territoire dédié stationnement',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-perc'
+            },
+            {
+                idVariable:5,
+                descriptionVariable:'Superficie Quartier',
+                requiertOrdrePriorite:false,
+                queryKey:'superf'
+            },
+            {
+                idVariable:6,
+                descriptionVariable:'Population',
+                requiertOrdrePriorite:false,
+                queryKey:'popu'
+            },
+            {
+                idVariable:7,
+                descriptionVariable:'Densité Population',
+                requiertOrdrePriorite:false,
+                queryKey:'dens-pop'
+            },
+            {
+                idVariable:8,
+                descriptionVariable:'Valeur moyenne des logements',
+                requiertOrdrePriorite:false,
+                queryKey:'val-log-moy'
+            },
+            {
+                idVariable:9,
+                descriptionVariable:'Superficie moyenne des logements',
+                requiertOrdrePriorite:false,
+                queryKey:'sup-log-moy'
+            },
+            {
+                idVariable:10,
+                descriptionVariable:'Valeur Foncière totale',
+                requiertOrdrePriorite:false,
+                queryKey:'val-tot-quart'
+            },
+            {
+                idVariable:11,
+                descriptionVariable:'Valeur Foncière par superficie',
+                requiertOrdrePriorite:false,
+                queryKey:'val-tot-sup'
+            },
+            {
+                idVariable:12,
+                descriptionVariable:'Nombre de voitures',
+                requiertOrdrePriorite:false,
+                queryKey:'nb-voit'
+            }
+        ];
     const prioritesPossibles:PrioriteEstimeInventaire[]=[
         {
             idPriorite:0,
@@ -73,6 +153,7 @@ const AnalyseQuartiers:React.FC = () =>{
                             <AnalyseCartographiqueQuartiers 
                                 prioriteInventaire={prioriteEstimes}
                                 prioriteInventairePossibles={prioritesPossibles}
+                                variablesPossibles={variablesPossibles}
                             />
                         </div>);
             case 1:
@@ -80,6 +161,7 @@ const AnalyseQuartiers:React.FC = () =>{
                             <AnalyseHistogrammeQuartier
                                 prioriteInventaire={prioriteEstimes}
                                 prioriteInventairePossibles={prioritesPossibles}
+                                variablesPossibles={variablesPossibles}
                             />
                         </div>);
             case 2:
@@ -94,6 +176,7 @@ const AnalyseQuartiers:React.FC = () =>{
                             <AnalyseXYQuartiers
                                 prioriteInventaire={prioriteEstimes}
                                 prioriteInventairePossibles={prioritesPossibles}
+                                variablesPossibles={variablesPossibles}
                             />
                         </div>)
             default:

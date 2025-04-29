@@ -102,14 +102,13 @@ const AnalyseXYQuartiers:React.FC<AnalyseXYQuartierProps>=(props:AnalyseXYQuarti
         }
     };
     const gestObtientVariables = async()=>{
-        const besoinOrdre = (variablesPotentielles.find((variable)=>variable.idVariable === variableSelectX)?.requiertOrdrePriorite??true) || (variablesPotentielles.find((variable)=>variable.idVariable === variableSelectY)?.requiertOrdrePriorite??true)
+        const besoinOrdre = (props.variablesPossibles.find((variable)=>variable.idVariable === variableSelectX)?.requiertOrdrePriorite??true) || (props.variablesPossibles.find((variable)=>variable.idVariable === variableSelectY)?.requiertOrdrePriorite??true)
         let data;
         if (besoinOrdre){
             const listOrdre = props.prioriteInventairePossibles.find((ordre) => ordre.idPriorite === props.prioriteInventaire)?.listeMethodesOrdonnees ?? [1, 3, 2]
-             data = await serviceAnalyseInventaire.obtientDonneesGraphiqueXY(listOrdre,variablesPotentielles.find((variable)=>variable.idVariable===variableSelectX)?.queryKey??'stat-tot',variablesPotentielles.find((variable)=>variable.idVariable===variableSelectY)?.queryKey??'stat-tot')
+             data = await serviceAnalyseInventaire.obtientDonneesGraphiqueXY(listOrdre,props.variablesPossibles.find((variable)=>variable.idVariable===variableSelectX)?.queryKey??'stat-tot',props.variablesPossibles.find((variable)=>variable.idVariable===variableSelectY)?.queryKey??'stat-tot')
         } else{
-            const listOrdre= props.prioriteInventairePossibles.find((ordre) => ordre.idPriorite === props.prioriteInventaire)?.listeMethodesOrdonnees ?? [1, 3, 2]
-            data = await serviceAnalyseInventaire.obtientDonneesGraphiqueXY(undefined,variablesPotentielles.find((variable)=>variable.idVariable===variableSelectX)?.queryKey??'stat-tot',variablesPotentielles.find((variable)=>variable.idVariable===variableSelectY)?.queryKey??'stat-tot')
+            data = await serviceAnalyseInventaire.obtientDonneesGraphiqueXY(undefined,props.variablesPossibles.find((variable)=>variable.idVariable===variableSelectX)?.queryKey??'stat-tot',props.variablesPossibles.find((variable)=>variable.idVariable===variableSelectY)?.queryKey??'stat-tot')
         }
         defDonneesXY(data.data)
     };
@@ -207,7 +206,7 @@ const AnalyseXYQuartiers:React.FC<AnalyseXYQuartierProps>=(props:AnalyseXYQuarti
             <label htmlFor="select-variable-X">Selectionner Variable X </label>
             <select id="select-variable-X" name="select-variable-X" onChange={e => gestSelectVariable(Number(e.target.value),'X')} value={variableSelectX}>
                 <option value={-1}>Selection variable</option>
-                {variablesPotentielles.map(variable => (
+                {props.variablesPossibles.map(variable => (
                     <option key={variable.idVariable} value={variable.idVariable} >
                         {variable.descriptionVariable}
                     </option>
@@ -216,7 +215,7 @@ const AnalyseXYQuartiers:React.FC<AnalyseXYQuartierProps>=(props:AnalyseXYQuarti
             <label htmlFor="select-variable-Y">Selectionner Variable Y </label>
             <select id="select-variable-Y" name="select-variable-Y" onChange={e => gestSelectVariable(Number(e.target.value),'Y')} value={variableSelectY}>
                 <option value={-1}>Selection variable Y</option>
-                {variablesPotentielles.map(variable => (
+                {props.variablesPossibles.map(variable => (
                     <option key={variable.idVariable} value={variable.idVariable} >
                         {variable.descriptionVariable}
                     </option>

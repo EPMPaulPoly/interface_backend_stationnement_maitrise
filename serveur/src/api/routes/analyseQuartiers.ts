@@ -4,7 +4,7 @@ import { DbTerritoire, ParamsCadastre, ParamsPeriode,DbRole,DbCadastre,ParamsQua
 // Types pour les requêtes
 import { Polygon,MultiPolygon } from 'geojson';
 import { ParamsTerritoire } from '../../types/database';
-import {XYVariableInfo,TableDef} from '../../types/maps'
+import {variableInfo, XYVariableInfo} from '../../types/maps'
 interface GeometryBody {
   geometry: Polygon|MultiPolygon;  
 }
@@ -13,93 +13,108 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
   const router = Router();
   const variableMap: Record<string, XYVariableInfo> = {
     'stat-tot': {
-      expression: (ordre) => `stag.inv_${getValidatedOrdre(ordre)}`,
+      expression: (ordre) => `stag.inv_${getValidatedOrdre(ordre)}::float`,
+      aggregateExpression:(ordre) =>`stag.inv_${getValidatedOrdre(ordre)}`,
       joins:['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int'],
-      description: 'Stationnement Total',
+      description: 'Stationnement Total [-]',
       requiresOrdre: true
     },
     'stat-sup': {
-      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(sa.superf_quartier/100000, 0))::float`,
+      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(sa.superf_quartier/10000, 0))::float`,
+      aggregateExpression: (ordre)=> `(SUM(stag.inv_${getValidatedOrdre(ordre)} )/ SUM(NULLIF(sa.superf_quartier/10000, 0)))::float`,
       joins:['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int'],
-      description: 'Stationnement par mètre carré',
+      description: 'Densité Stationnement [1/Ha]',
       requiresOrdre: true
     },
     'stat-popu': {
       expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(pq.pop_tot_2021, 0))::float`,
+      aggregateExpression:(ordre)=>`(SUM(stag.inv_${getValidatedOrdre(ordre)}) / SUM(NULLIF(pq.pop_tot_2021, 0)))::float`,
       joins:['stat_agrege stag ON sa.id_quartier=stag.id_quartier','population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
-      description: 'Stationnement par personne',
+      description: 'Stationnement par personne [-]',
       requiresOrdre: true
     },
     'stat-voit': {
       expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(mq.nb_voitures, 0))::float`,
-      joins:['stat_agrege stag ON sa.id_quartier=stag.id_quartier','motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
-      description: 'Stationnement par voiture résident',
+      aggregateExpression:(ordre)=>`(SUM(stag.inv_${getValidatedOrdre(ordre)}) / SUM(NULLIF(mq.nb_voitures, 0)))::float`,
+      joins:['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int','motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+      description: 'Stationnement par voiture résident [-]',
       requiresOrdre: true
     },
     'stat-perc': {
       expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)}*15 / NULLIF(sa.superf_quartier, 0))::float`,
+      aggregateExpression: (ordre)=> `(SUM(stag.inv_${getValidatedOrdre(ordre)})*15 / SUM(NULLIF(sa.superf_quartier, 0)))::float`,
       joins:['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int'],
-      description: 'Pourcentage territoire dédié au stationnement',
+      description: 'Territoire dédié au stationnement [%]',
       requiresOrdre: true
     },
     'superf': {
-      expression: () => `sa.superf_quartier/1000000`,
+      expression: () => `sa.superf_quartier/10000::float`,
+      aggregateExpression:() =>`SUM(sa.superf_quartier)/10000`,
       joins:[],
-      description: 'Superficie Quartier',
+      description: 'Superficie Quartier [Ha]',
       requiresOrdre: false
     },
     'popu': {
-      expression: () => `pq.pop_tot_2021`,
+      expression: () => `pq.pop_tot_2021::float`,
+      aggregateExpression:() =>`SUM(pq.pop_tot_2021)`,
       joins:['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
-      description: 'Population',
+      description: 'Population [-]',
       requiresOrdre: false
     },
     'voit':{
-      expression: () => `pq.nb_voitures`,
+      expression: () => `pq.nb_voitures::float`,
+      aggregateExpression:()=>`SUM(pq.nb_voitures)`,
       joins:['motorisation_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
-      description: 'Population',
+      description: 'Nombre de voiture (OD) [-]',
       requiresOrdre: false
     },
     'dens-pop': {
       expression: () => `(pq.pop_tot_2021 / NULLIF(sa.superf_quartier/1000000, 0))::float`,
+      aggregateExpression:() =>`(SUM(pq.pop_tot_2021) /SUM( NULLIF(sa.superf_quartier/1000000, 0)))::float`,
       joins: ['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
-      description: 'Densité Population',
+      description: 'Densité Population [1/km2]',
       requiresOrdre: false
     },
     'val-log-moy': {
-      expression: () => `dfa.valeur_moyenne_logement`,
+      expression: () => `dfa.valeur_moyenne_logement::float`,
+      aggregateExpression: ()=>`SUM(dfa.valeur_moyenne_logement)/count(*)::float`,
       joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
-      description: 'Valeur moyenne des logements',
+      description: 'Valeur moyenne des logements [$]',
       requiresOrdre: false
     },
     'sup-log-moy': {
-      expression: () => `dfa.superf_moyenne_logement`,
+      expression: () => `dfa.superf_moyenne_logement::float`,
+      aggregateExpression:()=>`SUM(dfa.superf_moyenne_logement)/COUNT(*)::float`,
       joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
-      description: 'Superficie moyenne des logements',
+      description: 'Superficie moyenne des logements [m2]',
       requiresOrdre: false
     },
     'val-tot-quart': {
-      expression: () => `dfa.valeur_fonciere_totale`,
+      expression: () => `dfa.valeur_fonciere_totale::float`,
+      aggregateExpression:()=>`SUM(dfa.valeur_fonciere_totale)::float`,
       joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
-      description: 'Valeur Foncière totale',
+      description: 'Valeur Foncière totale [$]',
       requiresOrdre: false
     },
     'val-tot-log-quart':{
-      expression: () => `dfa.valeur_fonciere_logement_totale`,
+      expression: () => `dfa.valeur_fonciere_logement_totale::float`,
+      aggregateExpression:()=>`SUM(dfa.valeur_fonciere_logement_totale)::float`,
       joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
-      description: 'Valeur Foncière totale',
+      description: 'Valeur Foncière logements [$]',
       requiresOrdre: false
     },
     'val-tot-sup': {
-      expression: () => `(dfa.valeur_totale / NULLIF(sa.superf_quartier, 0))::float`,
+      expression: () => `(dfa.valeur_fonciere_totale / NULLIF(sa.superf_quartier/10000, 0))::float`,
+      aggregateExpression:()=>`(SUM(dfa.valeur_fonciere_totale) / SUM(NULLIF(sa.superf_quartier/10000, 0)))::float`,
       joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
-      description: 'Valeur Foncière par superficie',
+      description: 'Valeur Foncière [$/Ha]',
       requiresOrdre: false
     },
     'nb-voit':{
       expression: () => `(mq.nb_voitures)::float`,
+      aggregateExpression:()=>`SUM(mq.nb_voitures)::float`,
       joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq .id_quartier::int'],
-      description: 'Nombre de voitures',
+      description: 'Nombre de voitures [-]',
       requiresOrdre: false
     }
   };
@@ -116,166 +131,100 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
     return ordreValue;
   };
 
-  const obtiensStationnementTotalParQuartierCarto : RequestHandler<ParamsTerritoire> = async (req, res): Promise<void> => {
+  const obtientInfoParQuartierCarto:RequestHandler<ParamsTerritoire>=async(req,res):Promise<void>=>{
     let client;
     try {
-      const { ordreEstime } = req.params;
-      const numbers: number[] = ordreEstime.split(",").map(Number);
-      const selectedIds = numbers.slice(0, 3);
-      const stringForReq = selectedIds.map(String).join('');
-      console.log('Obtention stationnement agrégé par quartier');
-      client = await pool.connect();
-      const query = `
-        SELECT 
-            id_quartier,
-            nom_quartier,
-            'Stationnement Total du Quartier' AS description,
-            inv_${stringForReq} AS valeur,
-            superf_quartier,
-            ST_AsGeoJSON(geom) AS geojson_geometry
-        FROM public.stat_agrege 
-        ORDER BY id_quartier;
-      `;
-
-      const result = await client.query(query);
-      res.json({ success: true, data: result.rows });
+      const { ordre, variable} = req.query;
+      if (typeof variable === 'string') {
+        // Get the query fragments based on X and Y
+        let varQueryFragment ;
+        if (typeof ordre ==='string'){
+          varQueryFragment = getQueryForXY(variable, ordre)
+        } else{
+          varQueryFragment = getQueryForXY(variable)
+        }
+          // Query for detailed data, including the necessary joins for both X and Y
+          const query = `
+            SELECT 
+              sa.id_quartier::int,
+              sa.nom_quartier,
+              '${varQueryFragment.description}' as description,
+              ${varQueryFragment.expression} AS valeur,
+              sa.superf_quartier,
+              ST_AsGeoJSON(sa.geom) AS geojson_geometry
+            FROM public.stat_agrege sa
+            ${varQueryFragment.joins.map((join:string)=> `LEFT JOIN  ${join}`).join('\n')}
+            ORDER BY sa.id_quartier;
+          `;
+          console.log('Executing query for', variable);
+          // Database connection
+          client = await pool.connect();
+          // Execute queries
+          const result = await client.query(query);
+          res.json({ success: true, data: result.rows });
+        }
     } catch (err) {
+      // Error handling
       res.status(500).json({ success: false, error: 'Database error' });
-      console.log('fourré dans la fonction obtention')
-    } finally{
-      if (client){
-        client.release()
-      }
-    }
-  };
-  const obtiensStationnementParSuperfParQuartierCarto : RequestHandler<ParamsTerritoire> = async (req, res): Promise<void> => {
-    let client;
-    try {
-      const { ordreEstime } = req.params;
-      const numbers: number[] = ordreEstime.split(",").map(Number);
-      const selectedIds = numbers.slice(0, 3);
-      const stringForReq = selectedIds.map(String).join('');
-      console.log('Obtention stationnement agrégé par quartier divisé par superficie');
-      client = await pool.connect();
-      const query = `
-        SELECT 
-            id_quartier,
-            nom_quartier,
-            'Stationnement par mètre carré' AS description,
-            inv_${stringForReq} / superf_quartier AS valeur,
-            superf_quartier,
-            ST_AsGeoJSON(geom) AS geojson_geometry
-        FROM public.stat_agrege 
-        ORDER BY id_quartier;
-      `;
-
-      const result = await client.query(query);
-      res.json({ success: true, data: result.rows });
-    } catch (err) {
-      res.status(500).json({ success: false, error: 'Database error' });
-      console.log('fourré dans la fonction obtention')
-    } finally{
-      if (client){
-        client.release()
+      console.log('Error in data retrieval for percentage calculation:', err);
+    } finally {
+      // Ensure client release in case of error or success
+      if (client) {
+        client.release();
       }
     }
   };
 
-  const obtiensStationnementPourcentParQuartierCarto : RequestHandler<ParamsTerritoire> = async (req, res): Promise<void> => {
+  const obtientInfoParQuartierHisto:RequestHandler<ParamsTerritoire>=async(req,res):Promise<void>=>{
     let client;
     try {
-      const { ordreEstime } = req.params;
-      const numbers: number[] = ordreEstime.split(",").map(Number);
-      const selectedIds = numbers.slice(0, 3);
-      const stringForReq = selectedIds.map(String).join('');
-      console.log('Obtention stationnement agrégé par quartier divisé par superficie fois aire stat moyenne');
-      client = await pool.connect();
-      const query = `
-        SELECT 
-            id_quartier,
-            nom_quartier,
-            'Pourcent secteur stationnement' AS description,
-            (inv_${stringForReq} * 15 *100) / superf_quartier AS valeur,
-            superf_quartier,
-            ST_AsGeoJSON(geom) AS geojson_geometry
-        FROM public.stat_agrege 
-        ORDER BY id_quartier;
-      `;
-      const result = await client.query(query);
-      res.json({ success: true, data: result.rows });
+      const { ordre, variable} = req.query;
+      if (typeof variable === 'string') {
+        // Get the query fragments based on X and Y
+        let varQueryFragment ;
+        if (typeof ordre ==='string'){
+          varQueryFragment = getQueryForXY(variable, ordre)
+        } else{
+          varQueryFragment = getQueryForXY(variable)
+        }
+          // Query for detailed data, including the necessary joins for both X and Y
+          const query = `
+            SELECT 
+              sa.id_quartier::int,
+              sa.nom_quartier,
+              ${varQueryFragment.expression}::float AS valeurs
+            FROM public.sec_analyse sa
+            ${varQueryFragment.joins.map((join:string)=> `LEFT JOIN  ${join}`).join('\n')}
+            ORDER BY sa.id_quartier;
+          `;
+          const query2 = `
+            SELECT 
+              ${varQueryFragment.aggregateExpression}::float as valeurVille
+            FROM
+              public.sec_analyse sa
+            ${varQueryFragment.joins.map((join)=> `LEFT JOIN  ${join}`).join('\n')}  
+          `
+          console.log('Executing query for', variable);
+          // Database connection
+          client = await pool.connect();
+          // Execute queries
+          const result = await client.query(query);
+          const result2 = await client.query(query2);
+          const output = {valeurVille:result2.rows[0].valeurville,description:varQueryFragment.description,donnees:result.rows}
+          res.json({ success: true, data: output });
+        }
     } catch (err) {
+      // Error handling
       res.status(500).json({ success: false, error: 'Database error' });
-      console.log('fourré dans la fonction obtention pourcentage')
-    } finally{
-      if (client){
-        client.release()
+      console.log('Error in data retrieval for percentage calculation:', err);
+    } finally {
+      // Ensure client release in case of error or success
+      if (client) {
+        client.release();
       }
     }
   };
-  const obtiensStationnementParVoitureCarto: RequestHandler<ParamsTerritoire>  = async (req, res): Promise<void> => {
-    let client;
-    try {
-      const { ordreEstime } = req.params;
-      const numbers: number[] = ordreEstime.split(",").map(Number);
-      const selectedIds = numbers.slice(0, 3);
-      const stringForReq = selectedIds.map(String).join('');
-      console.log('Obtention stationnement agrégé par voiture résident');
-      client = await pool.connect();
-      const query = `
-        SELECT 
-            sa.id_quartier,
-            sa.nom_quartier,
-            'Places par voiture residents' AS description,
-            (sa.inv_${stringForReq} ) / mq.nb_voitures AS valeur,
-            sa.superf_quartier,
-            ST_AsGeoJSON(sa.geom) AS geojson_geometry
-        FROM public.stat_agrege sa
-        LEFT JOIN motorisation_par_quartier mq on sa.id_quartier::bigint = mq.id_quartier
-        ORDER BY id_quartier;
-      `;
-      const result = await client.query(query);
-      res.json({ success: true, data: result.rows });
-    } catch (err) {
-      res.status(500).json({ success: false, error: 'Database error' });
-      console.log('fourré dans la fonction obtention pourcentage')
-    } finally{
-      if (client){
-        client.release()
-      }
-    }
-  };
-  const obtiensStationnementParPersonneCarto: RequestHandler<ParamsTerritoire>  = async (req, res): Promise<void> => {
-    let client;
-    try {
-      const { ordreEstime } = req.params;
-      const numbers: number[] = ordreEstime.split(",").map(Number);
-      const selectedIds = numbers.slice(0, 3);
-      const stringForReq = selectedIds.map(String).join('');
-      console.log('Obtention stationnement agrégé par personne');
-      client = await pool.connect();
-      const query = `
-        SELECT 
-            sa.id_quartier,
-            sa.nom_quartier,
-            'Places par resident' AS description,
-            (sa.inv_${stringForReq} ) / mq.pop_tot_2021 AS valeur,
-            sa.superf_quartier,
-            ST_AsGeoJSON(sa.geom) AS geojson_geometry
-        FROM public.stat_agrege sa
-        LEFT JOIN population_par_quartier mq on sa.id_quartier::bigint = mq.id_quartier
-        ORDER BY id_quartier;
-      `;
-      const result = await client.query(query);
-      res.json({ success: true, data: result.rows });
-    } catch (err) {
-      res.status(500).json({ success: false, error: 'Database error' });
-      console.log('fourré dans la fonction obtention pourcentage')
-    } finally{
-      if (client){
-        client.release()
-      }
-    }
-  };
+  
   const recalculeStationnementAgrege: RequestHandler<void> = async(_req,res): Promise<void>=>{
     
     let client
@@ -478,191 +427,12 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
         client.release()
       }
     }
-  }
-  const obtiensStationnementTotalParQuartierHisto : RequestHandler<ParamsTerritoire> = async (req, res): Promise<void> => {
-    let client;
-    try {
-      const { ordreEstime } = req.params;
-      const numbers: number[] = ordreEstime.split(",").map(Number);
-      const selectedIds = numbers.slice(0, 3);
-      const stringForReq = selectedIds.map(String).join('');
-      console.log('Obtention stationnement agrégé par quartier');
-      client = await pool.connect();
-      const query = `
-        SELECT 
-            id_quartier::int,
-            nom_quartier,
-            inv_${stringForReq} AS valeurs
-        FROM public.stat_agrege 
-        ORDER BY id_quartier;
-      `;
-
-      const result = await client.query(query);
-      const valeurVille = result.rows.reduce((sum, row) => sum + (row.valeurs || 0), 0);
-      const data_output = {valeurVille:valeurVille,description:'Stationnement total',donnees:result.rows}
-      res.json({ success: true, data: data_output });
-    } catch (err) {
-      res.status(500).json({ success: false, error: 'Database error' });
-      console.log('fourré dans la fonction obtention')
-    } finally{
-      if (client){
-        client.release()
-      }
-    }
-  };
-  const obtiensStationnementParSuperfParQuartierHisto : RequestHandler<ParamsTerritoire> = async (req, res): Promise<void> => {
-    let client;
-    try {
-      const { ordreEstime } = req.params;
-      const numbers: number[] = ordreEstime.split(",").map(Number);
-      const selectedIds = numbers.slice(0, 3);
-      const stringForReq = selectedIds.map(String).join('');
-      console.log('Obtention stationnement agrégé par quartier divisé par superficie');
-      client = await pool.connect();
-      const query = `
-        SELECT 
-            id_quartier::int,
-            nom_quartier,
-            inv_${stringForReq} / superf_quartier AS valeurs
-        FROM public.stat_agrege 
-        ORDER BY id_quartier;
-      `;
-      const query2 = `
-        SELECT 
-          SUM(inv_${stringForReq}) / SUM(superf_quartier) AS valeur
-        FROM public.stat_agrege 
-      `;
-
-      const result = await client.query(query);
-      const result2 = await client.query(query2)
-      const data_output = {valeurVille:result2.rows[0].valeur,description:'Stationnement par metre carre',donnees:result.rows}
-      res.json({ success: true, data: data_output});
-    } catch (err) {
-      res.status(500).json({ success: false, error: 'Database error' });
-      console.log('fourré dans la fonction obtention')
-    } finally{
-      if (client){
-        client.release()
-      }
-    }
   };
 
-  const obtiensStationnementPourcentParQuartierHisto : RequestHandler<ParamsTerritoire> = async (req, res): Promise<void> => {
-    let client;
-    try {
-      const { ordreEstime } = req.params;
-      const numbers: number[] = ordreEstime.split(",").map(Number);
-      const selectedIds = numbers.slice(0, 3);
-      const stringForReq = selectedIds.map(String).join('');
-      console.log('Obtention stationnement agrégé par quartier divisé par superficie fois aire stat moyenne');
-      client = await pool.connect();
-      const query = `
-        SELECT 
-            id_quartier::int,
-            nom_quartier,
-            (inv_${stringForReq} * 15 *100) / superf_quartier AS valeurs
-        FROM public.stat_agrege 
-        ORDER BY id_quartier;
-      `;
-      const query2 = `
-        SELECT 
-          SUM(inv_${stringForReq}* 15 *100) / SUM(superf_quartier) AS valeur
-        FROM public.stat_agrege 
-      `;
-      const result = await client.query(query);
-      const result2 = await client.query(query2)
-      const data_output = {valeurVille:result2.rows[0].valeur,description:'Pourcentage aire ville',donnees:result.rows}
-      res.json({ success: true, data: data_output });
-    } catch (err) {
-      res.status(500).json({ success: false, error: 'Database error' });
-      console.log('fourré dans la fonction obtention pourcentage')
-    } finally{
-      if (client){
-        client.release()
-      }
-    }
-  };
-  const obtiensStationnementParVoitureHisto: RequestHandler<ParamsTerritoire>  = async (req, res): Promise<void> => {
-    let client;
-    try {
-      const { ordreEstime } = req.params;
-      const numbers: number[] = ordreEstime.split(",").map(Number);
-      const selectedIds = numbers.slice(0, 3);
-      const stringForReq = selectedIds.map(String).join('');
-      console.log('Obtention stationnement agrégé par voiture résident');
-      client = await pool.connect();
-      const query = `
-        SELECT 
-            sa.id_quartier::int,
-            sa.nom_quartier,
-            (sa.inv_${stringForReq} ) / mq.nb_voitures AS valeurs
-        FROM public.stat_agrege sa
-        LEFT JOIN motorisation_par_quartier mq on sa.id_quartier::bigint = mq.id_quartier
-        ORDER BY id_quartier;
-      `;
-      const query2 = `
-        SELECT 
-            SUM(sa.inv_${stringForReq} ) / SUM(mq.nb_voitures) AS valeur
-        FROM public.stat_agrege sa
-        LEFT JOIN motorisation_par_quartier mq on sa.id_quartier::bigint = mq.id_quartier
-      `;
-      const result = await client.query(query);
-      
-      const result2 = await client.query(query2);
-      const data_output = {valeurVille:result2.rows[0].valeur,description:'Stationnement par voiture',donnees:result.rows}
-      res.json({ success: true, data: data_output });
-    } catch (err) {
-      res.status(500).json({ success: false, error: 'Database error' });
-      console.log('fourré dans la fonction obtention pourcentage')
-    } finally{
-      if (client){
-        client.release()
-      }
-    }
-  };
-  const obtiensStationnementParPersonneHisto: RequestHandler<ParamsTerritoire>  = async (req, res): Promise<void> => {
-    let client;
-    try {
-      const { ordreEstime } = req.params;
-      const numbers: number[] = ordreEstime.split(",").map(Number);
-      const selectedIds = numbers.slice(0, 3);
-      const stringForReq = selectedIds.map(String).join('');
-      console.log('Obtention stationnement agrégé par personne');
-      client = await pool.connect();
-      const query = `
-        SELECT 
-            sa.id_quartier::int,
-            sa.nom_quartier,
-            ((sa.inv_${stringForReq} ) / mq.pop_tot_2021)::float AS valeurs
-        FROM public.stat_agrege sa
-        LEFT JOIN population_par_quartier mq on sa.id_quartier::bigint = mq.id_quartier
-        ORDER BY id_quartier;
-      `;
-      const query2 = `
-        SELECT 
-            (SUM(sa.inv_${stringForReq} ) / SUM(mq.pop_tot_2021))::float AS valeur
-        FROM public.stat_agrege sa
-        LEFT JOIN population_par_quartier mq on sa.id_quartier::bigint = mq.id_quartier
-      `;
-      const result = await client.query(query);
-      const result2 = await client.query(query2);
-      const data_output = {valeurVille:result2.rows[0].valeur,description:'Stationnement par résident',donnees:result.rows}
-      res.json({ success: true, data: data_output });
-    } catch (err) {
-      res.status(500).json({ success: false, error: 'Database error' });
-      console.log('fourré dans la fonction obtention pourcentage')
-    } finally{
-      if (client){
-        client.release()
-      }
-    }
-  };
-
-  
   const getQueryForXY = (
     variableKey: string,
     ordre?: string
-  ): { expression: string, joins: string[], description: string } => {
+  ): { expression: string,aggregateExpression:string, joins: string[], description: string,requiresOrdre:boolean } => {
     const config = variableMap[variableKey];
     if (!config) throw new Error(`Variable ${variableKey} not found`);
   
@@ -672,7 +442,8 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
     }
   
     const expr = config.expression(ordreValue);
-    return { expression: expr, joins: config.joins, description: config.description };
+    const agexpr = config.aggregateExpression(ordreValue)
+    return { expression: expr,aggregateExpression:agexpr, joins: config.joins, description: config.description,requiresOrdre:config.requiresOrdre };
   };
 
   const obtiensDonneesGraphiqueXY: RequestHandler<ParamsTerritoire> = async (req, res): Promise<void> => {
@@ -736,16 +507,8 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
     }
   };
   // Routes
-  router.get('/carto/stat-tot/:ordreEstime',obtiensStationnementTotalParQuartierCarto)
-  router.get('/carto/stat-sup/:ordreEstime',obtiensStationnementParSuperfParQuartierCarto)
-  router.get('/carto/stat-perc/:ordreEstime',obtiensStationnementPourcentParQuartierCarto)
-  router.get('/carto/stat-voit/:ordreEstime',obtiensStationnementParVoitureCarto)
-  router.get('/carto/stat-popu/:ordreEstime',obtiensStationnementParPersonneCarto)
-  router.get('/histo/stat-tot/:ordreEstime',obtiensStationnementTotalParQuartierHisto)
-  router.get('/histo/stat-sup/:ordreEstime',obtiensStationnementParSuperfParQuartierHisto)
-  router.get('/histo/stat-perc/:ordreEstime',obtiensStationnementPourcentParQuartierHisto)
-  router.get('/histo/stat-voit/:ordreEstime',obtiensStationnementParVoitureHisto)
-  router.get('/histo/stat-popu/:ordreEstime',obtiensStationnementParPersonneHisto)
+  router.get('/carto',obtientInfoParQuartierCarto)
+  router.get('/histo',obtientInfoParQuartierHisto)
   router.get('/XY',obtiensDonneesGraphiqueXY)
   router.get('/recalcule-stat-agreg',recalculeStationnementAgrege)
   return router;

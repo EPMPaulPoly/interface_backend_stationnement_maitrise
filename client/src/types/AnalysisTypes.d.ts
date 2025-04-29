@@ -20,6 +20,12 @@ export interface PrioriteEstimeInventaire{
     listeMethodesOrdonnees:number[]
 }
 
+export interface VariablesPossibles{
+    idVariable:number,
+    descriptionVariable:string,
+    requiertOrdrePriorite:boolean,
+    queryKey:string
+}
 
 export interface VariablesPossiblesGraphiqueXY{
     idVariable:number,
@@ -48,6 +54,11 @@ export interface GeoJSONPropsAnaQuartier{
     valeur:number,
     superficie_quartier:number,
     nom_quartier:string
+}
+
+export interface VariableCartoDBAnaQuartier extends GeoJSONPropsAnaQuartier{
+    geojson_geometry: Geometry,
+    superf_quartier:number
 }
 
 export interface StatTotalDBAnaQuartier extends GeoJSONPropsAnaQuartier{

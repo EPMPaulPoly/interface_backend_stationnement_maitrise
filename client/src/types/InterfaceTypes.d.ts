@@ -2,7 +2,7 @@ import {LatLng, LatLngExpression} from "leaflet";
 import { SetStateAction } from "react";
 import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties, lotCadastralAvecBoolInvGeoJsonProperties, informations_reglementaire_manuelle } from "./DataTypes";
 import { FeatureCollection, Geometry } from "geojson";
-import { PrioriteEstimeQuartier, TypesVisualisationAnalyseQuartier } from "./AnalysisTypes";
+import { PrioriteEstimeQuartier, TypesVisualisationAnalyseQuartier, VariablesPossibles } from "./AnalysisTypes";
 // --------------------------------------------------------------------------
 // ------------------------- Interface --------------------------------------
 // --------------------------------------------------------------------------
@@ -296,7 +296,8 @@ export interface MenuCompQuartiersProps{
 
 export interface AnalyseCartoQuartierProps{
     prioriteInventaire:number,
-    prioriteInventairePossibles:PrioriteEstimeQuartier[]
+    prioriteInventairePossibles:PrioriteEstimeQuartier[],
+    variablesPossibles: VariablesPossibles[]
 }
 
 export interface AnalysePAVQuartierProps{
@@ -306,10 +307,12 @@ export interface AnalysePAVQuartierProps{
 
 export interface AnalyseHistoQuartierProps{
     prioriteInventaire:number,
-    prioriteInventairePossibles:PrioriteEstimeQuartier[]
+    prioriteInventairePossibles:PrioriteEstimeQuartier[],
+    variablesPossibles: VariablesPossibles[]
 }
 
 export interface AnalyseXYQuartierProps{
     prioriteInventaire:number,
-    prioriteInventairePossibles:PrioriteEstimeQuartier[]
+    prioriteInventairePossibles:PrioriteEstimeQuartier[],
+    variablesPossibles: VariablesPossibles[]
 }
