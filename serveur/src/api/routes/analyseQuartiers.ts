@@ -506,10 +506,104 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       }
     }
   };
+
+  const recalculeVariablesAncilaires:RequestHandler<void>= async(_req,res):Promise<void>=>{
+    let client
+    try {
+      console.log('Recalcul de variables anciliaires ');
+      client = await pool.connect();
+      const query = `
+        BEGIN;
+        DELETE FROM motorisation_par_quartier;
+        INSERT INTO motorisation_par_quartier (id_quartier, nb_voitures)
+        SELECT
+          z.id_quartier,
+          CEIL(SUM(c.nbveh * c.facmen)) AS nb_voitures
+        FROM
+          sec_analyse z
+        JOIN
+          od_data c
+          ON ST_Within(c.geom_logis, z.geometry)
+        WHERE
+          c.tlog = 1
+        GROUP BY
+          z.id_quartier;
+        DELETE FROM population_par_quartier;
+        INSERT INTO population_par_quartier (id_quartier,pop_tot_2021)
+        SELECT
+          z.id_quartier,
+          SUM(c.pop_2021) AS pop_tot_2021
+        FROM
+          sec_analyse z
+        JOIN
+          census_population c
+        ON
+          ST_Intersects(z.geometry, c.geometry)
+        WHERE
+          ST_Area(ST_Intersection(z.geometry, c.geometry)) / ST_Area(c.geometry) >= 0.9
+        GROUP BY
+          z.id_quartier;
+        delete from donnees_foncieres_agregees;
+        WITH role_quartier_log AS(
+          SELECT 
+            sa.id_quartier::int,
+            ceil(SUM(rf.rl0404a)/sum(rf.rl0311a)) as val_moy_log,
+            ceil(SUM(rf.rl0308a)/sum(rf.rl0311a)) as sup_moy_log,
+            ceil(SUM(rf.rl0404a)) as val_tot_log
+          FROM
+            role_foncier rf
+          LEFT JOIN
+            sec_analyse sa on ST_Within(rf.geometry,sa.geometry)
+          where
+            rf.rl0105a::int = 1000 
+            and rf.rl0404a IS not null 
+            and rf.rl0308a IS not null 
+            and rf.rl0311a IS not null
+          group by sa.id_quartier
+          
+        ), role_quartier_tout AS(
+          SELECT 
+            sa.id_quartier::int,
+            ceil(SUM(rf.rl0404a)) as val_tot_tout
+          FROM
+            role_foncier rf
+          LEFT JOIN
+            sec_analyse sa on ST_Within(rf.geometry,sa.geometry)
+          where
+            rf.rl0404a is not null 
+          group by sa.id_quartier
+        )
+        INSERT INTO donnees_foncieres_agregees (id_quartier,valeur_moyenne_logement,superf_moyenne_logement,valeur_fonciere_logement_totale,valeur_fonciere_totale)
+        SELECT 
+          sa.id_quartier::int,
+          rql.val_moy_log,
+          rql.sup_moy_log,
+          rql.val_tot_log,
+          rqt.val_tot_tout
+        from
+          sec_analyse sa
+        left join 
+          role_quartier_log rql on rql.id_quartier = sa.id_quartier
+        left join
+          role_quartier_tout rqt on rqt.id_quartier = sa.id_quartier;
+        COMMIT;
+      `;
+      const result = await client.query(query);
+      res.json({ success: true});
+    } catch (err) {
+      res.status(500).json({ success: false, error: 'Database error' });
+      console.log('Enjeux dans l agregation du stationnement')
+    } finally{
+      if (client){
+        client.release()
+      }
+    }
+  }
   // Routes
   router.get('/carto',obtientInfoParQuartierCarto)
   router.get('/histo',obtientInfoParQuartierHisto)
   router.get('/XY',obtiensDonneesGraphiqueXY)
   router.get('/recalcule-stat-agreg',recalculeStationnementAgrege)
+  router.get('/recalcule-val-autres',recalculeVariablesAncilaires)
   return router;
 };
