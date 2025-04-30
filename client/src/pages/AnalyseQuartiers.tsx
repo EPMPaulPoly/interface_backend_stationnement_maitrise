@@ -114,10 +114,34 @@ const AnalyseQuartiers:React.FC = () =>{
             },
             {
                 idVariable:13,
-                descriptionVariable:'Nombre de voitures par personne',
+                descriptionVariable:'Nombre de voitures par 1000 personnes',
                 requiertOrdrePriorite:false,
                 queryKey:'voit-par-pers'
             },
+            {
+                idVariable:14,
+                descriptionVariable:'Delta Voitures Jour Nuit',
+                requiertOrdrePriorite:false,
+                queryKey:'nb-voit-delta'
+            },
+            {
+                idVariable:15,
+                descriptionVariable:'Nombre de voitures max',
+                requiertOrdrePriorite:false,
+                queryKey:'nb-voit-max'
+            },
+            {
+                idVariable:16,
+                descriptionVariable:'Nombre de voitures min',
+                requiertOrdrePriorite:false,
+                queryKey:'nb-voit-min'
+            },
+            {
+                idVariable:17,
+                descriptionVariable:'Stationnement par voiture max',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-voit-max'
+            }
         ];
     const prioritesPossibles:PrioriteEstimeInventaire[]=[
         {

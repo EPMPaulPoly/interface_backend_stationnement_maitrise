@@ -1,4 +1,4 @@
-import React,{useState} from 'react';
+import React,{useState,useEffect} from 'react';
 import { AnalyseXYQuartierProps } from '../types/InterfaceTypes';
 import {VariablesPossiblesGraphiqueXY,NhoodXYGraphDatasets} from '../types/AnalysisTypes';
 import { serviceAnalyseInventaire } from '../services/serviceAnalyseInventaire';
@@ -9,6 +9,13 @@ const AnalyseXYQuartiers:React.FC<AnalyseXYQuartierProps>=(props:AnalyseXYQuarti
     const [variableSelectY,defVariableSelectY] = useState<number>(-1);
     const [calculEnCours,defCalculEncours] = useState<boolean>(false);
     const [donneesXY,defDonneesXY] = useState<NhoodXYGraphDatasets>({descriptionX:'',descriptionY:'',donnees:[]})
+
+    const [key, setKey] = useState(0); // Utilisé pour forcer le re-rendu
+
+    useEffect(() => {
+        // Force le re-rendu en changeant la clé
+        setKey(prevKey => prevKey + 1);
+    }, [donneesXY]);
     const variablesPotentielles:VariablesPossiblesGraphiqueXY[] = [
         {
             idVariable:0,
@@ -89,13 +96,35 @@ const AnalyseXYQuartiers:React.FC<AnalyseXYQuartierProps>=(props:AnalyseXYQuarti
             queryKey:'nb-voit'
         }
     ];
-    const gestSelectVariable=(targetValue:number,axis:string)=>{
+    const gestSelectVariable=async(targetValue:number,axis:string)=>{
         switch(axis){
             case 'X':
                 defVariableSelectX(targetValue);
+                if ( variableSelectY!==-1){
+                    const besoinOrdre = (props.variablesPossibles.find((variable)=>variable.idVariable === targetValue)?.requiertOrdrePriorite??true) || (props.variablesPossibles.find((variable)=>variable.idVariable === variableSelectY)?.requiertOrdrePriorite??true)
+                    let data;
+                    if (besoinOrdre){
+                        const listOrdre = props.prioriteInventairePossibles.find((ordre) => ordre.idPriorite === props.prioriteInventaire)?.listeMethodesOrdonnees ?? [1, 3, 2]
+                        data = await serviceAnalyseInventaire.obtientDonneesGraphiqueXY(listOrdre,props.variablesPossibles.find((variable)=>variable.idVariable===targetValue)?.queryKey??'stat-tot',props.variablesPossibles.find((variable)=>variable.idVariable===variableSelectY)?.queryKey??'stat-tot')
+                    } else{
+                        data = await serviceAnalyseInventaire.obtientDonneesGraphiqueXY(undefined,props.variablesPossibles.find((variable)=>variable.idVariable===targetValue)?.queryKey??'stat-tot',props.variablesPossibles.find((variable)=>variable.idVariable===variableSelectY)?.queryKey??'stat-tot')
+                    }
+                    defDonneesXY(data.data)
+                }
                 break;
             case 'Y':
                 defVariableSelectY(targetValue);
+                if (variableSelectX!==-1){
+                    const besoinOrdre = (props.variablesPossibles.find((variable)=>variable.idVariable === variableSelectX)?.requiertOrdrePriorite??true) || (props.variablesPossibles.find((variable)=>variable.idVariable === targetValue)?.requiertOrdrePriorite??true)
+                    let data;
+                    if (besoinOrdre){
+                        const listOrdre = props.prioriteInventairePossibles.find((ordre) => ordre.idPriorite === props.prioriteInventaire)?.listeMethodesOrdonnees ?? [1, 3, 2]
+                        data = await serviceAnalyseInventaire.obtientDonneesGraphiqueXY(listOrdre,props.variablesPossibles.find((variable)=>variable.idVariable===variableSelectX)?.queryKey??'stat-tot',props.variablesPossibles.find((variable)=>variable.idVariable===targetValue)?.queryKey??'stat-tot')
+                    } else{
+                        data = await serviceAnalyseInventaire.obtientDonneesGraphiqueXY(undefined,props.variablesPossibles.find((variable)=>variable.idVariable===variableSelectX)?.queryKey??'stat-tot',props.variablesPossibles.find((variable)=>variable.idVariable===targetValue)?.queryKey??'stat-tot')
+                    }
+                    defDonneesXY(data.data)
+                }
                 break;
             default:
                 console.log('invalid variable name')
@@ -118,6 +147,7 @@ const AnalyseXYQuartiers:React.FC<AnalyseXYQuartierProps>=(props:AnalyseXYQuarti
     const renduGraphique = () =>{
         if (donneesXY.donnees.length>0){
         return(<ChartPlot
+                    key={key} // Utilisez la clé pour forcer le re-rendu
                     type={'scatter'}
                     data={{
                         datasets: [
@@ -221,8 +251,6 @@ const AnalyseXYQuartiers:React.FC<AnalyseXYQuartierProps>=(props:AnalyseXYQuarti
                     </option>
                 ))}
             </select>
-            {(variableSelectX !== -1) && (variableSelectY!== -1) ? <button onClick={gestObtientVariables}>Obtenir Données</button> : <></>}
-            <button onClick={gestRecalculeVariablesAncillaires}>Recalculer variables ancillaires</button>
         </div>
         <div className={"graphxy"}>
             {renduGraphique()}

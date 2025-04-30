@@ -23,8 +23,11 @@ const AnalyseProfilAccumulationVehiculeQuartiers: React.FC<AnalysePAVQuartierPro
     }, []);
 
 
-    const gestSelectQuartier = (id_quartier: number) => {
+    const gestSelectQuartier = async(id_quartier: number) => {
         defQuartierSelect(id_quartier)
+        const resultat = await servicePAV.obtientPAVQuartier(props.prioriteInventairePossibles.find((ordre) => ordre.idPriorite === props.prioriteInventaire)?.listeMethodesOrdonnees ?? [1, 3, 2], id_quartier)
+        defPAVQuartier(resultat.data)
+        defPAVvalide(true)
     }
 
     const gestObtientPAV = async () => {
@@ -231,8 +234,7 @@ const AnalyseProfilAccumulationVehiculeQuartiers: React.FC<AnalysePAVQuartierPro
                         </option>
                     ))}
                 </select>
-                {quartierSelect !== -1 ? <button onClick={gestObtientPAV}>Obtenir PAV</button> : <></>}
-                {quartierSelect !== -1 ? <button onClick={gestCalculPAV}>Recalculer PAV</button> : <></>}
+                {quartierSelect !== -1 ? <><label htmlFor="bouton-recalcul">Recaluler PAV</label><button className="bouton-recalcul" onClick={gestCalculPAV}>Recalculer PAV</button> </>: <></>}
                 {PAVCalcule ? <><button onClick={gestSauvegardePAV}>Approuver PAV</button><button onClick={gestAnnulPAV}>Refuser PAV</button></> : <></>}
             </div>
             <div className={"PAV"}>

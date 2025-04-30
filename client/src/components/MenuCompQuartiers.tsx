@@ -13,6 +13,12 @@ const MenuCompQuartiers:React.FC<MenuCompQuartiersProps>=(props:MenuCompQuartier
         const succes = await serviceAnalyseInventaire.recalculeInventaireBackend()
         props.defCalculEnCours(false)
     }
+    const gestRecalculAncil=async()=>{
+        props.defCalculEnCours(true)
+        const succes = await serviceAnalyseInventaire.recalculeDonneesFoncieresBackend()
+        props.defCalculEnCours(false)
+    }
+
     return(
         <div className="menu-comp-quartiers">
             <label htmlFor="select-type">Type d'analyse</label>
@@ -34,6 +40,8 @@ const MenuCompQuartiers:React.FC<MenuCompQuartiersProps>=(props:MenuCompQuartier
             </select>
             <label htmlFor="bouton-recalcul">Cliquer ici pour ré-agréger l'inventaire</label>
             <button className="bouton-recalcul" onClick={gestRecalculStationnementAgreg}>Recalculer Inventaire Agrege (3min)</button>
+            <label htmlFor="bouton-recalcul-ancil">Cliquer ici pour ré-agréger les autres données</label>
+            <button className="bouton-recalcul-ancil" onClick={gestRecalculAncil}>Actualiser val ancilaires(50s)</button>
         </div>
     )
 }

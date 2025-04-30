@@ -62,10 +62,10 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       requiresOrdre: false
     },
     'voit-par-pers':{
-      expression: () => `(mq.nb_voitures/pq.pop_tot_2021)::float`,
-      aggregateExpression:()=>`SUM(mq.nb_voitures)/SUM(pq.pop_tot_2021)::float`,
+      expression: () => `(1000*mq.nb_voitures/pq.pop_tot_2021)::float`,
+      aggregateExpression:()=>`1000*SUM(mq.nb_voitures)/SUM(pq.pop_tot_2021)::float`,
       joins:['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int','population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
-      description: 'Nombre de voiture (OD) par personne(Recensement) [-]',
+      description: 'Nombre de voiture (OD) par 1000 personne(Recensement) [-]',
       requiresOrdre: false
     },
     'dens-pop': {
@@ -113,8 +113,36 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
     'nb-voit':{
       expression: () => `(mq.nb_voitures)::float`,
       aggregateExpression:()=>`SUM(mq.nb_voitures)::float`,
-      joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq .id_quartier::int'],
+      joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
       description: 'Nombre de voitures [-]',
+      requiresOrdre: false
+    },
+    'nb-voit-delta':{
+      expression:()=>`(mq.diff_max_signee)`,
+      aggregateExpression:()=>`SUM(mq.diff_max_signee)::float`,
+      joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+      description: 'Delta Voitures Max [-]',
+      requiresOrdre: false
+    },
+    'nb-voit-max':{
+      expression:()=>`(mq.nb_voitures_max_pav)`,
+      aggregateExpression:()=>`SUM(mq.nb_voitures_max_pav)::float`,
+      joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+      description: 'Voitures Max Journees[-]',
+      requiresOrdre: false
+    },
+    'nb-voit-min':{
+      expression:()=>`(mq.nb_voitures_min_pav)`,
+      aggregateExpression:()=>`SUM(mq.nb_voitures_min_pav)::float`,
+      joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+      description: 'Voitures Min Journees[-]',
+      requiresOrdre: false
+    },
+    'stat-voit-max':{
+      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(mq.nb_voitures_max_pav, 0))::float`,
+      aggregateExpression:()=>`0::float`,
+      joins: ['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int','motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+      description: 'Stationnement par voiture max[-]',
       requiresOrdre: false
     }
   };
@@ -508,26 +536,47 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
   };
 
   const recalculeVariablesAncilaires:RequestHandler<void>= async(_req,res):Promise<void>=>{
-    let client
+    let client;
     try {
       console.log('Recalcul de variables anciliaires ');
       client = await pool.connect();
       const query = `
         BEGIN;
         DELETE FROM motorisation_par_quartier;
-        INSERT INTO motorisation_par_quartier (id_quartier, nb_voitures)
+        INSERT INTO motorisation_par_quartier (id_quartier, nb_voitures,nb_voitures_max_pav,nb_voitures_min_pav,diff_max_signee)
+        WITH aggregated_data AS (
+            SELECT
+                z.id_quartier::int,
+                CEIL(SUM(c.nbveh * c.facmen)) AS nb_voitures
+            FROM
+                sec_analyse z
+            JOIN
+                od_data c
+                ON ST_Within(c.geom_logis, z.geometry)
+            WHERE
+                c.tlog = 1
+            GROUP BY
+                z.id_quartier
+        )
         SELECT
-          z.id_quartier,
-          CEIL(SUM(c.nbveh * c.facmen)) AS nb_voitures
+            ad.id_quartier,
+            ad.nb_voitures,
+            MAX(pav.voitures) AS nb_voitures_max_pav,
+            MIN(pav.voitures) AS nb_voitures_min_pav,
+            CASE
+                WHEN ABS(ad.nb_voitures - MAX(pav.voitures)) > ABS(ad.nb_voitures - MIN(pav.voitures))
+                THEN MAX(pav.voitures)-ad.nb_voitures
+                ELSE MIN(pav.voitures) - ad.nb_voitures
+            END AS diff_max_signee
         FROM
-          sec_analyse z
-        JOIN
-          od_data c
-          ON ST_Within(c.geom_logis, z.geometry)
-        WHERE
-          c.tlog = 1
+            aggregated_data ad
+        LEFT JOIN
+            profile_accumulation_vehicule pav
+            ON pav.id_quartier::int = ad.id_quartier::int
         GROUP BY
-          z.id_quartier;
+            ad.id_quartier,
+            ad.nb_voitures;
+
         DELETE FROM population_par_quartier;
         INSERT INTO population_par_quartier (id_quartier,pop_tot_2021)
         SELECT
