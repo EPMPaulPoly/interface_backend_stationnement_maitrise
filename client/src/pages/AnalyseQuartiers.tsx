@@ -42,7 +42,7 @@ const AnalyseQuartiers:React.FC = () =>{
             },
             {
                 idVariable:1,
-                descriptionVariable:'Stationnement par mètre carré',
+                descriptionVariable:'Densité de stationnement',
                 requiertOrdrePriorite:true,
                 queryKey:'stat-sup'
             },
@@ -111,7 +111,13 @@ const AnalyseQuartiers:React.FC = () =>{
                 descriptionVariable:'Nombre de voitures',
                 requiertOrdrePriorite:false,
                 queryKey:'nb-voit'
-            }
+            },
+            {
+                idVariable:13,
+                descriptionVariable:'Nombre de voitures par personne',
+                requiertOrdrePriorite:false,
+                queryKey:'voit-par-pers'
+            },
         ];
     const prioritesPossibles:PrioriteEstimeInventaire[]=[
         {

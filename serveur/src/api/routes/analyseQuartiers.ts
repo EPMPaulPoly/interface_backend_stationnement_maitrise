@@ -14,7 +14,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
   const variableMap: Record<string, XYVariableInfo> = {
     'stat-tot': {
       expression: (ordre) => `stag.inv_${getValidatedOrdre(ordre)}::float`,
-      aggregateExpression:(ordre) =>`stag.inv_${getValidatedOrdre(ordre)}`,
+      aggregateExpression:(ordre) =>`SUM(stag.inv_${getValidatedOrdre(ordre)})`,
       joins:['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int'],
       description: 'Stationnement Total [-]',
       requiresOrdre: true
@@ -57,15 +57,15 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
     'popu': {
       expression: () => `pq.pop_tot_2021::float`,
       aggregateExpression:() =>`SUM(pq.pop_tot_2021)`,
-      joins:['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+      joins:['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int',],
       description: 'Population [-]',
       requiresOrdre: false
     },
-    'voit':{
-      expression: () => `pq.nb_voitures::float`,
-      aggregateExpression:()=>`SUM(pq.nb_voitures)`,
-      joins:['motorisation_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
-      description: 'Nombre de voiture (OD) [-]',
+    'voit-par-pers':{
+      expression: () => `(mq.nb_voitures/pq.pop_tot_2021)::float`,
+      aggregateExpression:()=>`SUM(mq.nb_voitures)/SUM(pq.pop_tot_2021)::float`,
+      joins:['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int','population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+      description: 'Nombre de voiture (OD) par personne(Recensement) [-]',
       requiresOrdre: false
     },
     'dens-pop': {

@@ -11,34 +11,6 @@ const AnalyseHistogrammeQuartier: React.FC<AnalyseHistoQuartierProps> = (props: 
     const [variableSelect,defVariableSelect] = useState<number>(-1);
     const [donneesVariables,defDonneesVariables]= useState<barChartDataSet>({valeurVille:0,description:'',donnees:[]});
 
-    const options:TypesAnalysesCartographiqueQuartier[]=[
-            {
-                idAnalyseCarto: 0,
-                descriptionAnalyseCarto: "Stationnement total",
-            },
-            {
-                idAnalyseCarto: 1,
-                descriptionAnalyseCarto: "Stationnement par superficie",
-            },
-            {
-                idAnalyseCarto:2,
-                descriptionAnalyseCarto: "Stationnement par voiture"
-            },
-            {
-                idAnalyseCarto:3,
-                descriptionAnalyseCarto: "Stationnement par habitant"
-            },
-            {
-                idAnalyseCarto:4,
-                descriptionAnalyseCarto: "Pourcentage Territoire"
-            }
-        ];
-
-    
-
-    const obtenirLegendeAxeY =()=>{
-        return props.variablesPossibles.find((variable)=> variable.idVariable===variableSelect)?.descriptionVariable??'N/A'
-    }
 
     const renduGraphique = () => {
         if (donneesVariables.donnees.length>0) {
@@ -98,7 +70,7 @@ const AnalyseHistogrammeQuartier: React.FC<AnalyseHistoQuartierProps> = (props: 
                             y: {
                                 title: {
                                     display: true,
-                                    text: obtenirLegendeAxeY(),
+                                    text: donneesVariables.description,
                                     font: {
                                         size: 20,
                                     }
@@ -123,17 +95,18 @@ const AnalyseHistogrammeQuartier: React.FC<AnalyseHistoQuartierProps> = (props: 
     };
 
     const gestObtientVariable = async() =>{
+        
+    };
+    const gestSelectVariable =async(idAnalyse:number)=>{
         let HistoRep;
-        if (variableSelect!==-1){
-            HistoRep = await serviceAnalyseInventaire.obtientVariableAgregeParQuartierHisto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2],props.variablesPossibles.find((variable)=>variable.idVariable===variableSelect)?.queryKey??'stat-tot')
+        if (idAnalyse!==-1){
+            HistoRep = await serviceAnalyseInventaire.obtientVariableAgregeParQuartierHisto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2],props.variablesPossibles.find((variable)=>variable.idVariable===idAnalyse)?.queryKey??'stat-tot')
         }
         if (HistoRep && HistoRep.success){
             defDonneesVariables(HistoRep.data)
         } else{
             defDonneesVariables({valeurVille:0,description:'',donnees:[]})
         }
-    };
-    const gestSelectVariable =(idAnalyse:number)=>{
         defVariableSelect(idAnalyse)
     }
     const getShowLine = ():boolean=>{
@@ -152,8 +125,6 @@ const AnalyseHistogrammeQuartier: React.FC<AnalyseHistoQuartierProps> = (props: 
                         </option>
                     ))}
                 </select>
-                {variableSelect !== -1 ? <button onClick={gestObtientVariable}>Obtenir Données</button> : <></>}
-                <button onClick={gestCalculMoyennesFoncieres}>Recalculer moyennes foncières</button>
             </div>
             <div className={"histo"}>
                 {renduGraphique()}
