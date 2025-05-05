@@ -5,8 +5,11 @@ Projet en vue de la complétion d'une maitrise en génie civil. Cet projet a pou
 ## Documentation
 
 Lien vers le mémoire lorsque disponible:
+
 Installation:
+
 Démarrage rapide:
+
 Information sur l'API:
 
 ## Références utiles pour la compréhension
