@@ -5,7 +5,8 @@ import VisualisationInventaire from './pages/VisualisationInventaire';
 import Reglements from './pages/Reglements';
 import EnsemblesReglements from './pages/EnsemblesReglements';
 import EnsRegTerritoire from './pages/EnsRegTerr';
-import CompReg from './pages/CompReg';
+import AnalyseQuartiers from './pages/AnalyseQuartiers';
+import AnalyseReglements from './pages/AnalyseReglements';
 const app: React.FC = () => {
   return (
       <Router>
@@ -16,7 +17,8 @@ const app: React.FC = () => {
           <Route path="/reg" element={<Reglements/>}/>
           <Route path="/ens-reg" element={<EnsemblesReglements/>}/>
           <Route path="/ens-reg-terr" element={<EnsRegTerritoire/>}/>
-          <Route path="/comp-reg" element={<CompReg/>}/>
+          <Route path="/ana-reg" element={<AnalyseReglements/>}/>
+          <Route path="/ana-quartiers" element={<AnalyseQuartiers/>}/>
         </Routes>
       </Router>
   );

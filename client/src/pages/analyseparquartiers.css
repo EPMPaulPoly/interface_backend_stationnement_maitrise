@@ -1,0 +1,109 @@
+.page-comp-quart {
+    display: flex;
+    flex-direction: column; /* Stack vertically if necessary */
+    height: 100vh; /* Full height of the page */
+    overflow: hidden; /* Prevent overflow (no scrollbars) */
+    background-color: #1f1f1f;
+}
+.conteneur-resultat-comp-quartier{
+    display: flex;
+    flex-direction: column; /* Stack vertically if necessary */
+    background-color: #1f1f1f;
+    height: 100%;
+}
+
+.menu-selection-couleur{
+    padding:5px;
+}
+
+.carte-quartiers{
+    height: 100%;
+    flex-grow: 1;
+}
+
+.info {
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+}
+
+.legend {
+    line-height: 18px;
+    color: #555;
+}
+
+.legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin: 0 8px 0 0;
+    opacity: 0.7;
+    border-radius: 3px;
+}
+.conteneur-PAV{
+    display: flex;
+    flex-direction: column; /* Stack vertically if necessary */
+    background-color: #1f1f1f;
+    height: 100%;
+}
+
+.PAV{
+    width: 100%; /* or a fixed size */
+    height: 100%; /* adjust as needed */
+    overflow: hidden; /* prevent overflow */
+    min-height: 300px;
+    flex: 1;
+}
+
+.conteneur-resultat-comp-quartier-PAV{
+    display: flex;
+    flex-direction: column; /* Stack vertically if necessary */
+    background-color: #1f1f1f;
+    height: 100%;
+}
+.conteneur-histo{
+    display: flex;
+    flex-direction: column; /* Stack vertically if necessary */
+    background-color: #1f1f1f;
+    height: 100%;
+}
+
+.histo{
+    width: 100%; /* or a fixed size */
+    height: 100%; /* adjust as needed */
+    overflow: hidden; /* prevent overflow */
+    min-height: 300px;
+    flex: 1;
+}
+
+.conteneur-resultat-comp-quartier-histo{
+    display: flex;
+    flex-direction: column; /* Stack vertically if necessary */
+    background-color: #1f1f1f;
+    height: 100%;
+}
+
+.conteneur-xy{
+    display: flex;
+    flex-direction: column; /* Stack vertically if necessary */
+    background-color: #1f1f1f;
+    height: 100%;
+}
+
+.graphxy{
+    width: 100%; /* or a fixed size */
+    height: 100%; /* adjust as needed */
+    overflow: hidden; /* prevent overflow */
+    min-height: 300px;
+    flex: 1;
+}
+
+.conteneur-resultat-comp-quartier-XY{
+    display: flex;
+    flex-direction: column; /* Stack vertically if necessary */
+    background-color: #1f1f1f;
+    height: 100%;
+}

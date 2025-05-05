@@ -4,6 +4,32 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import 'leaflet/dist/leaflet.css';
 
+
+// 👇 Add this at the top
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement, // <-- THIS
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement, // <-- THIS
+  Title,
+  Tooltip,
+  Legend
+);
+
+
 const domNode = document.getElementById('root');
 if (domNode) {
   const root = createRoot(domNode);

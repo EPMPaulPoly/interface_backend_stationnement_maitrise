@@ -13,9 +13,9 @@ const MenuBar: React.FC<{}> = () => {
             <Link className="menu-links"to="/reg">Règlements</Link>
             <Link className="menu-links"to="/ens-reg">Ens. Règ</Link>
             <Link className="menu-links"to="/ens-reg-terr">Ens. Règ. Terr.</Link>
-            <Link className="menu-links"to="/comp-reg">Comp. Règ</Link>
+            <Link className="menu-links"to="/ana-reg">Analyse Règlements</Link>
             <Link className="menu-links"to="/inventaire">Inventaire</Link>
-            <Link className="menu-links"to="/comp-quartiers">Comp. Quartiers</Link>
+            <Link className="menu-links"to="/ana-quartiers">Analyse Quartiers</Link>
             <div className="control-dds">
                 <div className="ville-control">
                     <label 

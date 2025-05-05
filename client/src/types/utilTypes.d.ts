@@ -8,7 +8,7 @@ export interface MAJLotsInventaireProps{
 }
 
 export interface calculateRegLotInventoryProps{
-    lots:inventaire_stationnement[],
+    lots:GeoJSON.Feature<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>,
     modifEnMarche:boolean,
     defInventaireProp:React.Dispatch<SetStateAction<inventaire_stationnement>>
     defNvInvRegATrait:React.Dispatch<SetStateAction<boolean>>

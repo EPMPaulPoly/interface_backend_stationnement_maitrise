@@ -6,6 +6,7 @@ import L, { LeafletEvent } from 'leaflet';
 import selectLotInventaire from '../utils/selectLotInventaire';
 import { selectLotProps } from '../types/utilTypes';
 import {  lotCadastralAvecBoolInvGeoJsonProperties } from '../types/DataTypes';
+import chroma from 'chroma-js';
 const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
   const handleLotClick = (e: LeafletEvent) => {
     const key = e.target.feature.properties.g_no_lot;
@@ -49,13 +50,26 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
         if (props.lotsDuQuartier && props.lotsDuQuartier.features.length > 0) {
           // Create a new GeoJSON layer from props.geoJsondata
           const lotsAMontrer = !props.montrerTousLots? props.lotsDuQuartier.features.filter((o)=>o.properties.bool_inv===true):props.lotsDuQuartier;
+          // Extract min/max dynamically from the dataset
+          const values = props.inventaire.map(f => Math.max(f.n_places_min,f.n_places_min,f.n_places_estime));
+          const minValue = Math.min(...values);
+          const maxValue = Math.max(...values);
+          // Create a color scale from light yellow to dark red
+          const colorScale = chroma.scale(['#FFEDA0', '#E31A1C', '#800026']).domain([minValue, maxValue]);
+          console.log('échelle')
           const geoJsonLayer = L.geoJSON(lotsAMontrer, {
             style: (feature) => {
               const isLotInAnalyse = feature && props.lotSelect.properties.g_no_lot===feature.properties.g_no_lot;
+              const hasInventaire = props.inventaire.find((item)=>item.g_no_lot===feature?.properties.g_no_lot) ??false;
+              const parkingInventory = hasInventaire ? Math.max(
+                props.inventaire.find((item)=> item.g_no_lot===feature?.properties?.g_no_lot && item.methode_estime===2)?.n_places_min ?? 0, 
+                props.inventaire.find((item)=> item.g_no_lot===feature?.properties?.g_no_lot && item.methode_estime===1)?.n_places_mesure ?? 0, 
+                props.inventaire.find((item)=> item.g_no_lot===feature?.properties?.g_no_lot && item.methode_estime===3)?.n_places_min ?? 0) 
+                : 0;
               return {
-                color: isLotInAnalyse ? 'red' : 'blue', // Border color based on condition
+                color: isLotInAnalyse ? 'green' : 'blue', // Border color based on condition
                 weight: 2,     // Border thickness
-                fillColor: isLotInAnalyse ? 'pink' : 'cyan', // Fill color based on condition
+                fillColor: isLotInAnalyse ? 'pink' : hasInventaire?parkingInventory===0?'black':colorScale(Number(parkingInventory) || minValue).hex():'cyan', // Fill color based on condition
                 fillOpacity: 0.5,  // Fill transparency
               };
             },
@@ -74,6 +88,45 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
 
           geoJsonLayer.addTo(geoJsonLayerGroupRef.current); // Add the new layer to the group
 
+          // Create a legend based on the color scale
+          let legend:L.Control|null = null;
+          function removeLegends(map:L.Map) {
+            // Select all elements with the class 'info legend' and remove them
+            const existingLegends = document.querySelectorAll('.info.legend');
+            existingLegends.forEach(legend => {
+                legend.remove();
+            });
+        }
+
+          function addLegendToMap(map:L.Map, maxValue:number, minValue:number, colorScale:chroma.Scale) {
+            // Remove existing legend if it exists
+            removeLegends(map);
+            // Create a new legend
+            legend = new L.Control({ position: 'bottomright' });
+        
+            legend.onAdd = function () {
+              const div = L.DomUtil.create('div', 'info legend');
+              const grades = [0, 1, (maxValue + minValue) / 2, maxValue]; // Define breakpoints
+              const labels = [];
+              labels.push('N stat.');
+              // Generate legend items based on color scale
+              grades.forEach((grade, index) => {
+                  const color = grade === 0 ? 'black' : colorScale(grade).hex();
+                  labels.push(
+                      `<i style="background:${color}"></i> ${Math.round(grade)}`
+                  );
+              });
+      
+              div.innerHTML = labels.join('<br>');
+              return div;
+            };
+        
+            // Add the new legend to the map
+            legend.addTo(map);
+          }
+           
+           // Call the function to add the legend
+           addLegendToMap(map, maxValue, minValue, colorScale);
           // Check if inventaire has changed before adjusting bounds
           if (prevInventaireRef.current !== props.lotsDuQuartier) {
             const bounds = geoJsonLayer.getBounds();

@@ -96,6 +96,17 @@ export interface ensemble_reglement_territoire{
     ens_reg: ensembles_reglements_stationnement
 }
 
+export interface PAVQuartier{
+    id_quartier:number,
+    nom_quartier:string,
+    capacite_stat_quartier:number,
+    PAV:entreePAV[]
+}
+export interface entreePAV{
+    id_entree:number,
+    heure:number,
+    voitures:number
+}
 
 export interface lotCadastralGeomSeulDb {
     g_no_lot:string;
@@ -107,6 +118,18 @@ export interface lotCadastralGeoJsonProperties{
     g_va_suprf:number,
     g_nb_coord:number,
     g_nb_coo_1:number
+}
+
+export interface barChartDataSet{
+    valeurVille:number,
+    description:'',
+    donnees:barChartData[]
+}
+
+export interface barChartData{
+    id_quartier:number,
+    nom_quartier:string,
+    valeurs:number
 }
 
 export interface lotCadastralDB extends lotCadastralGeoJsonProperties{

@@ -2,6 +2,7 @@ import {LatLng, LatLngExpression} from "leaflet";
 import { SetStateAction } from "react";
 import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties, lotCadastralAvecBoolInvGeoJsonProperties, informations_reglementaire_manuelle } from "./DataTypes";
 import { FeatureCollection, Geometry } from "geojson";
+import { PrioriteEstimeQuartier, TypesVisualisationAnalyseQuartier, VariablesPossibles } from "./AnalysisTypes";
 // --------------------------------------------------------------------------
 // ------------------------- Interface --------------------------------------
 // --------------------------------------------------------------------------
@@ -277,4 +278,41 @@ export interface CarteEnsRegTerrProps{
 export interface GraphiqueProps{
     listeReglements:number[],
     defListeReglements:React.Dispatch<SetStateAction<number[]>>
+}
+
+// ----------------------------------------------------------------------------
+// -------------------- Graphiques Comparaison Quartiers ---------------------
+// ---------------------------------------------------------------------------- 
+
+export interface MenuCompQuartiersProps{
+    methodeAnalyse:number,
+    defMethodeAnalyse:React.Dispatch<SetStateAction<number>>,
+    methodesPossibles:TypesVisualisationAnalyseQuartier[],
+    prioriteInventaire:number,
+    defPrioriteInventaire:React.Dispatch<SetStateAction<number>>,
+    prioriteInventairePossibles:PrioriteEstimeQuartier[],
+    defCalculEnCours:React.Dispacth<SetStateAction<boolean>>
+}
+
+export interface AnalyseCartoQuartierProps{
+    prioriteInventaire:number,
+    prioriteInventairePossibles:PrioriteEstimeQuartier[],
+    variablesPossibles: VariablesPossibles[]
+}
+
+export interface AnalysePAVQuartierProps{
+    prioriteInventaire:number,
+    prioriteInventairePossibles:PrioriteEstimeQuartier[]
+}
+
+export interface AnalyseHistoQuartierProps{
+    prioriteInventaire:number,
+    prioriteInventairePossibles:PrioriteEstimeQuartier[],
+    variablesPossibles: VariablesPossibles[]
+}
+
+export interface AnalyseXYQuartierProps{
+    prioriteInventaire:number,
+    prioriteInventairePossibles:PrioriteEstimeQuartier[],
+    variablesPossibles: VariablesPossibles[]
 }
