@@ -133,12 +133,12 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
 
             return null; // No need to render anything for the map component itself
     };
-    const gestSelectionCarto = async() =>{
+    const gestSelectionCarto = async(idTypeAnalyse:number) =>{
         let CartoRep;
         defCartoValide(false)
         defChargement(true)
-        if (typeCarto!==-1){
-            CartoRep = await serviceAnalyseInventaire.obtientVariableAgregeParQuartierCarto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2],props.variablesPossibles.find((item)=>item.idVariable===typeCarto)?.queryKey??'stat-tot')
+        if (idTypeAnalyse!==-1){
+            CartoRep = await serviceAnalyseInventaire.obtientVariableAgregeParQuartierCarto(props.prioriteInventairePossibles.find((ordre)=> ordre.idPriorite=== props.prioriteInventaire)?.listeMethodesOrdonnees??[1,3,2],props.variablesPossibles.find((item)=>item.idVariable===idTypeAnalyse)?.queryKey??'stat-tot')
         } else{
             CartoRep = {success:false,data:{
                 type: "FeatureCollection",
@@ -149,6 +149,7 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
             defCartoValide(true)
             defChargement(false)
             defCartoAMontrer(CartoRep.data)
+            defTypeCarto(idTypeAnalyse)
         } else{
             defChargement(false)
             defCartoValide(false)
@@ -156,6 +157,7 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
                 type: "FeatureCollection",
                 features: []
             })
+            defTypeCarto(idTypeAnalyse)
         }
 
 
@@ -187,7 +189,7 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
     return(<>
         <div className="menu-selection-couleur">
             <label htmlFor="select-map-color">Type d'analyse cartographique</label>
-            <select id="select-map-color" name="select-type" onChange={e => gestSelectMethodeAnalyse(Number(e.target.value))} value={typeCarto}>
+            <select id="select-map-color" name="select-type" onChange={e => gestSelectionCarto(Number(e.target.value))} value={typeCarto}>
                 <option value={-1}>Selection carto</option>
                 {props.variablesPossibles.map(methode=>(
                     <option key={methode.idVariable} value={methode.idVariable} >
@@ -195,7 +197,6 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
                     </option>
                 ))}
             </select>
-            {typeCarto!==-1?<button onClick={gestSelectionCarto}>Obtenir Carte</button>:<></>}
         </div>
         {renduCartographie()}
         </>
