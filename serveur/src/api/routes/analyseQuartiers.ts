@@ -33,6 +33,13 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       description: 'Stationnement par personne [-]',
       requiresOrdre: true
     },
+    'stat-perm': {
+      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(mq.nb_permis, 0))::float`,
+      aggregateExpression:(ordre)=>`(SUM(stag.inv_${getValidatedOrdre(ordre)}) / SUM(NULLIF(mq.nb_permis, 0)))::float`,
+      joins:['stat_agrege stag ON sa.id_quartier=stag.id_quartier','motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+      description: 'Stationnement par permis [-]',
+      requiresOrdre: true
+    },
     'stat-voit': {
       expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(mq.nb_voitures, 0))::float`,
       aggregateExpression:(ordre)=>`(SUM(stag.inv_${getValidatedOrdre(ordre)}) / SUM(NULLIF(mq.nb_voitures, 0)))::float`,
@@ -41,8 +48,8 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       requiresOrdre: true
     },
     'stat-perc': {
-      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)}*15 / NULLIF(sa.superf_quartier, 0))::float`,
-      aggregateExpression: (ordre)=> `(SUM(stag.inv_${getValidatedOrdre(ordre)})*15 / SUM(NULLIF(sa.superf_quartier, 0)))::float`,
+      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)}*14.3 / NULLIF(sa.superf_quartier, 0))::float`,
+      aggregateExpression: (ordre)=> `(SUM(stag.inv_${getValidatedOrdre(ordre)})*14.3 / SUM(NULLIF(sa.superf_quartier, 0)))::float`,
       joins:['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int'],
       description: 'Territoire dédié au stationnement [%]',
       requiresOrdre: true
@@ -52,6 +59,13 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       aggregateExpression:() =>`SUM(sa.superf_quartier)/10000`,
       joins:[],
       description: 'Superficie Quartier [Ha]',
+      requiresOrdre: false
+    },
+    'perm':{
+      expression: ()=>`mq.nb_permis:float`,
+      aggregateExpression:()=>`SUM(mq.nb_permis)`,
+      joins:['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+      description:'Nombre de permis de conduire [-]',
       requiresOrdre: false
     },
     'popu': {
@@ -66,6 +80,13 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       aggregateExpression:()=>`1000*SUM(mq.nb_voitures)/SUM(pq.pop_tot_2021)::float`,
       joins:['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int','population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
       description: 'Nombre de voiture (OD) par 1000 personne(Recensement) [-]',
+      requiresOrdre: false
+    },
+    'voit-par-perm':{
+      expression:()=>`(1000*mq.nb_voitures/mq.nb_permis)::float`,
+      aggregateExpression:()=>`1000 * SUM(mq.nb_voitures)/SUM(mq.nb_permis)::float`,
+      joins:['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+      description: 'Nombre de voiture (OD) par 1000 permis de conduire(OD) [-]',
       requiresOrdre: false
     },
     'dens-pop': {
@@ -543,24 +564,39 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       const query = `
         BEGIN;
         DELETE FROM motorisation_par_quartier;
-        INSERT INTO motorisation_par_quartier (id_quartier, nb_voitures,nb_voitures_max_pav,nb_voitures_min_pav,diff_max_signee)
+        INSERT INTO motorisation_par_quartier (id_quartier, nb_voitures,nb_permis,nb_voitures_max_pav,nb_voitures_min_pav,diff_max_signee)
         WITH aggregated_data AS (
-            SELECT
-                z.id_quartier::int,
-                CEIL(SUM(c.nbveh * c.facmen)) AS nb_voitures
-            FROM
-                sec_analyse z
-            JOIN
-                od_data c
-                ON ST_Within(c.geom_logis, z.geometry)
-            WHERE
-                c.tlog = 1
-            GROUP BY
-                z.id_quartier
+          SELECT
+              z.id_quartier::int,
+              CEIL(SUM(c.nbveh * c.facmen)) AS nb_voitures
+          FROM
+              sec_analyse z
+          JOIN
+              od_data c
+              ON ST_Within(c.geom_logis, z.geometry)
+          WHERE
+              c.tlog = 1
+          GROUP BY
+              z.id_quartier
+        ),
+        aggregated_person_data AS (
+          SELECT 
+            z.id_quartier::int,
+            CEIL(SUM(c.facper)) as nb_permis
+          FROM
+            sec_analyse z
+          JOIN
+            od_data c
+            ON ST_Within(c.geom_logis,z.geometry)
+          WHERE
+            c.tper = 1 AND c.percond=1
+          GROUP BY 
+            z.id_quartier
         )
         SELECT
             ad.id_quartier,
             ad.nb_voitures,
+            apd.nb_permis,
             MAX(pav.voitures) AS nb_voitures_max_pav,
             MIN(pav.voitures) AS nb_voitures_min_pav,
             CASE
@@ -573,9 +609,13 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
         LEFT JOIN
             profile_accumulation_vehicule pav
             ON pav.id_quartier::int = ad.id_quartier::int
+        LEFT JOIN
+            aggregated_person_data apd
+            on apd.id_quartier::int = ad.id_quartier::int
         GROUP BY
             ad.id_quartier,
-            ad.nb_voitures;
+            ad.nb_voitures,
+            apd.nb_permis;
 
         DELETE FROM population_par_quartier;
         INSERT INTO population_par_quartier (id_quartier,pop_tot_2021)

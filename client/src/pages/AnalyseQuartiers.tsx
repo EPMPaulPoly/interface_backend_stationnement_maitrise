@@ -141,6 +141,24 @@ const AnalyseQuartiers:React.FC = () =>{
                 descriptionVariable:'Stationnement par voiture max',
                 requiertOrdrePriorite:true,
                 queryKey:'stat-voit-max'
+            },
+            {
+                idVariable:18,
+                descriptionVariable:'Stationnement par permis',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-perm'
+            },
+            {
+                idVariable:19,
+                descriptionVariable:'Nombre de permis',
+                requiertOrdrePriorite:false,
+                queryKey:'perm'
+            },
+            {
+                idVariable:20,
+                descriptionVariable:'Nombre de voitures par permis',
+                requiertOrdrePriorite:false,
+                queryKey:'voit-par-perm'
             }
         ];
     const prioritesPossibles:PrioriteEstimeInventaire[]=[
