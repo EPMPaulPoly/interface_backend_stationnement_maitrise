@@ -26,9 +26,16 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       description: 'Densité Stationnement [1/Ha]',
       requiresOrdre: true
     },
-    'stat-popu': {
+    'stat-popu-2021': {
       expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(pq.pop_tot_2021, 0))::float`,
       aggregateExpression:(ordre)=>`(SUM(stag.inv_${getValidatedOrdre(ordre)}) / SUM(NULLIF(pq.pop_tot_2021, 0)))::float`,
+      joins:['stat_agrege stag ON sa.id_quartier=stag.id_quartier','population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+      description: 'Stationnement par personne [-]',
+      requiresOrdre: true
+    },
+    'stat-popu-2016': {
+      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(pq.pop_tot_2016, 0))::float`,
+      aggregateExpression:(ordre)=>`(SUM(stag.inv_${getValidatedOrdre(ordre)}) / SUM(NULLIF(pq.pop_tot_2016, 0)))::float`,
       joins:['stat_agrege stag ON sa.id_quartier=stag.id_quartier','population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
       description: 'Stationnement par personne [-]',
       requiresOrdre: true
@@ -68,16 +75,32 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       description:'Nombre de permis de conduire [-]',
       requiresOrdre: false
     },
-    'popu': {
+    'popu-2021': {
       expression: () => `pq.pop_tot_2021::float`,
       aggregateExpression:() =>`SUM(pq.pop_tot_2021)`,
       joins:['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int',],
       description: 'Population [-]',
       requiresOrdre: false
     },
-    'voit-par-pers':{
+    
+    'popu-2016': {
+      expression: () => `pq.pop_tot_2016::float`,
+      aggregateExpression:() =>`SUM(pq.pop_tot_2016)`,
+      joins:['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int',],
+      description: 'Population [-]',
+      requiresOrdre: false
+    },
+    'voit-par-pers-2021':{
       expression: () => `(1000*mq.nb_voitures/pq.pop_tot_2021)::float`,
       aggregateExpression:()=>`1000*SUM(mq.nb_voitures)/SUM(pq.pop_tot_2021)::float`,
+      joins:['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int','population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+      description: 'Nombre de voiture (OD) par 1000 personne(Recensement) [-]',
+      requiresOrdre: false
+    },
+    
+    'voit-par-pers-2016':{
+      expression: () => `(1000*mq.nb_voitures/pq.pop_tot_2016)::float`,
+      aggregateExpression:()=>`1000*SUM(mq.nb_voitures)/SUM(pq.pop_tot_2016)::float`,
       joins:['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int','population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
       description: 'Nombre de voiture (OD) par 1000 personne(Recensement) [-]',
       requiresOrdre: false
@@ -89,9 +112,16 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       description: 'Nombre de voiture (OD) par 1000 permis de conduire(OD) [-]',
       requiresOrdre: false
     },
-    'dens-pop': {
+    'dens-pop-2021': {
       expression: () => `(pq.pop_tot_2021 / NULLIF(sa.superf_quartier/1000000, 0))::float`,
       aggregateExpression:() =>`(SUM(pq.pop_tot_2021) /SUM( NULLIF(sa.superf_quartier/1000000, 0)))::float`,
+      joins: ['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+      description: 'Densité Population [1/km2]',
+      requiresOrdre: false
+    },
+    'dens-pop-2016': {
+      expression: () => `(pq.pop_tot_2016 / NULLIF(sa.superf_quartier/1000000, 0))::float`,
+      aggregateExpression:() =>`(SUM(pq.pop_tot_2016) /SUM( NULLIF(sa.superf_quartier/1000000, 0)))::float`,
       joins: ['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
       description: 'Densité Population [1/km2]',
       requiresOrdre: false
@@ -564,6 +594,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       const query = `
         BEGIN;
         DELETE FROM motorisation_par_quartier;
+        -- calcul du nombre de voitures min max et nombres de permis
         INSERT INTO motorisation_par_quartier (id_quartier, nb_voitures,nb_permis,nb_voitures_max_pav,nb_voitures_min_pav,diff_max_signee)
         WITH aggregated_data AS (
           SELECT
@@ -616,12 +647,13 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
             ad.id_quartier,
             ad.nb_voitures,
             apd.nb_permis;
-
+        -- calcul des populations a partir du recensement
         DELETE FROM population_par_quartier;
         INSERT INTO population_par_quartier (id_quartier,pop_tot_2021)
         SELECT
           z.id_quartier,
-          SUM(c.pop_2021) AS pop_tot_2021
+          SUM(c.pop_2021) AS pop_tot_2021,
+          SUM(c.pop_2016) AS pop_tot_2016
         FROM
           sec_analyse z
         JOIN
@@ -632,6 +664,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
           ST_Area(ST_Intersection(z.geometry, c.geometry)) / ST_Area(c.geometry) >= 0.9
         GROUP BY
           z.id_quartier;
+        -- calcul des valeurs moyennes foncieres
         delete from donnees_foncieres_agregees;
         WITH role_quartier_log AS(
           SELECT 
@@ -662,6 +695,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
             rf.rl0404a is not null 
           group by sa.id_quartier
         )
+        
         INSERT INTO donnees_foncieres_agregees (id_quartier,valeur_moyenne_logement,superf_moyenne_logement,valeur_fonciere_logement_totale,valeur_fonciere_totale)
         SELECT 
           sa.id_quartier::int,
@@ -675,6 +709,72 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
           role_quartier_log rql on rql.id_quartier = sa.id_quartier
         left join
           role_quartier_tout rqt on rqt.id_quartier = sa.id_quartier;
+        -- calcul des parts modales
+        DELETE FROM parts_modales;
+        INSERT INTO parts_modales(id_quartier,ac_res,ap_res,tc_res,mv_res,bs_res,ac_ori,ap_ori,tc_ori,mv_ori,bs_ori,ac_des,ap_des,tc_des,mv_des,bs_des,ac_int,ap_int,tc_int,mv_int,bs_int)
+        WITH trips AS (
+            SELECT
+                od.clepersonne,
+                od.nolog,
+                od.tlog,
+                od.facmen,
+                od.tper,
+                od.mobil,
+                od.facper,
+                od.mode1,
+                od.geom_logis,
+                od.geom_ori,
+                od.geom_des,
+                sa_logis.id_quartier AS quartier_logis,
+                sa_ori.id_quartier AS quartier_ori,
+                sa_des.id_quartier AS quartier_des,
+                CASE 
+                    WHEN sa_ori.id_quartier = sa_des.id_quartier AND sa_ori.id_quartier IS NOT NULL 
+                    THEN true ELSE false 
+                END AS internal_trip
+            FROM od_data AS od
+            LEFT JOIN sec_analyse sa_logis ON ST_Within(od.geom_logis, sa_logis.geometry)
+            LEFT JOIN sec_analyse sa_ori   ON ST_Within(od.geom_ori, sa_ori.geometry)
+            LEFT JOIN sec_analyse sa_des   ON ST_Within(od.geom_des, sa_des.geometry)
+            WHERE od.geom_ori IS NOT NULL AND sa_logis.id_quartier IS NOT NULL
+        )
+
+        SELECT
+            sa.id_quartier,
+
+            -- Resident trips
+            SUM(CASE WHEN trips.quartier_logis = sa.id_quartier AND trips.mode1 = 1 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_logis = sa.id_quartier THEN trips.facper END) * 100 AS AC_res,
+            SUM(CASE WHEN trips.quartier_logis = sa.id_quartier AND trips.mode1 = 2 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_logis = sa.id_quartier THEN trips.facper END) * 100 AS AP_res,
+            SUM(CASE WHEN trips.quartier_logis = sa.id_quartier AND trips.mode1 = 6 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_logis = sa.id_quartier THEN trips.facper END) * 100 AS TC_res,
+            SUM(CASE WHEN trips.quartier_logis = sa.id_quartier AND trips.mode1 IN (5, 13) THEN trips.facper END) / SUM(CASE WHEN trips.quartier_logis = sa.id_quartier THEN trips.facper END) * 100 AS MV_res,
+            SUM(CASE WHEN trips.quartier_logis = sa.id_quartier AND trips.mode1 = 7 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_logis = sa.id_quartier THEN trips.facper END) * 100 AS BS_res,
+
+            -- Origin trips (external)
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 = 1 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS AC_ori,
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 = 2 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS AP_ori,
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 = 6 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS TC_ori,
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 IN (5, 13) THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS MV_ori,
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 = 7 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS BS_ori,
+
+            -- Destination trips (external)
+            SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 = 1 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS AC_des,
+            SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 = 2 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS AP_des,
+            SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 = 6 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS TC_des,
+            SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 IN (5, 13) THEN trips.facper END) / SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS MV_des,
+            SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 = 7 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS pBS_des,
+
+            -- Internal trips
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true AND trips.mode1 = 1 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true THEN trips.facper END) * 100 AS AC_int,
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true AND trips.mode1 = 2 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true THEN trips.facper END) * 100 AS AP_int,
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true AND trips.mode1 = 6 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true THEN trips.facper END) * 100 AS TC_int,
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true AND trips.mode1 IN (5, 13) THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true THEN trips.facper END) * 100 AS MV_int,
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true AND trips.mode1 = 7 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true THEN trips.facper END) * 100 AS BS_int
+        FROM sec_analyse sa
+        LEFT JOIN trips ON 
+            trips.quartier_logis = sa.id_quartier OR 
+            trips.quartier_ori = sa.id_quartier OR 
+            trips.quartier_des = sa.id_quartier
+        GROUP BY sa.id_quartier, sa.geometry;
         COMMIT;
       `;
       const result = await client.query(query);
