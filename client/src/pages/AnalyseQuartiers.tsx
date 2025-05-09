@@ -48,9 +48,9 @@ const AnalyseQuartiers:React.FC = () =>{
             },
             {
                 idVariable:2,
-                descriptionVariable:'Stationnement par personne',
+                descriptionVariable:'Stationnement par personne 2021',
                 requiertOrdrePriorite:true,
-                queryKey:'stat-popu'
+                queryKey:'stat-popu-2021'
             },
             {
                 idVariable:3,
@@ -72,15 +72,15 @@ const AnalyseQuartiers:React.FC = () =>{
             },
             {
                 idVariable:6,
-                descriptionVariable:'Population',
+                descriptionVariable:'Population 2021',
                 requiertOrdrePriorite:false,
-                queryKey:'popu'
+                queryKey:'popu-2021'
             },
             {
                 idVariable:7,
-                descriptionVariable:'Densité Population',
+                descriptionVariable:'Densité Population 2021',
                 requiertOrdrePriorite:false,
-                queryKey:'dens-pop'
+                queryKey:'dens-pop-2021'
             },
             {
                 idVariable:8,
@@ -114,9 +114,9 @@ const AnalyseQuartiers:React.FC = () =>{
             },
             {
                 idVariable:13,
-                descriptionVariable:'Nombre de voitures par 1000 personnes',
+                descriptionVariable:'Nombre de voitures par 1000 personnes 2021',
                 requiertOrdrePriorite:false,
-                queryKey:'voit-par-pers'
+                queryKey:'voit-par-pers-2021'
             },
             {
                 idVariable:14,
@@ -159,6 +159,30 @@ const AnalyseQuartiers:React.FC = () =>{
                 descriptionVariable:'Nombre de voitures par permis',
                 requiertOrdrePriorite:false,
                 queryKey:'voit-par-perm'
+            },
+            {
+                idVariable:21,
+                descriptionVariable:'Stationnement par personne 2016',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-popu-2016'
+            },
+            {
+                idVariable:22,
+                descriptionVariable:'Nombre de voitures par 1000 personnes 2016',
+                requiertOrdrePriorite:false,
+                queryKey:'voit-par-pers-2016'
+            },
+            {
+                idVariable:23,
+                descriptionVariable:'Population 2016',
+                requiertOrdrePriorite:false,
+                queryKey:'popu-2016'
+            },
+            {
+                idVariable:24,
+                descriptionVariable:'Densité Population 2016',
+                requiertOrdrePriorite:false,
+                queryKey:'dens-pop-2016'
             }
         ];
     const prioritesPossibles:PrioriteEstimeInventaire[]=[
