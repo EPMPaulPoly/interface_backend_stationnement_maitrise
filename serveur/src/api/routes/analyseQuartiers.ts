@@ -649,20 +649,46 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
             apd.nb_permis;
         -- calcul des populations a partir du recensement
         DELETE FROM population_par_quartier;
-        INSERT INTO population_par_quartier (id_quartier,pop_tot_2021)
+        INSERT INTO population_par_quartier (id_quartier,pop_tot_2016,pop_tot_2021)
+        WITH pop_2016_ag AS(
+          SELECT 
+            z.id_quartier,
+            sum(c2016.pop_2016) as pop_tot_2016
+          FROM
+            sec_analyse z
+          JOIN 
+            census_population_2016 c2016
+          ON 
+            ST_Intersects(z.geometry,c2016.geometry)
+          WHERE
+            ST_Area(ST_Intersection(z.geometry,c2016.geometry))/ ST_Area(c2016.geometry) >= 0.9
+          GROUP BY
+          z.id_quartier
+        ), pop_2021_ag as(
+          SELECT
+            z.id_quartier,
+            SUM(c2021.pop_2021) AS pop_tot_2021
+          FROM
+            sec_analyse z
+          JOIN
+            census_population c2021
+          ON
+            ST_Intersects(z.geometry, c2021.geometry)
+          WHERE
+            ST_Area(ST_Intersection(z.geometry, c2021.geometry)) / ST_Area(c2021.geometry) >= 0.9
+          GROUP BY
+            z.id_quartier
+        )
         SELECT
-          z.id_quartier,
-          SUM(c.pop_2021) AS pop_tot_2021
+          c2016.id_quartier,
+          c2016.pop_tot_2016,
+          c2021.pop_tot_2021
         FROM
-          sec_analyse z
+          pop_2016_ag c2016
         JOIN
-          census_population c
+          pop_2021_ag c2021
         ON
-          ST_Intersects(z.geometry, c.geometry)
-        WHERE
-          ST_Area(ST_Intersection(z.geometry, c.geometry)) / ST_Area(c.geometry) >= 0.9
-        GROUP BY
-          z.id_quartier;
+          c2016.id_quartier=c2021.id_quartier;
         -- calcul des valeurs moyennes foncieres
         delete from donnees_foncieres_agregees;
         
