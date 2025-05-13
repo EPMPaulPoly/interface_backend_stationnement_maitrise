@@ -183,6 +183,36 @@ const AnalyseQuartiers:React.FC = () =>{
                 descriptionVariable:'Densité Population 2016',
                 requiertOrdrePriorite:false,
                 queryKey:'dens-pop-2016'
+            },
+            {
+                idVariable:25,
+                descriptionVariable:'Part Modale AC résidents',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-ac-res'
+            },
+            {
+                idVariable:26,
+                descriptionVariable:'Part Modale AP résidents',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-ap-res'
+            },
+            {
+                idVariable:27,
+                descriptionVariable:'Part Modale TC résidents',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-tc-res'
+            },
+            {
+                idVariable:28,
+                descriptionVariable:'Part Modale MV résidents',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-mv-res'
+            },
+            {
+                idVariable:29,
+                descriptionVariable:'Part Modale BS résidents',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-bs-res'
             }
         ];
     const prioritesPossibles:PrioriteEstimeInventaire[]=[

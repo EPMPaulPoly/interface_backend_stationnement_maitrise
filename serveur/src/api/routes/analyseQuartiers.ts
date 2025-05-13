@@ -195,7 +195,148 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       joins: ['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int','motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
       description: 'Stationnement par voiture max[-]',
       requiresOrdre: false
-    }
+    },
+    'pm-ac-res':{
+      expression:()=>`(pm.ac_res)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Auto-conducteur résidents [%]',
+      requiresOrdre:false
+    },
+    'pm-ap-res':{
+      expression:()=>`(pm.ap_res)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Auto-passager résidents [%]',
+      requiresOrdre:false
+    },
+    'pm-tc-res':{
+      expression:()=>`(pm.tc_res)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Transport collectif résidents [%]',
+      requiresOrdre:false
+    },
+    'pm-mv-res':{
+      expression:()=>`(pm.mv_res)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Marche Vélo résidents [%]',
+      requiresOrdre:false
+    },
+    'pm-bs-res':{
+      expression:()=>`(pm.bs_res)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Marche Vélo résidents [%]',
+      requiresOrdre:false
+    },
+    'pm-ac-int':{
+      expression:()=>`(pm.ac_int)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Auto-conducteur Interne [%]',
+      requiresOrdre:false
+    },
+    'pm-ap-int':{
+      expression:()=>`(pm.ap_int)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Auto-passager Interne [%]',
+      requiresOrdre:false
+    },
+    'pm-tc-int':{
+      expression:()=>`(pm.tc_res)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Transport collectif interne [%]',
+      requiresOrdre:false
+    },
+    'pm-mv-int':{
+      expression:()=>`(pm.mv_int)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Marche Vélo interne [%]',
+      requiresOrdre:false
+    },
+    'pm-bs-int':{
+      expression:()=>`(pm.bs_int)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Marche Vélo interne [%]',
+      requiresOrdre:false
+    },
+    'pm-ac-ori':{
+      expression:()=>`(pm.ac_ori)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Auto-conducteur originant du secteur [%]',
+      requiresOrdre:false
+    },
+    'pm-ap-ori':{
+      expression:()=>`(pm.ap_ori)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Auto-passager originant du secteur [%]',
+      requiresOrdre:false
+    },
+    'pm-tc-ori':{
+      expression:()=>`(pm.tc_ori)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Transport collectif originant du secteur [%]',
+      requiresOrdre:false
+    },
+    'pm-mv-ori':{
+      expression:()=>`(pm.mv_ori)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Marche Vélo originant du secteur [%]',
+      requiresOrdre:false
+    },
+    'pm-bs-ori':{
+      expression:()=>`(pm.bs_ori)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Marche Vélo originant du secteur [%]',
+      requiresOrdre:false
+    },
+    'pm-ac-des':{
+      expression:()=>`(pm.ac_des)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Auto-conducteur à destination du secteur [%]',
+      requiresOrdre:false
+    },
+    'pm-ap-des':{
+      expression:()=>`(pm.ap_des)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Auto-passager à destination du secteur [%]',
+      requiresOrdre:false
+    },
+    'pm-tc-des':{
+      expression:()=>`(pm.des)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Transport collectif à destination du secteur [%]',
+      requiresOrdre:false
+    },
+    'pm-mv-des':{
+      expression:()=>`(pm.mv_des)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Marche Vélo à destination du secteur [%]',
+      requiresOrdre:false
+    },
+    'pm-bs-des':{
+      expression:()=>`(pm.bs_des)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Marche Vélo à destination du secteur [%]',
+      requiresOrdre:false
+    },
+
   };
 
   const validOrdres = ['123', '132', '213', '231', '312', '321'];
@@ -691,8 +832,6 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
           c2016.id_quartier=c2021.id_quartier;
         -- calcul des valeurs moyennes foncieres
         delete from donnees_foncieres_agregees;
-        
-        
         INSERT INTO donnees_foncieres_agregees (id_quartier,valeur_moyenne_logement,superf_moyenne_logement,valeur_fonciere_logement_totale,valeur_fonciere_totale)
         WITH role_quartier_log AS(
           SELECT 
