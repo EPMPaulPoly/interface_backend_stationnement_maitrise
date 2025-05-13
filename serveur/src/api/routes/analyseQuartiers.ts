@@ -69,7 +69,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       requiresOrdre: false
     },
     'perm':{
-      expression: ()=>`mq.nb_permis:float`,
+      expression: ()=>`mq.nb_permis::float`,
       aggregateExpression:()=>`SUM(mq.nb_permis)`,
       joins:['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
       description:'Nombre de permis de conduire [-]',
@@ -652,8 +652,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
         INSERT INTO population_par_quartier (id_quartier,pop_tot_2021)
         SELECT
           z.id_quartier,
-          SUM(c.pop_2021) AS pop_tot_2021,
-          SUM(c.pop_2016) AS pop_tot_2016
+          SUM(c.pop_2021) AS pop_tot_2021
         FROM
           sec_analyse z
         JOIN
@@ -666,6 +665,9 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
           z.id_quartier;
         -- calcul des valeurs moyennes foncieres
         delete from donnees_foncieres_agregees;
+        
+        
+        INSERT INTO donnees_foncieres_agregees (id_quartier,valeur_moyenne_logement,superf_moyenne_logement,valeur_fonciere_logement_totale,valeur_fonciere_totale)
         WITH role_quartier_log AS(
           SELECT 
             sa.id_quartier::int,
@@ -695,8 +697,6 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
             rf.rl0404a is not null 
           group by sa.id_quartier
         )
-        
-        INSERT INTO donnees_foncieres_agregees (id_quartier,valeur_moyenne_logement,superf_moyenne_logement,valeur_fonciere_logement_totale,valeur_fonciere_totale)
         SELECT 
           sa.id_quartier::int,
           rql.val_moy_log,
@@ -738,7 +738,6 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
             LEFT JOIN sec_analyse sa_des   ON ST_Within(od.geom_des, sa_des.geometry)
             WHERE od.geom_ori IS NOT NULL AND sa_logis.id_quartier IS NOT NULL
         )
-
         SELECT
             sa.id_quartier,
 
