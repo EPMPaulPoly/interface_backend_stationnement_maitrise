@@ -186,33 +186,129 @@ const AnalyseQuartiers:React.FC = () =>{
             },
             {
                 idVariable:25,
-                descriptionVariable:'Part Modale AC résidents',
+                descriptionVariable:'Part Modale AC résidents[%]',
                 requiertOrdrePriorite:false,
                 queryKey:'pm-ac-res'
             },
             {
                 idVariable:26,
-                descriptionVariable:'Part Modale AP résidents',
+                descriptionVariable:'Part Modale AP résidents[%]',
                 requiertOrdrePriorite:false,
                 queryKey:'pm-ap-res'
             },
             {
                 idVariable:27,
-                descriptionVariable:'Part Modale TC résidents',
+                descriptionVariable:'Part Modale TC résidents[%]',
                 requiertOrdrePriorite:false,
                 queryKey:'pm-tc-res'
             },
             {
                 idVariable:28,
-                descriptionVariable:'Part Modale MV résidents',
+                descriptionVariable:'Part Modale MV résidents[%]',
                 requiertOrdrePriorite:false,
                 queryKey:'pm-mv-res'
             },
             {
                 idVariable:29,
-                descriptionVariable:'Part Modale BS résidents',
+                descriptionVariable:'Part Modale BS résidents[%]',
                 requiertOrdrePriorite:false,
                 queryKey:'pm-bs-res'
+            },
+            {
+                idVariable:30,
+                descriptionVariable:'Part Modale AC interne[%]',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-ac-int'
+            },
+            {
+                idVariable:31,
+                descriptionVariable:'Part Modale AP interne[%]',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-ap-int'
+            },
+            {
+                idVariable:32,
+                descriptionVariable:'Part Modale TC interne[%]',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-tc-int'
+            },
+            {
+                idVariable:33,
+                descriptionVariable:'Part Modale MV interne[%]',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-mv-int'
+            },
+            {
+                idVariable:34,
+                descriptionVariable:'Part Modale BS interne[%]',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-bs-int'
+            },
+            {
+                idVariable:35,
+                descriptionVariable:'Part Modale AC à destination du secteur[%]',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-ac-des'
+            },
+            {
+                idVariable:36,
+                descriptionVariable:'Part Modale AP à destination du secteur[%]',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-ap-des'
+            },
+            {
+                idVariable:37,
+                descriptionVariable:'Part Modale TC à destination du secteur[%]',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-tc-des'
+            },
+            {
+                idVariable:38,
+                descriptionVariable:'Part Modale MV à destination du secteur[%]',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-mv-des'
+            },
+            {
+                idVariable:39,
+                descriptionVariable:'Part Modale BS à destination du secteur[%]',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-bs-des'
+            },
+            {
+                idVariable:40,
+                descriptionVariable:'Part Modale AC originant du secteur[%]',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-ac-ori'
+            },
+            {
+                idVariable:41,
+                descriptionVariable:'Part Modale AP originant du secteur[%]',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-ap-ori'
+            },
+            {
+                idVariable:42,
+                descriptionVariable:'Part Modale TC originant du secteur[%]',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-tc-ori'
+            },
+            {
+                idVariable:43,
+                descriptionVariable:'Part Modale MV originant du secteur[%]',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-mv-ori'
+            },
+            {
+                idVariable:44,
+                descriptionVariable:'Part Modale BS originant du secteur[%]',
+                requiertOrdrePriorite:false,
+                queryKey:'pm-bs-ori'
+            },
+            {
+                idVariable:45,
+                descriptionVariable:'Valeur Foncière Résidentielle par superficie',
+                requiertOrdrePriorite:false,
+                queryKey:'val-tot-log-sup'
             }
         ];
     const prioritesPossibles:PrioriteEstimeInventaire[]=[

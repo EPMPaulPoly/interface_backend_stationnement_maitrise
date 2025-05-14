@@ -55,7 +55,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       requiresOrdre: true
     },
     'stat-perc': {
-      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)}*14.3 / NULLIF(sa.superf_quartier, 0))::float`,
+      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)}*14.3*100 / NULLIF(sa.superf_quartier, 0))::float`,
       aggregateExpression: (ordre)=> `(SUM(stag.inv_${getValidatedOrdre(ordre)})*14.3 / SUM(NULLIF(sa.superf_quartier, 0)))::float`,
       joins:['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int'],
       description: 'Territoire dédié au stationnement [%]',
@@ -159,6 +159,13 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       aggregateExpression:()=>`(SUM(dfa.valeur_fonciere_totale) / SUM(NULLIF(sa.superf_quartier/10000, 0)))::float`,
       joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
       description: 'Valeur Foncière [$/Ha]',
+      requiresOrdre: false
+    },
+    'val-tot-log-sup':{
+      expression: () => `(dfa.valeur_fonciere_logement_totale::float / NULLIF(sa.superf_quartier/10000, 0))::float`,
+      aggregateExpression:()=>`(SUM(dfa.valeur_fonciere_logement_totale::float) / SUM(NULLIF(sa.superf_quartier/10000, 0)))::float`,
+      joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
+      description: 'Valeur Foncière Résidentielle[$/Ha]',
       requiresOrdre: false
     },
     'nb-voit':{
