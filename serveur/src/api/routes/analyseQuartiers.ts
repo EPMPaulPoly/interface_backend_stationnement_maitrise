@@ -26,9 +26,16 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       description: 'Densité Stationnement [1/Ha]',
       requiresOrdre: true
     },
-    'stat-popu': {
+    'stat-popu-2021': {
       expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(pq.pop_tot_2021, 0))::float`,
       aggregateExpression:(ordre)=>`(SUM(stag.inv_${getValidatedOrdre(ordre)}) / SUM(NULLIF(pq.pop_tot_2021, 0)))::float`,
+      joins:['stat_agrege stag ON sa.id_quartier=stag.id_quartier','population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+      description: 'Stationnement par personne [-]',
+      requiresOrdre: true
+    },
+    'stat-popu-2016': {
+      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(pq.pop_tot_2016, 0))::float`,
+      aggregateExpression:(ordre)=>`(SUM(stag.inv_${getValidatedOrdre(ordre)}) / SUM(NULLIF(pq.pop_tot_2016, 0)))::float`,
       joins:['stat_agrege stag ON sa.id_quartier=stag.id_quartier','population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
       description: 'Stationnement par personne [-]',
       requiresOrdre: true
@@ -48,7 +55,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       requiresOrdre: true
     },
     'stat-perc': {
-      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)}*14.3 / NULLIF(sa.superf_quartier, 0))::float`,
+      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)}*14.3*100 / NULLIF(sa.superf_quartier, 0))::float`,
       aggregateExpression: (ordre)=> `(SUM(stag.inv_${getValidatedOrdre(ordre)})*14.3 / SUM(NULLIF(sa.superf_quartier, 0)))::float`,
       joins:['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int'],
       description: 'Territoire dédié au stationnement [%]',
@@ -62,22 +69,38 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       requiresOrdre: false
     },
     'perm':{
-      expression: ()=>`mq.nb_permis:float`,
+      expression: ()=>`mq.nb_permis::float`,
       aggregateExpression:()=>`SUM(mq.nb_permis)`,
       joins:['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
       description:'Nombre de permis de conduire [-]',
       requiresOrdre: false
     },
-    'popu': {
+    'popu-2021': {
       expression: () => `pq.pop_tot_2021::float`,
       aggregateExpression:() =>`SUM(pq.pop_tot_2021)`,
       joins:['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int',],
       description: 'Population [-]',
       requiresOrdre: false
     },
-    'voit-par-pers':{
+    
+    'popu-2016': {
+      expression: () => `pq.pop_tot_2016::float`,
+      aggregateExpression:() =>`SUM(pq.pop_tot_2016)`,
+      joins:['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int',],
+      description: 'Population [-]',
+      requiresOrdre: false
+    },
+    'voit-par-pers-2021':{
       expression: () => `(1000*mq.nb_voitures/pq.pop_tot_2021)::float`,
       aggregateExpression:()=>`1000*SUM(mq.nb_voitures)/SUM(pq.pop_tot_2021)::float`,
+      joins:['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int','population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+      description: 'Nombre de voiture (OD) par 1000 personne(Recensement) [-]',
+      requiresOrdre: false
+    },
+    
+    'voit-par-pers-2016':{
+      expression: () => `(1000*mq.nb_voitures/pq.pop_tot_2016)::float`,
+      aggregateExpression:()=>`1000*SUM(mq.nb_voitures)/SUM(pq.pop_tot_2016)::float`,
       joins:['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int','population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
       description: 'Nombre de voiture (OD) par 1000 personne(Recensement) [-]',
       requiresOrdre: false
@@ -89,9 +112,16 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       description: 'Nombre de voiture (OD) par 1000 permis de conduire(OD) [-]',
       requiresOrdre: false
     },
-    'dens-pop': {
+    'dens-pop-2021': {
       expression: () => `(pq.pop_tot_2021 / NULLIF(sa.superf_quartier/1000000, 0))::float`,
       aggregateExpression:() =>`(SUM(pq.pop_tot_2021) /SUM( NULLIF(sa.superf_quartier/1000000, 0)))::float`,
+      joins: ['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+      description: 'Densité Population [1/km2]',
+      requiresOrdre: false
+    },
+    'dens-pop-2016': {
+      expression: () => `(pq.pop_tot_2016 / NULLIF(sa.superf_quartier/1000000, 0))::float`,
+      aggregateExpression:() =>`(SUM(pq.pop_tot_2016) /SUM( NULLIF(sa.superf_quartier/1000000, 0)))::float`,
       joins: ['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
       description: 'Densité Population [1/km2]',
       requiresOrdre: false
@@ -131,6 +161,13 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       description: 'Valeur Foncière [$/Ha]',
       requiresOrdre: false
     },
+    'val-tot-log-sup':{
+      expression: () => `(dfa.valeur_fonciere_logement_totale::float / NULLIF(sa.superf_quartier/10000, 0))::float`,
+      aggregateExpression:()=>`(SUM(dfa.valeur_fonciere_logement_totale::float) / SUM(NULLIF(sa.superf_quartier/10000, 0)))::float`,
+      joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
+      description: 'Valeur Foncière Résidentielle[$/Ha]',
+      requiresOrdre: false
+    },
     'nb-voit':{
       expression: () => `(mq.nb_voitures)::float`,
       aggregateExpression:()=>`SUM(mq.nb_voitures)::float`,
@@ -165,7 +202,148 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       joins: ['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int','motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
       description: 'Stationnement par voiture max[-]',
       requiresOrdre: false
-    }
+    },
+    'pm-ac-res':{
+      expression:()=>`(pm.ac_res)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Auto-conducteur résidents [%]',
+      requiresOrdre:false
+    },
+    'pm-ap-res':{
+      expression:()=>`(pm.ap_res)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Auto-passager résidents [%]',
+      requiresOrdre:false
+    },
+    'pm-tc-res':{
+      expression:()=>`(pm.tc_res)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Transport collectif résidents [%]',
+      requiresOrdre:false
+    },
+    'pm-mv-res':{
+      expression:()=>`(pm.mv_res)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Marche Vélo résidents [%]',
+      requiresOrdre:false
+    },
+    'pm-bs-res':{
+      expression:()=>`(pm.bs_res)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Marche Vélo résidents [%]',
+      requiresOrdre:false
+    },
+    'pm-ac-int':{
+      expression:()=>`(pm.ac_int)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Auto-conducteur Interne [%]',
+      requiresOrdre:false
+    },
+    'pm-ap-int':{
+      expression:()=>`(pm.ap_int)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Auto-passager Interne [%]',
+      requiresOrdre:false
+    },
+    'pm-tc-int':{
+      expression:()=>`(pm.tc_res)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Transport collectif interne [%]',
+      requiresOrdre:false
+    },
+    'pm-mv-int':{
+      expression:()=>`(pm.mv_int)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Marche Vélo interne [%]',
+      requiresOrdre:false
+    },
+    'pm-bs-int':{
+      expression:()=>`(pm.bs_int)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Marche Vélo interne [%]',
+      requiresOrdre:false
+    },
+    'pm-ac-ori':{
+      expression:()=>`(pm.ac_ori)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Auto-conducteur originant du secteur [%]',
+      requiresOrdre:false
+    },
+    'pm-ap-ori':{
+      expression:()=>`(pm.ap_ori)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Auto-passager originant du secteur [%]',
+      requiresOrdre:false
+    },
+    'pm-tc-ori':{
+      expression:()=>`(pm.tc_ori)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Transport collectif originant du secteur [%]',
+      requiresOrdre:false
+    },
+    'pm-mv-ori':{
+      expression:()=>`(pm.mv_ori)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Marche Vélo originant du secteur [%]',
+      requiresOrdre:false
+    },
+    'pm-bs-ori':{
+      expression:()=>`(pm.bs_ori)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Marche Vélo originant du secteur [%]',
+      requiresOrdre:false
+    },
+    'pm-ac-des':{
+      expression:()=>`(pm.ac_des)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Auto-conducteur à destination du secteur [%]',
+      requiresOrdre:false
+    },
+    'pm-ap-des':{
+      expression:()=>`(pm.ap_des)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Auto-passager à destination du secteur [%]',
+      requiresOrdre:false
+    },
+    'pm-tc-des':{
+      expression:()=>`(pm.des)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Transport collectif à destination du secteur [%]',
+      requiresOrdre:false
+    },
+    'pm-mv-des':{
+      expression:()=>`(pm.mv_des)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Marche Vélo à destination du secteur [%]',
+      requiresOrdre:false
+    },
+    'pm-bs-des':{
+      expression:()=>`(pm.bs_des)`,
+      aggregateExpression:()=> `0::float`,
+      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+      description:'Part Modale Marche Vélo à destination du secteur [%]',
+      requiresOrdre:false
+    },
+
   };
 
   const validOrdres = ['123', '132', '213', '231', '312', '321'];
@@ -564,6 +742,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       const query = `
         BEGIN;
         DELETE FROM motorisation_par_quartier;
+        -- calcul du nombre de voitures min max et nombres de permis
         INSERT INTO motorisation_par_quartier (id_quartier, nb_voitures,nb_permis,nb_voitures_max_pav,nb_voitures_min_pav,diff_max_signee)
         WITH aggregated_data AS (
           SELECT
@@ -616,23 +795,51 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
             ad.id_quartier,
             ad.nb_voitures,
             apd.nb_permis;
-
+        -- calcul des populations a partir du recensement
         DELETE FROM population_par_quartier;
-        INSERT INTO population_par_quartier (id_quartier,pop_tot_2021)
+        INSERT INTO population_par_quartier (id_quartier,pop_tot_2016,pop_tot_2021)
+        WITH pop_2016_ag AS(
+          SELECT 
+            z.id_quartier,
+            sum(c2016.pop_2016) as pop_tot_2016
+          FROM
+            sec_analyse z
+          JOIN 
+            census_population_2016 c2016
+          ON 
+            ST_Intersects(z.geometry,c2016.geometry)
+          WHERE
+            ST_Area(ST_Intersection(z.geometry,c2016.geometry))/ ST_Area(c2016.geometry) >= 0.9
+          GROUP BY
+          z.id_quartier
+        ), pop_2021_ag as(
+          SELECT
+            z.id_quartier,
+            SUM(c2021.pop_2021) AS pop_tot_2021
+          FROM
+            sec_analyse z
+          JOIN
+            census_population c2021
+          ON
+            ST_Intersects(z.geometry, c2021.geometry)
+          WHERE
+            ST_Area(ST_Intersection(z.geometry, c2021.geometry)) / ST_Area(c2021.geometry) >= 0.9
+          GROUP BY
+            z.id_quartier
+        )
         SELECT
-          z.id_quartier,
-          SUM(c.pop_2021) AS pop_tot_2021
+          c2016.id_quartier,
+          c2016.pop_tot_2016,
+          c2021.pop_tot_2021
         FROM
-          sec_analyse z
+          pop_2016_ag c2016
         JOIN
-          census_population c
+          pop_2021_ag c2021
         ON
-          ST_Intersects(z.geometry, c.geometry)
-        WHERE
-          ST_Area(ST_Intersection(z.geometry, c.geometry)) / ST_Area(c.geometry) >= 0.9
-        GROUP BY
-          z.id_quartier;
+          c2016.id_quartier=c2021.id_quartier;
+        -- calcul des valeurs moyennes foncieres
         delete from donnees_foncieres_agregees;
+        INSERT INTO donnees_foncieres_agregees (id_quartier,valeur_moyenne_logement,superf_moyenne_logement,valeur_fonciere_logement_totale,valeur_fonciere_totale)
         WITH role_quartier_log AS(
           SELECT 
             sa.id_quartier::int,
@@ -662,7 +869,6 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
             rf.rl0404a is not null 
           group by sa.id_quartier
         )
-        INSERT INTO donnees_foncieres_agregees (id_quartier,valeur_moyenne_logement,superf_moyenne_logement,valeur_fonciere_logement_totale,valeur_fonciere_totale)
         SELECT 
           sa.id_quartier::int,
           rql.val_moy_log,
@@ -675,6 +881,71 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
           role_quartier_log rql on rql.id_quartier = sa.id_quartier
         left join
           role_quartier_tout rqt on rqt.id_quartier = sa.id_quartier;
+        -- calcul des parts modales
+        DELETE FROM parts_modales;
+        INSERT INTO parts_modales(id_quartier,ac_res,ap_res,tc_res,mv_res,bs_res,ac_ori,ap_ori,tc_ori,mv_ori,bs_ori,ac_des,ap_des,tc_des,mv_des,bs_des,ac_int,ap_int,tc_int,mv_int,bs_int)
+        WITH trips AS (
+            SELECT
+                od.clepersonne,
+                od.nolog,
+                od.tlog,
+                od.facmen,
+                od.tper,
+                od.mobil,
+                od.facper,
+                od.mode1,
+                od.geom_logis,
+                od.geom_ori,
+                od.geom_des,
+                sa_logis.id_quartier AS quartier_logis,
+                sa_ori.id_quartier AS quartier_ori,
+                sa_des.id_quartier AS quartier_des,
+                CASE 
+                    WHEN sa_ori.id_quartier = sa_des.id_quartier AND sa_ori.id_quartier IS NOT NULL 
+                    THEN true ELSE false 
+                END AS internal_trip
+            FROM od_data AS od
+            LEFT JOIN sec_analyse sa_logis ON ST_Within(od.geom_logis, sa_logis.geometry)
+            LEFT JOIN sec_analyse sa_ori   ON ST_Within(od.geom_ori, sa_ori.geometry)
+            LEFT JOIN sec_analyse sa_des   ON ST_Within(od.geom_des, sa_des.geometry)
+            WHERE od.geom_ori IS NOT NULL AND sa_logis.id_quartier IS NOT NULL
+        )
+        SELECT
+            sa.id_quartier,
+
+            -- Resident trips
+            SUM(CASE WHEN trips.quartier_logis = sa.id_quartier AND trips.mode1 = 1 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_logis = sa.id_quartier THEN trips.facper END) * 100 AS AC_res,
+            SUM(CASE WHEN trips.quartier_logis = sa.id_quartier AND trips.mode1 = 2 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_logis = sa.id_quartier THEN trips.facper END) * 100 AS AP_res,
+            SUM(CASE WHEN trips.quartier_logis = sa.id_quartier AND trips.mode1 = 6 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_logis = sa.id_quartier THEN trips.facper END) * 100 AS TC_res,
+            SUM(CASE WHEN trips.quartier_logis = sa.id_quartier AND trips.mode1 IN (5, 13) THEN trips.facper END) / SUM(CASE WHEN trips.quartier_logis = sa.id_quartier THEN trips.facper END) * 100 AS MV_res,
+            SUM(CASE WHEN trips.quartier_logis = sa.id_quartier AND trips.mode1 = 7 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_logis = sa.id_quartier THEN trips.facper END) * 100 AS BS_res,
+
+            -- Origin trips (external)
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 = 1 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS AC_ori,
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 = 2 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS AP_ori,
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 = 6 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS TC_ori,
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 IN (5, 13) THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS MV_ori,
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 = 7 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS BS_ori,
+
+            -- Destination trips (external)
+            SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 = 1 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS AC_des,
+            SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 = 2 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS AP_des,
+            SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 = 6 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS TC_des,
+            SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 IN (5, 13) THEN trips.facper END) / SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS MV_des,
+            SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false AND trips.mode1 = 7 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_des = sa.id_quartier AND trips.internal_trip = false THEN trips.facper END) * 100 AS pBS_des,
+
+            -- Internal trips
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true AND trips.mode1 = 1 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true THEN trips.facper END) * 100 AS AC_int,
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true AND trips.mode1 = 2 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true THEN trips.facper END) * 100 AS AP_int,
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true AND trips.mode1 = 6 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true THEN trips.facper END) * 100 AS TC_int,
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true AND trips.mode1 IN (5, 13) THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true THEN trips.facper END) * 100 AS MV_int,
+            SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true AND trips.mode1 = 7 THEN trips.facper END) / SUM(CASE WHEN trips.quartier_ori = sa.id_quartier AND trips.internal_trip = true THEN trips.facper END) * 100 AS BS_int
+        FROM sec_analyse sa
+        LEFT JOIN trips ON 
+            trips.quartier_logis = sa.id_quartier OR 
+            trips.quartier_ori = sa.id_quartier OR 
+            trips.quartier_des = sa.id_quartier
+        GROUP BY sa.id_quartier, sa.geometry;
         COMMIT;
       `;
       const result = await client.query(query);
