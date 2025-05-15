@@ -54,15 +54,7 @@ const Histoire: React.FC = () => {
         defTerritoire(testGeoJSON)
     }
 
-    const saveGeoJSON = ( filename = "data.geojson") => {
-            const blob = new Blob([JSON.stringify(etatTerritoire)], { type: "application/json" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-          };
+    
     
     return (
         <div className="page-histoire">
