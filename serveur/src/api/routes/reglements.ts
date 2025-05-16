@@ -140,10 +140,32 @@ export const creationRouteurReglements = (pool: Pool): Router => {
     });
   };
 
+  const nouvelEnteteReglement: RequestHandler = async(req,res,next):Promise<void>=>{
+    let client;
+    try{
+      const {description,annee_debut_reg,annee_fin_reg,texte_loi,article_loi,paragraphe_loi,ville} = req.body;
+      client = await pool.connect();
+      const query = `INSERT INTO public.entete_reg_stationnement(description,annee_debut_reg,annee_fin_reg,texte_loi,article_loi,paragraphe_loi,ville)
+      VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *;`
+      const response = await client.query(query,[description,annee_debut_reg,annee_fin_reg,texte_loi,article_loi,paragraphe_loi,ville])
+      if (response.rows.length === 0) {
+        res.status(404).json({ success: false, error: 'Entry not found' });
+        return;
+      }
+      res.json({ success: true, data: response.rows });
+    } catch(err){
+      next(err);
+    }finally{
+      if(client){
+        client.release();
+      }
+    }
+  }
+
   // Routes
   router.get('/entete', obtiensTousEntetesReglements);
   router.get('/complet/:idToSplit', obtiensReglementCompletParId);
   router.get('/unites/:id',obtiensUnitesParLot)
-
+  router.post('/entete',nouvelEnteteReglement)
   return router;
 };

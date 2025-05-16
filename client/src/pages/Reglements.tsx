@@ -39,9 +39,9 @@ const Reglements: React.FC = () => {
     const [entetes, defEntetes] = useState<entete_reglement_stationnement[]>([]);
     const [charge, defCharg] = useState<boolean>(true);
     const [reglementComplet, defReglementComplet] = useState<reglement_complet>(reglementCompletVide);
-
-
-
+    const [creation,defCreation] = useState<boolean>(false);
+    const [editionEnteteEnCours,defEditionEnteteEnCours] = useState<boolean>(false);
+    const [editionCorpsEnCours,defEditionCorpsEnCours] = useState<boolean>(false);
     return (
         <div className="page-creation-reglements">
             <MenuBar />
@@ -53,6 +53,12 @@ const Reglements: React.FC = () => {
                     defCharge={defCharg}
                     regSelect={reglementComplet}
                     defRegSelect={defReglementComplet}
+                    creationEnCours={creation}
+                    defCreationEnCours={defCreation}
+                    editionEnteteEnCours={editionEnteteEnCours}
+                    defEditionEnteteEnCours={defEditionEnteteEnCours}
+                    editionCorpsEnCours={editionCorpsEnCours}
+                    defEditionCorpsEnCours={defEditionCorpsEnCours}
                 />
             </div>
 
@@ -61,6 +67,12 @@ const Reglements: React.FC = () => {
                 defCharge={defCharg}
                 regSelect={reglementComplet}
                 defRegSelect={defReglementComplet}
+                creationEnCours={creation}
+                defCreationEnCours={defCreation}
+                editionEnteteEnCours={editionEnteteEnCours}
+                defEditionEnteteEnCours={defEditionEnteteEnCours}
+                editionCorpsEnCours={editionCorpsEnCours}
+                defEditionCorpsEnCours={defEditionCorpsEnCours}
             />
 
         </div>

@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { entete_reglement_stationnement } from '../types/DataTypes';
+import { definition_reglement_stationnement, entete_reglement_stationnement, reglement_complet } from '../types/DataTypes';
 import { TableEnteteProps } from '../types/InterfaceTypes';
 import { serviceReglements } from "../services";
-
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 const TableEnteteReglements: React.FC<TableEnteteProps> = (props) => {
-
+    const rowRefs = useRef<{ [key: string]: HTMLTableRowElement | null }>({});
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -21,17 +22,38 @@ const TableEnteteReglements: React.FC<TableEnteteProps> = (props) => {
         fetchData();
     }, []); // Empty dependency array means this runs once when the component mounts
 
+    useEffect(() => {
+        if (props.regSelect.entete.id_reg_stat) {
+            const regKey = props.regSelect.entete.id_reg_stat;
+            const row = rowRefs.current[regKey];
+            if (row) {
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    }, [props.regSelect]);
+
     if (props.charge) {
         return <div>Chargement...</div>; // You can show a loading state while waiting for the data
     }
     const onLineSelect = async (id_reg: number) => {
         const reglementAObtenir = await serviceReglements.chercheReglementComplet(id_reg)
         props.defRegSelect(reglementAObtenir.data[0])
+        props.defCreationEnCours(false)
+    }
+    const gestBoutonAjout = () =>{
+        console.log('No add implemented')
+        const newEntete:entete_reglement_stationnement={id_reg_stat:-1,description:'Nouveau Règlement',texte_loi:'',article_loi:'',paragraphe_loi:'',annee_debut_reg:0,annee_fin_reg:null,ville:''}
+        const newStack:definition_reglement_stationnement[]=[{id_reg_stat_emp:-1,id_reg_stat:-1,ss_ensemble:1,seuil:0,oper:1,pente_min:0.01,pente_max:0.05,cases_fix_min:0,cases_fix_max:0,unite:4}]
+        const newReglement:reglement_complet = {entete:newEntete,definition:newStack}
+        props.defRegSelect(newReglement)
+        props.defCreationEnCours(true)
+        props.defEditionEnteteEnCours(true)
     }
 
     return (
         <div className="panneau-table-entete">
             <h4>Entete reglements</h4>
+            <div className="ajout-reglement"><AddIcon onClick={gestBoutonAjout}/></div>
             <div className="table-entete-reglements-container">
                 <table className="table-entete-reglements">
                     <thead>
@@ -44,11 +66,14 @@ const TableEnteteReglements: React.FC<TableEnteteProps> = (props) => {
                             <th>Article Loi</th>
                             <th>Paragraphe Loi</th>
                             <th>Ville</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         {props.entetes.map((entete) => (
-                            <tr key={entete.id_reg_stat} onClick={() => onLineSelect(entete.id_reg_stat)}>
+                            <tr key={entete.id_reg_stat} 
+                                onClick={() => onLineSelect(entete.id_reg_stat)}
+                                ref={el => { rowRefs.current[props.regSelect.entete.id_reg_stat] = el; }}>
                                 <td>{entete.id_reg_stat}</td>
                                 <td>{entete.description}</td>
                                 <td>{entete.annee_debut_reg}</td>
@@ -57,6 +82,7 @@ const TableEnteteReglements: React.FC<TableEnteteProps> = (props) => {
                                 <td>{entete.article_loi}</td>
                                 <td>{entete.paragraphe_loi}</td>
                                 <td>{entete.ville}</td>
+                                <td><DeleteIcon /></td>
                             </tr>
 
                         ))}

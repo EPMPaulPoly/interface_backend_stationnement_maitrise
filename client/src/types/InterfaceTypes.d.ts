@@ -205,6 +205,12 @@ export interface TableEnteteProps{
     defCharge:React.Dispatch<SetStateAction<boolean>>
     regSelect:reglement_complet,
     defRegSelect:React.Dispatch<SetStateAction<reglement_complet>>
+    creationEnCours:boolean
+    defCreationEnCours:React.Dispatch<SetStateAction<boolean>>
+    editionEnteteEnCours:boolean
+    defEditionEnteteEnCours:React.Dispatch<SetStateAction<boolean>>
+    editionCorpsEnCours:boolean
+    defEditionCorpsEnCours:React.Dispatch<SetStateAction<boolean>>
 }
 
 export interface TableVisModRegProps{
@@ -212,6 +218,12 @@ export interface TableVisModRegProps{
     defCharge:React.Dispatch<SetStateAction<boolean>>
     regSelect:reglement_complet,
     defRegSelect:React.Dispatch<SetStateAction<reglement_complet>>
+    creationEnCours:boolean
+    defCreationEnCours:React.Dispatch<SetStateAction<boolean>>
+    editionEnteteEnCours:boolean
+    defEditionEnteteEnCours:React.Dispatch<SetStateAction<boolean>>
+    editionCorpsEnCours:boolean
+    defEditionCorpsEnCours:React.Dispatch<SetStateAction<boolean>>
 }
 
 //-----------------------------------------------------------------------------
