@@ -73,6 +73,8 @@ const Reglements: React.FC = () => {
                 defEditionEnteteEnCours={defEditionEnteteEnCours}
                 editionCorpsEnCours={editionCorpsEnCours}
                 defEditionCorpsEnCours={defEditionCorpsEnCours}
+                entetesRegStationnement={entetes}
+                defEntetesRegStationnement={defEntetes  }
             />
 
         </div>

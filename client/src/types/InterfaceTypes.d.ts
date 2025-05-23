@@ -224,6 +224,8 @@ export interface TableVisModRegProps{
     defEditionEnteteEnCours:React.Dispatch<SetStateAction<boolean>>
     editionCorpsEnCours:boolean
     defEditionCorpsEnCours:React.Dispatch<SetStateAction<boolean>>
+    entetesRegStationnement:entete_reglement_stationnement[],
+    defEntetesRegStationnement:React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
 }
 
 //-----------------------------------------------------------------------------

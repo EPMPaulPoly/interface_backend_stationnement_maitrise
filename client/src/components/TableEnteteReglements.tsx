@@ -43,7 +43,7 @@ const TableEnteteReglements: React.FC<TableEnteteProps> = (props) => {
     const gestBoutonAjout = () =>{
         console.log('No add implemented')
         const newEntete:entete_reglement_stationnement={id_reg_stat:-1,description:'Nouveau Règlement',texte_loi:'',article_loi:'',paragraphe_loi:'',annee_debut_reg:0,annee_fin_reg:null,ville:''}
-        const newStack:definition_reglement_stationnement[]=[{id_reg_stat_emp:-1,id_reg_stat:-1,ss_ensemble:1,seuil:0,oper:1,pente_min:0.01,pente_max:0.05,cases_fix_min:0,cases_fix_max:0,unite:4}]
+        const newStack:definition_reglement_stationnement[]=[]
         const newReglement:reglement_complet = {entete:newEntete,definition:newStack}
         props.defRegSelect(newReglement)
         props.defCreationEnCours(true)
@@ -73,7 +73,8 @@ const TableEnteteReglements: React.FC<TableEnteteProps> = (props) => {
                         {props.entetes.map((entete) => (
                             <tr key={entete.id_reg_stat} 
                                 onClick={() => onLineSelect(entete.id_reg_stat)}
-                                ref={el => { rowRefs.current[props.regSelect.entete.id_reg_stat] = el; }}>
+                                ref={el => { rowRefs.current[entete.id_reg_stat] = el; }}
+                                className={entete.id_reg_stat===props.regSelect.entete.id_reg_stat?"reg-selectionne":"reg-general"}>
                                 <td>{entete.id_reg_stat}</td>
                                 <td>{entete.description}</td>
                                 <td>{entete.annee_debut_reg}</td>

@@ -5,10 +5,16 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
-import { Add, Check, Edit } from '@mui/icons-material';
+import { Add, Cancel, Check, Edit, Save, ThreeGMobiledata } from '@mui/icons-material';
 import { serviceReglements } from '../services';
 
 const TableVisModReglement: React.FC<TableVisModRegProps> = (props) => {
+    const [ligneUnSauvegardee,defLigneUnSauvegardee] = useState<boolean>(true);
+    const [idLigneAModifier,defidLigneAModifier] = useState<number>(-1);
+    const [prochainSSEnsemble,defProchainSSEnsemble] = useState<number>(1);
+    const [operationSubsetEdit,defOperationSubsetEdit] = useState<number>(1);
+    const [operationInterSubsetEdit,defOperationInterSubsetEdit] = useState<number>(3);
+    const [ancienReglement,defAncienReglement] = useState<reglement_complet>({entete:{id_reg_stat:0,description:'',annee_debut_reg:null,annee_fin_reg:null,texte_loi:'',article_loi:'',paragraphe_loi:'',ville:''},definition:[]})
     const panelRef = useRef<HTMLDivElement>(null);
     const handleMouseDown = (e: React.MouseEvent) => {
         const startY = e.clientY;
@@ -36,6 +42,14 @@ const TableVisModReglement: React.FC<TableVisModRegProps> = (props) => {
         const oldStack = props.regSelect.definition;
         const newRegSelect: reglement_complet = { entete: newEntete, definition: oldStack };
         props.defRegSelect(newRegSelect);
+    }
+    const gestAjoutSSEnsemble=()=>{
+        // Example: get unique ss_ensemble values from the definition array
+        const uniqueSubsets = new Set(props.regSelect.definition.map(def => def.ss_ensemble));
+        const nextSubset = Math.max(...uniqueSubsets)+1;
+        defProchainSSEnsemble(nextSubset)
+        defAncienReglement(props.regSelect)
+        // TODO: use nSubsets for further logic or remove if not needed
     }
     const gestSauvegardeEntete=async()=>{
         const enteteASauver:Omit<entete_reglement_stationnement,'id_reg_stat'>={
@@ -70,7 +84,15 @@ const TableVisModReglement: React.FC<TableVisModRegProps> = (props) => {
         
         props.defRegSelect(newRegSelect)
         props.defEditionEnteteEnCours(false)
-        props.defEditionCorpsEnCours(true)
+        if(props.creationEnCours){
+            props.defEntetesRegStationnement((prev) => [...prev, newEntete])
+        }else{
+            props.defEntetesRegStationnement((prev) =>
+                prev.map(entete =>
+                    entete.id_reg_stat === newEntete.id_reg_stat ? newEntete : entete
+                )
+            )
+        }
     }
     return (
         <div className="panneau-details-reglements" ref={panelRef}>
@@ -89,7 +111,7 @@ const TableVisModReglement: React.FC<TableVisModRegProps> = (props) => {
                         <th>Paragraphe Loi</th>
                         <th>Ville</th>
                         <th></th>
-                        <th></th>
+                        {props.editionEnteteEnCours?<th></th>:<></>}
                     </tr>
                 </thead>
                 <tbody>
@@ -176,8 +198,8 @@ const TableVisModReglement: React.FC<TableVisModRegProps> = (props) => {
                                     onChange={(e) => gestChangementEntete(props.regSelect.entete.id_reg_stat,'ville', e.target.value)}
                                     size={10}/>
                             ):(props.regSelect.entete.ville)}</td>
-                        <td>{props.creationEnCours?(<><SaveIcon onClick={gestSauvegardeEntete}/></>):(<><Edit /></>)}</td>
-                        <td>{props.creationEnCours?(<><CancelIcon/></>):(<><DeleteIcon /></>)}</td>
+                        <td>{props.creationEnCours&&props.editionEnteteEnCours?(<><SaveIcon onClick={gestSauvegardeEntete}/></>):(<><Edit /></>)}</td>
+                        <td>{props.creationEnCours&&props.editionEnteteEnCours?(<><CancelIcon/></>):(<></>)}</td>
                     </tr>
                     }
                 </tbody>
@@ -190,9 +212,14 @@ const TableVisModReglement: React.FC<TableVisModRegProps> = (props) => {
                         <th>Opération</th>
                         <th>Abscisse Min.</th>
                         <th>Abscisse Max.</th>
+                        {props.editionCorpsEnCours?<th>Util.</th>:<></>}
                         <th>Pente Minimum</th>
+                        {props.editionCorpsEnCours?<th>Util.</th>:<></>}
                         <th>Pente Maximum</th>
+                        {props.editionCorpsEnCours?<th>Util.</th>:<></>}
                         <th>Unite</th>
+                        <th></th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -203,14 +230,55 @@ const TableVisModReglement: React.FC<TableVisModRegProps> = (props) => {
                             <td>{ligneDef.oper}</td>
                             <td>{ligneDef.cases_fix_min}</td>
                             <td>{ligneDef.cases_fix_max}</td>
+                            {props.editionCorpsEnCours&&idLigneAModifier===ligneDef.id_reg_stat_emp?<td></td>:<></>}
                             <td>{ligneDef.pente_min}</td>
+                            {props.editionCorpsEnCours&&idLigneAModifier===ligneDef.id_reg_stat_emp?<td></td>:<></>}
                             <td>{ligneDef.pente_max}</td>
+                            {props.editionCorpsEnCours&&idLigneAModifier===ligneDef.id_reg_stat_emp?<td></td>:<></>}
                             <td>{ligneDef.unite}</td>
+                            <td>{props.editionCorpsEnCours && ligneDef.id_reg_stat_emp===idLigneAModifier?<Save/>:<Edit/>}</td>
+                            <td>{props.editionCorpsEnCours && ligneDef.id_reg_stat_emp===idLigneAModifier?<CancelIcon/>:<DeleteIcon/>}</td>
                         </tr>
-
                     ))}
                 </tbody>
             </table>
+            {props.regSelect.definition.length>0?(
+                <p>
+                    <Add id='add-line'/>
+                    <label htmlFor='add-line'>Ajouter Ligne au sous ensemble</label>
+                    <select id='subset-select' >
+                    </select>
+                </p>
+            ):(
+                <>
+                </>
+            )}
+            {props.regSelect.entete.id_reg_stat>0?(
+                <p>
+                    <Add 
+                        id='add-subset'
+                        onClick={gestAjoutSSEnsemble}
+                    />
+                    <label htmlFor='subset-type'>Ajouter sous ensemble de type</label>
+                    <select id='subset-type'>
+                        <option key={4}>Seuils</option>
+                        <option key={1}>Addition</option>
+                    </select>
+                    {props.regSelect.definition.length>0?(<>
+                        <label htmlFor='select-subset-operator'>Opération entres sous-ensembles</label>
+                        <select id='select-subset-operator'>
+                            <option key={3}>Ou plus contraignant</option>
+                            <option key={6}>Ou simple</option>
+                        </select>
+                        </>
+                    ):(
+                        <></>
+                    )}
+                </p>
+            ):(
+                <></>
+            )
+            }
         </div>
     );
 };
