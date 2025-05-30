@@ -16,12 +16,24 @@ export interface definition_reglement_stationnement{
     id_reg_stat:number,
     ss_ensemble:number,
     seuil:number,
-    oper:number,
+    oper:number|null,
     cases_fix_min:number,
-    cases_fix_max:number,
-    pente_min:number,
-    pente_max:number,
+    cases_fix_max:number|null,
+    pente_min:number|null,
+    pente_max:number|null,
     unite:number
+}
+
+export interface operation_reglement_stationnement{
+    id_operation:number,
+    desc_operation:string
+}
+export interface unites_reglement_stationnement{
+    id_unite:number,
+    desc_unite:string,
+    colonne_role_foncier:string,
+    facteur_correction:number,
+    abscisse_correction:number
 }
 
 export interface reglement_complet{

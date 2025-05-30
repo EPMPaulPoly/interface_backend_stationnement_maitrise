@@ -1,6 +1,6 @@
 import axios,{ AxiosResponse } from 'axios';
-import { entete_reglement_stationnement,  } from '../types/DataTypes';
-import { ReponseEntetesReglements, ReponseReglementComplet,ReponseDBInfoInventaireReglementManuel, ReponseEntetesEnsemblesReglement} from '../types/serviceTypes';
+import { definition_reglement_stationnement, entete_reglement_stationnement,  } from '../types/DataTypes';
+import { ReponseEntetesReglements, ReponseReglementComplet,ReponseDBInfoInventaireReglementManuel, ReponseEntetesEnsemblesReglement, ReponseOperationsReglements,ReponseUnitesReglements, ReponseLigneDefReglement} from '../types/serviceTypes';
 import api from './api';
 import { promises } from 'dns';
 
@@ -113,6 +113,125 @@ class ServiceReglements {
         }
     }
     
+    async supprimeReglement(idReglement:number):Promise<boolean>{
+        try{
+            const response:AxiosResponse<ReponseEntetesReglements> = await api.delete(`/reglements/${idReglement}`)
+            return response.data.success?response.data.success:false;
+        }catch(error){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
+
+    async obtiensOperationsPossibles():Promise<ReponseOperationsReglements>{
+        try {
+            const response: AxiosResponse<ReponseOperationsReglements> = await api.get(`/reglements/operations`);
+            const data_res = response.data.data;
+            return {success:response.data.success,data:data_res};
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
+
+    async obtiensUnitesPossibles():Promise<ReponseUnitesReglements>{
+        try {
+            const response: AxiosResponse<ReponseUnitesReglements> = await api.get(`/reglements/unites`);
+            const data_res = response.data.data;
+            return {success:response.data.success,data:data_res};
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
+
+    async nouvelleLigneDefinition(definition:Partial<definition_reglement_stationnement>):Promise<ReponseLigneDefReglement>{
+        try{
+            const dbData:Partial<definition_reglement_stationnement>={
+                id_reg_stat:definition.id_reg_stat,
+                seuil:definition.seuil,
+                ss_ensemble:definition.ss_ensemble,
+                oper:definition.oper,
+                cases_fix_min:definition.cases_fix_min,
+                cases_fix_max:definition.cases_fix_max,
+                pente_min:definition.pente_min,
+                pente_max:definition.pente_max,
+                unite:definition.unite
+            }
+            const response:AxiosResponse<ReponseLigneDefReglement> = await api.post(`/reglements/ligne-def/`,dbData)
+            return{success:response.data.success,data:response.data.data}
+        }catch(error){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
+
+    async modifieLigneDefinition(idLigne:number,definition:Omit<definition_reglement_stationnement,'id_reg_stat_emp'>):Promise<ReponseLigneDefReglement>{
+        try{
+            const dbData:Partial<definition_reglement_stationnement>={
+                id_reg_stat:definition.id_reg_stat,
+                seuil:definition.seuil,
+                ss_ensemble:definition.ss_ensemble,
+                oper:definition.oper,
+                cases_fix_min:definition.cases_fix_min,
+                cases_fix_max:definition.cases_fix_max,
+                pente_min:definition.pente_min,
+                pente_max:definition.pente_max,
+                unite:definition.unite
+            }
+            const response:AxiosResponse<ReponseLigneDefReglement> = await api.put(`/reglements/entete/${idLigne}`,dbData)
+            return{success:response.data.success,data:response.data.data}
+        }catch(error){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
+
+    async supprimeLigneDefinition(idLigne:number):Promise<boolean>{
+        try{
+            const response:AxiosResponse<ReponseEntetesReglements> = await api.delete(`/reglements/ligne-def/${idLigne}`)
+            return response.data.success?response.data.success:false;
+        }catch(error){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
 }
 
 export const serviceReglements =  new ServiceReglements();

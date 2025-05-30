@@ -1,4 +1,4 @@
-import {periode,territoire,quartiers_analyse,inventaire_stationnement,territoireGeoJsonProperties,entete_reglement_stationnement, reglement_complet,entete_ensembles_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties, roleFoncierGeoJsonProps, lotCadastralDB, roleFoncierDB, lotCadastralGeomSeulDb, comboERRoleFoncier, lotCadastralBoolInvDB, lotCadastralAvecBoolInvGeoJsonProperties, PAV_quartier, entreePAV} from './DataTypes'
+import {periode,territoire,quartiers_analyse,inventaire_stationnement,territoireGeoJsonProperties,entete_reglement_stationnement, reglement_complet,entete_ensembles_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties, roleFoncierGeoJsonProps, lotCadastralDB, roleFoncierDB, lotCadastralGeomSeulDb, comboERRoleFoncier, lotCadastralBoolInvDB, lotCadastralAvecBoolInvGeoJsonProperties, PAV_quartier, entreePAV, operation_reglement_stationnement, unites_reglement_stationnement, definition_reglement_stationnement} from './DataTypes'
 import { Feature, FeatureCollection,Geometry } from 'geojson';
 import { GeoJSONPropsAnaQuartierTotal, GeoJSONPropsAnaQuartierTotalParHab, GeoJSONPropsAnaQuartierTotalParSuperf, NhoodXYGraphDatasets, StatTotalDBAnaQuartier, StatTotalParSuperfDBAnaQuartier, VariableCartoDBAnaQuartier } from './AnalysisTypes';
 export interface ApiResponse<T> {
@@ -37,3 +37,6 @@ export type ReponsePAVQuartier = ApiResponse<PAVQuartier>
 export type ReponsePAVNouveau = ApiResponse<entreePAV>
 export type ReponseHistoAnalyse = ApiResponse<barChartDataSet>
 export type ReponseXYAnalyseQuartier = ApiResponse<NhoodXYGraphDatasets>
+export type ReponseOperationsReglements = ApiResponse<operation_reglement_stationnement[]>
+export type ReponseUnitesReglements = ApiResponse<unites_reglement_stationnement[]>
+export type ReponseLigneDefReglement = ApiReponse<definition_reglement_stationnement>

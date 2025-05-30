@@ -6,6 +6,22 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 const TableEnteteReglements: React.FC<TableEnteteProps> = (props) => {
     const rowRefs = useRef<{ [key: string]: HTMLTableRowElement | null }>({});
+    const enteteReglementVide: entete_reglement_stationnement = {
+        id_reg_stat: 0,
+        description: '',
+        annee_debut_reg: 0,
+        annee_fin_reg: 0,
+        texte_loi: '',
+        article_loi: '',
+        paragraphe_loi: '',
+        ville: ''
+    };
+
+
+    const reglementCompletVide: reglement_complet = {
+        entete: enteteReglementVide,
+        definition: []
+    }
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -49,7 +65,19 @@ const TableEnteteReglements: React.FC<TableEnteteProps> = (props) => {
         props.defCreationEnCours(true)
         props.defEditionEnteteEnCours(true)
     }
-
+    const gestSuppressionReglement =async(idASupprimer:number)=>{
+        console.log(`suppression reglement frontend ${idASupprimer}`)
+        if (props.creationEnCours && props.editionEnteteEnCours){
+            props.defRegSelect(reglementCompletVide)
+        } else {
+            console.log('suppression reglement')
+            const confirm = await serviceReglements.supprimeReglement(idASupprimer)
+            if (confirm){
+                props.defEntetes(props.entetes.filter((entete) => entete.id_reg_stat !== idASupprimer));
+                props.defRegSelect(reglementCompletVide)
+            }
+        } 
+    }
     return (
         <div className="panneau-table-entete">
             <h4>Entete reglements</h4>
@@ -83,7 +111,7 @@ const TableEnteteReglements: React.FC<TableEnteteProps> = (props) => {
                                 <td>{entete.article_loi}</td>
                                 <td>{entete.paragraphe_loi}</td>
                                 <td>{entete.ville}</td>
-                                <td><DeleteIcon /></td>
+                                <td onClick={()=> gestSuppressionReglement(entete.id_reg_stat)}><DeleteIcon /></td>
                             </tr>
 
                         ))}
