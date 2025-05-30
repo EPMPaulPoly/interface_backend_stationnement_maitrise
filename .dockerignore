@@ -1,0 +1,53 @@
+# Ignore node and Python cache
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.mypy_cache/
+**/.pytest_cache/
+**/.ruff_cache/
+
+# Ignore local environment and Conda stuff
+.env
+*.env
+*.conda
+*.ipynb
+*.egg-info/
+*.sqlite
+*.db
+*.log
+
+# VSCode settings and counters
+.vscode/
+.VSCodeCounter/
+
+# Ignore logs and temp outputs
+**/results.*
+**/diff.*
+**/details.*
+**/*.csv
+**/*.json
+**/*.txt
+**/*.md
+
+# Ignore test artifacts
+**/test_*.py
+**/tests/
+
+# Ignore npm/yarn cache
+**/node_modules/
+**/.npm/
+**/.npm-cache/
+**/.yarn/
+
+# Ignore built frontend artifacts
+client/build/
+client/dist/
+
+# Ignore Docker volumes and build folders
+docker-data/
+docker-volumes/
+
+# Git and GitHub
+.git/
+.github/
