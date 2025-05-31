@@ -203,7 +203,7 @@ class ServiceReglements {
                 pente_max:definition.pente_max,
                 unite:definition.unite
             }
-            const response:AxiosResponse<ReponseLigneDefReglement> = await api.put(`/reglements/entete/${idLigne}`,dbData)
+            const response:AxiosResponse<ReponseLigneDefReglement> = await api.put(`/reglements/ligne-def/${idLigne}`,dbData)
             return{success:response.data.success,data:response.data.data}
         }catch(error){
             if (axios.isAxiosError(error)) {

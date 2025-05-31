@@ -91,7 +91,7 @@ export const creationRouteurReglements = (pool: Pool): Router => {
     const { id } = req.params;
     const decipheredId = id.replace(/_/g, " ");
     console.log(`obtention des unités pour les règlements s'appliquant au lot : ${decipheredId}`)
-    const scriptPath = path.resolve(__dirname, "../../../serveur_calcul_python/obtention_reglements_lot.py");
+    const scriptPath = path.resolve(__dirname, "../../../../serveur_calcul_python/obtention_reglements_lot.py");
 
     // Chemin direct vers l'interpréteur Python dans l'environnement Conda
     const pythonExecutable = '/opt/conda/envs/serveur_calcul_python/bin/python3';
@@ -205,27 +205,6 @@ export const creationRouteurReglements = (pool: Pool): Router => {
     }
   }
 
-  const obtiensOperations: RequestHandler = async (req, res, next): Promise<void> => {
-    console.log('Serveur - Obtention toutes operations reglements')
-    let client;
-    try {
-      client = await pool.connect();
-      const query = `
-        SELECT *
-        FROM public.liste_operations
-        ORDER BY id_operation
-      `;
-
-      const result = await client.query(query);
-      res.json({ success: true, data: result.rows });
-    } catch (err) {
-      res.status(500).json({ success: false, error: 'Database error' });
-    } finally {
-      if (client) {
-        client.release(); // Release the connection back to the pool
-      }
-    }
-  }
 
   const obtiensToutesOperations: RequestHandler = async (_req, res): Promise<void> => {
     console.log('Serveur - Obtention toutes operations')
@@ -292,6 +271,39 @@ export const creationRouteurReglements = (pool: Pool): Router => {
       }
     }
   }
+  const majLigneDefinition: RequestHandler = async (req, res, next): Promise<void> => {
+    let client;
+    try {
+      const { id_reg_stat, ss_ensemble, seuil, oper, cases_fix_min, cases_fix_max, pente_min, pente_max, unite } = req.body;
+      const {id} = req.params;
+      client = await pool.connect();
+      const query = `UPDATE public.reg_stationnement_empile
+      SET
+        id_reg_stat = $1,
+        ss_ensemble = $2,
+        seuil = $3,
+        oper = $4,
+        cases_fix_min = $5,
+        cases_fix_max = $6,
+        pente_min = $7,
+        pente_max = $8,
+        unite = $9
+      WHERE id_reg_stat_emp = $10 
+      RETURNING *;`
+      const response = await client.query(query, [id_reg_stat, ss_ensemble, seuil, oper, cases_fix_min, cases_fix_max, pente_min, pente_max, unite, id])
+      if (response.rows.length === 0) {
+        res.status(404).json({ success: false, error: 'Entry not found' });
+        return;
+      }
+      res.json({ success: true, data: response.rows });
+    } catch (err) {
+      next(err);
+    } finally {
+      if (client) {
+        client.release();
+      }
+    }
+  }
   const supprimeLigneDefinition: RequestHandler = async (req, res, next): Promise<void> => {
     let client;
     try {
@@ -324,6 +336,7 @@ export const creationRouteurReglements = (pool: Pool): Router => {
   router.post('/entete', nouvelEnteteReglement)
   router.delete('/:id', supprimeReglement)
   router.post('/ligne-def', nouvelleLigneDefinition)
+  router.put('/ligne-def/:id',majLigneDefinition)
   router.delete('/ligne-def/:id', supprimeLigneDefinition)
   return router;
 };

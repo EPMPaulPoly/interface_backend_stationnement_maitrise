@@ -196,7 +196,7 @@ const TableVisModReglement: React.FC<TableVisModRegProps> = (props) => {
         const ligneRetournee= lineOut.data;
         // Remplace la ligne modifiée dans le tableau definition par la ligne retournée par l'API
         const updatedDefinitions = props.regSelect.definition.map((def) =>
-            def.id_reg_stat_emp === idLigneAModifier ? ligneRetournee : def
+            def.id_reg_stat_emp === idLigneAModifier ? ligneRetournee[0] : def
         );
         props.defRegSelect({
             ...props.regSelect,
@@ -208,6 +208,25 @@ const TableVisModReglement: React.FC<TableVisModRegProps> = (props) => {
     const gestSupprimeLigne=async(idLigne:number)=>{
         const lineDeleted=await serviceReglements.supprimeLigneDefinition(idLigne)
         console.log('supprime ligne ',lineDeleted)
+        if (lineDeleted){
+            const newStack = props.regSelect.definition.filter((o)=>o.id_reg_stat_emp!==idLigne)
+            const oldHeader = props.regSelect.entete
+            const newRegSelect:reglement_complet={entete:oldHeader,definition:newStack}
+            props.defRegSelect(newRegSelect)
+        }
+    }
+
+    const gestModifLigne=(idStack:number)=>{
+        if (props.editionEnteteEnCours){
+            props.defRegSelect(ancienReglement)
+            props.defEditionEnteteEnCours(false)
+            props.defEditionCorpsEnCours(true)
+            defidLigneAModifier(idStack)
+        } else{
+            defAncienReglement(props.regSelect)
+            props.defEditionCorpsEnCours(true)
+            defidLigneAModifier(idStack)
+        }
     }
     return (
         <div className="panneau-details-reglements" ref={panelRef}>
@@ -462,7 +481,9 @@ const TableVisModReglement: React.FC<TableVisModRegProps> = (props) => {
                                 })()
                             }</td>
                             {/* Édition sauvegard*/}
-                            <td>{props.editionCorpsEnCours && ligneDef.id_reg_stat_emp===idLigneAModifier?<Save onClick={gestSauvegardeLigne}/>:<Edit/>}</td>
+                            <td>{props.editionCorpsEnCours && ligneDef.id_reg_stat_emp===idLigneAModifier?
+                            <Save onClick={gestSauvegardeLigne}/>
+                            :<Edit onClick={()=>gestModifLigne(ligneDef.id_reg_stat_emp)}/>}</td>
                             {/* suppression annulation*/}
                             <td>{props.editionCorpsEnCours && ligneDef.id_reg_stat_emp===idLigneAModifier?
                                 <CancelIcon/>
