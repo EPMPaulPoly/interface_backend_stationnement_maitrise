@@ -300,7 +300,7 @@ export const creationRouteurReglements = (pool: Pool): Router => {
       
       let queryDeleteStack: string;
       let responseStacked: any;
-      queryDeleteStack = `DELETE 
+      queryDeleteStack = `DELETE FROM
                             public.reg_stationnement_empile
                           WHERE
                             id_reg_stat_emp = $1`

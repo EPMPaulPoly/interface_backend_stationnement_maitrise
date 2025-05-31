@@ -1,9 +1,15 @@
 FROM node:20
 WORKDIR /app/serveur
+
 COPY serveur/package*.json ./
 COPY serveur/tsconfig.json ./
+COPY serveur_calcul_python/environment.yml ../serveur_calcul_python/environment.yml
 
-RUN apt-get update && apt-get install -y ca-certificates
+RUN ls -l /app/serveur
+RUN ls -l /app/serveur_calcul_python
+# Install needed packages (wget)
+RUN apt-get update && apt-get install -y ca-certificates wget
+
 
 # Installer Miniconda
 RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh && \
