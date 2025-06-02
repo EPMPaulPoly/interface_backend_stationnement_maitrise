@@ -1,6 +1,7 @@
 import React,{useState} from 'react';
 import { EnsRegTerrControlProps } from '../types/InterfaceTypes';
 import { serviceEnsemblesReglements, serviceTerritoires } from '../services';
+import { serviceEnsRegTerr } from '../services/serviceEnsRegTerr';
 
 
 const ControlEnsRegTerr:React.FC<EnsRegTerrControlProps> = (props:EnsRegTerrControlProps) =>{
@@ -31,7 +32,7 @@ const ControlEnsRegTerr:React.FC<EnsRegTerrControlProps> = (props:EnsRegTerrCont
 
     const gestSelectionTerritoire = async(territoireAregarder:number)=>{
         if (territoireAregarder!=-1){
-            const ensReg = await serviceEnsemblesReglements.obtiensEnsRegParTerritoire(territoireAregarder)
+            const ensReg = await serviceEnsRegTerr.obtiensEnsRegEtAssocParTerritoire(territoireAregarder)
             const territoireSelectTemp =await serviceTerritoires.chercheTerritoiresParId(territoireAregarder);
             props.defEnsRegDispo(ensReg.data);
             props.defTerritoireSelect(territoireSelectTemp.data);

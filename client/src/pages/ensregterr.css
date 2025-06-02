@@ -55,6 +55,20 @@
     text-align: left; /* Ensure consistent text alignment */
 }
 
+.save-edit-col{
+    width:20px;
+    left:0px;
+}
+.cancel-delete-col{
+    width:20px;
+    left:0px;
+}
+
+.asso-id-col{
+    width:20px;
+    left:0px;
+}
+
 .id-col {
     width:50px;
     left:0px;

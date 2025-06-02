@@ -68,6 +68,11 @@ export interface entete_ensembles_reglement_stationnement{
     description_er: string,
 }
 
+export interface association_territoire_entete_ensemble_reglement extends entete_ensembles_reglement_stationnement{
+    id_asso_er_ter:number,
+    id_periode_geo:number,
+}
+
 export interface utilisation_sol{
     cubf:number,
     description:string

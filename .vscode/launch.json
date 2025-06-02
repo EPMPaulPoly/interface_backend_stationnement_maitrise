@@ -18,7 +18,7 @@
             "port": 9229,
             "address": "localhost",
             "localRoot": "${workspaceFolder}/serveur",
-            "remoteRoot": "/app",
+            "remoteRoot": "/app/serveur",
             "restart": true,
             "sourceMaps": true,
             "skipFiles": ["<node_internals>/**"],

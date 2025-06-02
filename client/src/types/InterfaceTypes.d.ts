@@ -274,6 +274,7 @@ export interface EnsRegTerrDispTable{
     defEnsRegDispo:React.Dispatch<SetStateAction<entete_ensemble_reglement_stationnement[]>>,
     periodeSelect:periode,
     defPeriodeSelect:React.Dispatch<SetStateAction<periode>>,
+    territoireSelect:GeoJSON.FeatureCollection<GeoJSON.Geometry,territoireGeoJsonProperties>,
 }
 
 export interface CarteEnsRegTerrProps{

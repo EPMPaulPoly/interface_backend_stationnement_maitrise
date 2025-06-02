@@ -9,6 +9,7 @@ import { creationRouteurEnsemblesReglements } from './ensemblesReglements';
 import { creationRouteurCadastre } from './cadastre';
 import { creationRouteurAnalyseParQuartiers } from './analyseQuartiers';
 import { creationRouteurProfileAccumVehiculeQuartier } from './ProfileAccumulationVehicule';
+import { creationRouteurEnsRegTerr } from './ensRegTerr';
 
 export const createApiRouter = (pool: Pool) => {
     const router = Router();
@@ -22,5 +23,6 @@ export const createApiRouter = (pool: Pool) => {
     router.use('/cadastre',creationRouteurCadastre(pool))
     router.use('/ana-par-quartier',creationRouteurAnalyseParQuartiers(pool))
     router.use('/PAV',creationRouteurProfileAccumVehiculeQuartier(pool))
+    router.use('/ens-reg-terr',creationRouteurEnsRegTerr(pool))
     return router;
 }

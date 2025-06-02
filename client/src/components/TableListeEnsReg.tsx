@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { entete_reglement_stationnement } from '../types/DataTypes';
 import { TableEnteteEnsembleProps } from '../types/InterfaceTypes';
 import { serviceEnsemblesReglements } from "../services";
-
+import AddIcon from '@mui/icons-material/AddOutlined';
+import DeleteIcon from '@mui/icons-material/Delete';
 const TableListeEnsReg: React.FC<TableEnteteEnsembleProps> = (props) => {
 
     useEffect(() => { 
@@ -14,7 +15,7 @@ const TableListeEnsReg: React.FC<TableEnteteEnsembleProps> = (props) => {
             } catch (error) {
                 console.error('Error fetching data:', error);
             } finally {
-                console.log('Faile retriveal')
+                console.log('Failed retrieval')
             }
         };
 
@@ -26,6 +27,14 @@ const TableListeEnsReg: React.FC<TableEnteteEnsembleProps> = (props) => {
         props.defEnsembleReglement(reglementAObtenir.data)
         const entetesReglementsPertinents = await serviceEnsemblesReglements.chercheReglementsPourEnsReg(id_reg)
         props.defEntetesReglements(entetesReglementsPertinents.data)
+    }
+
+    const gestBoutonAjout = async() =>{
+
+    }
+
+    const gestSuppressionEnsReg = async(idEnsReg:number) =>{
+
     }
 
     const panelRef = useRef<HTMLDivElement>(null);
@@ -53,17 +62,20 @@ const TableListeEnsReg: React.FC<TableEnteteEnsembleProps> = (props) => {
         <div className="panneau-entete-ens-reg" ref={panelRef}>
             <div className="resize-handle-left-panel" onMouseDown={handleMouseDown}></div>
             <h4>Entete Ensembles</h4>
+            <div className="ajout-reglement"><AddIcon onClick={gestBoutonAjout}/></div>
             <div className="panneau-scroll-entete-ens-reg">
                 <table className="table-entete-ens-reg">
                     <thead>
                         <tr>
                             <th>Description Ensemble</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         {props.entetesEnsembles.map((entete) => (
                             <tr key={entete.id_er} onClick={() => onLineSelect(entete.id_er)}>
                                 <td>{entete.description_er}</td>
+                                <td><td onClick={()=> gestSuppressionEnsReg(entete.id_er)}><DeleteIcon /></td></td>
                             </tr>
 
                         ))}

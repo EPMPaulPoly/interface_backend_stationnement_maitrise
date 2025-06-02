@@ -2,10 +2,9 @@ import React, { useState, useRef,useEffect} from 'react';
 import { TableVisModRegProps } from '../types/InterfaceTypes';
 import { definition_reglement_stationnement, entete_reglement_stationnement, operation_reglement_stationnement, reglement_complet, unites_reglement_stationnement } from '../types/DataTypes';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
-import { Add, Cancel, Check, Edit, Save, ThreeGMobiledata } from '@mui/icons-material';
+import { Add, Edit, Save } from '@mui/icons-material';
 import { serviceReglements } from '../services';
 
 const TableVisModReglement: React.FC<TableVisModRegProps> = (props) => {

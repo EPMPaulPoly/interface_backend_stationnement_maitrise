@@ -182,10 +182,10 @@ export const creationRouteurReglements = (pool: Pool): Router => {
                               public.entete_reg_stationnement 
                             WHERE
                               id_reg_stat = $1;`
-      queryDeleteStack = `DELETE 
+      queryDeleteStack = `DELETE FROM
                               public.reg_stationnement_empile
                             WHERE
-                              id_reg_stat = $1`
+                              id_reg_stat = $1;`
       if (Number(responseCount.rows[0].count) === 0) {
         responseHeader = await client.query(queryDeleteHeader, [id]);
         responseStacked = { rowCount: 1 };

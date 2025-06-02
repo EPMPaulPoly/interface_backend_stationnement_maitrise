@@ -1,4 +1,4 @@
-import {periode,territoire,quartiers_analyse,inventaire_stationnement,territoireGeoJsonProperties,entete_reglement_stationnement, reglement_complet,entete_ensembles_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties, roleFoncierGeoJsonProps, lotCadastralDB, roleFoncierDB, lotCadastralGeomSeulDb, comboERRoleFoncier, lotCadastralBoolInvDB, lotCadastralAvecBoolInvGeoJsonProperties, PAV_quartier, entreePAV, operation_reglement_stationnement, unites_reglement_stationnement, definition_reglement_stationnement} from './DataTypes'
+import {periode,territoire,quartiers_analyse,inventaire_stationnement,territoireGeoJsonProperties,entete_reglement_stationnement, reglement_complet,entete_ensembles_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties, roleFoncierGeoJsonProps, lotCadastralDB, roleFoncierDB, lotCadastralGeomSeulDb, comboERRoleFoncier, lotCadastralBoolInvDB, lotCadastralAvecBoolInvGeoJsonProperties, PAV_quartier, entreePAV, operation_reglement_stationnement, unites_reglement_stationnement, definition_reglement_stationnement, association_territoire_entete_ensemble_reglement} from './DataTypes'
 import { Feature, FeatureCollection,Geometry } from 'geojson';
 import { GeoJSONPropsAnaQuartierTotal, GeoJSONPropsAnaQuartierTotalParHab, GeoJSONPropsAnaQuartierTotalParSuperf, NhoodXYGraphDatasets, StatTotalDBAnaQuartier, StatTotalParSuperfDBAnaQuartier, VariableCartoDBAnaQuartier } from './AnalysisTypes';
 export interface ApiResponse<T> {
@@ -16,6 +16,7 @@ export type ReponseInventaire = ApiResponse<inventaire_stationnement[]>
 export type ReponseEntetesReglements = ApiResponse<entete_reglement_stationnement[]>
 export type ReponseReglementComplet = ApiResponse<reglement_complet[]>
 export type ReponseEntetesEnsemblesReglement = ApiResponse<entete_ensembles_reglement_stationnement[]>
+export type ReponseAssoTerritoireEnteteEnsembleRegleement = ApiResponse<association_territoire_entete_ensemble_reglement[]>
 export type ReponseEnsembleReglementComplet = ApiResponse<ensemble_reglements_stationnement[]>
 export type ReponseCadastre = ApiResponse<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>
 export type ReponseCadastreBoolInv = ApiResponse<FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>
