@@ -1,6 +1,6 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { Pool } from 'pg';
-import { DbAssociationReglementUtilSol, DbEnteteEnsembleReglement, DbUtilisationSol, DbEnteteReglement, ParamsTerritoire, ParamsRole, DbReglementComplet } from '../../types/database';
+import { DbAssociationReglementUtilSol, DbEnteteEnsembleReglement, DbUtilisationSol, DbEnteteReglement, ParamsTerritoire, ParamsRole, DbReglementComplet, ParamsEnsReg, DbCountAssoc } from '../../types/database';
 
 
 export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
@@ -181,6 +181,73 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
       }
     }
   };
+  const nouvelleEnteteEnsembleReglement:RequestHandler<void>=async(req,res):Promise<void>=>{
+    console.log('Sauvegarde nouvelle entete ensemble reg')
+    let client;
+    try{
+      client = await pool.connect();
+      const {description_er,date_debut_er,date_fin_er} = req.body;
+      const query = `
+        INSERT INTO public.ensembles_reglements_stat(description_er,date_debut_er,date_fin_er)
+        VALUES ($1,$2,$3)
+        RETURNING *;
+      `;
+      const result = await client.query<DbEnteteEnsembleReglement>(query, [description_er,date_debut_er,date_fin_er]);
+      res.json({ success: true, data: result.rows[0] });
+    }catch(err){
+      res.status(500).json({ success: false, error: 'Database error test' });
+    } finally{
+      if (client){
+        client.release()
+      }
+    }
+  };
+  const supprimeEnsembleReglement:RequestHandler<ParamsEnsReg>=async(req,res)=>{
+    console.log('Sauvegarde nouvelle entete ensemble reg')
+    let client;
+    try{
+      client = await pool.connect();
+      const {id} = req.params;
+      const queryCountAssoc = `
+        SELECT
+          COUNT(*) as count_assoc_lines
+        FROM
+          public.association_er_reg_stat
+        WHERE 
+          id_er = $1;
+      `;
+      const resultCount = await client.query<DbCountAssoc>(queryCountAssoc, [id]);
+      let queryHeader:string;
+      let queryAssoc:string;
+      let resultHeader:any;
+      let resultAssoc:any;
+      if (resultCount.rows[0].count_assoc_lines>0){
+        queryHeader = 
+          ` DELETE FROM public.ensembles_reglements_stationnement
+            WHERE id_er = $1; `
+        queryAssoc =
+          ` DELETE FROM public.association_er_reg_stat
+            WHERE id_er = $1`
+        resultAssoc = await client.query(queryAssoc,[id]);
+        resultHeader = await client.query(queryHeader, [id]);
+      }else{
+        queryHeader = 
+          ` DELETE FROM public.ensembles_reglements_stationnement
+            WHERE id_er = $1; `
+        resultHeader = await client.query(queryHeader, [id]);
+        resultAssoc = {rowCount:1}
+      }
+      const successHeader = resultHeader && resultAssoc.rowCount >= 0 ? true : false;
+      const successAssoc = resultAssoc && resultAssoc.rowCount >= 0 ? true : false;
+      res.json({ success: successHeader && successAssoc });
+    }catch(err){
+      res.status(500).json({ success: false, error: 'Database error test' });
+    } finally{
+      if (client){
+        client.release()
+      }
+    }
+  }
 
   // Routes
   router.get('/entete', obtiensTousEntetesEnsemblesReglements);
@@ -188,5 +255,7 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
   router.get('/regs-associes/:id',obtiensReglementsPourEnsReg);
   router.get('/entete-par-territoire/:id',obtiensEntetesParTerritoire)
   router.get('/par-role/:ids')
+  router.post('/entete',nouvelleEnteteEnsembleReglement)
+  router.delete('/:id',supprimeEnsembleReglement)
   return router;
 };

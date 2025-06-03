@@ -15,13 +15,6 @@ const EnsemblesReglements: React.FC = () => {
         date_fin_er:0,
         description_er:'',
     };
-    const associationVide: association_util_reglement = {
-        id_assoc_er_reg:0,
-        cubf:0,
-        id_reg_stat:0,
-        id_er:0
-    }
-
     const reglementCompletVide: ensemble_reglements_stationnement = {
         entete: enteteEnsemblevide,
         assoc_util_reg: [],
@@ -31,7 +24,8 @@ const EnsemblesReglements: React.FC = () => {
 
     const [enteteEnsembles, defEnteteEnsembles] = useState<entete_ensembles_reglement_stationnement[]>([]);
     const [charge, defCharg] = useState<boolean>(true);
-    const [ensembleReglementComplet, defEnsembleReglementComplet] = useState<ensemble_reglements_stationnement[]>([reglementCompletVide]);
+    const [ensembleReglementComplet, defEnsembleReglementComplet] = useState<ensemble_reglements_stationnement>(reglementCompletVide);
+    const [ancienEnsembleReglementComplet,defAncienEnsembleReglementComplet] = useState<ensemble_reglements_stationnement>(reglementCompletVide);
     const [reglementsPertinents,defRegPert] = useState<entete_reglement_stationnement[]>([]);
     const [editionEnteteEncours,defEditionEnteteEnCours] = useState<boolean>(false);
     const [editionCorpsEnCours,defEditionCorpsEnCours] = useState<boolean>(false);
@@ -45,24 +39,40 @@ const EnsemblesReglements: React.FC = () => {
         <div className="page-creation-ens-reg">
             <MenuBar />
             <div className="ens-reg-conteneur-row">
-                    <TableListeEnsReg
-                        entetesEnsembles={enteteEnsembles}
-                        defEntetesEnsembles={defEnteteEnsembles}
-                        ensembleReglement={ensembleReglementComplet}
-                        defEnsembleReglement={defEnsembleReglementComplet}
-                        entetesReglements={reglementsPertinents}
-                        defEntetesReglements={defRegPert}
-                    />
+                <TableListeEnsReg
+                    entetesEnsembles={enteteEnsembles}
+                    defEntetesEnsembles={defEnteteEnsembles}
+                    ensembleReglement={ensembleReglementComplet}
+                    defEnsembleReglement={defEnsembleReglementComplet}
+                    entetesReglements={reglementsPertinents}
+                    defEntetesReglements={defRegPert}
+                    editionEnteteEnCours={editionEnteteEncours}
+                    defEditionEnteteEnCours={defEditionEnteteEnCours}
+                    editionCorpsEnCours={editionCorpsEnCours}
+                    defEditionCorpsEnCours={defEditionCorpsEnCours}
+                    ancienEnsRegComplet={ancienEnsembleReglementComplet}
+                    defAncienEnsRegComplet={defAncienEnsembleReglementComplet}
+                />
 
 
-                {<TableVisModEnsReg
+                <TableVisModEnsReg
                     charge={charge}
                     defCharge={defCharg}
                     ensembleReglement={ensembleReglementComplet}
                     defEnsembleReglement={defEnsembleReglementComplet}
                     entetesReglements={reglementsPertinents}
                     defEntetesReglements={defRegPert}
-                />}
+                    editionEnteteEnCours={editionEnteteEncours}
+                    defEditionEnteteEnCours={defEditionEnteteEnCours}
+                    editionCorpsEnCours={editionCorpsEnCours}
+                    defEditionCorpsEnCours = {defEditionCorpsEnCours}
+                    idAssociationEnEdition={idAssocModifEncours}
+                    defIdAssociationEnEdition={defIdAssocModifEnCours}
+                    entetesEnsRegListe={enteteEnsembles}
+                    defEntetesEnsRegListe={defEnteteEnsembles}
+                    ancienEnsRegComplet={ancienEnsembleReglementComplet}
+                    defAncienEnsRegComplet={defAncienEnsembleReglementComplet}
+                />
             </div>
         </div>
     )

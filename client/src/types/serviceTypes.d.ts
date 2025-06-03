@@ -15,6 +15,7 @@ export type ReponseDBInventaire = ApiResponse<inventaire_stationnement[]>
 export type ReponseInventaire = ApiResponse<inventaire_stationnement[]>
 export type ReponseEntetesReglements = ApiResponse<entete_reglement_stationnement[]>
 export type ReponseReglementComplet = ApiResponse<reglement_complet[]>
+export type ReponseEnteteEnsembleReglementStationnement = ApiResponse<entete_ensembles_reglement_stationnement>
 export type ReponseEntetesEnsemblesReglement = ApiResponse<entete_ensembles_reglement_stationnement[]>
 export type ReponseAssoTerritoireEnteteEnsembleRegleement = ApiResponse<association_territoire_entete_ensemble_reglement[]>
 export type ReponseEnsembleReglementComplet = ApiResponse<ensemble_reglements_stationnement[]>

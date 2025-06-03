@@ -235,19 +235,35 @@ export interface TableVisModRegProps{
 export interface TableEnteteEnsembleProps{
     entetesEnsembles:entete_ensemble_reglement_stationnement[],
     defEntetesEnsembles:React.Dispatch<SetStateAction<entete_ensembles_reglement_stationnement[]>>
-    ensembleReglement: ensemble_reglements_stationnement[],
-    defEnsembleReglement: React.Dispatch<SetStateAction<ensemble_reglements_stationnement[]>>,
+    ensembleReglement: ensemble_reglements_stationnement,
+    defEnsembleReglement: React.Dispatch<SetStateAction<ensemble_reglements_stationnement>>,
     entetesReglements:entete_reglement_stationnement[],
     defEntetesReglements: React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
+    editionEnteteEnCours:boolean,
+    defEditionEnteteEnCours:React.Dispatch<SetStateAction<boolean>>,
+    editionCorpsEnCours:boolean,
+    defEditionCorpsEnCours:React.Dispatch<SetStateAction<boolean>>,
+    ancienEnsRegComplet:ensemble_reglements_stationnement,
+    defAncienEnsRegComplet:React.Dispatch<SetStateAction<ensemble_reglements_stationnement>>
 }
 
 export interface TableVisModEnsRegProps{
     charge:boolean,
     defCharge:React.Dispatch<SetStateAction<boolean>>
-    ensembleReglement: ensemble_reglements_stationnement[],
-    defEnsembleReglement: React.Dispatch<SetStateAction<ensemble_reglements_stationnement[]>>,
+    ensembleReglement: ensemble_reglements_stationnement,
+    defEnsembleReglement: React.Dispatch<SetStateAction<ensemble_reglements_stationnement>>,
     entetesReglements:entete_reglement_stationnement[],
-    defEntetesReglements: React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
+    defEntetesReglements: React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>,
+    editionEnteteEnCours:boolean,
+    defEditionEnteteEnCours: React.Dispatch<SetStateAction<boolean>>,
+    editionCorpsEnCours:boolean,
+    defEditionCorpsEnCours:React.Dispatch<SetStateAction<boolean>>,
+    idAssociationEnEdition:number,
+    defIdAssociationEnEdition:React.Dispatch<SetStateAction<number>>,
+    entetesEnsRegListe: entete_ensemble_reglement_stationnement[],
+    defEntetesEnsRegListe: React.Dispatch<SetStateAction<entete_ensemble_reglement_stationnement[]>>,
+    ancienEnsRegComplet:ensemble_reglements_stationnement,
+    defAncienEnsRegComplet:React.Dispatch<SetStateAction<ensemble_reglements_stationnement>>
 }
 
 // ----------------------------------------------------------------------------

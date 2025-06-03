@@ -1,11 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { entete_reglement_stationnement } from '../types/DataTypes';
+import { ensemble_reglements_stationnement, entete_ensembles_reglement_stationnement, entete_reglement_stationnement } from '../types/DataTypes';
 import { TableEnteteEnsembleProps } from '../types/InterfaceTypes';
 import { serviceEnsemblesReglements } from "../services";
 import AddIcon from '@mui/icons-material/AddOutlined';
 import DeleteIcon from '@mui/icons-material/Delete';
 const TableListeEnsReg: React.FC<TableEnteteEnsembleProps> = (props) => {
-
+    const enteteEnsemblevide: entete_ensembles_reglement_stationnement = {
+        id_er:0,
+        date_debut_er:0,
+        date_fin_er:0,
+        description_er:'',
+    };
+    const reglementCompletVide: ensemble_reglements_stationnement = {
+        entete: enteteEnsemblevide,
+        assoc_util_reg: [],
+        table_util_sol:[],
+        table_etendue:[]
+    }
     useEffect(() => { 
         const fetchData = async () => {
             try {
@@ -24,17 +35,35 @@ const TableListeEnsReg: React.FC<TableEnteteEnsembleProps> = (props) => {
 
     const onLineSelect = async (id_reg: number) => {
         const reglementAObtenir = await serviceEnsemblesReglements.chercheEnsembleReglementParId(id_reg)
-        props.defEnsembleReglement(reglementAObtenir.data)
+        props.defEnsembleReglement(reglementAObtenir.data[0])
         const entetesReglementsPertinents = await serviceEnsemblesReglements.chercheReglementsPourEnsReg(id_reg)
         props.defEntetesReglements(entetesReglementsPertinents.data)
     }
 
     const gestBoutonAjout = async() =>{
-
+        const nouveauEnsRegEntete:entete_ensembles_reglement_stationnement={
+            id_er:-1,
+            description_er:'Nouvel Ensemble',
+            date_debut_er:0,
+            date_fin_er:null
+        }
+        const nouveauAssocEnsReg:ensemble_reglements_stationnement={
+            entete: nouveauEnsRegEntete,
+            assoc_util_reg:[],
+            table_etendue:[],
+            table_util_sol:[]
+        }
+        props.defEditionEnteteEnCours(true);
+        props.defEnsembleReglement(nouveauAssocEnsReg)
+        props.defAncienEnsRegComplet(reglementCompletVide)
     }
 
     const gestSuppressionEnsReg = async(idEnsReg:number) =>{
-
+        const reponse = await serviceEnsemblesReglements.supprimeEnsReg(idEnsReg)
+        if (reponse.success){
+            const newList = props.entetesEnsembles.filter((item)=>item.id_er!==idEnsReg)
+            props.defEntetesEnsembles(newList)
+        }
     }
 
     const panelRef = useRef<HTMLDivElement>(null);
@@ -75,7 +104,7 @@ const TableListeEnsReg: React.FC<TableEnteteEnsembleProps> = (props) => {
                         {props.entetesEnsembles.map((entete) => (
                             <tr key={entete.id_er} onClick={() => onLineSelect(entete.id_er)}>
                                 <td>{entete.description_er}</td>
-                                <td><td onClick={()=> gestSuppressionEnsReg(entete.id_er)}><DeleteIcon /></td></td>
+                                <td><td ><DeleteIcon onClick={()=> gestSuppressionEnsReg(entete.id_er)}/></td></td>
                             </tr>
 
                         ))}

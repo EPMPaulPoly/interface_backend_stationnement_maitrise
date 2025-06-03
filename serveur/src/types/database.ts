@@ -92,6 +92,10 @@ export interface DbEnteteEnsembleReglement{
     description_er:string,
 }
 
+export interface DbCountAssoc{
+    count_assoc_lines:number,
+}
+
 export interface DbReglementComplet{
     entete: DbEnteteReglement,
     definition:DbDefReglement[]
@@ -183,6 +187,9 @@ export interface ParamsCadastre extends ParamsDictionary{
 
 export interface ParamsTerritoire extends ParamsDictionary{
     id:string;
+}
+export interface ParamsEnsReg extends ParamsDictionary{
+    id:string
 }
 
 export interface ParamsLot extends ParamsDictionary{
