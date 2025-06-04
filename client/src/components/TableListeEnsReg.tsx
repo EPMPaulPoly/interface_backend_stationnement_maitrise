@@ -38,6 +38,7 @@ const TableListeEnsReg: React.FC<TableEnteteEnsembleProps> = (props) => {
         props.defEnsembleReglement(reglementAObtenir.data[0])
         const entetesReglementsPertinents = await serviceEnsemblesReglements.chercheReglementsPourEnsReg(id_reg)
         props.defEntetesReglements(entetesReglementsPertinents.data)
+        window.history.pushState({}, '', `?id_er=${id_reg}`);
     }
 
     const gestBoutonAjout = async() =>{
