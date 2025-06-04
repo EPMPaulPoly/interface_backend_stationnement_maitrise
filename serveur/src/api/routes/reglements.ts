@@ -9,18 +9,101 @@ export const creationRouteurReglements = (pool: Pool): Router => {
   const router = Router();
   // Get all lines
   // Get all lines
-  const obtiensTousEntetesReglements: RequestHandler = async (_req, res): Promise<void> => {
+  const obtiensTousEntetesReglements: RequestHandler = async (req, res): Promise<void> => {
     console.log('Serveur - Obtention toutes entetes')
-    let client;
-    try {
-      client = await pool.connect();
-      const query = `
-        SELECT *
-        FROM public.entete_reg_stationnement
-        ORDER BY id_reg_stat ASC
-      `;
 
-      const result = await client.query(query);
+    const {
+      annee_debut_apres,
+      annee_debut_avant,
+      annee_fin_apres,
+      annee_fin_avant,
+      description,
+      ville,
+      texte,
+      article,
+      paragraphe
+    } = req.query;
+
+    const conditions: string[] = [];
+    const values: any[] = []; // store parameters
+    let paramIndex = 1;
+
+    let client;
+
+    try {
+      // Helper function to add condition and param
+      const addCondition = (sql: string, value: any) => {
+        conditions.push(sql.replace('?', `$${paramIndex}`));
+        values.push(value);
+        paramIndex++;
+      };
+
+      if (annee_debut_apres !== undefined) {
+        if (annee_debut_apres === 'null') {
+          conditions.push('annee_debut_reg IS NULL');
+        } else {
+          addCondition('annee_debut_reg >= ?', Number(annee_debut_apres));
+        }
+      }
+
+      if (annee_debut_avant !== undefined) {
+        if (annee_debut_avant === 'null') {
+          conditions.push('annee_debut_reg IS NULL');
+        } else {
+          addCondition('annee_debut_reg <= ?', Number(annee_debut_avant));
+        }
+      }
+
+      if (annee_fin_apres !== undefined) {
+        if (annee_fin_apres === 'null') {
+          conditions.push('annee_fin_reg IS NULL');
+        } else {
+          addCondition('annee_fin_reg >= ?', Number(annee_fin_apres));
+        }
+      }
+
+      if (annee_fin_avant !== undefined) {
+        if (annee_fin_avant === 'null') {
+          conditions.push('annee_fin_reg IS NULL');
+        } else {
+          addCondition('annee_fin_reg <= ?', Number(annee_fin_avant));
+        }
+      }
+
+      if (description !== undefined) {
+        addCondition(`to_tsvector('french', description) @@ plainto_tsquery('french', ?)`, decodeURIComponent(description as string));
+      }
+
+      if (ville !== undefined) {
+        addCondition(`to_tsvector('french', ville) @@ plainto_tsquery('french', ?)`, decodeURIComponent(ville as string));
+      }
+
+      if (texte !== undefined) {
+        addCondition(`to_tsvector('french', texte_loi) @@ plainto_tsquery('french', ?)`, decodeURIComponent(texte as string));
+      }
+
+      if (paragraphe !== undefined) {
+        addCondition(`to_tsvector('french', paragraphe_loi) @@ plainto_tsquery('french', ?)`, decodeURIComponent(paragraphe as string));
+      }
+
+      if (article !== undefined) {
+        addCondition(`to_tsvector('french', article_loi) @@ plainto_tsquery('french', ?)`, decodeURIComponent(article as string));
+      }
+
+      // Final SQL build
+      let query = `
+      SELECT *
+      FROM public.entete_reg_stationnement
+    `;
+
+      if (conditions.length > 0) {
+        query += 'WHERE ' + conditions.join(' AND ') + '\n';
+      }
+
+      query += 'ORDER BY id_reg_stat ASC';
+
+      client = await pool.connect();
+      const result = await client.query(query, values);
       res.json({ success: true, data: result.rows });
     } catch (err) {
       res.status(500).json({ success: false, error: 'Database error' });
@@ -275,7 +358,7 @@ export const creationRouteurReglements = (pool: Pool): Router => {
     let client;
     try {
       const { id_reg_stat, ss_ensemble, seuil, oper, cases_fix_min, cases_fix_max, pente_min, pente_max, unite } = req.body;
-      const {id} = req.params;
+      const { id } = req.params;
       client = await pool.connect();
       const query = `UPDATE public.reg_stationnement_empile
       SET
@@ -309,7 +392,7 @@ export const creationRouteurReglements = (pool: Pool): Router => {
     try {
       const { id } = req.params;
       client = await pool.connect();
-      
+
       let queryDeleteStack: string;
       let responseStacked: any;
       queryDeleteStack = `DELETE FROM
@@ -318,7 +401,7 @@ export const creationRouteurReglements = (pool: Pool): Router => {
                             id_reg_stat_emp = $1`
 
       responseStacked = await client.query(queryDeleteStack, [id])
-      res.json({ success: responseStacked.rowCount>0 });
+      res.json({ success: responseStacked.rowCount > 0 });
     } catch (err) {
       next(err);
     } finally {
@@ -336,7 +419,7 @@ export const creationRouteurReglements = (pool: Pool): Router => {
   router.post('/entete', nouvelEnteteReglement)
   router.delete('/:id', supprimeReglement)
   router.post('/ligne-def', nouvelleLigneDefinition)
-  router.put('/ligne-def/:id',majLigneDefinition)
+  router.put('/ligne-def/:id', majLigneDefinition)
   router.delete('/ligne-def/:id', supprimeLigneDefinition)
   return router;
 };

@@ -1,16 +1,17 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { Pool } from 'pg';
-import { DbAssociationReglementUtilSol, DbEnteteEnsembleReglement, DbUtilisationSol, DbEnteteReglement, ParamsTerritoire, ParamsRole, DbReglementComplet, ParamsEnsReg, DbCountAssoc } from '../../types/database';
+import { DbAssociationReglementUtilSol, DbEnteteEnsembleReglement, DbUtilisationSol, DbEnteteReglement, ParamsTerritoire, ParamsRole, DbReglementComplet, ParamsEnsReg, DbCountAssoc, ParamsAssocEnsReg } from '../../types/database';
 
 
 export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
   const router = Router();
   // Get all lines
-  const obtiensTousEntetesEnsemblesReglements: RequestHandler = async (_req, res): Promise<void> => {
+  const obtiensTousEntetesEnsemblesReglements: RequestHandler = async (req, res): Promise<void> => {
     console.log('Serveur - Obtention toutes entetes ensembles reglements')
     let client;
     try {
       client = await pool.connect();
+      const {start_year_before,start_year_after,end_year_before,end_year_after,city_like,description_like,rule_like,article_like,paragraphe_like} = req.query;
       const query = `
         SELECT *
         FROM public.ensembles_reglements_stat
@@ -247,8 +248,103 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
         client.release()
       }
     }
+  };
+  const modifieEnteteEnsembleReglement:RequestHandler<ParamsEnsReg>=async(req,res)=>{
+    
+    let client;
+    try{
+      client = await pool.connect();
+      const {id} = req.params
+      console.log(`Sauvegarde modification entete ensemble reg id_er: ${id}`)
+      const {description_er,date_debut_er,date_fin_er} = req.body;
+      const query = `
+        UPDATE public.ensembles_reglements_stat
+        SET 
+          description_er = $1,
+          date_debut_er = $2,
+          date_fin_er= $3
+        WHERE id_er = $4
+        RETURNING *;
+      `;
+      const result = await client.query<DbEnteteEnsembleReglement>(query, [description_er,date_debut_er,date_fin_er,id]);
+      res.json({ success: true, data: result.rows[0] });
+    }catch(err){
+      res.status(500).json({ success: false, error: 'Database error test' });
+    } finally{
+      if (client){
+        client.release()
+      }
+    }
   }
-
+  const nouvelleAssociationEnsembleReglement:RequestHandler<void>=async(req,res)=>{
+    console.log('Sauvegarde nouvelle association ensemble reg')
+    let client;
+    try{
+      client = await pool.connect();
+      const {id_er,cubf,id_reg_stat} = req.body;
+      const query = `
+        INSERT INTO public.association_er_reg_stat(id_er,cubf,id_reg_stat)
+        VALUES ($1,$2,$3)
+        RETURNING *;
+      `;
+      const result = await client.query<DbEnteteEnsembleReglement>(query, [id_er,cubf,id_reg_stat]);
+      res.json({ success: true, data: result.rows[0] });
+    }catch(err){
+      res.status(500).json({ success: false, error: 'Database error test' });
+    } finally{
+      if (client){
+        client.release()
+      }
+    }
+  }
+  const modifieAssocEnsembleReglement:RequestHandler<ParamsEnsReg>=async(req,res)=>{
+    let client;
+    try{
+      client = await pool.connect();
+      const {id} = req.params
+      console.log(`Sauvegarde modification entete ensemble reg id_er: ${id}`)
+      const {id_er,cubf,id_reg_stat} = req.body;
+      const query = `
+        UPDATE public.ensembles_reglements_stat
+        SET 
+          id_er = $1,
+          cubf= $2,
+          id_reg_stat= $3
+        WHERE id_assoc_er_reg = $4
+        RETURNING *;
+      `;
+      const result = await client.query<DbEnteteEnsembleReglement>(query, [id_er,cubf,id_reg_stat,id]);
+      res.json({ success: true, data: result.rows[0] });
+    }catch(err){
+      res.status(500).json({ success: false, error: 'Database error test' });
+    } finally{
+      if (client){
+        client.release()
+      }
+    }
+  }
+  const supprimeAssocEnsembleReglement:RequestHandler<ParamsAssocEnsReg>=async(req,res)=>{
+    console.log('Sauvegarde nouvelle entete ensemble reg')
+    let client;
+    try{
+      client = await pool.connect();
+      const {id} = req.params;
+      
+      const queryAssoc =
+        ` DELETE FROM public.association_er_reg_stat
+          WHERE id_assoc_er_reg = $1`
+      const resultAssoc:any = await client.query(queryAssoc,[id]);
+      
+      const successAssoc = resultAssoc && resultAssoc.rowCount >= 0 ? true : false;
+      res.json({ success: successAssoc });
+    }catch(err){
+      res.status(500).json({ success: false, error: 'Database error test' });
+    } finally{
+      if (client){
+        client.release()
+      }
+    }
+  };
   // Routes
   router.get('/entete', obtiensTousEntetesEnsemblesReglements);
   router.get('/complet/:id',obtiensEnsembleReglementCompletParId)
@@ -256,6 +352,10 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
   router.get('/entete-par-territoire/:id',obtiensEntetesParTerritoire)
   router.get('/par-role/:ids')
   router.post('/entete',nouvelleEnteteEnsembleReglement)
+  router.put('/entete/:id',modifieEnteteEnsembleReglement)
   router.delete('/:id',supprimeEnsembleReglement)
+  router.post('/assoc',nouvelleAssociationEnsembleReglement)
+  router.put('/assoc/:id',modifieAssocEnsembleReglement)
+  router.delete('/assoc/:id',supprimeAssocEnsembleReglement)
   return router;
 };

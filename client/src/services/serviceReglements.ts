@@ -1,5 +1,5 @@
 import axios,{ AxiosResponse } from 'axios';
-import { definition_reglement_stationnement, entete_reglement_stationnement,  } from '../types/DataTypes';
+import { definition_reglement_stationnement, entete_reglement_stationnement, parametres_requete_filtree_stationnement,  } from '../types/DataTypes';
 import { ReponseEntetesReglements, ReponseReglementComplet,ReponseDBInfoInventaireReglementManuel, ReponseEntetesEnsemblesReglement, ReponseOperationsReglements,ReponseUnitesReglements, ReponseLigneDefReglement} from '../types/serviceTypes';
 import api from './api';
 import { promises } from 'dns';
@@ -8,6 +8,60 @@ class ServiceReglements {
     async chercheTousEntetesReglements():Promise<ReponseEntetesReglements> {
         try {
             const response: AxiosResponse<ReponseEntetesReglements> = await api.get(`/reglements/entete`);
+            const data_res = response.data.data;
+            return {success:response.data.success,data:data_res};
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
+
+    async chercheReglementAvecFiltre(requete:parametres_requete_filtree_stationnement):Promise<ReponseEntetesReglements>{
+        try {
+            const sanitizeString=(stringEntry:string):string=>{
+                const stringOut = stringEntry.replace(' ','%20')
+                return stringOut
+            }
+            let queryString;
+            queryString = `/reglements/entete`;
+            const params = [];
+            if(requete.annee_debut_apres!==undefined){
+                params.push(`annee_debut_apres=${requete.annee_debut_apres}`)
+            }
+            if(requete.annee_debut_avant!==undefined){
+                params.push(`annee_debut_avant=${requete.annee_debut_avant}`)
+            }
+            if(requete.annee_fin_avant!==undefined){
+                params.push(`annee_fin_avant=${requete.annee_fin_avant}`)
+            }
+            if(requete.annee_fin_apres!==undefined){
+                params.push(`annee_fin_apres=${requete.annee_fin_avant}`)
+
+            }
+            if(typeof(requete.ville)!=='undefined'){
+                params.push(`ville=${sanitizeString(requete.ville)}`)
+
+            }
+            if(requete.description!==undefined){
+                params.push(`description=${sanitizeString(requete.description)}`)
+            }
+            if(requete.texte!==undefined){
+                params.push(`texte=${sanitizeString(requete.texte)}`)
+            }
+            if(requete.article!==undefined){
+                params.push(`article=${sanitizeString(requete.article)}`)
+            }
+            if(requete.paragraphe!==undefined){
+                params.push(`paragraphe=${sanitizeString(requete.paragraphe)}`)
+            }
+            queryString+= '?' + params.join('&')
+            const response: AxiosResponse<ReponseEntetesReglements> = await api.get(queryString);
             const data_res = response.data.data;
             return {success:response.data.success,data:data_res};
         } catch (error) {

@@ -191,7 +191,9 @@ export interface ParamsTerritoire extends ParamsDictionary{
 export interface ParamsEnsReg extends ParamsDictionary{
     id:string
 }
-
+export interface ParamsAssocEnsReg extends ParamsDictionary{
+    
+}
 export interface ParamsLot extends ParamsDictionary{
     id:string;
 }

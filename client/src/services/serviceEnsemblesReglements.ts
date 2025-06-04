@@ -1,7 +1,7 @@
 import axios,{ AxiosResponse } from 'axios';
-import {ReponseEnteteEnsembleReglementStationnement,ReponseEnsembleReglementComplet, ReponseEntetesEnsemblesReglement, ReponseEntetesReglements, ReponseComboERsRoleFoncier} from '../types/serviceTypes';
+import {ReponseEnteteEnsembleReglementStationnement,ReponseEnsembleReglementComplet, ReponseEntetesEnsemblesReglement, ReponseEntetesReglements, ReponseComboERsRoleFoncier, ReponseAssociationEnsembleReglement} from '../types/serviceTypes';
 import api from './api';
-import { entete_ensembles_reglement_stationnement } from '../types/DataTypes';
+import { association_util_reglement, entete_ensembles_reglement_stationnement } from '../types/DataTypes';
 
 
 class ServiceEnsemblesReglements {
@@ -154,7 +154,62 @@ class ServiceEnsemblesReglements {
             throw error; // Re-throw if necessary
         }
     }
-
+    async nouvelleAssoc(assocASauver:Omit<association_util_reglement,'id_assoc_er_reg'>):Promise<ReponseAssociationEnsembleReglement>{
+        try{
+            const dbData:Omit<association_util_reglement,'id_assoc_er_reg'>={
+                id_er:assocASauver.id_er,
+                id_reg_stat:assocASauver.id_reg_stat,
+                cubf:assocASauver.cubf
+            }
+            const reponse = await api.post('ens-reg/assoc',dbData)
+            return({success:true,data: reponse.data.data})
+        } catch(error){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
+    async modifAssoc(idAssocAModif:number,assocASauver:Omit<association_util_reglement,'id_assoc_er_reg'>):Promise<ReponseAssociationEnsembleReglement>{
+        try{
+            const dbData:Omit<association_util_reglement,'id_assoc_er_reg'>={
+                id_er:assocASauver.id_er,
+                id_reg_stat:assocASauver.id_reg_stat,
+                cubf:assocASauver.cubf
+            }
+            const reponse = await api.put( `ens-reg/assoc/${idAssocAModif}`,dbData)
+            return({success:true,data: reponse.data.data})
+        } catch(error){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
+    async supprimeAssoc(idAssocASupprimer:number):Promise<boolean>{
+        try{
+            const reponse = await api.delete( `ens-reg/assoc/${idAssocASupprimer}`)
+            const success:boolean = reponse.data.success
+            return(success)
+        } catch(error){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
 }
 
 export const serviceEnsemblesReglements =  new ServiceEnsemblesReglements();

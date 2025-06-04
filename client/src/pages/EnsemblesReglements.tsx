@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import {useSearchParams} from 'react-router'
 import {  association_util_reglement, ensemble_reglements_stationnement, entete_reglement_stationnement } from "../types/DataTypes";
 import { entete_ensembles_reglement_stationnement } from "../types/DataTypes";
+import CreationAssociationCubfRegEnsReg from "../components/CreationAssociationCubfRegEnsReg";
 import './ensemblereg.css'
 import './common.css'
 
@@ -30,6 +31,8 @@ const EnsemblesReglements: React.FC = () => {
     const [editionEnteteEncours,defEditionEnteteEnCours] = useState<boolean>(false);
     const [editionCorpsEnCours,defEditionCorpsEnCours] = useState<boolean>(false);
     const [idAssocModifEncours,defIdAssocModifEnCours] = useState<number>(-1);
+    const [modalOuvert,defModalOuvert] = useState<boolean>(false);
+    const [TousReglements,defTousReglements] = useState<entete_reglement_stationnement[]>([]);
     const [searchParams] = useSearchParams();
 
     useEffect(() => {
@@ -72,6 +75,24 @@ const EnsemblesReglements: React.FC = () => {
                     defEntetesEnsRegListe={defEnteteEnsembles}
                     ancienEnsRegComplet={ancienEnsembleReglementComplet}
                     defAncienEnsRegComplet={defAncienEnsembleReglementComplet}
+                    modalOuvert={modalOuvert}
+                    defModalOuvert={defModalOuvert}
+                />
+                <CreationAssociationCubfRegEnsReg 
+                    editionCorpsEnCours={editionCorpsEnCours}
+                    editionEnteteEnCours={editionEnteteEncours}
+                    defEditionCorpsEnCours={defEditionCorpsEnCours}
+                    defEditionEnteteEnCours={defEditionEnteteEnCours}
+                    ensembleReglement={ensembleReglementComplet}
+                    defEnsembleReglement={defEnsembleReglementComplet}
+                    ancienEnsRegComplet={ancienEnsembleReglementComplet}
+                    defAncienEnsRegComplet={defAncienEnsembleReglementComplet}
+                    idAssociationEnEdition={idAssocModifEncours}
+                    defIdAssociationEnEdition={defIdAssocModifEnCours}
+                    modalOuvert={modalOuvert}
+                    defModalOuvert={defModalOuvert}
+                    tousReglements={TousReglements}
+                    defTousReglement={defTousReglements}
                 />
             </div>
         </div>

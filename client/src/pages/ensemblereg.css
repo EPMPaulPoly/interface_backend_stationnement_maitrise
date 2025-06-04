@@ -86,3 +86,12 @@
     top: 0; /* Fix the header at the top */
     z-index: 1; /* Ensure the header is above the table body */
 }
+
+.table-reg-possibles th{
+    background-color: #f2f2f2;
+    color: black;
+    position: sticky;
+    text-align:left;
+    top: 0; /* Fix the header at the top */
+    z-index: 1; /* Ensure the header is above the table body */
+}

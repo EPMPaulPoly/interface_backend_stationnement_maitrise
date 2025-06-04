@@ -22,7 +22,7 @@ const TableVisModEnsReg: React.FC<TableVisModEnsRegProps> = (props) => {
         table_etendue: []
     }
     const gestBoutonAjout = async () => {
-
+        props.defModalOuvert(true)
     }
     const gestBoutonSauvegardeEntete = async () => {
         const isNew = props.ensembleReglement.entete.id_er === -1;
@@ -145,7 +145,7 @@ const TableVisModEnsReg: React.FC<TableVisModEnsRegProps> = (props) => {
                     </tr>}
                 </tbody>
             </table>
-            <div className="ajout-reglement"><AddIcon onClick={gestBoutonAjout} /> Ajouter association</div>
+            {props.ensembleReglement.entete.id_er>0?<div className="ajout-reglement"><AddIcon onClick={gestBoutonAjout} /> Ajouter association</div>:<></>}
             <table className="table-modif-ens-reg-corps">
                 <thead>
                     <tr>

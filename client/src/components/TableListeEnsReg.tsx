@@ -60,7 +60,7 @@ const TableListeEnsReg: React.FC<TableEnteteEnsembleProps> = (props) => {
 
     const gestSuppressionEnsReg = async(idEnsReg:number) =>{
         const reponse = await serviceEnsemblesReglements.supprimeEnsReg(idEnsReg)
-        if (reponse.success){
+        if (reponse){
             const newList = props.entetesEnsembles.filter((item)=>item.id_er!==idEnsReg)
             props.defEntetesEnsembles(newList)
         }

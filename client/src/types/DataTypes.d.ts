@@ -11,6 +11,18 @@ export interface entete_reglement_stationnement{
     ville:string |null
 }
 
+export interface parametres_requete_filtree_stationnement{
+    annee_debut_avant:number|undefined|null,
+    annee_debut_apres:number|undefined,
+    annee_fin_avant:number|undefined,
+    annee_fin_apres:number|undefined|null,
+    ville:string|undefined,
+    description:string|undefined,
+    texte:string|undefined,
+    article:string|undefined,
+    paragraphe:string|undefined
+}
+
 export interface definition_reglement_stationnement{
     id_reg_stat_emp: number,
     id_reg_stat:number,
