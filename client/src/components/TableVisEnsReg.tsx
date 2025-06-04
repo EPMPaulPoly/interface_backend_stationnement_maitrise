@@ -115,6 +115,25 @@ const TableVisModEnsReg: React.FC<TableVisModEnsRegProps> = (props) => {
         }
         props.defEnsembleReglement(newReg)
     }
+
+    const gestEditionAssociation = async(idAssoc:number)=>{
+        props.defEditionCorpsEnCours(true)
+        props.defIdAssociationEnEdition(idAssoc)
+        props.defModalOuvert(true)
+    }
+    const gestSuppressionAssoc = async(idAssoc:number)=>{
+        const reponse = await serviceEnsemblesReglements.supprimeAssoc(idAssoc)
+        if (reponse){
+            const nouvelTableAssoc = props.ensembleReglement.assoc_util_reg.filter((o)=>o.id_assoc_er_reg!==idAssoc)
+            const nouvelEnsemble:ensemble_reglements_stationnement={
+                entete:props.ensembleReglement.entete,
+                table_etendue:props.ensembleReglement.table_etendue,
+                table_util_sol:props.ensembleReglement.table_util_sol,
+                assoc_util_reg:nouvelTableAssoc
+            }
+            props.defEnsembleReglement(nouvelEnsemble)
+        }
+    }
     return (
         <div className="panneau-details-ens-reg">
 
@@ -140,7 +159,7 @@ const TableVisModEnsReg: React.FC<TableVisModEnsRegProps> = (props) => {
                         {props.editionEnteteEnCours ? <td><input type='checkbox' checked={props.ensembleReglement.entete.date_debut_er === null} onClick={() => gestChangementEntete('date_debut_er', props.ensembleReglement.entete.date_debut_er === null ? '0' : null)} /></td> : <></>}
                         <td>{props.editionEnteteEnCours && props.ensembleReglement.entete.date_fin_er !== null ? <input value={props.ensembleReglement.entete.date_fin_er} onChange={(e) => { gestChangementEntete('date_fin_er', e.target.value) }} type='number' /> : props.ensembleReglement.entete.date_fin_er}</td>
                         {props.editionEnteteEnCours ? <td><input type='checkbox' checked={props.ensembleReglement.entete.date_fin_er === null} onClick={() => gestChangementEntete('date_fin_er', props.ensembleReglement.entete.date_fin_er === null ? '0' : null)} /></td> : <></>}
-                        <td>{props.editionEnteteEnCours ? <Save onClick={gestBoutonSauvegardeEntete} /> : <Edit />}</td>
+                        <td>{props.editionEnteteEnCours ? <Save onClick={gestBoutonSauvegardeEntete} /> : <Edit onClick={() => { props.defAncienEnsRegComplet(props.ensembleReglement); props.defEditionEnteteEnCours(true); }} />}</td>
                         {props.editionEnteteEnCours ? <td><CancelIcon /></td> : <></>}
                     </tr>}
                 </tbody>
@@ -180,8 +199,8 @@ const TableVisModEnsReg: React.FC<TableVisModEnsRegProps> = (props) => {
                                 <td>{assoc.id_reg_stat + ' - ' + (foundRule ? foundRule.description : 'N/A')}</td>
                                 <td>{(foundRule ? foundRule.annee_debut_reg : 'N/A')}</td>
                                 <td>{(foundRule ? foundRule.annee_fin_reg : 'N/A')}</td>
-                                <td>{props.editionCorpsEnCours && props.idAssociationEnEdition === assoc.id_assoc_er_reg ? <Save /> : <Edit />}</td>
-                                <td>{props.editionCorpsEnCours && props.idAssociationEnEdition === assoc.id_assoc_er_reg ? <CancelIcon /> : <DeleteIcon />}</td>
+                                <td>{props.editionCorpsEnCours && props.idAssociationEnEdition === assoc.id_assoc_er_reg ? <Save /> : <Edit onClick={()=>gestEditionAssociation(assoc.id_assoc_er_reg)} />}</td>
+                                <td>{props.editionCorpsEnCours && props.idAssociationEnEdition === assoc.id_assoc_er_reg ? <CancelIcon /> : <DeleteIcon onClick={()=>gestSuppressionAssoc(assoc.id_assoc_er_reg)}/>}</td>
                             </tr>
 
                         )

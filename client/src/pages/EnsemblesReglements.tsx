@@ -8,6 +8,7 @@ import { entete_ensembles_reglement_stationnement } from "../types/DataTypes";
 import CreationAssociationCubfRegEnsReg from "../components/CreationAssociationCubfRegEnsReg";
 import './ensemblereg.css'
 import './common.css'
+import { serviceEnsemblesReglements } from "../services";
 
 const EnsemblesReglements: React.FC = () => {
     const enteteEnsemblevide: entete_ensembles_reglement_stationnement = {
@@ -37,6 +38,16 @@ const EnsemblesReglements: React.FC = () => {
 
     useEffect(() => {
     // code for handling search query change
+        const fetchER=async(idER:number)=>{
+            const [responseAssoc,reponseEntete] = await Promise.all([serviceEnsemblesReglements.chercheEnsembleReglementParId(idER),serviceEnsemblesReglements.chercheReglementsPourEnsReg(idER)]) 
+            defEnsembleReglementComplet(responseAssoc.data[0])
+            defRegPert(reponseEntete.data)
+        }
+        
+        const id_er = searchParams.get("id_er");
+        if (id_er!==null &&typeof(Number(id_er))==='number'){
+             fetchER(Number(id_er))
+        }
     }, [searchParams]);
     return (
         <div className="page-creation-ens-reg">
@@ -93,6 +104,8 @@ const EnsemblesReglements: React.FC = () => {
                     defModalOuvert={defModalOuvert}
                     tousReglements={TousReglements}
                     defTousReglement={defTousReglements}
+                    reglementVisu={reglementsPertinents}
+                    defReglementVisu={defRegPert}
                 />
             </div>
         </div>

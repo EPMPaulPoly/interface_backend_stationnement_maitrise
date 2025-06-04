@@ -291,6 +291,8 @@ export interface creationAssocCubfErRegStat {
     defModalOuvert:React.Dispatch<SetStateAction<boolean>>
     tousReglements:entete_reglement_stationnement[]
     defTousReglement:React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
+    reglementVisu:entete_reglement_stationnement[]
+    defReglementVisu:React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
 }
 
 export interface VisResultatFiltre{

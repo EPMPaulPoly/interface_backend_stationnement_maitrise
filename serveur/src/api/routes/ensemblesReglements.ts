@@ -261,12 +261,12 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
         UPDATE public.ensembles_reglements_stat
         SET 
           description_er = $1,
-          date_debut_er = $2,
-          date_fin_er= $3
+          date_debut_er = $2,
+          date_fin_er = $3
         WHERE id_er = $4
         RETURNING *;
       `;
-      const result = await client.query<DbEnteteEnsembleReglement>(query, [description_er,date_debut_er,date_fin_er,id]);
+      const result = await client.query<DbEnteteEnsembleReglement>(query, [description_er,date_debut_er,date_fin_er,Number(id)]);
       res.json({ success: true, data: result.rows[0] });
     }catch(err){
       res.status(500).json({ success: false, error: 'Database error test' });
@@ -305,7 +305,7 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
       console.log(`Sauvegarde modification entete ensemble reg id_er: ${id}`)
       const {id_er,cubf,id_reg_stat} = req.body;
       const query = `
-        UPDATE public.ensembles_reglements_stat
+        UPDATE public.association_er_reg_stat
         SET 
           id_er = $1,
           cubf= $2,

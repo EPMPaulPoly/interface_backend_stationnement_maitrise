@@ -7,7 +7,7 @@ import { serviceEnsemblesReglements, serviceReglements } from '../services';
 import InsertLinkIcon from '@mui/icons-material/InsertLink';
 import FiltreReglement from './filtreReglement';
 import TableVisResultatsFiltreAssoc from './TableVisResultatsFiltreAssoc';
-import { Save } from '@mui/icons-material';
+import { DriveFileRenameOutlineTwoTone, Save } from '@mui/icons-material';
 const CreationAssociationCubfRegEnsReg: React.FC<creationAssocCubfErRegStat> = (props) => {
     const [CUBFN1,defCUBFN1] = useState<number>(-1);
     const [optionsCUBFN1,defOptionsCUBFN1] = useState<utilisation_sol[]>([]);
@@ -42,7 +42,6 @@ const CreationAssociationCubfRegEnsReg: React.FC<creationAssocCubfErRegStat> = (
     };
 
     const gestFermetureModal = ()=>{
-        props.defModalOuvert(false)
         defCUBFN1(-1)
         defCUBFN2(-1)
         defCUBFN3(-1)
@@ -54,6 +53,10 @@ const CreationAssociationCubfRegEnsReg: React.FC<creationAssocCubfErRegStat> = (
         defTousCUBF([])
         defCUBFSelect(null)
         defRegSelect(null)
+        defEntetesReglements([])
+        props.defIdAssociationEnEdition(-1)
+        props.defEditionCorpsEnCours(false)
+        props.defModalOuvert(false)
     }
     const gestChangementListesCUBF= async(niveau:number,valeur:string)=>{
         if (niveau ===1 && Number(valeur)<10){
@@ -98,6 +101,12 @@ const CreationAssociationCubfRegEnsReg: React.FC<creationAssocCubfErRegStat> = (
             id_er: props.ensembleReglement.entete.id_er,
             id_reg_stat:Number(regSelect.id_reg_stat)
         };
+        const regVisuLocal = props.reglementVisu
+        // Ajoute regSelect à regVisuLocal s'il n'est pas déjà présent
+        if (!regVisuLocal.some((reg: entete_reglement_stationnement) => reg.id_reg_stat === regSelect.id_reg_stat)) {
+            props.defReglementVisu([...regVisuLocal, regSelect]);
+        }
+
         let response:any
         if (props.idAssociationEnEdition===-1){
             response = await serviceEnsemblesReglements.nouvelleAssoc(associationASauver)
@@ -113,8 +122,7 @@ const CreationAssociationCubfRegEnsReg: React.FC<creationAssocCubfErRegStat> = (
                     assoc_util_reg:nouvelleTableAssoc
                 }
                 props.defEnsembleReglement(nouvelEnsembleReglement)
-                props.defIdAssociationEnEdition(-1)
-                props.defModalOuvert(false)
+                gestFermetureModal()
             }
         } else{
             response = await serviceEnsemblesReglements.modifAssoc(props.idAssociationEnEdition,associationASauver)
@@ -129,9 +137,9 @@ const CreationAssociationCubfRegEnsReg: React.FC<creationAssocCubfErRegStat> = (
                     table_etendue:table_etendue,
                     assoc_util_reg:nouvelleTableAssoc
                 }
+                
                 props.defEnsembleReglement(nouvelEnsembleReglement)
-                props.defIdAssociationEnEdition(-1)
-                props.defModalOuvert(false)
+                gestFermetureModal()
             }
         }
         // Continue with the rest of your logic here
@@ -151,6 +159,128 @@ const CreationAssociationCubfRegEnsReg: React.FC<creationAssocCubfErRegStat> = (
                         defOptionsCUBFN1(reponseN1.data);
                         props.defTousReglement(reponseEntete.data)
                         defEntetesReglements(reponseEntete.data)
+                    } else{
+                        const CUBFAssoc = props.ensembleReglement.assoc_util_reg.find((o)=>o.id_assoc_er_reg===props.idAssociationEnEdition)?.cubf??null;
+                        const idRegStatAssoc = props.ensembleReglement.assoc_util_reg.find((o)=>o.id_assoc_er_reg===props.idAssociationEnEdition)?.id_reg_stat??null;
+                        let niveau:number;
+                        let CUBFN1Assoc:number=-1
+                        let CUBFN2Assoc:number=-1
+                        let CUBFN3Assoc:number=-1
+                        let CUBFN4Assoc:number=-1
+                        if (CUBFAssoc!==null&& CUBFAssoc<10){
+                            niveau=0;
+                            CUBFN1Assoc = CUBFAssoc
+                            const [tousCUBF,CUBFN1,CUBFN2,reglements] = await Promise.all(
+                                [serviceUtilisationDuSol.obtientUtilisationDuSol(),
+                                serviceUtilisationDuSol.obtientUtilisationDuSol(-1),
+                                serviceUtilisationDuSol.obtientUtilisationDuSol(CUBFN1Assoc),
+                                serviceReglements.chercheTousEntetesReglements()])
+                            defTousCUBF(tousCUBF.data)
+                            defOptionsCUBFN1(CUBFN1.data)
+                            defOptionsCUBFN2(CUBFN2.data)
+                            props.defTousReglement(reglements.data)
+                            defEntetesReglements(reglements.data)
+                            defCUBFN1(CUBFN1Assoc)
+                            const CUBFAAjouterLocalement = tousCUBF.data.find((item) => Number(item.cubf) === CUBFAssoc)
+                            if (typeof(CUBFAAjouterLocalement)!=='undefined'){
+                                defCUBFSelect(CUBFAAjouterLocalement)
+                            }
+                            const regAAjouterLocalement = reglements.data.find((reg) => reg.id_reg_stat=== idRegStatAssoc)
+                            if (typeof(regAAjouterLocalement)!=='undefined'){
+                                defRegSelect(regAAjouterLocalement)
+                            }
+                        } else if (CUBFAssoc!==null && CUBFAssoc<100){
+                            niveau=1;
+                            CUBFN1Assoc = Math.floor(CUBFAssoc/10)
+                            CUBFN2Assoc = CUBFAssoc
+                            const [tousCUBF,CUBFN1,CUBFN2,CUBFN3,reglements] = await Promise.all(
+                                [serviceUtilisationDuSol.obtientUtilisationDuSol(),
+                                serviceUtilisationDuSol.obtientUtilisationDuSol(-1),
+                                serviceUtilisationDuSol.obtientUtilisationDuSol(CUBFN1Assoc),
+                                serviceUtilisationDuSol.obtientUtilisationDuSol(CUBFN2Assoc),
+                                serviceReglements.chercheTousEntetesReglements()])
+                            defTousCUBF(tousCUBF.data)
+                            defOptionsCUBFN1(CUBFN1.data)
+                            defTousCUBF(tousCUBF.data)
+                            defOptionsCUBFN1(CUBFN1.data)
+                            defOptionsCUBFN2(CUBFN2.data)
+                            defOptionsCUBFN3(CUBFN3.data)
+                            props.defTousReglement(reglements.data)
+                            defCUBFN1(CUBFN1Assoc)
+                            defCUBFN2(CUBFAssoc)
+                            const CUBFAAjouterLocalement = tousCUBF.data.find((item) => Number(item.cubf) === CUBFAssoc)
+                            if (typeof(CUBFAAjouterLocalement)!=='undefined'){
+                                defCUBFSelect(CUBFAAjouterLocalement)
+                            }
+                            const regAAjouterLocalement = reglements.data.find((reg) => reg.id_reg_stat=== idRegStatAssoc)
+                            if (typeof(regAAjouterLocalement)!=='undefined'){
+                                defRegSelect(regAAjouterLocalement)
+                            }
+                        } else if (CUBFAssoc!==null && CUBFAssoc<1000){
+                            niveau=3;
+                            CUBFN3Assoc = CUBFAssoc;
+                            CUBFN2Assoc = Math.floor(CUBFN3Assoc/10);
+                            CUBFN1Assoc = Math.floor(CUBFN2Assoc/10);
+                            const [tousCUBF,CUBFN1,CUBFN2,CUBFN3,CUBFN4,reglements] = await Promise.all(
+                                [serviceUtilisationDuSol.obtientUtilisationDuSol(),
+                                serviceUtilisationDuSol.obtientUtilisationDuSol(-1),
+                                serviceUtilisationDuSol.obtientUtilisationDuSol(CUBFN1Assoc),
+                                serviceUtilisationDuSol.obtientUtilisationDuSol(CUBFN2Assoc),
+                                serviceUtilisationDuSol.obtientUtilisationDuSol(CUBFN3Assoc),
+                                serviceReglements.chercheTousEntetesReglements()])
+                            defTousCUBF(tousCUBF.data)
+                            defOptionsCUBFN1(CUBFN1.data)
+                            defOptionsCUBFN2(CUBFN2.data)
+                            defOptionsCUBFN3(CUBFN3.data)
+                            defOptionsCUBFN4(CUBFN4.data)
+                            props.defTousReglement(reglements.data)
+                            defEntetesReglements(reglements.data)
+                            defCUBFN1(CUBFN1Assoc)
+                            defCUBFN2(CUBFN2Assoc)
+                            defCUBFN3(CUBFN3Assoc)
+                            const CUBFAAjouterLocalement = tousCUBF.data.find((item) => Number(item.cubf) === CUBFAssoc)
+                            if (typeof(CUBFAAjouterLocalement)!=='undefined'){
+                                defCUBFSelect(CUBFAAjouterLocalement)
+                            }
+                            const regAAjouterLocalement = reglements.data.find((reg) => reg.id_reg_stat=== idRegStatAssoc)
+                            if (typeof(regAAjouterLocalement)!=='undefined'){
+                                defRegSelect(regAAjouterLocalement)
+                            }
+                        }else if (CUBFAssoc!==null){
+                            niveau=4;
+                            CUBFN4Assoc = CUBFAssoc;
+                            CUBFN3Assoc = Math.floor(CUBFN4Assoc/10);
+                            CUBFN2Assoc = Math.floor(CUBFN3Assoc/10);
+                            CUBFN1Assoc = Math.floor(CUBFN2Assoc/10);
+                            const [tousCUBF,CUBFN1,CUBFN2,CUBFN3,CUBFN4,reglements] = await Promise.all(
+                                [serviceUtilisationDuSol.obtientUtilisationDuSol(),
+                                serviceUtilisationDuSol.obtientUtilisationDuSol(-1),
+                                serviceUtilisationDuSol.obtientUtilisationDuSol(CUBFN1Assoc),
+                                serviceUtilisationDuSol.obtientUtilisationDuSol(CUBFN2Assoc),
+                                serviceUtilisationDuSol.obtientUtilisationDuSol(CUBFN3Assoc),
+                                serviceReglements.chercheTousEntetesReglements()])
+                            defTousCUBF(tousCUBF.data)
+                            defOptionsCUBFN1(CUBFN1.data)
+                            defOptionsCUBFN2(CUBFN2.data)
+                            defOptionsCUBFN3(CUBFN3.data)
+                            defOptionsCUBFN4(CUBFN4.data)
+                            props.defTousReglement(reglements.data)
+                            defEntetesReglements(reglements.data)
+                            defCUBFN1(CUBFN1Assoc)
+                            defCUBFN2(CUBFN2Assoc)
+                            defCUBFN3(CUBFN3Assoc)
+                            defCUBFN4(CUBFN4Assoc)
+                            const CUBFAAjouterLocalement = tousCUBF.data.find((item) => Number(item.cubf) === CUBFAssoc)
+                            if (typeof(CUBFAAjouterLocalement)!=='undefined'){
+                                defCUBFSelect(CUBFAAjouterLocalement)
+                            }
+                            const regAAjouterLocalement = reglements.data.find((reg) => reg.id_reg_stat=== idRegStatAssoc)
+                            if (typeof(regAAjouterLocalement)!=='undefined'){
+                                defRegSelect(regAAjouterLocalement)
+                            }
+                        }
+                        
+                        
                     }
                 } catch (error) {
                     console.error("Erreur lors du chargement des données d'utilisation du sol :", error);
