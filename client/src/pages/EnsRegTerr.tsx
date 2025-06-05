@@ -1,7 +1,8 @@
-import React,{useState,useEffect} from 'react';
+import React,{useState,useEffect,useRef} from 'react';
 import MenuBar from '../components/MenuBar';
 import EnsRegTerrGantt from '../components/EnsRegTerrGantt';
 import './ensregterr.css'
+import './common.css'
 import { association_territoire_entete_ensemble_reglement, entete_ensembles_reglement_stationnement, periode, territoireGeoJsonProperties } from '../types/DataTypes';
 import GeoJSON,{FeatureCollection,Geometry} from 'geojson';
 import ControlEnsRegTerr from '../components/ControlEnsRegTerr';
@@ -33,7 +34,7 @@ const EnsRegTerritoire: React.FC =()=>{
     const [annees,defAnnees] = useState<number[]>([]);
     const [centre,defCentre] = useState<LatLngExpression>([46.85,-71]);
     const [zoom,defZoom] = useState<number>(10);
-
+    
     useEffect(() => {
         const fetchData = async () => {
             const periode = await serviceHistorique.obtientTous();
@@ -62,6 +63,7 @@ const EnsRegTerritoire: React.FC =()=>{
                 />
             </div>
             <div className="carte-et-tableau-ens-reg-terr">
+                
                 <EnsRegTerrGantt
                     ensRegDispo={ensRegDispo}
                     defEnsRegDispo={defEnsRegDispo}

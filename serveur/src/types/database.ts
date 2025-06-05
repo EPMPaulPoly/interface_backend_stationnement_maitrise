@@ -192,6 +192,9 @@ export interface ParamsEnsReg extends ParamsDictionary{
     id:string
 }
 export interface ParamsAssocEnsReg extends ParamsDictionary{
+    id:string
+}
+export interface ParamsAssocEnsRegTerr extends ParamsDictionary{
     
 }
 export interface ParamsLot extends ParamsDictionary{

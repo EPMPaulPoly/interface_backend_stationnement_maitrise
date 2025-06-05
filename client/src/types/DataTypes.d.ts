@@ -85,6 +85,12 @@ export interface association_territoire_entete_ensemble_reglement extends entete
     id_periode_geo:number,
 }
 
+export interface associaion_territoire_ensemble_reglement{
+    id_asso_er_ter:number,
+    id_er:number,
+    id_periode_geo:number
+}
+
 export interface utilisation_sol{
     cubf:number,
     description:string
