@@ -205,6 +205,16 @@ export interface TableEnteteProps{
     defCharge:React.Dispatch<SetStateAction<boolean>>
     regSelect:reglement_complet,
     defRegSelect:React.Dispatch<SetStateAction<reglement_complet>>
+    creationEnCours:boolean
+    defCreationEnCours:React.Dispatch<SetStateAction<boolean>>
+    editionEnteteEnCours:boolean
+    defEditionEnteteEnCours:React.Dispatch<SetStateAction<boolean>>
+    editionCorpsEnCours:boolean
+    defEditionCorpsEnCours:React.Dispatch<SetStateAction<boolean>>
+    modalOuvert:boolean
+    defModalOuvert:React.Dispatch<SetStateAction<boolean>>
+    toutesEntetes:entete_reglement_stationnement[]
+    defToutesEntetes:React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
 }
 
 export interface TableVisModRegProps{
@@ -212,8 +222,33 @@ export interface TableVisModRegProps{
     defCharge:React.Dispatch<SetStateAction<boolean>>
     regSelect:reglement_complet,
     defRegSelect:React.Dispatch<SetStateAction<reglement_complet>>
+    creationEnCours:boolean
+    defCreationEnCours:React.Dispatch<SetStateAction<boolean>>
+    editionEnteteEnCours:boolean
+    defEditionEnteteEnCours:React.Dispatch<SetStateAction<boolean>>
+    editionCorpsEnCours:boolean
+    defEditionCorpsEnCours:React.Dispatch<SetStateAction<boolean>>
+    entetesRegStationnement:entete_reglement_stationnement[],
+    defEntetesRegStationnement:React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
 }
 
+
+export interface FiltreReglementProps{
+    resultatReglements:entete_reglement_stationnement[]
+    defResultatReglements:React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
+    tousReglements:entete_reglement_stationnement[]
+    defTousReglement:React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
+    anneeDebutDefaut?:number
+    anneeFinDefaut?:number
+}
+export interface ModalFiltrageReglementProps{
+    modalOuvert:boolean,
+    defModalOuvert:React.Dispatch<SetStateAction<boolean>>
+    tousReglements:entete_reglement_stationnement[]
+    defTousReglement:React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
+    reglementVisu:entete_reglement_stationnement[]
+    defReglementVisu:React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
+}
 //-----------------------------------------------------------------------------
 // ----------------------------- Ensembles Reglements -------------------------
 // ---------------------------------------------------------------------------- 
@@ -221,21 +256,63 @@ export interface TableVisModRegProps{
 export interface TableEnteteEnsembleProps{
     entetesEnsembles:entete_ensemble_reglement_stationnement[],
     defEntetesEnsembles:React.Dispatch<SetStateAction<entete_ensembles_reglement_stationnement[]>>
-    ensembleReglement: ensemble_reglements_stationnement[],
-    defEnsembleReglement: React.Dispatch<SetStateAction<ensemble_reglements_stationnement[]>>,
+    ensembleReglement: ensemble_reglements_stationnement,
+    defEnsembleReglement: React.Dispatch<SetStateAction<ensemble_reglements_stationnement>>,
     entetesReglements:entete_reglement_stationnement[],
     defEntetesReglements: React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
+    editionEnteteEnCours:boolean,
+    defEditionEnteteEnCours:React.Dispatch<SetStateAction<boolean>>,
+    editionCorpsEnCours:boolean,
+    defEditionCorpsEnCours:React.Dispatch<SetStateAction<boolean>>,
+    ancienEnsRegComplet:ensemble_reglements_stationnement,
+    defAncienEnsRegComplet:React.Dispatch<SetStateAction<ensemble_reglements_stationnement>>
 }
 
 export interface TableVisModEnsRegProps{
     charge:boolean,
     defCharge:React.Dispatch<SetStateAction<boolean>>
-    ensembleReglement: ensemble_reglements_stationnement[],
-    defEnsembleReglement: React.Dispatch<SetStateAction<ensemble_reglements_stationnement[]>>,
+    ensembleReglement: ensemble_reglements_stationnement,
+    defEnsembleReglement: React.Dispatch<SetStateAction<ensemble_reglements_stationnement>>,
     entetesReglements:entete_reglement_stationnement[],
-    defEntetesReglements: React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
+    defEntetesReglements: React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>,
+    editionEnteteEnCours:boolean,
+    defEditionEnteteEnCours: React.Dispatch<SetStateAction<boolean>>,
+    editionCorpsEnCours:boolean,
+    defEditionCorpsEnCours:React.Dispatch<SetStateAction<boolean>>,
+    idAssociationEnEdition:number,
+    defIdAssociationEnEdition:React.Dispatch<SetStateAction<number>>,
+    entetesEnsRegListe: entete_ensemble_reglement_stationnement[],
+    defEntetesEnsRegListe: React.Dispatch<SetStateAction<entete_ensemble_reglement_stationnement[]>>,
+    ancienEnsRegComplet:ensemble_reglements_stationnement,
+    defAncienEnsRegComplet:React.Dispatch<SetStateAction<ensemble_reglements_stationnement>>
+    modalOuvert:boolean,
+    defModalOuvert:React.Dispatch<SetStateAction<boolean>>
+}
+export interface creationAssocCubfErRegStat {
+    ensembleReglement: ensemble_reglements_stationnement,
+    defEnsembleReglement: React.Dispatch<SetStateAction<ensemble_reglements_stationnement>>,
+    editionEnteteEnCours:boolean,
+    defEditionEnteteEnCours: React.Dispatch<SetStateAction<boolean>>,
+    editionCorpsEnCours:boolean,
+    defEditionCorpsEnCours:React.Dispatch<SetStateAction<boolean>>,
+    idAssociationEnEdition:number,
+    defIdAssociationEnEdition:React.Dispatch<SetStateAction<number>>,
+    ancienEnsRegComplet:ensemble_reglements_stationnement,
+    defAncienEnsRegComplet:React.Dispatch<SetStateAction<ensemble_reglements_stationnement>>
+    modalOuvert:boolean,
+    defModalOuvert:React.Dispatch<SetStateAction<boolean>>
+    tousReglements:entete_reglement_stationnement[]
+    defTousReglement:React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
+    reglementVisu:entete_reglement_stationnement[]
+    defReglementVisu:React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
 }
 
+export interface VisResultatFiltre{
+    reglementsPossible:entete_reglement_stationnement[],
+    defReglementPossible:React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
+    reglementAAssocier:entete_reglement_stationnement|null
+    defReglementAssocier:React.Dispatch<SetStateAction<entete_reglement_stationnement|null>>
+}
 // ----------------------------------------------------------------------------
 // -------------------- Ensembles Reglements - Territoires --------------------
 // ---------------------------------------------------------------------------- 
@@ -260,6 +337,7 @@ export interface EnsRegTerrDispTable{
     defEnsRegDispo:React.Dispatch<SetStateAction<entete_ensemble_reglement_stationnement[]>>,
     periodeSelect:periode,
     defPeriodeSelect:React.Dispatch<SetStateAction<periode>>,
+    territoireSelect:GeoJSON.FeatureCollection<GeoJSON.Geometry,territoireGeoJsonProperties>,
 }
 
 export interface CarteEnsRegTerrProps{

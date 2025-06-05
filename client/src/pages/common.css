@@ -118,3 +118,19 @@ body,html{
     color: white;
     background-color: blue;
 }
+/* ---------------------------------------------------------------------------------------- */
+/* --------------------------------- Form defaults -----------------------------------------*/
+/* ---------------------------------------------------------------------------------------- */
+.form-dropdown {
+  width: 250px;      /* Set your desired width */
+  margin-left: 16px; /* Set your desired left margin */
+}
+.form-label {
+  min-width: 140px;  /* Optional: align labels */
+  display: inline-block;
+}
+.form-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1em;
+}

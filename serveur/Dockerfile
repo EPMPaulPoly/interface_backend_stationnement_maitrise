@@ -1,9 +1,15 @@
 FROM node:20
-WORKDIR /app
+WORKDIR /app/serveur
+
 COPY serveur/package*.json ./
 COPY serveur/tsconfig.json ./
+COPY serveur_calcul_python/environment.yml ../serveur_calcul_python/environment.yml
 
-RUN apt-get update && apt-get install -y ca-certificates
+RUN ls -l /app/serveur
+RUN ls -l /app/serveur_calcul_python
+# Install needed packages (wget)
+RUN apt-get update && apt-get install -y ca-certificates wget
+
 
 # Installer Miniconda
 RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh && \
@@ -30,10 +36,14 @@ RUN npm install -g nodemon typescript ts-node
 RUN /opt/conda/bin/conda env create -f environment.yml
 SHELL ["/opt/conda/bin/conda", "run", "-n", "serveur_calcul_python", "/bin/bash", "-c"]
 
-COPY . .
-COPY ../serveur_calcul_python /app/serveur_calcul_python
+COPY serveur ./
+WORKDIR /app
+COPY serveur_calcul_python ./serveur_calcul_python
+
+# Return to /app/serveur
+WORKDIR /app/serveur
 
 RUN npm run build
 EXPOSE 5000 9229 5678
 
-CMD ["nodemon"]
+CMD ["nodemon", "dist/serveur.js"]

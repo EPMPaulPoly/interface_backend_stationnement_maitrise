@@ -34,10 +34,88 @@ export const creationRouteurHistorique = (pool: Pool): Router => {
     }
   };
 
-
-
+  const nouvellePeriode: RequestHandler = async(req,res,next):Promise<void> =>{
+    let client;
+    try {
+      const { nom_periode,date_debut_periode,date_fin_periode} = req.body;
+      client = await pool.connect();
+      const result = await client.query(
+        `INSERT INTO public.historique_geopol(nom_periode,date_debut_periode,date_fin_periode)
+          VALUES ($1, $2, $3)RETURNING *`,
+        [nom_periode,date_debut_periode,date_fin_periode]
+      );
+      if (result.rows.length === 0) {
+        res.status(404).json({ success: false, error: 'Entry not found' });
+        return;
+      }
+      res.json({ success: true, data: result.rows });
+      
+    } catch (err) {
+      next(err);
+    } finally{
+      if(client){
+        client.release();
+      }
+    }
+  };
+  const majPeriode:RequestHandler = async(req,res,next):Promise<void> =>{
+    let client;
+    try {
+      const { id } = req.params;
+      const { nom_periode,date_debut_periode,date_fin_periode } = req.body;
+      client = await pool.connect();
+      const result = await client.query(
+        `UPDATE public.historique_geopol SET 
+            nom_periode = $1, 
+            date_debut_periode = $2, 
+            date_fin_periode = $3
+          WHERE 
+            id_periode = $4 
+          RETURNING 
+            *`,
+        [nom_periode, date_debut_periode, date_fin_periode,id]
+      );
+      if (result.rows.length === 0) {
+        res.status(404).json({ success: false, error: 'Entry not found' });
+        return;
+      }
+      res.json({ success: true, data: result.rows });
+      
+    } catch (err) {
+      next(err);
+    } finally{
+      if(client){
+        client.release();
+      }
+    }
+  };
+  const supprimePeriode:RequestHandler = async(req,res,next):Promise<void> =>{
+    let client;
+    try {
+      const{id} = req.params
+      client = await pool.connect();
+      const result = await client.query(
+        `DELETE FROM public.historique_geopol WHERE id_periode= $1;`,
+        [id]
+      );
+      if (result.rowCount === 0) {
+        res.status(404).json({ success: false, error: 'Entry not found' });
+        return;
+      }
+      res.json({ success: true, data: [] });
+      
+    } catch (err) {
+      next(err);
+    } finally{
+      if (client){
+        client.release();
+      }
+    }
+  };
   // Routes
   router.get('/', obtiensTousPeriodes);
-
+  router.put('/',nouvellePeriode);
+  router.post('/:id',majPeriode);
+  router.delete('/:id',supprimePeriode);
   return router;
 };

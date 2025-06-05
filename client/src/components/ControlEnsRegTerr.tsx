@@ -1,13 +1,44 @@
-import React,{useState} from 'react';
+import React,{useState,useEffect} from 'react';
 import { EnsRegTerrControlProps } from '../types/InterfaceTypes';
-import { serviceEnsemblesReglements, serviceTerritoires } from '../services';
+import { serviceEnsemblesReglements, serviceHistorique, serviceTerritoires } from '../services';
+import { serviceEnsRegTerr } from '../services/serviceEnsRegTerr';
+import { useSearchParams } from 'react-router';
 
 
 const ControlEnsRegTerr:React.FC<EnsRegTerrControlProps> = (props:EnsRegTerrControlProps) =>{
 
     const [ddSelectedValue,defddSelectedValue] = useState(-1);
     const [ddPerSelectedValue,defddPerSelectedValue] = useState(-1);
-    const gestSelectionPeriode = async (periodeAChanger:number)=>{
+    const [searchParams] = useSearchParams()
+
+    useEffect(() => {
+        // code for handling search query change
+            const fetchRST=async(idPeriode:number,idPeriodeGeo?:number)=>{
+                const response = await serviceHistorique.obtientTous()
+                props.defPeriodesDispo(response.data)
+                defddPerSelectedValue(idPeriode)
+                props.defPeriodeSelect(response.data.find((o)=>o.id_periode===idPeriode))
+                const responseTerr = await serviceTerritoires.chercheTerritoiresParPeriode(idPeriode)
+                props.defTerritoireDispo(responseTerr.data)
+                if (idPeriodeGeo!==undefined){
+                    const terrSelectData = await serviceTerritoires.chercheTerritoiresParId(idPeriodeGeo)
+                    props.defTerritoireSelect(terrSelectData.data)
+                    defddSelectedValue(idPeriodeGeo)
+                    const ensRegTerrData = await serviceEnsRegTerr.obtiensEnsRegEtAssocParTerritoire(idPeriodeGeo)
+                    props.defEnsRegDispo(ensRegTerrData.data)
+                }
+
+            }
+            
+            const id_periode = searchParams.get("id_periode");
+            const id_periode_geo = searchParams.get("id_periode_geo")
+            if (id_periode!==null &&typeof(Number(id_periode))==='number' && id_periode_geo!==null && typeof(Number(id_periode_geo))==='number'){
+                fetchRST(Number(id_periode),Number(id_periode_geo))
+            } else if(id_periode!==null &&typeof(Number(id_periode))==='number'){
+                fetchRST(Number(id_periode))
+            }
+        }, [searchParams]);
+    const gestSelectionPeriode = async (periodeAChanger:number,push:boolean)=>{
         if (periodeAChanger!=-1){
             const territoires = await serviceTerritoires.chercheTerritoiresParPeriode(periodeAChanger)
             props.defTerritoireDispo(territoires.data)
@@ -18,6 +49,9 @@ const ControlEnsRegTerr:React.FC<EnsRegTerrControlProps> = (props:EnsRegTerrCont
             defddSelectedValue(-1)
             props.defEnsRegDispo([])
             defddPerSelectedValue(periodeAChanger)
+            if(push){
+                window.history.pushState({}, '', `?id_periode=${periodeAChanger}`)
+            }
         }else{
             defddSelectedValue(-1)
             props.defEnsRegDispo([])
@@ -29,13 +63,16 @@ const ControlEnsRegTerr:React.FC<EnsRegTerrControlProps> = (props:EnsRegTerrCont
         }
     };
 
-    const gestSelectionTerritoire = async(territoireAregarder:number)=>{
+    const gestSelectionTerritoire = async(territoireAregarder:number,push:boolean)=>{
         if (territoireAregarder!=-1){
-            const ensReg = await serviceEnsemblesReglements.obtiensEnsRegParTerritoire(territoireAregarder)
+            const ensReg = await serviceEnsRegTerr.obtiensEnsRegEtAssocParTerritoire(territoireAregarder)
             const territoireSelectTemp =await serviceTerritoires.chercheTerritoiresParId(territoireAregarder);
             props.defEnsRegDispo(ensReg.data);
             props.defTerritoireSelect(territoireSelectTemp.data);
             defddSelectedValue(territoireAregarder)
+            if (push){
+                window.history.pushState({}, '', `?id_periode=${ddPerSelectedValue}&id_periode_geo=${territoireAregarder}`)
+            }
         } else{
             defddSelectedValue(territoireAregarder)
             props.defEnsRegDispo([])
@@ -53,7 +90,7 @@ const ControlEnsRegTerr:React.FC<EnsRegTerrControlProps> = (props:EnsRegTerrCont
             <select 
             className="selection-periode" 
             value ={ddPerSelectedValue}
-            onChange={e => gestSelectionPeriode(Number(e.target.value))}>
+            onChange={e => gestSelectionPeriode(Number(e.target.value),true)}>
                 <option value={-1}>Choisir Période</option>
                 {props.periodesDispo.map((periode)=>(
                     <option value={periode.id_periode}>{periode.nom_periode}</option>
@@ -69,7 +106,7 @@ const ControlEnsRegTerr:React.FC<EnsRegTerrControlProps> = (props:EnsRegTerrCont
             <select 
             className="select-territoire" 
             value={ddSelectedValue}
-            onChange={e=>gestSelectionTerritoire(Number(e.target.value))}>
+            onChange={e=>gestSelectionTerritoire(Number(e.target.value),true)}>
                 <option value={-1}>Selection Territoire</option>
                 {props.territoiresDispo.features.map((territoire)=>(
                     <option value= {territoire.properties.id_periode_geo}>{territoire.properties.ville} - {territoire.properties.secteur}</option>
