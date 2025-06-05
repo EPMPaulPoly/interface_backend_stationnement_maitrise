@@ -211,6 +211,10 @@ export interface TableEnteteProps{
     defEditionEnteteEnCours:React.Dispatch<SetStateAction<boolean>>
     editionCorpsEnCours:boolean
     defEditionCorpsEnCours:React.Dispatch<SetStateAction<boolean>>
+    modalOuvert:boolean
+    defModalOuvert:React.Dispatch<SetStateAction<boolean>>
+    toutesEntetes:entete_reglement_stationnement[]
+    defToutesEntetes:React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
 }
 
 export interface TableVisModRegProps{
@@ -236,6 +240,14 @@ export interface FiltreReglementProps{
     defTousReglement:React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
     anneeDebutDefaut?:number
     anneeFinDefaut?:number
+}
+export interface ModalFiltrageReglementProps{
+    modalOuvert:boolean,
+    defModalOuvert:React.Dispatch<SetStateAction<boolean>>
+    tousReglements:entete_reglement_stationnement[]
+    defTousReglement:React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
+    reglementVisu:entete_reglement_stationnement[]
+    defReglementVisu:React.Dispatch<SetStateAction<entete_reglement_stationnement[]>>
 }
 //-----------------------------------------------------------------------------
 // ----------------------------- Ensembles Reglements -------------------------

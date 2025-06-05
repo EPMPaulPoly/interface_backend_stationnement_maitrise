@@ -4,6 +4,7 @@ import { TableEnteteProps } from '../types/InterfaceTypes';
 import { serviceReglements } from "../services";
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { FilterAlt } from '@mui/icons-material';
 const TableEnteteReglements: React.FC<TableEnteteProps> = (props) => {
     const rowRefs = useRef<{ [key: string]: HTMLTableRowElement | null }>({});
     const enteteReglementVide: entete_reglement_stationnement = {
@@ -26,8 +27,9 @@ const TableEnteteReglements: React.FC<TableEnteteProps> = (props) => {
         const fetchData = async () => {
             try {
                 const resReglements = await serviceReglements.chercheTousEntetesReglements();
-                console.log('Recu les périodes', resReglements);
+                console.log('Recu les règlements', resReglements);
                 props.defEntetes(resReglements.data);
+                props.defToutesEntetes(resReglements.data)
             } catch (error) {
                 console.error('Error fetching data:', error);
             } finally {
@@ -55,6 +57,7 @@ const TableEnteteReglements: React.FC<TableEnteteProps> = (props) => {
         const reglementAObtenir = await serviceReglements.chercheReglementComplet(id_reg)
         props.defRegSelect(reglementAObtenir.data[0])
         props.defCreationEnCours(false)
+        window.history.pushState({}, '', `?id_reg_stat=${id_reg}`)
     }
     const gestBoutonAjout = () =>{
         console.log('No add implemented')
@@ -81,7 +84,8 @@ const TableEnteteReglements: React.FC<TableEnteteProps> = (props) => {
     return (
         <div className="panneau-table-entete">
             <h4>Entete reglements</h4>
-            <div className="ajout-reglement"><AddIcon onClick={gestBoutonAjout}/></div>
+            <div className="div-filtre-reglements"><FilterAlt onClick={()=>props.defModalOuvert(true)}/> Filtrer règlements</div>
+            <div className="ajout-reglement"><AddIcon onClick={gestBoutonAjout}/> Ajout Nouveau Reglement</div>
             <div className="table-entete-reglements-container">
                 <table className="table-entete-reglements">
                     <thead>

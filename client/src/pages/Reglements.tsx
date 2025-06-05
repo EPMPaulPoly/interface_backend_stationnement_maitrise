@@ -3,8 +3,11 @@ import TableEnteteReglements from "../components/TableEnteteReglements";
 import TableVisModReglement from "../components/tableVisReglement";
 import { useState, useEffect, useRef } from "react";
 import { entete_reglement_stationnement, definition_reglement_stationnement, reglement_complet } from "../types/DataTypes";
+import { useSearchParams } from "react-router";
 import './reg.css';
 import './common.css';
+import { serviceReglements } from "../services";
+import FiltrerReglementDansLeurPage from "../components/filtrerReglementDansLeurPage";
 
 
 const Reglements: React.FC = () => {
@@ -37,11 +40,31 @@ const Reglements: React.FC = () => {
     }
 
     const [entetes, defEntetes] = useState<entete_reglement_stationnement[]>([]);
+    const [tousEntetes, defTousEntetes] = useState<entete_reglement_stationnement[]>([]);
     const [charge, defCharg] = useState<boolean>(true);
     const [reglementComplet, defReglementComplet] = useState<reglement_complet>(reglementCompletVide);
     const [creation,defCreation] = useState<boolean>(false);
     const [editionEnteteEnCours,defEditionEnteteEnCours] = useState<boolean>(false);
     const [editionCorpsEnCours,defEditionCorpsEnCours] = useState<boolean>(false);
+    const [modalOuvert,defModalOuvert] = useState<boolean>(false);
+    const [searchParams] = useSearchParams()
+
+    useEffect(() => {
+    // code for handling search query change
+        const fetchREG=async(id_reg_stat:number)=>{
+            const response = await serviceReglements.chercheReglementComplet(id_reg_stat)
+            defReglementComplet(response.data[0])
+            
+        }
+        
+        const id_reg_stat = searchParams.get("id_reg_stat");
+        if (id_reg_stat!==null &&typeof(Number(id_reg_stat))==='number' ){
+            fetchREG(Number(id_reg_stat))
+        } 
+    }, [searchParams]);
+
+
+
     return (
         <div className="page-creation-reglements">
             <MenuBar />
@@ -59,6 +82,10 @@ const Reglements: React.FC = () => {
                     defEditionEnteteEnCours={defEditionEnteteEnCours}
                     editionCorpsEnCours={editionCorpsEnCours}
                     defEditionCorpsEnCours={defEditionCorpsEnCours}
+                    modalOuvert={modalOuvert}
+                    defModalOuvert={defModalOuvert}
+                    toutesEntetes={tousEntetes}
+                    defToutesEntetes={defTousEntetes}
                 />
             </div>
 
@@ -75,6 +102,14 @@ const Reglements: React.FC = () => {
                 defEditionCorpsEnCours={defEditionCorpsEnCours}
                 entetesRegStationnement={entetes}
                 defEntetesRegStationnement={defEntetes  }
+            />
+            <FiltrerReglementDansLeurPage
+                modalOuvert={modalOuvert}
+                defModalOuvert={defModalOuvert}
+                reglementVisu={entetes}
+                defReglementVisu={defEntetes}
+                tousReglements={tousEntetes}
+                defTousReglement={defTousEntetes}
             />
 
         </div>
