@@ -55,3 +55,5 @@ export type ReponsePAVQuartier = ApiResponse<PAVQuartier>
 export type ReponsePAVNouveau = ApiResponse<entreePAV>
 export type ReponseHistoAnalyse = ApiResponse<barChartDataSet>
 export type ReponseXYAnalyseQuartier = ApiResponse<NhoodXYGraphDatasets>
+// types pour analyse de règlements
+export type ReponseUnitesGraph = ApiResponse<informations_pour_graph_unite_er_reg[]>

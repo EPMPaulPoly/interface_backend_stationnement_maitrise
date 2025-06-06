@@ -1,0 +1,45 @@
+.comp-reg-charts {
+    flex-grow: 1;
+    /* fill remaining height */
+    overflow-y: auto;
+    /* vertical scroll if needed */
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+    grid-auto-rows: 1fr;
+    /* equal height rows */
+    box-sizing: border-box;
+    /* avoid overflow from padding */
+    /* grid-template-columns is set inline from React */
+}
+
+.page-comp-reg {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.control-comp-reg {
+    padding: 1rem;
+}
+
+.graphique-rendu-reglements {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+.graph-control {
+    flex: 0 0 auto; /* Only as tall as its content */
+    padding-bottom: 0.5rem; /* Optional: space below control */
+}
+
+.graphique {
+    flex: 1 1 0;
+    height: 0; /* Ensures it shrinks/grows with parent */
+    width: 100%;
+    overflow: hidden;
+}

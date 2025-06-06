@@ -1,6 +1,6 @@
 import {LatLng, LatLngExpression} from "leaflet";
 import { SetStateAction } from "react";
-import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties, lotCadastralAvecBoolInvGeoJsonProperties, informations_reglementaire_manuelle } from "./DataTypes";
+import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties, lotCadastralAvecBoolInvGeoJsonProperties, informations_reglementaire_manuelle, utilisation_sol } from "./DataTypes";
 import { FeatureCollection, Geometry } from "geojson";
 import { PrioriteEstimeQuartier, TypesVisualisationAnalyseQuartier, VariablesPossibles } from "./AnalysisTypes";
 // --------------------------------------------------------------------------
@@ -393,4 +393,27 @@ export interface AnalyseXYQuartierProps{
     prioriteInventaire:number,
     prioriteInventairePossibles:PrioriteEstimeQuartier[],
     variablesPossibles: VariablesPossibles[]
+}
+
+// ----------------------------------------------------------------------------
+// -------------------- Graphiques Comparaison Règlements ---------------------
+// ---------------------------------------------------------------------------- 
+
+export interface GraphiqueReglementsProps{
+    ensembleReglementsARepresenter:number[],
+    index:number
+}
+
+export interface PropsModalManipGraphiqueReg{
+    modalOuvert:boolean,
+    defModalOuvert:React.Dispatch<SetStateAction<boolean>>,
+    CUBFSelect:utilisation_sol,
+    defCUBFSelect:React.Dispatch<SetStateAction<utilisation_sol>>
+    ensRegAVis:number[]
+}
+export interface ControlAnaRegProps{
+    ensRegARep:number[],
+    defEnsRegARep:React.Dispatch<SetStateAction<number[]>>
+    nGraphiques:number,
+    defNGraphiques:React.Dispatch<SetStateAction<number>>
 }

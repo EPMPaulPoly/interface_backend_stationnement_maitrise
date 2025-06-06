@@ -1,5 +1,5 @@
 import axios,{ AxiosResponse } from 'axios';
-import {ReponseEnteteEnsembleReglementStationnement,ReponseEnsembleReglementComplet, ReponseEntetesEnsemblesReglement, ReponseEntetesReglements, ReponseComboERsRoleFoncier, ReponseAssociationEnsembleReglement} from '../types/serviceTypes';
+import {ReponseEnteteEnsembleReglementStationnement,ReponseEnsembleReglementComplet, ReponseEntetesEnsemblesReglement, ReponseEntetesReglements, ReponseComboERsRoleFoncier, ReponseAssociationEnsembleReglement,ReponseUnitesGraph} from '../types/serviceTypes';
 import api from './api';
 import { association_util_reglement, entete_ensembles_reglement_stationnement } from '../types/DataTypes';
 
@@ -199,6 +199,27 @@ class ServiceEnsemblesReglements {
             const reponse = await api.delete( `ens-reg/assoc/${idAssocASupprimer}`)
             const success:boolean = reponse.data.success
             return(success)
+        } catch(error){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
+
+    async obtiensReglementsUnitesParCUBF(idEnsReg:number[],cubf:number):Promise<ReponseUnitesGraph>{
+        try{
+            const dbData={
+                cubf:cubf,
+                id_er:idEnsReg
+            }
+            const response:AxiosResponse<ReponseUnitesGraph>= await api.post(`/ens-reg/informations-pour-graphique`,[dbData]);
+            const data_res = response.data.data;
+            return{success:response.data.success,data:data_res};
         } catch(error){
             if (axios.isAxiosError(error)) {
                 console.error('Axios Error:', error.response?.data);

@@ -43,9 +43,9 @@ export interface operation_reglement_stationnement{
 export interface unites_reglement_stationnement{
     id_unite:number,
     desc_unite:string,
-    colonne_role_foncier:string,
-    facteur_correction:number,
-    abscisse_correction:number
+    colonne_role_foncier?:string,
+    facteur_correction?:number,
+    abscisse_correction?:number
 }
 
 export interface reglement_complet{
@@ -236,6 +236,11 @@ export interface informations_reglementaire_manuelle{
     description_reg_stat:string,
     unite:number,
     desc_unite:string
+}
+export interface informations_pour_graph_unite_er_reg{
+    id_er:number,
+    id_reg_stat:entete_ensembles_reglement_stationnement
+    unite:[]
 }
 
 export interface requete_calcul_manuel_reg{
