@@ -422,7 +422,7 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
                 id_reg_stat: e.id_reg_stat,
                 desc_reg_stat:result_regs.rows.find((p)=>p.id_reg_stat===e.id_reg_stat)?.description??'N/A',
                 unite:e.unite,
-                desc_unite:result_unit.rows.find((q)=>q.id_unite===e.unite)?.desc_unite??'N/A'
+                desc_unite:e.unite.map((uniteOut)=>result_unit.rows.find((unitRet)=>unitRet.id_unite===uniteOut)?.desc_unite??'N/A')
               }));
               // Use result.rows as needed
             }

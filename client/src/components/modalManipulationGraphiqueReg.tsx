@@ -19,6 +19,11 @@ import { serviceEnsemblesReglements } from '../services';
 const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: PropsModalManipGraphiqueReg) => {
     const [tousCUBF,defTousCUBF] = useState<utilisation_sol[]>([])
     const [regDispo,defRegDispo] = useState<informations_pour_graph_unite_er_reg[]>([])
+    const [regSelect,defRegSelect] = useState<number[]>([])
+    const [nUnites,defNUnites] = useState<number>(-1);
+    const [minGraph,defMinGraph] = useState<number>(0);
+    const [maxGraph,defMaxGraph] = useState<number>(1000);
+    const [pasGraph,defPasGraph] = useState<number>(50);
     {/* Obtention des cubf possibles pour le dropdowns */}
     useEffect(()=>{
         const fetchData = async()=>{
@@ -42,11 +47,24 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
      */
     const gestSelectionCUBF = async(CUBFSelect:number|null)=>{
         if (typeof(CUBFSelect)==='number'){
-            const objetCUBFSelect:utilisation_sol = tousCUBF.find((o)=>o.cubf===CUBFSelect)??{cubf:-1,description:'N/A'}
+            const objetCUBFSelect:utilisation_sol = tousCUBF.find((o)=>Number(o.cubf)===CUBFSelect)??{cubf:-1,description:'N/A'}
             props.defCUBFSelect(objetCUBFSelect)
             const reponse = await serviceEnsemblesReglements.obtiensReglementsUnitesParCUBF(props.ensRegAVis,CUBFSelect)
+            const regSetSelect = [...new Set(reponse.data.map(item=>item.id_er))]
+            defRegDispo(reponse.data)
+            defRegSelect(regSetSelect)
+            const uniteSets = [...new Set(reponse.data.flatMap(item => item.unite))]
+            const NUnites = uniteSets.length
+            defNUnites(NUnites)
             console.log('reponse unites obtenues pour le cubf et ER selectionnes')
         }
+    }
+    {/** Gestion du lancement du graphage des règlements */}
+    /**
+     * gestLancementGraph envoie la requete au backend de générer le data pour le linechart pour pouvoir le montrer dans le graphique
+     */
+    const gestLancementGraph=async()=>{
+        const reglements = await serviceEnsemblesReglements.
     }
     {/*variable de style */}
     const style = {
@@ -82,9 +100,78 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
                             {tousCUBF.map((c)=><option value={c.cubf}>{c.description}</option>)}
                         </select>
                         {/* Réglement Pertinents */}
+                         
+                        
+                        
                         {props.CUBFSelect.cubf!==-1?
-                        <></>:<></>
+                        <>
+                        <p>
+                         N Unite: {nUnites!==-1?nUnites:'Sélectionner un CUBF'}
+                        </p>
+                        <table>
+                            <thead>
+                                <th>Montrer</th>
+                                <th>ER</th>
+                                <th>Règlement</th>
+                                <th>Unités</th>
+                                <th>N unités</th>
+                            </thead>
+                            <tbody>
+                                {regDispo.map((item)=>(
+                                    <tr>
+                                        <td>
+                                            <input
+                                                type="checkbox"
+                                                checked={regSelect.includes(item.id_er)}
+                                                onChange={() => {
+                                                    if (regSelect.includes(item.id_er)) {
+                                                        const newRegSelect = regSelect.filter(id => id !== item.id_er)
+                                                        defRegSelect(newRegSelect);
+                                                        // Met à jour les règlements sélectionnés
+                                                        const selectedItems = regDispo.filter(reg => newRegSelect.includes(reg.id_er));
+                                                        const uniteSets = [...new Set(selectedItems.flatMap(item => item.unite))];
+                                                        const NUnites = uniteSets.length;
+                                                        defNUnites(NUnites);
+                                                    } else {
+                                                        const newRegSelect = [...regSelect, item.id_er]
+                                                        defRegSelect([...regSelect, item.id_er]);
+                                                        // Met à jour les règlements sélectionnés
+                                                        const selectedItems = regDispo.filter(reg => newRegSelect.includes(reg.id_er));
+                                                        const uniteSets = [...new Set(selectedItems.flatMap(item => item.unite))];
+                                                        const NUnites = uniteSets.length;
+                                                        defNUnites(NUnites);
+                                                    }
+                                                }}
+                                            />
+                                        </td>
+                                        <td>{item.desc_er}</td>
+                                        <td>{item.desc_reg_stat}</td>
+                                        <td>{item.desc_unite}</td>
+                                        <td>{item.desc_unite.length}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table></>:<></>
                         }
+                        {nUnites===1?
+                        <>
+                            <h4>Sélectionner limites axe X: {regDispo[0].desc_unite}</h4>
+                            <table>
+                                <thead>
+                                    <th>Min graph</th>
+                                    <th>Max Graph</th>
+                                    <th>Pas</th>
+                                </thead>
+                                <tbody>
+                                    <td><input type='number' defaultValue={0} onChange={(e)=>defMinGraph(Number(e.target.value))}/></td>
+                                    <td><input type='number' defaultValue={1000} onChange={(e)=>defMaxGraph(Number(e.target.value))}/></td>
+                                    <td><input type='number' defaultValue={50} onChange={(e)=>defPasGraph(Number(e.target.value))}/></td>
+                                </tbody>
+                            </table>
+                            <button onClick={gestLancementGraph}>Créer graphe</button>
+                        </>:<></>
+                        }
+                        
                     </form>
                     </Box>
                 </Box>
