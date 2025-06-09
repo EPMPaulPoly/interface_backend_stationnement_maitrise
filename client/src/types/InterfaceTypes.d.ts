@@ -141,6 +141,7 @@ export interface ComparaisonInventaireQuartierProps{
     chargement:boolean,
     defChargement:React.Dispatch<SetStateAction<boolean>>,
     quartierSelect:number,
+    lotsDuQuartier:FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>,
     defLotsDuQuartier: React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>,
     defPanneauComparInventaireQuartierVis:React.Dispatch<SetStateAction<boolean>>;
 }

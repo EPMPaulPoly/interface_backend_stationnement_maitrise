@@ -107,6 +107,7 @@ const VisualisationInventaire: React.FC = () => {
                         chargement={chargement}
                         defChargement={defChargement}
                         quartierSelect={quartier}
+                        lotsDuQuartier={lotsDuQuartier}
                         defLotsDuQuartier={defLotsDuQuartier}
                         defPanneauComparInventaireQuartierVis={defPanneauComparInventaireQuartierVis}
                     />

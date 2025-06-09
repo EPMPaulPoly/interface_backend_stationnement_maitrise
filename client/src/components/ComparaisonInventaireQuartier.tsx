@@ -4,10 +4,11 @@ import React from 'react';
 import CheckIcon from '@mui/icons-material/Check';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Delete } from "@mui/icons-material";
-import { inventaire_stationnement } from "../types/DataTypes";
+import { inventaire_stationnement, lotCadastralAvecBoolInvGeoJsonProperties } from "../types/DataTypes";
 import { serviceInventaire } from "../services";
 import metAJourLotsInventaire from "../utils/metAJourLotsInventaire";
 import { MAJLotsInventaireProps } from "../types/utilTypes";
+import { Geometry } from "geojson";
 
 const ComparaisonInventaireQuartier:React.FC<ComparaisonInventaireQuartierProps>=(props:ComparaisonInventaireQuartierProps)=>{
     const gestAnnulCalculQuartier=()=>{
@@ -43,9 +44,38 @@ const ComparaisonInventaireQuartier:React.FC<ComparaisonInventaireQuartierProps>
             }
             const idMAJ = ancienItem.id_inv;
             const reussi = await serviceInventaire.modifieInventaire(idMAJ,itemAinserer)
-            if (reussi){
+            if (reussi.success){
                 const nouvelNouvelInventaire = props.nouvelInventaireReg.filter((o)=>o.g_no_lot!== noLot)
                 props.defNouvelInventaireReg(nouvelNouvelInventaire)
+                const ancienLotsDuQuartier = props.lotsDuQuartier;
+                const nouveauLotsDuQuatier: GeoJSON.FeatureCollection<Geometry, lotCadastralAvecBoolInvGeoJsonProperties> = {
+                                    type: "FeatureCollection",
+                                    features: ancienLotsDuQuartier.features.map((lot) =>
+                                        lot.properties.g_no_lot !== noLot
+                                            ? lot
+                                            : {
+                                                  type: lot.type,
+                                                  geometry: lot.geometry,
+                                                  bbox: lot.bbox,
+                                                  id: lot.id,
+                                                  properties: {
+                                                      g_no_lot: lot.properties.g_no_lot,
+                                                      g_va_suprf: lot.properties.g_va_suprf,
+                                                      g_nb_coord: lot.properties.g_nb_coord,
+                                                      g_nb_coo_1: lot.properties.g_nb_coo_1,
+                                                      bool_inv: true,
+                                                  },
+                                              }
+                                    ),
+                                };
+                const ancienInventaire = props.ancienInventaireReg
+                const nouvelInventaire: inventaire_stationnement[] = ancienInventaire.map(item =>
+                    (item.g_no_lot === noLot && item.methode_estime === nouvelItem?.methode_estime)
+                        ? { ...reussi.data }
+                        : item
+                );
+                props.defAncienInventaireReg(nouvelInventaire)
+                props.defLotsDuQuartier(nouveauLotsDuQuatier)
                 if (nouvelNouvelInventaire.length===0){
                     props.defPanneauComparInventaireQuartierVis(false)
                 }
@@ -66,20 +96,46 @@ const ComparaisonInventaireQuartier:React.FC<ComparaisonInventaireQuartierProps>
                 cubf:nouvelItem?.cubf||'',
             }
             const reussi = await serviceInventaire.nouvelInventaire(itemAinserer)
-            if (reussi){
+            if (reussi.success){
                 const nouvelNouvelInventaire = props.nouvelInventaireReg.filter((o)=>o.g_no_lot!== noLot)
                 props.defNouvelInventaireReg(nouvelNouvelInventaire)
+
                 const propMAJ:MAJLotsInventaireProps={
                     defInventaire:props.defAncienInventaireReg,
                     defLotsDuQuartier:props.defLotsDuQuartier
                 };
-                const succes = await metAJourLotsInventaire(props.quartierSelect,propMAJ)
+                // this is very slow needa better way of doing this than fucking redownloading the whole shenanigan
+                //const succes = await metAJourLotsInventaire(props.quartierSelect,propMAJ)
+                const ancienLotsDuQuartier = props.lotsDuQuartier;
+
+                const nouveauLotsDuQuatier: GeoJSON.FeatureCollection<Geometry, lotCadastralAvecBoolInvGeoJsonProperties> = {
+                                    type: "FeatureCollection",
+                                    features: ancienLotsDuQuartier.features.map((lot) =>
+                                        lot.properties.g_no_lot !== noLot
+                                            ? lot
+                                            : {
+                                                  type: lot.type,
+                                                  geometry: lot.geometry,
+                                                  bbox: lot.bbox,
+                                                  id: lot.id,
+                                                  properties: {
+                                                      g_no_lot: lot.properties.g_no_lot,
+                                                      g_va_suprf: lot.properties.g_va_suprf,
+                                                      g_nb_coord: lot.properties.g_nb_coord,
+                                                      g_nb_coo_1: lot.properties.g_nb_coo_1,
+                                                      bool_inv: true,
+                                                  },
+                                              }
+                                    ),
+                                };
+                const ancienInventaire = props.ancienInventaireReg
+                const nouvelInventaire:inventaire_stationnement[] = [...ancienInventaire,reussi.data]
+                props.defAncienInventaireReg(nouvelInventaire)
+                props.defLotsDuQuartier(nouveauLotsDuQuatier)
                 if (nouvelNouvelInventaire.length===0){
                     props.defPanneauComparInventaireQuartierVis(false)
                 }
-                if (succes){
-                    alert('Sauvegarde Reussie, inventaire mis a jour')
-                }
+                alert('Sauvegarde Reussie, inventaire mis a jour')
             } else{
                 alert('sauvegarde non réussie')
             }

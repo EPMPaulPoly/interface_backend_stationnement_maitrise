@@ -16,6 +16,7 @@ export type ReponseQuartiersAnalyse = ApiResponse<quartiers_analyse[]>
 // inventaire
 export type ReponseDBInventaire = ApiResponse<inventaire_stationnement[]>
 export type ReponseInventaire = ApiResponse<inventaire_stationnement[]>
+export type ReponseInventaireSeuil = ApiResponse<inventaire_stationnement>
 // reglements
 export type ReponseEntetesReglements = ApiResponse<entete_reglement_stationnement[]>
 export type ReponseReglementComplet = ApiResponse<reglement_complet[]>
