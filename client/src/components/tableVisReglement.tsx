@@ -331,8 +331,8 @@ const TableVisModReglement: React.FC<TableVisModRegProps> = (props) => {
                                     onChange={(e) => gestChangementEntete(props.regSelect.entete.id_reg_stat,'ville', e.target.value)}
                                     size={10}/>
                             ):(props.regSelect.entete.ville)}</td>
-                        <td>{props.creationEnCours&&props.editionEnteteEnCours?(<><SaveIcon onClick={gestSauvegardeEntete}/></>):(<><Edit /></>)}</td>
-                        <td>{props.creationEnCours&&props.editionEnteteEnCours?(<><CancelIcon/></>):(<></>)}</td>
+                        <td>{props.editionEnteteEnCours?(<><SaveIcon onClick={gestSauvegardeEntete}/></>):(<><Edit onClick={()=>{props.defEditionEnteteEnCours(true);defAncienReglement(props.regSelect);}} /></>)}</td>
+                        <td>{props.editionEnteteEnCours?(<><CancelIcon onClick={()=>{props.defEditionEnteteEnCours(false); props.defRegSelect(ancienReglement)}}/></>):(<></>)}</td>
                     </tr>
                     }
                 </tbody>
@@ -460,7 +460,16 @@ const TableVisModReglement: React.FC<TableVisModRegProps> = (props) => {
                                     />
                                 :ligneDef.pente_max}</td>
                             {/* Pente_max utilisée */}
-                            {props.editionCorpsEnCours?idLigneAModifier===ligneDef.id_reg_stat_emp?<td><input type={"checkbox"}/></td>:<td></td>:<></>}
+                            {props.editionCorpsEnCours?idLigneAModifier===ligneDef.id_reg_stat_emp?
+                            <td>
+                                <input 
+                                    type={"checkbox"}
+                                    checked={ligneDef.pente_max!==null}
+                                    onClick={()=>ligneDef.pente_max===null?gestChangementLigneDef(idLigneAModifier,'pente_max','0'):gestChangementLigneDef(idLigneAModifier,'pente_max',null)}/>
+                                </td>:<td>
+
+                                </td>:<>
+                                </>}
                             {/* Unité*/}
                             <td>{props.editionCorpsEnCours && 
                                 idLigneAModifier===ligneDef.id_reg_stat_emp? 
@@ -485,7 +494,9 @@ const TableVisModReglement: React.FC<TableVisModRegProps> = (props) => {
                             :<Edit onClick={()=>gestModifLigne(ligneDef.id_reg_stat_emp)}/>}</td>
                             {/* suppression annulation*/}
                             <td>{props.editionCorpsEnCours && ligneDef.id_reg_stat_emp===idLigneAModifier?
-                                <CancelIcon/>
+                                <CancelIcon
+                                     onClick={()=>{props.defEditionEnteteEnCours(false); props.defRegSelect(ancienReglement)}}
+                                />
                                 :
                                 <DeleteIcon
                                     onClick={()=>gestSupprimeLigne(ligneDef.id_reg_stat_emp)}

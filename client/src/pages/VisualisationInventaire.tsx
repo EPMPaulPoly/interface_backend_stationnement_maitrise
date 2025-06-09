@@ -91,6 +91,8 @@ const VisualisationInventaire: React.FC = () => {
                 defChargement={defChargement}
                 montrerTousLots={montrerTousLots}
                 defMontrerTousLots={defMontrerTousLots}
+                optionCouleur = {optionCouleur}
+                defOptionCouleur = {defOptionCouleur}
             />
             <div className="panneau-haut">
                 {panneauComparInventaireQuartierVis?
@@ -139,6 +141,8 @@ const VisualisationInventaire: React.FC = () => {
                     ensRegRegard={ensRegARegarder}
                     defEnsRegRegard={defEnsRegARegarder}
                     montrerTousLots={montrerTousLots}
+                    optionCouleur = {optionCouleur}
+                    defOptionCouleur = {defOptionCouleur}
                 />
                 <CompoModifInventaire
                     lots={lotSelect}
@@ -218,6 +222,8 @@ const VisualisationInventaire: React.FC = () => {
                     ensRegRegard={ensRegARegarder}
                     defEnsRegRegard={defEnsRegARegarder}
                     montrerTousLots={montrerTousLots}
+                    optionCouleur = {optionCouleur}
+                    defOptionCouleur = {defOptionCouleur}
             /><div className="barre-details-inventaire">
             <TableRevueInventaire
                 lots={lotSelect}

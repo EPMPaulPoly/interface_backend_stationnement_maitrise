@@ -64,7 +64,7 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
      * gestLancementGraph envoie la requete au backend de générer le data pour le linechart pour pouvoir le montrer dans le graphique
      */
     const gestLancementGraph=async()=>{
-        const reglements = await serviceEnsemblesReglements.
+        const reglements = 0
     }
     {/*variable de style */}
     const style = {

@@ -94,6 +94,8 @@ export interface CarteInventaireProps{
     roleRegard:string,
     defRoleRegard:React.Dispatch<SetStateAction<string>>,
     montrerTousLots:boolean,
+    optionCouleur:number,
+    defOptionCouleur:React.Dispatch<SetStateAction<number>>,
 }
 
 export interface TableRevueProps{
@@ -163,6 +165,8 @@ export interface MenuInventaireProps{
     defChargement:React.Dispatch<SetStateAction<boolean>>
     montrerTousLots:boolean,
     defMontrerTousLots:React.Dispatch<SetStateAction<boolean>>,
+    optionCouleur:number,
+    defOptionCouleur:React.Dispatch<SetStateAction<number>>,
 }
 
 export interface PropsInformationReglementaireManuelle{

@@ -245,6 +245,39 @@ export const creationRouteurReglements = (pool: Pool): Router => {
     }
   }
 
+  const modifieEnteteReglement:RequestHandler = async (req, res, next): Promise<void> => {
+    let client;
+    try {
+      const {id} = req.params;
+      const { description, annee_debut_reg, annee_fin_reg, texte_loi, article_loi, paragraphe_loi, ville } = req.body;
+      client = await pool.connect();
+      const query = 
+      `UPDATE public.entete_reg_stationnement
+      SET
+        description = $1,
+        annee_debut_reg = $2,
+        annee_fin_reg = $3,
+        texte_loi = $4,
+        article_loi = $5,
+        paragraphe_loi = $6,
+        ville = $7
+      WHERE id_reg_stat = $8 
+      RETURNING *;`
+      const response = await client.query(query, [description, annee_debut_reg, annee_fin_reg, texte_loi, article_loi, paragraphe_loi, ville,id])
+      if (response.rows.length === 0) {
+        res.status(404).json({ success: false, error: 'Entry not found' });
+        return;
+      }
+      res.json({ success: true, data: response.rows });
+    } catch (err) {
+      next(err);
+    } finally {
+      if (client) {
+        client.release();
+      }
+    }
+  }
+
   const supprimeReglement: RequestHandler = async (req, res, next): Promise<void> => {
     let client;
     try {
@@ -417,6 +450,7 @@ export const creationRouteurReglements = (pool: Pool): Router => {
   router.get('/unites', obtiensToutesUnites)
   router.get('/unites/:id', obtiensUnitesParLot)
   router.post('/entete', nouvelEnteteReglement)
+  router.put('/entete/:id',modifieEnteteReglement)
   router.delete('/:id', supprimeReglement)
   router.post('/ligne-def', nouvelleLigneDefinition)
   router.put('/ligne-def/:id', majLigneDefinition)

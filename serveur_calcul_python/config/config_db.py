@@ -1,3 +1,5 @@
+import os
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -10,11 +12,11 @@ Created on Thu Jul 22 2024
 # la version de la base de donnees est 
 
 #variables a modifier:
-pg_host = 'host.docker.internal' #defaut localhost host.docker.internal
-pg_port = '5432' #defaut 5432
-pg_dbname = 'parking_regs_test'# specifique a l'application
-pg_username = 'postgres' # defaut postgres
-pg_password = 'admin' # specifique a l'application
+pg_host = os.environ.get('DB_HOST', 'host.docker.internal') #defaut localhost host.docker.internal
+pg_port = os.environ.get('DB_PORT', 'host.docker.internal') #defaut 5432
+pg_dbname = os.environ.get('DB_NAME', 'demo_amd_montreal')# specifique a l'application
+pg_username = os.environ.get('DB_USER', 'postgres') # defaut postgres
+pg_password = os.environ.get('DB_PASSWORD', 'admin') # specifique a l'application
 pg_schemaname = 'public' #defaut public
 pg_bin_path = '/Applications/Postgres.app/Contents/Versions/13/bin/' # specifique a l'application
 pg_srid = '32187' #defaut 32188
