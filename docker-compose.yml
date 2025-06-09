@@ -15,7 +15,7 @@ services:
       - WDS_SOCKET_PORT=3000
     volumes:
       - ./client:/app
-      - ./client/node_modules:/app/node_modules
+      - client_node_modules:/app/node_modules
 
   serveur:
     build:
@@ -30,7 +30,7 @@ services:
     environment:
       - DB_USER=${DB_USER}
       - DB_HOST=host.docker.internal
-      - DB_NAME=${DB_NAME}
+      - DB_NAME=parking_regs_test
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_PORT=5432
       - SERVER_PORT=5000

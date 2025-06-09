@@ -6,5 +6,5 @@ node_modules/
 *.log
 build/
 dist/
-.env
-*.env
+#.env
+#*.env
