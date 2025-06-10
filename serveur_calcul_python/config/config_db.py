@@ -13,8 +13,8 @@ Created on Thu Jul 22 2024
 
 #variables a modifier:
 pg_host = os.environ.get('DB_HOST', 'host.docker.internal') #defaut localhost host.docker.internal
-pg_port = os.environ.get('DB_PORT', 'host.docker.internal') #defaut 5432
-pg_dbname = os.environ.get('DB_NAME', 'demo_amd_montreal')# specifique a l'application
+pg_port = os.environ.get('DB_PORT', '5432') #defaut 5432
+pg_dbname = os.environ.get('DB_NAME', 'parking_regs_test')# specifique a l'application
 pg_username = os.environ.get('DB_USER', 'postgres') # defaut postgres
 pg_password = os.environ.get('DB_PASSWORD', 'admin') # specifique a l'application
 pg_schemaname = 'public' #defaut public

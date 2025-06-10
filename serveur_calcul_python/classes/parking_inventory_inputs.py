@@ -75,3 +75,28 @@ class ParkingCalculationInputs(pd.DataFrame):
             return True
         else:
             return False
+        
+def generate_values_based_on_available_data(entree:dict)->ParkingCalculationInputs:
+    units = entree['id_unite']
+    reglements = entree['id_reg_stat'].split(',')
+    valeur_min = entree['min']
+    valeur_max = entree['max']
+    pas = entree['pas']
+    cubf = entree['cubf']
+    parking_inputs = list(range(int(valeur_min),int(valeur_max),int(pas)))
+    
+    df_out = pd.DataFrame()
+    for i, reglement in enumerate(reglements):
+        df_reg_uni = pd.DataFrame()
+        df_reg_uni['valeur'] = parking_inputs
+        df_reg_uni['id_reg_stat'] = int(reglement)
+        df_reg_uni['unite'] = int(units)
+        df_reg_uni['cubf'] = int(cubf)
+        if i == 0:
+            df_out = df_reg_uni
+        else:
+            df_out = pd.concat([df_out, df_reg_uni], ignore_index=True)
+    df_out['g_no_lot'] = df_out.index.astype(str)
+    parking_inputs_out = ParkingCalculationInputs(df_out)
+    #breakpoint()
+    return parking_inputs_out

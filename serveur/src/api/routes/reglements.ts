@@ -320,8 +320,6 @@ export const creationRouteurReglements = (pool: Pool): Router => {
       }
     }
   }
-
-
   const obtiensToutesOperations: RequestHandler = async (_req, res): Promise<void> => {
     console.log('Serveur - Obtention toutes operations')
     let client;
@@ -443,6 +441,61 @@ export const creationRouteurReglements = (pool: Pool): Router => {
       }
     }
   }
+  const obtiensGraphiquesReglements: RequestHandler = async (req, res, next): Promise<void> => {
+    console.log('Calcul des données nécessaires pour faire un graphique de règlements')
+    const scriptPath = path.resolve(__dirname, "../../../../serveur_calcul_python/calculer_valeurs_graphiques.py");
+
+    // Chemin direct vers l'interpréteur Python dans l'environnement Conda
+    const pythonExecutable = '/opt/conda/envs/serveur_calcul_python/bin/python3';
+
+    // Exécuter le script Python avec l'interpréteur de l'environnement
+    const pythonProcess = spawn(pythonExecutable, [scriptPath]);
+
+    const jsonData = JSON.stringify(req.query);
+    pythonProcess.stdin.write(jsonData);
+    pythonProcess.stdin.end();
+
+    let outputData = '';
+    let errorData = '';
+
+    // Capturer l'output standard
+    pythonProcess.stdout.on('data', (data) => {
+      outputData += data.toString();
+    });
+
+    // Capturer les erreurs standard
+    pythonProcess.stderr.on('data', (data) => {
+      errorData += data.toString();
+    });
+
+    // Capturer la fin du processus
+    pythonProcess.on('close', (code) => {
+      if (code === 0) {
+        //console.log(`Output: ${outputData}`)
+        console.log(`Processus enfant terminé avec succès.`);
+        try {
+          // 🔹 Extract JSON by finding the first `{` (start of JSON)
+          const jsonStartIndex = outputData.indexOf('{');
+          if (jsonStartIndex !== -1) {
+            const jsonString = outputData.slice(jsonStartIndex).trim();
+            const jsonData = JSON.parse(jsonString);
+
+            //console.log('Parsed JSON:', jsonData);
+            return res.status(200).json({ success: true, data: jsonData });  //  Send JSON response
+          } else {
+            console.error('No JSON found in output:', outputData);
+            return res.status(500).send('Erreur: No valid JSON found in output.');
+          }
+        } catch (err) {
+          console.error('Failed to parse JSON:', err);
+          return res.status(500).send('Erreur: JSON parsing failed.');
+        }
+      } else {
+        console.error(`Processus enfant échoué avec le code : ${code}`);
+        return res.status(500).send(`Erreur: ${errorData}`);
+      }
+    });
+  }
   // Routes
   router.get('/entete', obtiensTousEntetesReglements);
   router.get('/complet/:idToSplit', obtiensReglementCompletParId);
@@ -455,5 +508,6 @@ export const creationRouteurReglements = (pool: Pool): Router => {
   router.post('/ligne-def', nouvelleLigneDefinition)
   router.put('/ligne-def/:id', majLigneDefinition)
   router.delete('/ligne-def/:id', supprimeLigneDefinition)
+  router.get('/graphiques',obtiensGraphiquesReglements)
   return router;
 };

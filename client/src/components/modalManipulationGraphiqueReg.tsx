@@ -10,7 +10,7 @@ import {
     Select, MenuItem, InputLabel, FormControl
 } from '@mui/material';
 import serviceUtilisationDuSol from '../services/serviceUtilisationDuSol';
-import { serviceEnsemblesReglements } from '../services';
+import { serviceEnsemblesReglements, serviceReglements } from '../services';
 /**
  * Permet de mettre en places les options pour un graphique
  * @param props issu de  PropsModalManipGraphiqueReg qui comporte l'ouverture du modal et 
@@ -20,10 +20,12 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
     const [tousCUBF,defTousCUBF] = useState<utilisation_sol[]>([])
     const [regDispo,defRegDispo] = useState<informations_pour_graph_unite_er_reg[]>([])
     const [regSelect,defRegSelect] = useState<number[]>([])
+    const [regSetSelect,defRegSetSelect] = useState<number[]>([])
     const [nUnites,defNUnites] = useState<number>(-1);
     const [minGraph,defMinGraph] = useState<number>(0);
     const [maxGraph,defMaxGraph] = useState<number>(1000);
     const [pasGraph,defPasGraph] = useState<number>(50);
+    const [unitePlot,defUnitePlot] = useState<number>(-1);
     {/* Obtention des cubf possibles pour le dropdowns */}
     useEffect(()=>{
         const fetchData = async()=>{
@@ -49,14 +51,19 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
         if (typeof(CUBFSelect)==='number'){
             const objetCUBFSelect:utilisation_sol = tousCUBF.find((o)=>Number(o.cubf)===CUBFSelect)??{cubf:-1,description:'N/A'}
             props.defCUBFSelect(objetCUBFSelect)
-            const reponse = await serviceEnsemblesReglements.obtiensReglementsUnitesParCUBF(props.ensRegAVis,CUBFSelect)
-            const regSetSelect = [...new Set(reponse.data.map(item=>item.id_er))]
-            defRegDispo(reponse.data)
-            defRegSelect(regSetSelect)
-            const uniteSets = [...new Set(reponse.data.flatMap(item => item.unite))]
-            const NUnites = uniteSets.length
-            defNUnites(NUnites)
-            console.log('reponse unites obtenues pour le cubf et ER selectionnes')
+            if (CUBFSelect!==-1){
+                const reponse = await serviceEnsemblesReglements.obtiensReglementsUnitesParCUBF(props.ensRegAVis,CUBFSelect)
+                const regSetSelect = [...new Set(reponse.data.map(item=>item.id_er))]
+                defRegDispo(reponse.data)
+                defRegSetSelect(regSetSelect)
+                const uniteSets = [...new Set(reponse.data.flatMap(item => item.unite))]
+                const NUnites = uniteSets.length
+                defNUnites(NUnites)
+                if (NUnites ===1){
+                    defUnitePlot(uniteSets[0])
+                }
+                console.log('reponse unites obtenues pour le cubf et ER selectionnes')
+            }
         }
     }
     {/** Gestion du lancement du graphage des règlements */}
@@ -64,7 +71,16 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
      * gestLancementGraph envoie la requete au backend de générer le data pour le linechart pour pouvoir le montrer dans le graphique
      */
     const gestLancementGraph=async()=>{
-        const reglements = 0
+        const regsToPlots = regSetSelect.map((item) => {
+            const foundReg = regDispo.find((reg) => reg.id_er === item);
+            return foundReg?.id_reg_stat ?? null;
+        }).filter((id): id is number => id !== null);
+        if (regsToPlots.length > 0) {
+            const retourGraph = await serviceReglements.obtiensRepresentationGraphique(regsToPlots,unitePlot,minGraph,maxGraph,pasGraph,Number(props.CUBFSelect.cubf))
+            if (retourGraph.success){
+                props.defData(retourGraph.data)
+            }
+        }
     }
     {/*variable de style */}
     const style = {
@@ -96,7 +112,8 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
                     <form onSubmit={(e) => e.preventDefault()}>
                         {/*CUBF À sélectionner*/}
                         <label htmlFor='selection-cubf'>CUBF à visualiser</label>
-                        <select onChange={(e)=>gestSelectionCUBF(Number(e.target.value))} id='selection-cubf'>
+                        <select onChange={(e)=>gestSelectionCUBF(Number(e.target.value))} id='selection-cubf' value={props.CUBFSelect.cubf}>
+                            <option value={-1}>Select CUBF</option>
                             {tousCUBF.map((c)=><option value={c.cubf}>{c.description}</option>)}
                         </select>
                         {/* Réglement Pertinents */}
@@ -122,19 +139,19 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
                                         <td>
                                             <input
                                                 type="checkbox"
-                                                checked={regSelect.includes(item.id_er)}
+                                                checked={regSetSelect.includes(item.id_er)}
                                                 onChange={() => {
-                                                    if (regSelect.includes(item.id_er)) {
-                                                        const newRegSelect = regSelect.filter(id => id !== item.id_er)
-                                                        defRegSelect(newRegSelect);
+                                                    if (regSetSelect.includes(item.id_er)) {
+                                                        const newRegSelect = regSetSelect.filter(id => id !== item.id_er)
+                                                        defRegSetSelect(newRegSelect);
                                                         // Met à jour les règlements sélectionnés
                                                         const selectedItems = regDispo.filter(reg => newRegSelect.includes(reg.id_er));
                                                         const uniteSets = [...new Set(selectedItems.flatMap(item => item.unite))];
                                                         const NUnites = uniteSets.length;
                                                         defNUnites(NUnites);
                                                     } else {
-                                                        const newRegSelect = [...regSelect, item.id_er]
-                                                        defRegSelect([...regSelect, item.id_er]);
+                                                        const newRegSelect = [...regSetSelect, item.id_er]
+                                                        defRegSetSelect([...regSetSelect, item.id_er]);
                                                         // Met à jour les règlements sélectionnés
                                                         const selectedItems = regDispo.filter(reg => newRegSelect.includes(reg.id_er));
                                                         const uniteSets = [...new Set(selectedItems.flatMap(item => item.unite))];

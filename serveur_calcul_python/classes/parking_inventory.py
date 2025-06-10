@@ -211,6 +211,8 @@ def subset_operation(inventory_1:ParkingInventory,operator,inventory_2:ParkingIn
                 new_parking_frame = old_parking_frame.merge(parking_frame_out,how='left',on=config_db.db_column_lot_id)
                 new_parking_frame.drop(columns=['n_places_min','n_places_max'],inplace=True)
                 new_parking_frame.rename(columns={'n_places_min_final':'n_places_min','n_places_max_final':'n_places_max'},inplace=True)
+                if config_db.db_column_reg_sets_id not in new_parking_frame.columns:
+                    new_parking_frame[config_db.db_column_reg_sets_id]=0
                 parking_inventory_object = ParkingInventory(new_parking_frame)
                 return parking_inventory_object
     else:
@@ -683,7 +685,10 @@ def calculate_threshold_based_subset(reg_to_calculate:PR.ParkingRegulations,subs
                     parking_frame_thresh['n_places_estime'] = None
                     parking_frame_thresh['methode_estime'] = 3
                     parking_frame_thresh[config_db.db_column_parking_regs_id] = relevant_data[config_db.db_column_parking_regs_id]
-                    parking_frame_thresh[config_db.db_column_reg_sets_id] = relevant_data[config_db.db_column_reg_sets_id]
+                    if config_db.db_column_reg_sets_id in relevant_data.columns:
+                        parking_frame_thresh[config_db.db_column_reg_sets_id] = relevant_data[config_db.db_column_reg_sets_id]
+                    else: 
+                        parking_frame_thresh[config_db.db_column_reg_sets_id]=0
                     parking_frame_thresh[config_db.db_column_land_use_id] = relevant_data[config_db.db_column_land_use_id]
                     parking_frame_thresh['commentaire'] = relevant_data.apply(lambda x: f'Calc. reg. man. : valeur {x['valeur']}',axis=1)
                     if parking_final.empty:
@@ -749,6 +754,8 @@ def calculate_addition_based_subset(reg_to_calculate:PR.ParkingRegulations,subse
                 inventory.loc[mask_both_max_none,'n_places_max'] = np.nan
                 inventory.drop(columns=['id_reg_stat_emp','ss_ensemble','seuil','oper','cases_fix_min','cases_fix_max','pente_min','pente_max'],inplace=True)
                 inventory['commentaire'] = inventory.apply(lambda x: f'Unite: {x['unite']}Val Man: {x['valeur']}', axis=1)
+                if config_db.db_column_reg_sets_id not in inventory.columns:
+                    inventory[config_db.db_column_reg_sets_id]=0
                 agg_dict = {
                     config_db.db_column_land_use_id: lambda x: ', '.join(map(str, x)),
                     config_db.db_column_parking_regs_id: lambda x: ', '.join(map(str, x)),

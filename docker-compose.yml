@@ -30,7 +30,7 @@ services:
     environment:
       - DB_USER=${DB_USER}
       - DB_HOST=host.docker.internal
-      - DB_NAME=parking_regs_test
+      - DB_NAME=${DB_NAME}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_PORT=5432
       - SERVER_PORT=5000
