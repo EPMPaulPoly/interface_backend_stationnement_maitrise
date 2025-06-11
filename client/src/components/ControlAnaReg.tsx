@@ -20,7 +20,9 @@ const ControlAnaReg:FC<ControlAnaRegProps>=(props:ControlAnaRegProps)=>{
         }
         fetchData()
     },[])
-
+    const ensRegColorMap = Object.fromEntries(
+        props.ensRegARep.map((id_er, idx) => [id_er, props.colorPalette[idx % props.colorPalette.length]])
+    );
 
     const handleChange = (ngraphiques:number) => {
         props.defNGraphiques(ngraphiques);
@@ -123,7 +125,7 @@ const ControlAnaReg:FC<ControlAnaRegProps>=(props:ControlAnaRegProps)=>{
                                     <Box
                                         component="div"
                                         sx={{
-                                        backgroundColor: '#333',
+                                        backgroundColor: ensRegColorMap[optionIci]||'#333',
                                         color: 'white',
                                         px: 1,
                                         py: 0.5,

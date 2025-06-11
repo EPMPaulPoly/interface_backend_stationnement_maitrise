@@ -61,6 +61,10 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
                 defNUnites(NUnites)
                 if (NUnites ===1){
                     defUnitePlot(uniteSets[0])
+                    const uniteVis = reponse.data.find((item)=>item.unite[0] === uniteSets[0])?.desc_unite;
+                    props.defLabelAxeX(uniteVis[0])
+                }else{
+                    props.defLabelAxeX('N/A')
                 }
                 console.log('reponse unites obtenues pour le cubf et ER selectionnes')
             }
@@ -80,6 +84,7 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
             if (retourGraph.success){
                 props.defData(retourGraph.data)
             }
+            gestFermetureModal()
         }
     }
     {/*variable de style */}
@@ -117,9 +122,6 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
                             {tousCUBF.map((c)=><option value={c.cubf}>{c.description}</option>)}
                         </select>
                         {/* Réglement Pertinents */}
-                         
-                        
-                        
                         {props.CUBFSelect.cubf!==-1?
                         <>
                         <p>

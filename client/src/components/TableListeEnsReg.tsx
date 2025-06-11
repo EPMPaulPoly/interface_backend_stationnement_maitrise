@@ -103,7 +103,7 @@ const TableListeEnsReg: React.FC<TableEnteteEnsembleProps> = (props) => {
                     </thead>
                     <tbody>
                         {props.entetesEnsembles.map((entete) => (
-                            <tr key={entete.id_er} onClick={() => onLineSelect(entete.id_er)}>
+                            <tr key={entete.id_er} className={entete.id_er ===props.ensembleReglement.entete.id_er?'selected-row':''} onClick={() => onLineSelect(entete.id_er)}>
                                 <td>{entete.description_er}</td>
                                 <td><td ><DeleteIcon onClick={()=> gestSuppressionEnsReg(entete.id_er)}/></td></td>
                             </tr>

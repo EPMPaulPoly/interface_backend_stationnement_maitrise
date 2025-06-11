@@ -10,7 +10,9 @@ const AnalyseReglements:React.FC = () =>{
     const [nGraphiques,defNGraphiques] = useState<number>(4);
     const [EnsRegAVis,defEnseRegAVis] = useState<number[]>([]);
     
-    
+    const colorPalette = [
+    '#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe'
+    ];
 
     const getColsFromCount = (count: number): number => {
         switch (count) {
@@ -31,10 +33,16 @@ const AnalyseReglements:React.FC = () =>{
                 defNGraphiques={defNGraphiques}
                 ensRegARep={EnsRegAVis}
                 defEnsRegARep={defEnseRegAVis}
+                colorPalette={colorPalette}
             />
             <div className="comp-reg-charts" style={{ gridTemplateColumns: `repeat(${getColsFromCount(nGraphiques)}, 1fr)` }}>
                 {Array.from({ length: nGraphiques }, (_, i) => (
-                    <GraphiqueReglements key={i} index={i} ensembleReglementsARepresenter={EnsRegAVis}/>
+                    <GraphiqueReglements 
+                        key={i} 
+                        index={i} 
+                        ensembleReglementsARepresenter={EnsRegAVis}
+                        colorPalette={colorPalette}
+                    />
                 ))}
             </div>
         </div>

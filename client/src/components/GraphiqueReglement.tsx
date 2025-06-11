@@ -15,6 +15,7 @@ const GraphiqueReglements:FC<GraphiqueReglementsProps>=(props:GraphiqueReglement
             data: [0]
         }],
     })
+    const [labelAxeX,defLabelAxeX] = useState<string>('N/A')
 
     const options = {
         maintainAspectRatio: false,
@@ -28,7 +29,12 @@ const GraphiqueReglements:FC<GraphiqueReglementsProps>=(props:GraphiqueReglement
                 },
             },
             title: {
-                display: false,
+                display: true,
+                text: CUBFSelectionne.cubf !== -1 ? CUBFSelectionne.description : 'N/A',
+                color:'white',
+                font:{
+                    size:25
+                }
             },
         },
         scales: {
@@ -40,6 +46,8 @@ const GraphiqueReglements:FC<GraphiqueReglementsProps>=(props:GraphiqueReglement
                     },
                 },
                 title: {
+                    display: true,
+                    text: labelAxeX,
                     color: 'white',
                     font: {
                         size: 18,
@@ -55,7 +63,7 @@ const GraphiqueReglements:FC<GraphiqueReglementsProps>=(props:GraphiqueReglement
                 },
                 title: {
                     display: true,
-                    text: 'Nombre de places', // Change this to your desired y-axis title
+                    text: 'Nombre de places',
                     color: 'white',
                     font: {
                         size: 18,
@@ -89,6 +97,7 @@ const GraphiqueReglements:FC<GraphiqueReglementsProps>=(props:GraphiqueReglement
             ensRegAVis={props.ensembleReglementsARepresenter}
             data = {data}
             defData = {defData}
+            defLabelAxeX = {defLabelAxeX}
         />
     </div>)
 }

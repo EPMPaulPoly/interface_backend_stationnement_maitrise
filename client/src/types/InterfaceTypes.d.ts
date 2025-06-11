@@ -406,7 +406,8 @@ export interface AnalyseXYQuartierProps{
 
 export interface GraphiqueReglementsProps{
     ensembleReglementsARepresenter:number[],
-    index:number
+    index:number,
+    colorPalette:string[]
 }
 
 export interface PropsModalManipGraphiqueReg{
@@ -417,10 +418,12 @@ export interface PropsModalManipGraphiqueReg{
     ensRegAVis:number[]
     data:data_graphique,
     defData: React.Dispatch<SetStateAction<data_graphique>>
+    defLabelAxeX:React.Dispatch<SetStateAction<string>>
 }
 export interface ControlAnaRegProps{
     ensRegARep:number[],
     defEnsRegARep:React.Dispatch<SetStateAction<number[]>>
     nGraphiques:number,
     defNGraphiques:React.Dispatch<SetStateAction<number>>
+    colorPalette:string[]
 }
