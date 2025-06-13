@@ -9,6 +9,7 @@ import psycopg2
 import config.config_db as cf_db
 import classes.parking_inventory_inputs as PII
 import classes.parking_regs as PR
+import classes.parking_reg_sets as PRS
 
 def main():
     if os.getenv("DEBUGPY_CALC_ENABLE", "true").lower() == "true":
@@ -31,22 +32,37 @@ def main():
     #breakpoint()
     # Perform your calculations here
     inventaire = PI.calculate_inventory_from_manual_entry(generated_parking_inventory_inputs)
+
+    # cleaning up the data set in order to output it
     inventaire_frame = inventaire.parking_frame.drop(columns=cf_db.db_column_parking_regs_id)
     inventaire_merge = inventaire_frame.merge(generated_parking_inventory_inputs,on=cf_db.db_column_lot_id,how='left')
-    inventaire_pivot = inventaire_merge.pivot(columns=cf_db.db_column_parking_regs_id,index='valeur',values='n_places_min')
+    unique_er_reg_combos = inventaire_merge['er-reg-key'].unique().tolist()
+    inventaire_pivot = inventaire_merge.pivot(columns='er-reg-key',index='valeur',values='n_places_min')
+    
     #print(inventaire_pivot)
     reglements = generated_parking_inventory_inputs[cf_db.db_column_parking_regs_id].unique().tolist()
     inventaire_pivot.reset_index(inplace=True)
     json_out = '{'
     json_out += f'"labels": [{','.join(inventaire_pivot['valeur'].astype(str).to_list())}], "datasets":['
     dataset_list = []
-    for reglement in reglements:
-        rule: PR.ParkingRegulations = PR.from_postgis(reglement)
-        unique_rule: PR.ParkingRegulations = rule.get_reg_by_id(reglement)
+    for reglement in unique_er_reg_combos:
+        reg_er = reglement.split('-')
+        reg = int(reg_er[0])
+        er = int(reg_er[1])
+        rule: PR.ParkingRegulations = PR.from_postgis(reg)
+        unique_rule: PR.ParkingRegulations = rule.get_reg_by_id(reg)
         description: str = unique_rule.reg_head.iloc[0].description
         dataset_out = '{'
         dataset_out += f'"label": "{description}", '
-        dataset_out += f'"data": [{",".join(inventaire_pivot[reglement].astype(str).tolist())}]'
+        dataset_out += f'"data": [{",".join(inventaire_pivot[reglement].astype(str).tolist())}],'
+        
+        if er!=0:
+            dataset_out += f'"id_reg_stat":{reg},'
+            reg_set:PRS.ParkingRegulationSet = PRS.from_sql(er)[0]
+            dataset_out += f'"id_er":{er},'
+            dataset_out += f'"desc_er":"{reg_set.description}"'
+        else: 
+            dataset_out += f'"id_reg_stat":{reg}'
         dataset_out += '}'
         dataset_list.append(dataset_out)
     dataset_string = ','.join(dataset_list)
