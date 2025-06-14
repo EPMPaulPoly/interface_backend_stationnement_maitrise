@@ -12,7 +12,7 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
     let client;
     try {
       client = await pool.connect();
-      const { start_year_before, start_year_after, end_year_before, end_year_after, city_like, description_like, rule_like, article_like, paragraphe_like } = req.query;
+      const { start_year_before, start_year_after, end_year_before, end_year_after, description_like, lat,lon} = req.query;
       const query = `
         SELECT *
         FROM public.ensembles_reglements_stat

@@ -29,8 +29,14 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
     {/* Obtention des cubf possibles pour le dropdowns */}
     useEffect(()=>{
         const fetchData = async()=>{
-            const response = await serviceUtilisationDuSol.obtientUtilisationDuSol(-1)
-            defTousCUBF(response.data)
+            if (props.CUBFSelect.cubf!==-1){
+                const [response,reponseRegDispo] = await Promise.all([serviceUtilisationDuSol.obtientUtilisationDuSol(-1),serviceEnsemblesReglements.obtiensReglementsUnitesParCUBF(props.ensRegAVis,Number(props.CUBFSelect.cubf))])
+                defTousCUBF(response.data)
+                defRegDispo(reponseRegDispo.data)
+            } else{
+                const response = await serviceUtilisationDuSol.obtientUtilisationDuSol(-1)
+                defTousCUBF(response.data)
+            }
         }
         fetchData()
         console.log('obtention tous cubf')
@@ -77,7 +83,7 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
     const gestLancementGraph=async()=>{
         const regsToPlots = regSetSelect.map((item) => {
             const foundReg = regDispo.find((reg) => reg.id_er === item);
-            return foundReg?.id_reg_stat ?? null;
+            return foundReg?.id_er ?? null;
         }).filter((id): id is number => id !== null);
         if (regsToPlots.length > 0) {
             const retourGraph = await serviceReglements.obtiensRepresentationGraphique(regsToPlots,unitePlot,minGraph,maxGraph,pasGraph,Number(props.CUBFSelect.cubf))
@@ -125,7 +131,7 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
                         {props.CUBFSelect.cubf!==-1?
                         <>
                         <p>
-                         N Unite: {nUnites!==-1?nUnites:'Sélectionner un CUBF'}
+                         N Unite: {nUnites!==-1?nUnites:'Sélectionner un CUBF'} - Unite graphe {unitePlot}
                         </p>
                         <table>
                             <thead>
@@ -151,6 +157,10 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
                                                         const uniteSets = [...new Set(selectedItems.flatMap(item => item.unite))];
                                                         const NUnites = uniteSets.length;
                                                         defNUnites(NUnites);
+                                                        if (uniteSets.length===1){
+                                                            console.log('unite pour graphe',uniteSets)
+                                                            defUnitePlot(uniteSets[0])
+                                                        }
                                                     } else {
                                                         const newRegSelect = [...regSetSelect, item.id_er]
                                                         defRegSetSelect([...regSetSelect, item.id_er]);
@@ -158,6 +168,10 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
                                                         const selectedItems = regDispo.filter(reg => newRegSelect.includes(reg.id_er));
                                                         const uniteSets = [...new Set(selectedItems.flatMap(item => item.unite))];
                                                         const NUnites = uniteSets.length;
+                                                        if (uniteSets.length===1){
+                                                            console.log('unite pour graphe',uniteSets)
+                                                            defUnitePlot(uniteSets[0])
+                                                        }
                                                         defNUnites(NUnites);
                                                     }
                                                 }}
@@ -182,9 +196,9 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
                                     <th>Pas</th>
                                 </thead>
                                 <tbody>
-                                    <td><input type='number' defaultValue={0} onChange={(e)=>defMinGraph(Number(e.target.value))}/></td>
-                                    <td><input type='number' defaultValue={1000} onChange={(e)=>defMaxGraph(Number(e.target.value))}/></td>
-                                    <td><input type='number' defaultValue={50} onChange={(e)=>defPasGraph(Number(e.target.value))}/></td>
+                                    <td><input type='number' value={minGraph} onChange={(e)=>defMinGraph(Number(e.target.value))}/></td>
+                                    <td><input type='number' value={maxGraph} onChange={(e)=>defMaxGraph(Number(e.target.value))}/></td>
+                                    <td><input type='number' value={pasGraph} onChange={(e)=>defPasGraph(Number(e.target.value))}/></td>
                                 </tbody>
                             </table>
                             <button onClick={gestLancementGraph}>Créer graphe</button>

@@ -53,15 +53,17 @@ def main():
         unique_rule: PR.ParkingRegulations = rule.get_reg_by_id(reg)
         description: str = unique_rule.reg_head.iloc[0].description
         dataset_out = '{'
-        dataset_out += f'"label": "{description}", '
         dataset_out += f'"data": [{",".join(inventaire_pivot[reglement].astype(str).tolist())}],'
-        
         if er!=0:
-            dataset_out += f'"id_reg_stat":{reg},'
             reg_set:PRS.ParkingRegulationSet = PRS.from_sql(er)[0]
+            dataset_out += f'"label": "{reg_set.description}", '
+            dataset_out += f'"id_reg_stat":{reg},'
             dataset_out += f'"id_er":{er},'
+            dataset_out += f'"desc_reg_stat":"{description}",'
             dataset_out += f'"desc_er":"{reg_set.description}"'
+            
         else: 
+            dataset_out += f'"label": "{description}", '
             dataset_out += f'"id_reg_stat":{reg}'
         dataset_out += '}'
         dataset_list.append(dataset_out)

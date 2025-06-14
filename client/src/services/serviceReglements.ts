@@ -287,9 +287,9 @@ class ServiceReglements {
         }
     }
 
-    async obtiensRepresentationGraphique(idReglements:number[],idUnite:number,Min:number,Max:number,Pas:Number,cubf:number){
+    async obtiensRepresentationGraphique(idER:number[],idUnite:number,Min:number,Max:number,Pas:Number,cubf:number){
         try{
-            const response:AxiosResponse<ReponseDataGraphique> = await api.get(`/reglements/graphiques?id_reg_stat=${idReglements.join(',')}&id_unite=${idUnite}&min=${Min}&max=${Max}&pas=${Pas}&cubf=${cubf}`)
+            const response:AxiosResponse<ReponseDataGraphique> = await api.get(`/reglements/graphiques?id_er=${idER.join(',')}&id_unite=${idUnite}&min=${Min}&max=${Max}&pas=${Pas}&cubf=${cubf}`)
             return {success:true,data:response.data.data}
         }catch(error){
             if (axios.isAxiosError(error)) {

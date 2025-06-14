@@ -248,7 +248,11 @@ export interface informations_pour_graph_unite_er_reg{
 
 export interface y_serie_data_graphique{
     label:string,
-    data:number[]
+    data:number[],
+    id_er?:number,
+    desc_er?:string,
+    id_reg_stat?:number,
+    desc_reg_stat?: string
 }
 export interface data_graphique{
     labels:number[]
