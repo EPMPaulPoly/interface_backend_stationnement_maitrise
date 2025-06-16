@@ -13,6 +13,7 @@ import {
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { Marker } from 'react-leaflet';
 import L from 'leaflet';
+import { serviceEnsRegTerr } from '../services/serviceEnsRegTerr';
 const ControlAnaReg: FC<ControlAnaRegProps> = (props: ControlAnaRegProps) => {
     const [tousEnsReg, defTousEnsRegs] = useState<entete_ensembles_reglement_stationnement[]>([])
     const [modalOpen, setModalOpen] = useState<boolean>(false);
@@ -62,6 +63,20 @@ const ControlAnaReg: FC<ControlAnaRegProps> = (props: ControlAnaRegProps) => {
 
         return null; // No need to render anything for the map component itself
     };
+
+    const gestObtentionERCarto = async () => {
+        if (Array.isArray(selectedLocation) && selectedLocation.length === 2 &&selectedLocation !== null) {
+            const [lat, lng] = selectedLocation;
+            const reponse = await serviceEnsRegTerr.obtiensEnsRegEtAssocParLatLong(lat, lng);
+            const idER = Array.from(new Set(reponse.data.map((item) => item.id_er)));
+            props.defEnsRegARep(idER)
+            setMapModalOpen(false)
+        } else {
+            // Handle case where selectedLocation is not a tuple
+            console.error('selectedLocation is not a valid LatLng tuple:', selectedLocation);
+        }
+
+    }
 
     return (<div className="control-comp-reg">
         <FormControl variant="outlined" size="small" style={{ minWidth: 120 }}>
@@ -268,7 +283,9 @@ const ControlAnaReg: FC<ControlAnaRegProps> = (props: ControlAnaRegProps) => {
                             />
                         ) : null}
                     </MapContainer>
-                    {selectedLocation?<Button variant="outlined"
+                    {selectedLocation?
+                    <Button 
+                        variant="outlined"
                         sx={{
                             ml: 2,
                             color: 'white',
@@ -277,7 +294,8 @@ const ControlAnaReg: FC<ControlAnaRegProps> = (props: ControlAnaRegProps) => {
                                 backgroundColor: '#222',
                                 borderColor: 'white',
                             },
-                        }}> 
+                        }}
+                        onClick={gestObtentionERCarto}> 
                         Obtenir Ensembles règlements pour localisation
                     </Button>
                     :<>
