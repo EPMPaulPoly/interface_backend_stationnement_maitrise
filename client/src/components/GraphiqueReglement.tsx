@@ -3,11 +3,20 @@ import  { GraphiqueReglementsProps } from '../types/InterfaceTypes'
 import { Chart as ChartPlot,Bar,Line } from 'react-chartjs-2';
 import { Edit } from '@mui/icons-material';
 import ModalManipulationGraphiqueReg from './modalManipulationGraphiqueReg';
-import { data_graphique, utilisation_sol } from '../types/DataTypes';
+import { data_graphique, informations_pour_graph_unite_er_reg, utilisation_sol } from '../types/DataTypes';
+import { serviceEnsemblesReglements, serviceReglements } from '../services';
 
 const GraphiqueReglements:FC<GraphiqueReglementsProps>=(props:GraphiqueReglementsProps)=>{
     const [modalParamsGraphOuvert,defModalParamsGraphOuvert] = useState<boolean>(false)
     const [CUBFSelectionne,defCUBFSelectionne] = useState<utilisation_sol>({cubf:-1,description:'N/A'})
+    const [labelAxeX,defLabelAxeX] = useState<string>('N/A')
+    const [EnsRegDispo,defEnsRegDispo] = useState<informations_pour_graph_unite_er_reg[]>([])
+    const [ensRegAGraph,defEnsRegAGraph] = useState<number[]>([])
+    const [nUnites,defNUnites] = useState<number>(-1);
+    const [minGraph,defMinGraph] = useState<number>(0);
+    const [maxGraph,defMaxGraph] = useState<number>(1000);
+    const [pasGraph,defPasGraph] = useState<number>(50);
+    const [uniteGraph,defUniteGraph] = useState<number>(-1);
     const [data,defData] = useState<data_graphique>({
         labels: [0],
         datasets: [{
@@ -15,7 +24,46 @@ const GraphiqueReglements:FC<GraphiqueReglementsProps>=(props:GraphiqueReglement
             data: [0]
         }],
     })
-    const [labelAxeX,defLabelAxeX] = useState<string>('N/A')
+
+    useEffect(()=>{
+ 
+            const fetchData = async()=>{
+                if (CUBFSelectionne.cubf!==-1 ){
+                    if (props.ensRegSelectionnesHaut.length>0){
+                        const reponse = await serviceEnsemblesReglements.obtiensReglementsUnitesParCUBF(props.ensRegSelectionnesHaut,Number(CUBFSelectionne.cubf))
+                        const EnsRegNouveau = reponse.data.filter((entree) => !ensRegAGraph.includes(entree.id_er) && entree.unite[0] === uniteGraph && entree.unite.length ===1)
+                        const ensRegIdAAjouter = EnsRegNouveau
+                            .map((entree)=> entree.id_er)
+                            .filter(id => !ensRegAGraph.includes(id));
+                        
+                        const nouveauEnsRegARep = Array.from(new Set([...ensRegAGraph.filter((entree)=>props.ensRegSelectionnesHaut.includes(entree)), ...ensRegIdAAjouter]));
+                        defEnsRegAGraph(nouveauEnsRegARep)
+                        const reponseDonnees = await serviceReglements.obtiensRepresentationGraphique(nouveauEnsRegARep,uniteGraph,minGraph,maxGraph,pasGraph,Number(CUBFSelectionne.cubf))
+                        defData(reponseDonnees.data)
+                    } else{
+                        defData({
+                            labels: [0],
+                            datasets: [{
+                                label: `N/A`,
+                                data: [0]
+                            }],
+                        })
+                    }
+                } else{
+                    console.log('pas de cubf selectionné')
+                    defData({
+                        labels: [0],
+                        datasets: [{
+                            label: `N/A`,
+                            data: [0]
+                        }],
+                    })
+                }
+            }
+            fetchData()
+        },[props.ensRegSelectionnesHaut])
+
+    
 
     const options = {
         maintainAspectRatio: false,
@@ -82,9 +130,9 @@ const GraphiqueReglements:FC<GraphiqueReglementsProps>=(props:GraphiqueReglement
                 ...data,
                 datasets: data.datasets.map((ds, i) => {
                 // Find the matching reglement by id_er
-                const reglement = props.ensembleReglementsARepresenter.find(r => r === ds.id_er);
+                const reglement = props.ensRegSelectionnesHaut.find(r => r === ds.id_er);
                 // Get color from palette by index or fallback
-                const colorIndex = reglement ? props.ensembleReglementsARepresenter.indexOf(reglement) : i;
+                const colorIndex = reglement ? props.ensRegSelectionnesHaut.indexOf(reglement) : i;
                 const color = props.colorPalette[colorIndex % props.colorPalette.length] || '#cccccc';
                 return {
                     ...ds,
@@ -102,7 +150,7 @@ const GraphiqueReglements:FC<GraphiqueReglementsProps>=(props:GraphiqueReglement
                     label: function(context: any) {
                         const ds = context.dataset;
                         // Find reglement by id_er
-                        const reglement = props.ensembleReglementsARepresenter.find(r => r === ds.id_er);
+                        const reglement = props.ensRegSelectionnesHaut.find(r => r === ds.id_er);
                         // Try to get desc_er and desc_reg_stat if available
                         const desc_er = ds?.desc_er || '';
                         const desc_reg_stat = ds?.desc_reg_stat || '';
@@ -128,10 +176,24 @@ const GraphiqueReglements:FC<GraphiqueReglementsProps>=(props:GraphiqueReglement
             defModalOuvert={defModalParamsGraphOuvert}
             CUBFSelect={CUBFSelectionne}
             defCUBFSelect={defCUBFSelectionne}
-            ensRegAVis={props.ensembleReglementsARepresenter}
+            ensRegAVis={props.ensRegSelectionnesHaut}
             data = {data}
             defData = {defData}
             defLabelAxeX = {defLabelAxeX}
+            regDispo={EnsRegDispo}
+            defRegDispo={defEnsRegDispo}
+            EnsRegSelect={ensRegAGraph}
+            defEnsRegSelect={defEnsRegAGraph}
+            nUnites={nUnites}
+            defNUnites={defNUnites}
+            minGraph={minGraph}
+            defMinGraph={defMinGraph}
+            maxGraph={maxGraph}
+            defMaxGraph={defMaxGraph}
+            pasGraph={pasGraph}
+            defPasGraph={defPasGraph}
+            uniteGraph={uniteGraph}
+            defUniteGraph={defUniteGraph}
         />
     </div>)
 }

@@ -18,21 +18,15 @@ import { serviceEnsemblesReglements, serviceReglements } from '../services';
  */
 const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: PropsModalManipGraphiqueReg) => {
     const [tousCUBF,defTousCUBF] = useState<utilisation_sol[]>([])
-    const [regDispo,defRegDispo] = useState<informations_pour_graph_unite_er_reg[]>([])
-    const [regSelect,defRegSelect] = useState<number[]>([])
-    const [regSetSelect,defRegSetSelect] = useState<number[]>([])
-    const [nUnites,defNUnites] = useState<number>(-1);
-    const [minGraph,defMinGraph] = useState<number>(0);
-    const [maxGraph,defMaxGraph] = useState<number>(1000);
-    const [pasGraph,defPasGraph] = useState<number>(50);
-    const [unitePlot,defUnitePlot] = useState<number>(-1);
+    
     {/* Obtention des cubf possibles pour le dropdowns */}
+    /** section qui permet d'aller chercher les règlements pertinents au besoin */
     useEffect(()=>{
         const fetchData = async()=>{
             if (props.CUBFSelect.cubf!==-1){
                 const [response,reponseRegDispo] = await Promise.all([serviceUtilisationDuSol.obtientUtilisationDuSol(-1),serviceEnsemblesReglements.obtiensReglementsUnitesParCUBF(props.ensRegAVis,Number(props.CUBFSelect.cubf))])
                 defTousCUBF(response.data)
-                defRegDispo(reponseRegDispo.data)
+                props.defRegDispo(reponseRegDispo.data)
             } else{
                 const response = await serviceUtilisationDuSol.obtientUtilisationDuSol(-1)
                 defTousCUBF(response.data)
@@ -60,13 +54,13 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
             if (CUBFSelect!==-1){
                 const reponse = await serviceEnsemblesReglements.obtiensReglementsUnitesParCUBF(props.ensRegAVis,CUBFSelect)
                 const regSetSelect = [...new Set(reponse.data.map(item=>item.id_er))]
-                defRegDispo(reponse.data)
-                defRegSetSelect(regSetSelect)
+                props.defRegDispo(reponse.data)
+                props.defEnsRegSelect(regSetSelect)
                 const uniteSets = [...new Set(reponse.data.flatMap(item => item.unite))]
                 const NUnites = uniteSets.length
-                defNUnites(NUnites)
+                props.defNUnites(NUnites)
                 if (NUnites ===1){
-                    defUnitePlot(uniteSets[0])
+                    props.defUniteGraph(uniteSets[0])
                     const uniteVis = reponse.data.find((item)=>item.unite[0] === uniteSets[0])?.desc_unite;
                     props.defLabelAxeX(uniteVis[0])
                 }else{
@@ -81,12 +75,12 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
      * gestLancementGraph envoie la requete au backend de générer le data pour le linechart pour pouvoir le montrer dans le graphique
      */
     const gestLancementGraph=async()=>{
-        const regsToPlots = regSetSelect.map((item) => {
-            const foundReg = regDispo.find((reg) => reg.id_er === item);
+        const regsToPlots = props.EnsRegSelect.map((item) => {
+            const foundReg = props.regDispo.find((reg) => reg.id_er === item);
             return foundReg?.id_er ?? null;
         }).filter((id): id is number => id !== null);
         if (regsToPlots.length > 0) {
-            const retourGraph = await serviceReglements.obtiensRepresentationGraphique(regsToPlots,unitePlot,minGraph,maxGraph,pasGraph,Number(props.CUBFSelect.cubf))
+            const retourGraph = await serviceReglements.obtiensRepresentationGraphique(regsToPlots,props.uniteGraph,props.minGraph,props.maxGraph,props.pasGraph,Number(props.CUBFSelect.cubf))
             if (retourGraph.success){
                 props.defData(retourGraph.data)
             }
@@ -131,7 +125,7 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
                         {props.CUBFSelect.cubf!==-1?
                         <>
                         <p>
-                         N Unite: {nUnites!==-1?nUnites:'Sélectionner un CUBF'} - Unite graphe {unitePlot}
+                         N Unite: {props.nUnites!==-1?props.nUnites:'Sélectionner un CUBF'} - Unite graphe {props.uniteGraph}
                         </p>
                         <table>
                             <thead>
@@ -142,37 +136,37 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
                                 <th>N unités</th>
                             </thead>
                             <tbody>
-                                {regDispo.map((item)=>(
+                                {props.regDispo.map((item)=>(
                                     <tr>
                                         <td>
                                             <input
                                                 type="checkbox"
-                                                checked={regSetSelect.includes(item.id_er)}
+                                                checked={props.EnsRegSelect.includes(item.id_er)}
                                                 onChange={() => {
-                                                    if (regSetSelect.includes(item.id_er)) {
-                                                        const newRegSelect = regSetSelect.filter(id => id !== item.id_er)
-                                                        defRegSetSelect(newRegSelect);
+                                                    if (props.EnsRegSelect.includes(item.id_er)) {
+                                                        const newRegSelect = props.EnsRegSelect.filter(id => id !== item.id_er)
+                                                        props.defEnsRegSelect(newRegSelect);
                                                         // Met à jour les règlements sélectionnés
-                                                        const selectedItems = regDispo.filter(reg => newRegSelect.includes(reg.id_er));
+                                                        const selectedItems = props.regDispo.filter(reg => newRegSelect.includes(reg.id_er));
                                                         const uniteSets = [...new Set(selectedItems.flatMap(item => item.unite))];
                                                         const NUnites = uniteSets.length;
-                                                        defNUnites(NUnites);
+                                                        props.defNUnites(NUnites);
                                                         if (uniteSets.length===1){
                                                             console.log('unite pour graphe',uniteSets)
-                                                            defUnitePlot(uniteSets[0])
+                                                            props.defUniteGraph(uniteSets[0])
                                                         }
                                                     } else {
-                                                        const newRegSelect = [...regSetSelect, item.id_er]
-                                                        defRegSetSelect([...regSetSelect, item.id_er]);
+                                                        const newRegSelect = [...props.EnsRegSelect, item.id_er]
+                                                        props.defEnsRegSelect([...props.EnsRegSelect, item.id_er]);
                                                         // Met à jour les règlements sélectionnés
-                                                        const selectedItems = regDispo.filter(reg => newRegSelect.includes(reg.id_er));
+                                                        const selectedItems = props.regDispo.filter(reg => newRegSelect.includes(reg.id_er));
                                                         const uniteSets = [...new Set(selectedItems.flatMap(item => item.unite))];
                                                         const NUnites = uniteSets.length;
                                                         if (uniteSets.length===1){
                                                             console.log('unite pour graphe',uniteSets)
-                                                            defUnitePlot(uniteSets[0])
+                                                            props.defUniteGraph(uniteSets[0])
                                                         }
-                                                        defNUnites(NUnites);
+                                                        props.defNUnites(NUnites);
                                                     }
                                                 }}
                                             />
@@ -186,9 +180,9 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
                             </tbody>
                         </table></>:<></>
                         }
-                        {nUnites===1?
+                        {props.nUnites===1?
                         <>
-                            <h4>Sélectionner limites axe X: {regDispo[0].desc_unite}</h4>
+                            <h4>Sélectionner limites axe X: {props.regDispo[0].desc_unite}</h4>
                             <table>
                                 <thead>
                                     <th>Min graph</th>
@@ -196,9 +190,9 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
                                     <th>Pas</th>
                                 </thead>
                                 <tbody>
-                                    <td><input type='number' value={minGraph} onChange={(e)=>defMinGraph(Number(e.target.value))}/></td>
-                                    <td><input type='number' value={maxGraph} onChange={(e)=>defMaxGraph(Number(e.target.value))}/></td>
-                                    <td><input type='number' value={pasGraph} onChange={(e)=>defPasGraph(Number(e.target.value))}/></td>
+                                    <td><input type='number' value={props.minGraph} onChange={(e)=>props.defMinGraph(Number(e.target.value))}/></td>
+                                    <td><input type='number' value={props.maxGraph} onChange={(e)=>props.defMaxGraph(Number(e.target.value))}/></td>
+                                    <td><input type='number' value={props.pasGraph} onChange={(e)=>props.defPasGraph(Number(e.target.value))}/></td>
                                 </tbody>
                             </table>
                             <button onClick={gestLancementGraph}>Créer graphe</button>

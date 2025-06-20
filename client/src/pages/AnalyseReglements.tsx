@@ -31,8 +31,8 @@ const AnalyseReglements:React.FC = () =>{
             <ControlAnaReg
                 nGraphiques={nGraphiques}
                 defNGraphiques={defNGraphiques}
-                ensRegARep={EnsRegAVis}
-                defEnsRegARep={defEnseRegAVis}
+                ensRegSelectionnesHaut={EnsRegAVis}
+                defEnsRegSelectionnesHaut={defEnseRegAVis}
                 colorPalette={colorPalette}
             />
             <div className="comp-reg-charts" style={{ gridTemplateColumns: `repeat(${getColsFromCount(nGraphiques)}, 1fr)` }}>
@@ -40,7 +40,7 @@ const AnalyseReglements:React.FC = () =>{
                     <GraphiqueReglements 
                         key={i} 
                         index={i} 
-                        ensembleReglementsARepresenter={EnsRegAVis}
+                        ensRegSelectionnesHaut={EnsRegAVis}
                         colorPalette={colorPalette}
                     />
                 ))}

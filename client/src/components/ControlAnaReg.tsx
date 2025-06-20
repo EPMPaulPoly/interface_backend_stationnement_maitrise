@@ -31,7 +31,7 @@ const ControlAnaReg: FC<ControlAnaRegProps> = (props: ControlAnaRegProps) => {
         fetchData()
     }, [])
     const ensRegColorMap = Object.fromEntries(
-        props.ensRegARep.map((id_er, idx) => [id_er, props.colorPalette[idx % props.colorPalette.length]])
+        props.ensRegSelectionnesHaut.map((id_er, idx) => [id_er, props.colorPalette[idx % props.colorPalette.length]])
     );
 
     const handleChange = (ngraphiques: number) => {
@@ -69,7 +69,7 @@ const ControlAnaReg: FC<ControlAnaRegProps> = (props: ControlAnaRegProps) => {
             const [lat, lng] = selectedLocation;
             const reponse = await serviceEnsRegTerr.obtiensEnsRegEtAssocParLatLong(lat, lng);
             const idER = Array.from(new Set(reponse.data.map((item) => item.id_er)));
-            props.defEnsRegARep(idER)
+            props.defEnsRegSelectionnesHaut(idER)
             setMapModalOpen(false)
         } else {
             // Handle case where selectedLocation is not a tuple
@@ -144,7 +144,7 @@ const ControlAnaReg: FC<ControlAnaRegProps> = (props: ControlAnaRegProps) => {
                     borderColor: 'white',
                 },
             }}>
-                Choisir les ensembles de règlements ({props.ensRegARep.length} sélectionnés)
+                Choisir les ensembles de règlements ({props.ensRegSelectionnesHaut.length} sélectionnés)
             </Button>
 
             <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
@@ -168,8 +168,8 @@ const ControlAnaReg: FC<ControlAnaRegProps> = (props: ControlAnaRegProps) => {
                         getOptionLabel={(ensReg) =>
                             `${tousEnsReg.find((o) => o.id_er === ensReg)?.description_er ?? ''}`
                         }
-                        value={props.ensRegARep}
-                        onChange={(_, newValue) => props.defEnsRegARep(newValue)}
+                        value={props.ensRegSelectionnesHaut}
+                        onChange={(_, newValue) => props.defEnsRegSelectionnesHaut(newValue)}
                         renderTags={(value, getTagProps) =>
                             value.map((optionIci, index) => (
                                 <Box

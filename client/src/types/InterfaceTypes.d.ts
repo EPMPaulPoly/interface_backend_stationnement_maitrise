@@ -3,6 +3,7 @@ import { SetStateAction } from "react";
 import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties, lotCadastralAvecBoolInvGeoJsonProperties, informations_reglementaire_manuelle, utilisation_sol, data_graphique } from "./DataTypes";
 import { FeatureCollection, Geometry } from "geojson";
 import { PrioriteEstimeQuartier, TypesVisualisationAnalyseQuartier, VariablesPossibles } from "./AnalysisTypes";
+import { N } from "react-router/dist/development/register-BkDIKxVz";
 // --------------------------------------------------------------------------
 // ------------------------- Interface --------------------------------------
 // --------------------------------------------------------------------------
@@ -405,7 +406,7 @@ export interface AnalyseXYQuartierProps{
 // ---------------------------------------------------------------------------- 
 
 export interface GraphiqueReglementsProps{
-    ensembleReglementsARepresenter:number[],
+    ensRegSelectionnesHaut:number[],
     index:number,
     colorPalette:string[]
 }
@@ -419,10 +420,24 @@ export interface PropsModalManipGraphiqueReg{
     data:data_graphique,
     defData: React.Dispatch<SetStateAction<data_graphique>>
     defLabelAxeX:React.Dispatch<SetStateAction<string>>
+    regDispo:informations_pour_graph_unite_er_reg[]
+    defRegDispo: React.Dispatch<SetStateAction<informations_pour_graph_unite_er_reg[]>>
+    EnsRegSelect:number[]
+    defEnsRegSelect:React.Dispatch<SetStateAction<number[]>>
+    nUnites: number,
+    defNUnites: React.Dispatch<SetStateAction<number>>
+    minGraph: number
+    defMinGraph:React.Dispatch<SetStateAction<number>>
+    maxGraph:number,
+    defMaxGraph: React.Dispatch<SetStateAction<number>>
+    pasGraph:number
+    defPasGraph:React.Dispatch<SetStateAction<number>>
+    uniteGraph:number
+    defUniteGraph:React.Dispatch<SetStateAction<number>>
 }
 export interface ControlAnaRegProps{
-    ensRegARep:number[],
-    defEnsRegARep:React.Dispatch<SetStateAction<number[]>>
+    ensRegSelectionnesHaut:number[],
+    defEnsRegSelectionnesHaut:React.Dispatch<SetStateAction<number[]>>
     nGraphiques:number,
     defNGraphiques:React.Dispatch<SetStateAction<number>>
     colorPalette:string[]
