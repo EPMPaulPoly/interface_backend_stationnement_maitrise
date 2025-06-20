@@ -323,7 +323,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       requiresOrdre:false
     },
     'pm-tc-des':{
-      expression:()=>`(pm.des)`,
+      expression:()=>`(pm.tc_des)`,
       aggregateExpression:()=> `0::float`,
       joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
       description:'Part Modale Transport collectif à destination du secteur [%]',
@@ -342,6 +342,27 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
       joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
       description:'Part Modale Marche Vélo à destination du secteur [%]',
       requiresOrdre:false
+    },
+    'stat-inu':{
+      expression:(ordre) => `(stag.inv_${getValidatedOrdre(ordre)}-mq.nb_voitures_max_pav)`,
+      aggregateExpression:(ordre)=>`(SUM(stag.inv_${getValidatedOrdre(ordre)})::float-SUM(mq.nb_voitures_max_pav)::float)`,
+      joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int','stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int'],
+      description: 'Places inutilisées en tout temps[-]',
+      requiresOrdre: false
+    },
+    'stat-inu-sup':{
+      expression:(ordre) => `(stag.inv_${getValidatedOrdre(ordre)}-mq.nb_voitures_max_pav)*14.3`,
+      aggregateExpression:(ordre)=>`(SUM(stag.inv_${getValidatedOrdre(ordre)})-SUM(mq.nb_voitures_max_pav))*14.3::float`,
+      joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int','stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int'],
+      description: 'Superficie inutilisées en tout temps[-]',
+      requiresOrdre: false
+    },
+    'n-logements': {
+      expression: () => `(dfa.n_logements )::float`,
+      aggregateExpression:()=>`(SUM(dfa.n_logements))::float`,
+      joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
+      description: 'Nombre de logements au rôle[-]',
+      requiresOrdre: false
     },
 
   };
@@ -839,13 +860,14 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
           c2016.id_quartier=c2021.id_quartier;
         -- calcul des valeurs moyennes foncieres
         delete from donnees_foncieres_agregees;
-        INSERT INTO donnees_foncieres_agregees (id_quartier,valeur_moyenne_logement,superf_moyenne_logement,valeur_fonciere_logement_totale,valeur_fonciere_totale)
+        INSERT INTO donnees_foncieres_agregees (id_quartier,valeur_moyenne_logement,superf_moyenne_logement,valeur_fonciere_logement_totale,valeur_fonciere_totale,n_logements)
         WITH role_quartier_log AS(
           SELECT 
             sa.id_quartier::int,
             ceil(SUM(rf.rl0404a)/sum(rf.rl0311a)) as val_moy_log,
             ceil(SUM(rf.rl0308a)/sum(rf.rl0311a)) as sup_moy_log,
-            ceil(SUM(rf.rl0404a)) as val_tot_log
+            ceil(SUM(rf.rl0404a)) as val_tot_log,
+            ceil(SUM(rf.rl0311a)) as n_logements
           FROM
             role_foncier rf
           LEFT JOIN
@@ -874,7 +896,8 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
           rql.val_moy_log,
           rql.sup_moy_log,
           rql.val_tot_log,
-          rqt.val_tot_tout
+          rqt.val_tot_tout,
+          rql.n_logements
         from
           sec_analyse sa
         left join 

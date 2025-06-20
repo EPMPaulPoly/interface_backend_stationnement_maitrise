@@ -85,8 +85,8 @@ const MenuInventaire: React.FC<MenuInventaireProps> = (props: MenuInventaireProp
         }
     }
 
-    const gestChoro = () => {
-        console.log("Couleur pas encore gérée")
+    const gestChoro = (value:number) => {
+        props.defOptionCouleur(value)
     }
 
     return (
@@ -120,10 +120,10 @@ const MenuInventaire: React.FC<MenuInventaireProps> = (props: MenuInventaireProp
             <select
                 id="valeur-choroplethe"
                 name="valeur-choroplethe"
-                onChange={gestChoro}>
-                <option>Aucun</option>
-                <option>places/superf terrain</option>
-                <option>places</option>
+                onChange={(e)=>gestChoro(Number(e.target.value))}>
+                <option value={-1}>Aucun</option>
+                <option value={1}>places</option>
+                <option value={2}>places/superf terrain</option>
             </select>
         </div>
     )

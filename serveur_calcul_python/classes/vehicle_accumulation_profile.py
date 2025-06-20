@@ -161,7 +161,39 @@ def create_geometry_columns(raw_od)->gpd.GeoDataFrame:
     return gdf
 
 def get_data_for_sector_from_database(quartier:int,engine:sqlalchemy.Engine)->VehicleAccumulationProfile:
-    query = f'''WITH quartier AS (
+    if (quartier ==0):
+        query = f'''WITH all_territories AS (
+                SELECT
+                    id_quartier,
+                    geometry
+                FROM
+                    public.sec_analyse
+                ),
+                matching_nologs AS (
+                SELECT DISTINCT odd.nolog
+                FROM 
+                    od_data AS odd,
+                    all_territories
+                WHERE
+                    ST_Intersects(odd.geom_logis, all_territories.geometry) OR 
+                    ST_Intersects(odd.geom_ori, all_territories.geometry) OR 
+                    ST_Intersects(odd.geom_des, all_territories.geometry)
+                )
+                SELECT 
+                odd.*
+                FROM 
+                od_data AS odd
+                JOIN 
+                matching_nologs USING (nolog);'''
+        query_territory = '''
+                SELECT
+                0 as id_quartier,
+                ST_Union(geometry) as geometry
+                FROM
+                public.sec_analyse
+            '''
+    else :
+        query = f'''WITH quartier AS (
                     SELECT
                         id_quartier,
                         geometry
@@ -186,7 +218,7 @@ def get_data_for_sector_from_database(quartier:int,engine:sqlalchemy.Engine)->Ve
                     od_data AS odd
                 JOIN 
                     matching_nologs USING (nolog);'''
-    query_territory = f'''SELECT
+        query_territory = f'''SELECT
                         id_quartier,
                         geometry
                     FROM

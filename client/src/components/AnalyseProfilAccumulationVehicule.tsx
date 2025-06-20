@@ -228,6 +228,7 @@ const AnalyseProfilAccumulationVehiculeQuartiers: React.FC<AnalysePAVQuartierPro
                 <label htmlFor="select-map-color">SelectionnerQuartier</label>
                 <select id="select-map-color" name="select-type" onChange={e => gestSelectQuartier(Number(e.target.value))} value={quartierSelect}>
                     <option value={-1}>Selection quartier</option>
+                    <option value={0}>Ville complète</option>
                     {quartierOptions.map(quartier => (
                         <option key={quartier.id_quartier} value={quartier.id_quartier} >
                             {quartier.nom_quartier}
