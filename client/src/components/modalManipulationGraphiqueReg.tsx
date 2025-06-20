@@ -23,7 +23,7 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
     /** section qui permet d'aller chercher les règlements pertinents au besoin */
     useEffect(()=>{
         const fetchData = async()=>{
-            if (props.CUBFSelect.cubf!==-1){
+            if (props.CUBFSelect.cubf!==-1 && props.ensRegAVis.length>0){
                 const [response,reponseRegDispo] = await Promise.all([serviceUtilisationDuSol.obtientUtilisationDuSol(-1),serviceEnsemblesReglements.obtiensReglementsUnitesParCUBF(props.ensRegAVis,Number(props.CUBFSelect.cubf))])
                 defTousCUBF(response.data)
                 props.defRegDispo(reponseRegDispo.data)
@@ -51,7 +51,7 @@ const ModalManipulationGraphiqueReg: FC<PropsModalManipGraphiqueReg> = (props: P
         if (typeof(CUBFSelect)==='number'){
             const objetCUBFSelect:utilisation_sol = tousCUBF.find((o)=>Number(o.cubf)===CUBFSelect)??{cubf:-1,description:'N/A'}
             props.defCUBFSelect(objetCUBFSelect)
-            if (CUBFSelect!==-1){
+            if (CUBFSelect!==-1 && props.ensRegAVis.length > 0){
                 const reponse = await serviceEnsemblesReglements.obtiensReglementsUnitesParCUBF(props.ensRegAVis,CUBFSelect)
                 const regSetSelect = [...new Set(reponse.data.map(item=>item.id_er))]
                 props.defRegDispo(reponse.data)

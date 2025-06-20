@@ -31,14 +31,40 @@ const GraphiqueReglements:FC<GraphiqueReglementsProps>=(props:GraphiqueReglement
                 if (CUBFSelectionne.cubf!==-1 ){
                     if (props.ensRegSelectionnesHaut.length>0){
                         const reponse = await serviceEnsemblesReglements.obtiensReglementsUnitesParCUBF(props.ensRegSelectionnesHaut,Number(CUBFSelectionne.cubf))
-                        const EnsRegNouveau = reponse.data.filter((entree) => !ensRegAGraph.includes(entree.id_er) && entree.unite[0] === uniteGraph && entree.unite.length ===1)
+                        let selectedUnit:number =4;
+                        if (uniteGraph===-1){
+                            const unitesRetournees = reponse.data.filter(entree=>entree.unite.length===1).flatMap((entree)=>entree.unite)
+                            if (unitesRetournees.length > 0) {
+                                // Count occurrences of each unit
+                                const unitCounts = unitesRetournees.reduce((acc: Record<number, number>, unit: number) => {
+                                    acc[unit] = (acc[unit] || 0) + 1;
+                                    return acc;
+                                }, {});
+                                // Find the unit(s) with the max count
+                                const maxCount = Math.max(...Object.values(unitCounts) as number[]);
+                                const mostCommonUnits = Object.entries(unitCounts)
+                                    .filter(([_, count]) => count === maxCount)
+                                    .map(([unit]) => Number(unit));
+                                // Pick the lowest value if tie
+                                selectedUnit = Math.min(...mostCommonUnits);
+                                defUniteGraph(selectedUnit);
+                            }else{
+                                defUniteGraph(selectedUnit);
+                                return;
+                            }
+                        } else{
+                            selectedUnit = uniteGraph
+                        }
+                        const EnsRegNouveau = reponse.data.filter((entree) => !ensRegAGraph.includes(entree.id_er) && entree.unite[0] === selectedUnit && entree.unite.length ===1)
                         const ensRegIdAAjouter = EnsRegNouveau
                             .map((entree)=> entree.id_er)
                             .filter(id => !ensRegAGraph.includes(id));
                         
                         const nouveauEnsRegARep = Array.from(new Set([...ensRegAGraph.filter((entree)=>props.ensRegSelectionnesHaut.includes(entree)), ...ensRegIdAAjouter]));
                         defEnsRegAGraph(nouveauEnsRegARep)
-                        const reponseDonnees = await serviceReglements.obtiensRepresentationGraphique(nouveauEnsRegARep,uniteGraph,minGraph,maxGraph,pasGraph,Number(CUBFSelectionne.cubf))
+                        const reponseDonnees = await serviceReglements.obtiensRepresentationGraphique(nouveauEnsRegARep,selectedUnit,minGraph,maxGraph,pasGraph,Number(CUBFSelectionne.cubf))
+                        const labelUnite = reponse.data.find(entree=> entree.unite.length===1 && entree.unite[0] === selectedUnit)?.desc_unite ??'N/A';
+                        defLabelAxeX(labelUnite)
                         defData(reponseDonnees.data)
                     } else{
                         defData({
