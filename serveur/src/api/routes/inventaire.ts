@@ -63,7 +63,7 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
     console.log('entering calc inventory by neighborhood')
     const {id} = req.params;
     const scriptPath = path.resolve(__dirname, "../../../../serveur_calcul_python/calcul_par_quartier.py");
-    debugger;
+    //debugger;
     // Chemin direct vers l'interpréteur Python dans l'environnement Conda
     const pythonExecutable = '/opt/conda/envs/serveur_calcul_python/bin/python3';
 

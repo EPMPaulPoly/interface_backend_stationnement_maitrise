@@ -69,7 +69,7 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
               return {
                 color: isLotInAnalyse ? 'green' : 'blue', // Border color based on condition
                 weight: 2,     // Border thickness
-                fillColor: isLotInAnalyse ? 'pink' : hasInventaire?parkingInventory===0?'black':colorScale(Number(parkingInventory) || minValue).hex():'cyan', // Fill color based on condition
+                fillColor: props.optionCouleur!==-1?isLotInAnalyse ? 'pink' : hasInventaire?parkingInventory===0?'black':colorScale(Number(parkingInventory) || minValue).hex():'cyan':'cyan', // Fill color based on condition
                 fillOpacity: 0.5,  // Fill transparency
               };
             },
@@ -126,7 +126,9 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
           }
            
            // Call the function to add the legend
-           addLegendToMap(map, maxValue, minValue, colorScale);
+           if (props.optionCouleur!==-1){
+            addLegendToMap(map, maxValue, minValue, colorScale);
+          }
           // Check if inventaire has changed before adjusting bounds
           if (prevInventaireRef.current !== props.lotsDuQuartier) {
             const bounds = geoJsonLayer.getBounds();

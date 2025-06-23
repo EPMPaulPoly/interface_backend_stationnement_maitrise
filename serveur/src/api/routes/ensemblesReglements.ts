@@ -1,29 +1,94 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { Pool } from 'pg';
-import { DbAssociationReglementUtilSol, DbEnteteEnsembleReglement, DbUtilisationSol, DbEnteteReglement, ParamsTerritoire, ParamsRole, DbReglementComplet, ParamsEnsReg, DbCountAssoc, ParamsAssocEnsReg } from '../../types/database';
-
+import { DbAssociationReglementUtilSol, DbEnteteEnsembleReglement, DbUtilisationSol, DbEnteteReglement, ParamsTerritoire, ParamsRole, DbReglementComplet, ParamsEnsReg, DbCountAssoc, ParamsAssocEnsReg, unit_reg_reg_set_land_use_query, unit_reg_reg_set_land_use_output } from '../../types/database';
+import path from 'path';
+import { spawn } from 'child_process';
 
 export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
   const router = Router();
   // Get all lines
   const obtiensTousEntetesEnsemblesReglements: RequestHandler = async (req, res): Promise<void> => {
-    console.log('Serveur - Obtention toutes entetes ensembles reglements')
+    console.log('Serveur - Obtention entetes ensembles reglements')
     let client;
     try {
-      client = await pool.connect();
-      const {start_year_before,start_year_after,end_year_before,end_year_after,city_like,description_like,rule_like,article_like,paragraphe_like} = req.query;
-      const query = `
+      try {
+        client = await pool.connect();
+      } catch (connErr) {
+        console.error('Database connection error:', connErr);
+        res.status(500).json({ success: false, error: 'Database connection error' });
+        return;
+      }
+      //console.log(client)
+      const { date_debut_er_avant, date_debut_er_apres, date_fin_er_avant, date_fin_er_apres, description_like} = req.query;
+      let queryConds = [];
+      let queryVals = [];
+      let countquery =1;
+      let query = `
         SELECT *
         FROM public.ensembles_reglements_stat
-        ORDER BY id_er ASC
-      `;
-
-      const result = await client.query<DbEnteteEnsembleReglement>(query, );
+      `
+      console.log('arrivee au point ou on commence a ajouter des conditions')
+      if (typeof(date_debut_er_avant)!=='undefined'){
+        console.log('ajout condition date_debut_er_avant')
+        if (date_debut_er_avant !=='null'){
+          queryConds.push(`(date_debut_er <= $${countquery} OR date_debut_er IS NULL)`);
+          queryVals.push(date_debut_er_avant);
+          countquery++;
+        } else{
+          queryConds.push(`date_debut_er IS NULL`);
+        }
+      }
+      if (typeof(date_debut_er_apres)!=='undefined'){
+        console.log('ajout condition date_debut_er_apres')
+        if (date_debut_er_apres !=='null'){
+          queryConds.push(`date_debut_er >= $${countquery}`);
+          queryVals.push(date_debut_er_apres);
+          countquery++;
+        }else{
+          queryConds.push(`date_debut_er IS NULL`);
+        }
+      }
+      if (typeof(date_fin_er_avant)!=='undefined'){
+        console.log('ajout condition date_fin_er_avant')
+        if (date_fin_er_avant !=='null'){
+          queryConds.push(`date_fin_er <= $${countquery}`);
+          queryVals.push(date_fin_er_avant);
+          countquery++;
+        }else{
+          queryConds.push(`date_fin_er IS NULL`);
+        }
+      }
+      if (typeof(date_fin_er_apres)!=='undefined'){
+        console.log('ajout condition date_fin_er_apres')
+        if (date_fin_er_apres!=='null'){
+          queryConds.push(`(date_fin_er >= $${countquery} OR date_fin_er IS null)`);
+          queryVals.push(date_fin_er_apres);
+          countquery++;
+        }else{
+          queryConds.push(`date_fin_er IS NULL`);
+        }
+      }
+      if (typeof(description_like)!=='undefined'){
+        console.log('ajout condition description')
+        queryConds.push(`to_tsvector('french', description_er) @@ plainto_tsquery('french', $${countquery})`)
+        queryVals.push(decodeURIComponent(description_like as string))
+        countquery++;
+      }
+      if (queryConds.length>0){
+        query += '\n WHERE ' + queryConds.join(' \n AND ')
+      }
+      query += `\n ORDER BY id_er ASC`
+      let result;
+      if (queryConds.length>0){
+        result = await client.query<DbEnteteEnsembleReglement>(query,queryVals);
+      }else{
+        result = await client.query<DbEnteteEnsembleReglement>(query);
+      }
       res.json({ success: true, data: result.rows });
     } catch (err) {
       res.status(500).json({ success: false, error: 'Database error test' });
-    } finally{
-      if (client){
+    } finally {
+      if (client) {
         client.release()
       }
     }
@@ -33,38 +98,38 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
     console.log('Serveur - Obtention ensembles reglements complets')
     let client;
     try {
-      const{id} = req.params;
+      const { id } = req.params;
       // Parse the comma-separated IDs into an array of numbers
       const idArray = id.split(',').map(Number);
       // Dynamically create placeholders for the query (e.g., $1, $2, $3, ...)
-      const placeholders = idArray.map((_, index:number) => `$${index + 1}`).join(',');
+      const placeholders = idArray.map((_, index: number) => `$${index + 1}`).join(',');
 
       client = await pool.connect();
-      const query_1= `
+      const query_1 = `
         SELECT *
         FROM public.ensembles_reglements_stat
         WHERE id_er IN (${placeholders})
         ORDER BY id_er ASC
       `;
 
-      const result_header = await client.query<DbEnteteEnsembleReglement>(query_1,idArray );
-      const query2 =`
+      const result_header = await client.query<DbEnteteEnsembleReglement>(query_1, idArray);
+      const query2 = `
         SELECT id_assoc_er_reg, id_reg_stat,cubf,id_er
         FROM public.association_er_reg_stat
         WHERE id_er IN (${placeholders})
         ORDER BY id_assoc_er_reg  ASC
       `
-      const result_rules = await client.query<DbAssociationReglementUtilSol>(query2,idArray );
+      const result_rules = await client.query<DbAssociationReglementUtilSol>(query2, idArray);
 
       const query_3 = `
         SELECT *
         FROM public.cubf
         ORDER BY cubf ASC
       `
-      const resulUtilSol = await client.query<DbUtilisationSol>(query_3 );
-      const output = idArray.map((id:number) => {
-        const entete = result_header.rows.find((row:DbEnteteEnsembleReglement) => row.id_er === id);
-        const assoc_util_reg = result_rules.rows.filter((row:DbAssociationReglementUtilSol) => row.id_er === id);
+      const resulUtilSol = await client.query<DbUtilisationSol>(query_3);
+      const output = idArray.map((id: number) => {
+        const entete = result_header.rows.find((row: DbEnteteEnsembleReglement) => row.id_er === id);
+        const assoc_util_reg = result_rules.rows.filter((row: DbAssociationReglementUtilSol) => row.id_er === id);
         return {
           entete,
           assoc_util_reg,
@@ -74,8 +139,8 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
       res.json({ success: true, data: output });
     } catch (err) {
       res.status(500).json({ success: false, error: 'Database error' });
-    } finally{
-      if (client){
+    } finally {
+      if (client) {
         client.release()
       }
     }
@@ -85,9 +150,9 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
     console.log('Serveur - Obtention entetes de reglements associés à un ensemble de règlements')
     let client;
     try {
-      const {id} = req.params;
+      const { id } = req.params;
       client = await pool.connect();
-      const query_1= `
+      const query_1 = `
         WITH reg_pert AS(
           SELECT DISTINCT id_reg_stat
           from public.association_er_reg_stat
@@ -99,14 +164,14 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
         where id_reg_stat in (SELECT id_reg_stat from reg_pert)
       `;
 
-      const result_header = await client.query<DbEnteteReglement>(query_1,[id] );
+      const result_header = await client.query<DbEnteteReglement>(query_1, [id]);
 
       res.json({ success: true, data: result_header.rows });
-      
+
     } catch (err) {
       res.status(500).json({ success: false, error: 'Database error' });
-    } finally{
-      if (client){
+    } finally {
+      if (client) {
         client.release()
       }
     }
@@ -117,7 +182,7 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
     let client;
     try {
       client = await pool.connect();
-      const {id} = req.params;
+      const { id } = req.params;
       const query = `
       WITH associations AS (
         SELECT 
@@ -144,19 +209,19 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
       res.json({ success: true, data: result.rows });
     } catch (err) {
       res.status(500).json({ success: false, error: 'Database error test' });
-    } finally{
-      if (client){
+    } finally {
+      if (client) {
         client.release()
       }
     }
   };
 
-  const obtiensEnsRegCompletParRole: RequestHandler<ParamsRole> = async (req,res):Promise<void>=>{
+  const obtiensEnsRegCompletParRole: RequestHandler<ParamsRole> = async (req, res): Promise<void> => {
     console.log('obtention ens-reg par role - Implémentation incomplète')
     let client;
-    try{
+    try {
       client = await pool.connect();
-      const {id_role} = req.params;
+      const { id_role } = req.params;
       const query = `
         WITH role AS (
           SELECT 
@@ -174,41 +239,41 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
       `;
       const result = await client.query<DbReglementComplet>(query, [id_role]);
       res.json({ success: true, data: result.rows });
-    }catch(err){
+    } catch (err) {
       res.status(500).json({ success: false, error: 'Database error test' });
-    } finally{
-      if (client){
+    } finally {
+      if (client) {
         client.release()
       }
     }
   };
-  const nouvelleEnteteEnsembleReglement:RequestHandler<void>=async(req,res):Promise<void>=>{
+  const nouvelleEnteteEnsembleReglement: RequestHandler<void> = async (req, res): Promise<void> => {
     console.log('Sauvegarde nouvelle entete ensemble reg')
     let client;
-    try{
+    try {
       client = await pool.connect();
-      const {description_er,date_debut_er,date_fin_er} = req.body;
+      const { description_er, date_debut_er, date_fin_er } = req.body;
       const query = `
         INSERT INTO public.ensembles_reglements_stat(description_er,date_debut_er,date_fin_er)
         VALUES ($1,$2,$3)
         RETURNING *;
       `;
-      const result = await client.query<DbEnteteEnsembleReglement>(query, [description_er,date_debut_er,date_fin_er]);
+      const result = await client.query<DbEnteteEnsembleReglement>(query, [description_er, date_debut_er, date_fin_er]);
       res.json({ success: true, data: result.rows[0] });
-    }catch(err){
+    } catch (err) {
       res.status(500).json({ success: false, error: 'Database error test' });
-    } finally{
-      if (client){
+    } finally {
+      if (client) {
         client.release()
       }
     }
   };
-  const supprimeEnsembleReglement:RequestHandler<ParamsEnsReg>=async(req,res)=>{
+  const supprimeEnsembleReglement: RequestHandler<ParamsEnsReg> = async (req, res) => {
     console.log('Sauvegarde nouvelle entete ensemble reg')
     let client;
-    try{
+    try {
       client = await pool.connect();
-      const {id} = req.params;
+      const { id } = req.params;
       const queryCountAssoc = `
         SELECT
           COUNT(*) as count_assoc_lines
@@ -218,45 +283,45 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
           id_er = $1;
       `;
       const resultCount = await client.query<DbCountAssoc>(queryCountAssoc, [id]);
-      let queryHeader:string;
-      let queryAssoc:string;
-      let resultHeader:any;
-      let resultAssoc:any;
-      if (resultCount.rows[0].count_assoc_lines>0){
-        queryHeader = 
+      let queryHeader: string;
+      let queryAssoc: string;
+      let resultHeader: any;
+      let resultAssoc: any;
+      if (resultCount.rows[0].count_assoc_lines > 0) {
+        queryHeader =
           ` DELETE FROM public.ensembles_reglements_stationnement
             WHERE id_er = $1; `
         queryAssoc =
           ` DELETE FROM public.association_er_reg_stat
             WHERE id_er = $1`
-        resultAssoc = await client.query(queryAssoc,[id]);
+        resultAssoc = await client.query(queryAssoc, [id]);
         resultHeader = await client.query(queryHeader, [id]);
-      }else{
-        queryHeader = 
+      } else {
+        queryHeader =
           ` DELETE FROM public.ensembles_reglements_stationnement
             WHERE id_er = $1; `
         resultHeader = await client.query(queryHeader, [id]);
-        resultAssoc = {rowCount:1}
+        resultAssoc = { rowCount: 1 }
       }
       const successHeader = resultHeader && resultAssoc.rowCount >= 0 ? true : false;
       const successAssoc = resultAssoc && resultAssoc.rowCount >= 0 ? true : false;
       res.json({ success: successHeader && successAssoc });
-    }catch(err){
+    } catch (err) {
       res.status(500).json({ success: false, error: 'Database error test' });
-    } finally{
-      if (client){
+    } finally {
+      if (client) {
         client.release()
       }
     }
   };
-  const modifieEnteteEnsembleReglement:RequestHandler<ParamsEnsReg>=async(req,res)=>{
-    
+  const modifieEnteteEnsembleReglement: RequestHandler<ParamsEnsReg> = async (req, res) => {
+
     let client;
-    try{
+    try {
       client = await pool.connect();
-      const {id} = req.params
+      const { id } = req.params
       console.log(`Sauvegarde modification entete ensemble reg id_er: ${id}`)
-      const {description_er,date_debut_er,date_fin_er} = req.body;
+      const { description_er, date_debut_er, date_fin_er } = req.body;
       const query = `
         UPDATE public.ensembles_reglements_stat
         SET 
@@ -266,44 +331,44 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
         WHERE id_er = $4
         RETURNING *;
       `;
-      const result = await client.query<DbEnteteEnsembleReglement>(query, [description_er,date_debut_er,date_fin_er,Number(id)]);
+      const result = await client.query<DbEnteteEnsembleReglement>(query, [description_er, date_debut_er, date_fin_er, Number(id)]);
       res.json({ success: true, data: result.rows[0] });
-    }catch(err){
+    } catch (err) {
       res.status(500).json({ success: false, error: 'Database error test' });
-    } finally{
-      if (client){
+    } finally {
+      if (client) {
         client.release()
       }
     }
   }
-  const nouvelleAssociationEnsembleReglement:RequestHandler<void>=async(req,res)=>{
+  const nouvelleAssociationEnsembleReglement: RequestHandler<void> = async (req, res) => {
     console.log('Sauvegarde nouvelle association ensemble reg')
     let client;
-    try{
+    try {
       client = await pool.connect();
-      const {id_er,cubf,id_reg_stat} = req.body;
+      const { id_er, cubf, id_reg_stat } = req.body;
       const query = `
         INSERT INTO public.association_er_reg_stat(id_er,cubf,id_reg_stat)
         VALUES ($1,$2,$3)
         RETURNING *;
       `;
-      const result = await client.query<DbEnteteEnsembleReglement>(query, [id_er,cubf,id_reg_stat]);
+      const result = await client.query<DbEnteteEnsembleReglement>(query, [id_er, cubf, id_reg_stat]);
       res.json({ success: true, data: result.rows[0] });
-    }catch(err){
+    } catch (err) {
       res.status(500).json({ success: false, error: 'Database error test' });
-    } finally{
-      if (client){
+    } finally {
+      if (client) {
         client.release()
       }
     }
   }
-  const modifieAssocEnsembleReglement:RequestHandler<ParamsEnsReg>=async(req,res)=>{
+  const modifieAssocEnsembleReglement: RequestHandler<ParamsEnsReg> = async (req, res) => {
     let client;
-    try{
+    try {
       client = await pool.connect();
-      const {id} = req.params
+      const { id } = req.params
       console.log(`Sauvegarde modification entete ensemble reg id_er: ${id}`)
-      const {id_er,cubf,id_reg_stat} = req.body;
+      const { id_er, cubf, id_reg_stat } = req.body;
       const query = `
         UPDATE public.association_er_reg_stat
         SET 
@@ -313,49 +378,150 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
         WHERE id_assoc_er_reg = $4
         RETURNING *;
       `;
-      const result = await client.query<DbEnteteEnsembleReglement>(query, [id_er,cubf,id_reg_stat,id]);
+      const result = await client.query<DbEnteteEnsembleReglement>(query, [id_er, cubf, id_reg_stat, id]);
       res.json({ success: true, data: result.rows[0] });
-    }catch(err){
+    } catch (err) {
       res.status(500).json({ success: false, error: 'Database error test' });
-    } finally{
-      if (client){
+    } finally {
+      if (client) {
         client.release()
       }
     }
   }
-  const supprimeAssocEnsembleReglement:RequestHandler<ParamsAssocEnsReg>=async(req,res)=>{
+  const supprimeAssocEnsembleReglement: RequestHandler<ParamsAssocEnsReg> = async (req, res) => {
     console.log('Sauvegarde nouvelle entete ensemble reg')
     let client;
-    try{
+    try {
       client = await pool.connect();
-      const {id} = req.params;
-      
+      const { id } = req.params;
+
       const queryAssoc =
         ` DELETE FROM public.association_er_reg_stat
           WHERE id_assoc_er_reg = $1`
-      const resultAssoc:any = await client.query(queryAssoc,[id]);
-      
+      const resultAssoc: any = await client.query(queryAssoc, [id]);
+
       const successAssoc = resultAssoc && resultAssoc.rowCount >= 0 ? true : false;
       res.json({ success: successAssoc });
-    }catch(err){
+    } catch (err) {
       res.status(500).json({ success: false, error: 'Database error test' });
-    } finally{
-      if (client){
+    } finally {
+      if (client) {
         client.release()
       }
     }
   };
+
+  const infoPourGraphiques: RequestHandler<void> = async (req, res) => {
+    const scriptPath = path.resolve(__dirname, "../../../../serveur_calcul_python/obtention_information_graphiques.py");
+
+    // Chemin direct vers l'interpréteur Python dans l'environnement Conda
+    const pythonExecutable = '/opt/conda/envs/serveur_calcul_python/bin/python3';
+
+    // Exécuter le script Python avec l'interpréteur de l'environnement
+    const pythonProcess = spawn(pythonExecutable, [scriptPath]);
+
+    const jsonData = JSON.stringify(req.body);
+    pythonProcess.stdin.write(jsonData);
+    pythonProcess.stdin.end();
+
+    let outputData = '';
+    let errorData = '';
+
+    // Capturer l'output standard
+    pythonProcess.stdout.on('data', (data) => {
+      outputData += data.toString();
+    });
+
+    // Capturer les erreurs standard
+    pythonProcess.stderr.on('data', (data) => {
+      errorData += data.toString();
+    });
+
+    // Capturer la fin du processus
+    pythonProcess.on('close', async (code) => {
+      if (code === 0) {
+        //console.log(`Output: ${outputData}`)
+        console.log(`Processus enfant terminé avec succès.`);
+        try {
+          // 🔹 Extract JSON by finding the first `{` (start of JSON)
+          const jsonStartIndex = outputData.indexOf('[');
+          if (jsonStartIndex !== -1) {
+            const jsonString = outputData.slice(jsonStartIndex).trim();
+            const jsonData:unit_reg_reg_set_land_use_query[] = JSON.parse(jsonString);
+            
+            // Extract unique units safely for parameterized query
+            const regsToGet = jsonData.map(e=>e.id_reg_stat);
+            const unitsToGet = jsonData.flatMap(e => e.unite);
+            const RegSetsToGet = jsonData.flatMap(e=> e.id_er);
+            const uniqueUnits = Array.from(new Set(unitsToGet)).filter(u => typeof u === 'number' || typeof u === 'string');
+            const uniqueRegs =  Array.from(new Set(regsToGet)).filter(u => typeof u === 'number' || typeof u === 'string');
+            const uniqueRegSets = Array.from(new Set(RegSetsToGet)).filter(u => typeof u === 'number' || typeof u === 'string');
+            let output: unit_reg_reg_set_land_use_output[];
+            output = []
+            if (uniqueUnits.length > 0 && uniqueRegs.length>0 && uniqueRegSets.length>0) {
+              const placeholders = uniqueUnits.map((_, i) => `$${i + 1}`).join(',');
+              const placeHolderRegs = uniqueRegs.map((_, i) => `$${i + 1}`).join(',');
+              const placeHolderRegSets = uniqueRegSets.map((_, i) => `$${i + 1}`).join(',');
+              const unitDescsQuery = `
+              SELECT id_unite, desc_unite
+              FROM public.multiplicateur_facteurs_colonnes
+              WHERE id_unite IN (${placeholders})
+              `;
+              const regDescQuery = `
+                SELECT 
+                  id_reg_stat, 
+                  description 
+                FROM public.entete_reg_stationnement
+                WHERE id_reg_stat IN (${placeHolderRegs})
+              `
+              const regSetDescQuery = `
+                SELECT id_er,description_er
+                FROM public.ensembles_reglements_stat
+                WHERE id_er IN (${placeHolderRegSets})
+              `
+              const [result_unit,result_regs,result_regSets] = await Promise.all([pool.query(unitDescsQuery, uniqueUnits),pool.query(regDescQuery,uniqueRegs),pool.query(regSetDescQuery,uniqueRegSets)]);
+              output = jsonData.map(e => ({ 
+                id_er: e.id_er,
+                desc_er: result_regSets.rows.find((o)=>o.id_er===e.id_er)?.description_er??'N/A',
+                id_reg_stat: e.id_reg_stat,
+                desc_reg_stat:result_regs.rows.find((p)=>p.id_reg_stat===e.id_reg_stat)?.description??'N/A',
+                unite:e.unite,
+                desc_unite:e.unite.map((uniteOut)=>result_unit.rows.find((unitRet)=>unitRet.id_unite===uniteOut)?.desc_unite??'N/A')
+              }));
+              // Use result.rows as needed
+            }
+            
+            console.log('Parsed JSON:', jsonData);
+            return res.status(200).json({ success: true, data: output });  //  Send JSON response
+          } else {
+            console.error('No JSON found in output:', outputData);
+            return res.status(500).send('Erreur: No valid JSON found in output.');
+          }
+        } catch (err) {
+          console.error('Failed to parse JSON:', err);
+          return res.status(500).send('Erreur: JSON parsing failed.');
+        }
+      } else {
+        console.error(`Processus enfant échoué avec le code : ${code}`);
+        return res.status(500).send(`Erreur: ${errorData}`);
+      }
+    });
+  };
+
   // Routes
+  // basiques
+  router.delete('/:id', supprimeEnsembleReglement)
+  router.get('/complet/:id', obtiensEnsembleReglementCompletParId)
   router.get('/entete', obtiensTousEntetesEnsemblesReglements);
-  router.get('/complet/:id',obtiensEnsembleReglementCompletParId)
-  router.get('/regs-associes/:id',obtiensReglementsPourEnsReg);
-  router.get('/entete-par-territoire/:id',obtiensEntetesParTerritoire)
-  router.get('/par-role/:ids')
-  router.post('/entete',nouvelleEnteteEnsembleReglement)
-  router.put('/entete/:id',modifieEnteteEnsembleReglement)
-  router.delete('/:id',supprimeEnsembleReglement)
-  router.post('/assoc',nouvelleAssociationEnsembleReglement)
-  router.put('/assoc/:id',modifieAssocEnsembleReglement)
-  router.delete('/assoc/:id',supprimeAssocEnsembleReglement)
+  router.post('/entete', nouvelleEnteteEnsembleReglement)
+  router.put('/entete/:id', modifieEnteteEnsembleReglement)
+  router.post('/assoc', nouvelleAssociationEnsembleReglement)
+  router.put('/assoc/:id', modifieAssocEnsembleReglement)
+  router.delete('/assoc/:id', supprimeAssocEnsembleReglement)
+  // ancilaires
+  router.get('/regs-associes/:id', obtiensReglementsPourEnsReg);
+  router.get('/entete-par-territoire/:id', obtiensEntetesParTerritoire)
+  router.get('/par-role/:ids', obtiensEnsRegCompletParRole)
+  router.post('/informations-pour-graphique', infoPourGraphiques)
   return router;
 };

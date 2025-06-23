@@ -8,8 +8,7 @@
 **/.ruff_cache/
 
 # Ignore local environment and Conda stuff
-.env
-*.env
+
 *.conda
 *.ipynb
 *.egg-info/

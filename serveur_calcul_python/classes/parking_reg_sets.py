@@ -83,7 +83,7 @@ class ParkingRegulationSet(ParkingRegulations):
             #initialize une table étendue pour avoir la liste de CUBF complète
             expanded_table:pd.DataFrame = copy.deepcopy(self.expanded_table).drop(columns=config_db.db_column_parking_regs_id)
             expanded_table[config_db.db_column_land_use_id] = copy.deepcopy(self.land_use_table[config_db.db_column_land_use_id])
-            expanded_table = expanded_table.loc[expanded_table[config_db.db_column_land_use_id]>=1000]
+            #expanded_table = expanded_table.loc[expanded_table[config_db.db_column_land_use_id]>=1000]
             expanded_table = expanded_table.sort_values(by=config_db.db_column_land_use_id)
 
             # au minimum on doit avoir les 10 grandes classes qu'on doit setter
@@ -91,21 +91,33 @@ class ParkingRegulationSet(ParkingRegulations):
             for land_use in level_zero_land_uses:
                 # Pour 1 on set de 1000 à 1999, pour 2 de 2000 à 2999
                 expanded_table.loc[(expanded_table[config_db.db_column_land_use_id]>= land_use * 1000) & (expanded_table[config_db.db_column_land_use_id]<= ((land_use * 1000)+999)),config_db.db_column_parking_regs_id] = self.association_table.loc[self.association_table[config_db.db_column_land_use_id]==land_use,config_db.db_column_parking_regs_id].values[0]
-             # si on a des specification qui set des cubf entre 10 et 99 i.e. les sous categories, on les mets dans une listes 
+                # Pour 1 on set de 100 à 199, pour 2 on set de 200 à 299
+                expanded_table.loc[(expanded_table[config_db.db_column_land_use_id]>= land_use * 100) & (expanded_table[config_db.db_column_land_use_id]<= ((land_use * 100)+99)),config_db.db_column_parking_regs_id] = self.association_table.loc[self.association_table[config_db.db_column_land_use_id]==land_use,config_db.db_column_parking_regs_id].values[0]
+                # Pour 1 on set de 10 à 19, pour 2 on set de 20 à 29
+                expanded_table.loc[(expanded_table[config_db.db_column_land_use_id]>= land_use * 10) & (expanded_table[config_db.db_column_land_use_id]<= ((land_use * 10)+99)),config_db.db_column_parking_regs_id] = self.association_table.loc[self.association_table[config_db.db_column_land_use_id]==land_use,config_db.db_column_parking_regs_id].values[0]
+                # Pour 1 on set 1, pour 2 on set 2
+                expanded_table.loc[expanded_table[config_db.db_column_land_use_id]==land_use,config_db.db_column_parking_regs_id] =self.association_table.loc[self.association_table[config_db.db_column_land_use_id]==land_use,config_db.db_column_parking_regs_id].values[0]
+            # si on a des specification qui set des cubf entre 10 et 99 i.e. les sous categories, on les mets dans une listes 
             one_level_land_use = self.association_table.loc[(self.association_table[config_db.db_column_land_use_id]>=10) & (self.association_table[config_db.db_column_land_use_id]<=99),config_db.db_column_land_use_id].tolist()
             for land_use in one_level_land_use:
                 # Pour 10 on set de 1000 à 1099, 11 on set de 1100 à 1199, 20 on set de 2000 à 2099,21 on set de 2100 à 2199
                 expanded_table.loc[(expanded_table[config_db.db_column_land_use_id]>= land_use * 100) & (expanded_table[config_db.db_column_land_use_id]<= ((land_use * 100)+99)),config_db.db_column_parking_regs_id] = self.association_table.loc[self.association_table[config_db.db_column_land_use_id]==land_use,config_db.db_column_parking_regs_id].values[0]
+                # pour 10 on set de 100 à 109, pour 11 on set 110 à 119
+                expanded_table.loc[(expanded_table[config_db.db_column_land_use_id]>= land_use * 10) & (expanded_table[config_db.db_column_land_use_id]<= ((land_use * 10)+99)),config_db.db_column_parking_regs_id] = self.association_table.loc[self.association_table[config_db.db_column_land_use_id]==land_use,config_db.db_column_parking_regs_id].values[0]
+                # Pour 10 on set 10, pour 11 on set 11
+                expanded_table.loc[expanded_table[config_db.db_column_land_use_id]==land_use,config_db.db_column_parking_regs_id] =self.association_table.loc[self.association_table[config_db.db_column_land_use_id]==land_use,config_db.db_column_parking_regs_id].values[0]
              # si on a des specification qui set des cubf entre 100 et 999 i.e. les sous-sous categories
             two_level_land_use = self.association_table.loc[(self.association_table[config_db.db_column_land_use_id]>=100) & (self.association_table[config_db.db_column_land_use_id]<=999),config_db.db_column_land_use_id].tolist()
             for land_use in two_level_land_use:
                 # Pour 100 on set de 1000 à 1009, 110 on set de 1100 à 1109, 111 on set de 1110 à 1119, 20 on set de 2000 à 2099,21 on set de 2100 à 2199
                 expanded_table.loc[(expanded_table[config_db.db_column_land_use_id]>= land_use * 10) & (expanded_table[config_db.db_column_land_use_id]<= ((land_use * 10)+9)),config_db.db_column_parking_regs_id] = self.association_table.loc[self.association_table[config_db.db_column_land_use_id]==land_use,config_db.db_column_parking_regs_id].values[0]
+                # Pour 100 on set 100, pour 110 on set 110
+                expanded_table.loc[expanded_table[config_db.db_column_land_use_id]==land_use,config_db.db_column_parking_regs_id] =self.association_table.loc[self.association_table[config_db.db_column_land_use_id]==land_use,config_db.db_column_parking_regs_id].values[0]
             # si on dispose des specifications pour un CUBF spécifique
             three_level_land_use =self.association_table.loc[(self.association_table[config_db.db_column_land_use_id]>=1000),config_db.db_column_land_use_id].tolist()
             for land_use in three_level_land_use:
                 expanded_table.loc[expanded_table[config_db.db_column_land_use_id]==land_use,config_db.db_column_parking_regs_id] =self.association_table.loc[self.association_table[config_db.db_column_land_use_id]==land_use,config_db.db_column_parking_regs_id].values[0]
-            expanded_table = expanded_table.loc[expanded_table[config_db.db_column_land_use_id]>=1000]
+            #expanded_table = expanded_table.loc[expanded_table[config_db.db_column_land_use_id]>=1000]
             expanded_table = expanded_table.sort_values(by=config_db.db_column_land_use_id,ascending=True)
             self.expanded_table = expanded_table
         else:

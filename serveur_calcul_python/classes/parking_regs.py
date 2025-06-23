@@ -171,7 +171,7 @@ class ParkingRegulations():
         return object_out
     
 @singledispatch
-def from_postgis(indice_):
+def from_postgis(indice_)->ParkingRegulations:
     raise NotImplementedError("Cannot retrieve this data type")
 
 @from_postgis.register

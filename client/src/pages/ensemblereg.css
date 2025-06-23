@@ -95,3 +95,6 @@
     top: 0; /* Fix the header at the top */
     z-index: 1; /* Ensure the header is above the table body */
 }
+.selected-row{
+    background-color: 'red';
+}

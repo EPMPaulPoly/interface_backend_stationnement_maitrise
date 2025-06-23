@@ -1,8 +1,9 @@
 import {LatLng, LatLngExpression} from "leaflet";
 import { SetStateAction } from "react";
-import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties, lotCadastralAvecBoolInvGeoJsonProperties, informations_reglementaire_manuelle } from "./DataTypes";
+import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties, lotCadastralAvecBoolInvGeoJsonProperties, informations_reglementaire_manuelle, utilisation_sol, data_graphique } from "./DataTypes";
 import { FeatureCollection, Geometry } from "geojson";
 import { PrioriteEstimeQuartier, TypesVisualisationAnalyseQuartier, VariablesPossibles } from "./AnalysisTypes";
+import { N } from "react-router/dist/development/register-BkDIKxVz";
 // --------------------------------------------------------------------------
 // ------------------------- Interface --------------------------------------
 // --------------------------------------------------------------------------
@@ -94,6 +95,8 @@ export interface CarteInventaireProps{
     roleRegard:string,
     defRoleRegard:React.Dispatch<SetStateAction<string>>,
     montrerTousLots:boolean,
+    optionCouleur:number,
+    defOptionCouleur:React.Dispatch<SetStateAction<number>>,
 }
 
 export interface TableRevueProps{
@@ -139,6 +142,7 @@ export interface ComparaisonInventaireQuartierProps{
     chargement:boolean,
     defChargement:React.Dispatch<SetStateAction<boolean>>,
     quartierSelect:number,
+    lotsDuQuartier:FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>,
     defLotsDuQuartier: React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>,
     defPanneauComparInventaireQuartierVis:React.Dispatch<SetStateAction<boolean>>;
 }
@@ -163,6 +167,8 @@ export interface MenuInventaireProps{
     defChargement:React.Dispatch<SetStateAction<boolean>>
     montrerTousLots:boolean,
     defMontrerTousLots:React.Dispatch<SetStateAction<boolean>>,
+    optionCouleur:number,
+    defOptionCouleur:React.Dispatch<SetStateAction<number>>,
 }
 
 export interface PropsInformationReglementaireManuelle{
@@ -393,4 +399,46 @@ export interface AnalyseXYQuartierProps{
     prioriteInventaire:number,
     prioriteInventairePossibles:PrioriteEstimeQuartier[],
     variablesPossibles: VariablesPossibles[]
+}
+
+// ----------------------------------------------------------------------------
+// -------------------- Graphiques Comparaison Règlements ---------------------
+// ---------------------------------------------------------------------------- 
+
+export interface GraphiqueReglementsProps{
+    ensRegSelectionnesHaut:number[],
+    index:number,
+    colorPalette:string[]
+}
+
+export interface PropsModalManipGraphiqueReg{
+    modalOuvert:boolean,
+    defModalOuvert:React.Dispatch<SetStateAction<boolean>>,
+    CUBFSelect:utilisation_sol,
+    defCUBFSelect:React.Dispatch<SetStateAction<utilisation_sol>>
+    ensRegAVis:number[]
+    data:data_graphique,
+    defData: React.Dispatch<SetStateAction<data_graphique>>
+    defLabelAxeX:React.Dispatch<SetStateAction<string>>
+    regDispo:informations_pour_graph_unite_er_reg[]
+    defRegDispo: React.Dispatch<SetStateAction<informations_pour_graph_unite_er_reg[]>>
+    EnsRegSelect:number[]
+    defEnsRegSelect:React.Dispatch<SetStateAction<number[]>>
+    nUnites: number,
+    defNUnites: React.Dispatch<SetStateAction<number>>
+    minGraph: number
+    defMinGraph:React.Dispatch<SetStateAction<number>>
+    maxGraph:number,
+    defMaxGraph: React.Dispatch<SetStateAction<number>>
+    pasGraph:number
+    defPasGraph:React.Dispatch<SetStateAction<number>>
+    uniteGraph:number
+    defUniteGraph:React.Dispatch<SetStateAction<number>>
+}
+export interface ControlAnaRegProps{
+    ensRegSelectionnesHaut:number[],
+    defEnsRegSelectionnesHaut:React.Dispatch<SetStateAction<number[]>>
+    nGraphiques:number,
+    defNGraphiques:React.Dispatch<SetStateAction<number>>
+    colorPalette:string[]
 }

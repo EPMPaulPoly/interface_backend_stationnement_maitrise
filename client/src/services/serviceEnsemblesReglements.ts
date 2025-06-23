@@ -1,7 +1,7 @@
 import axios,{ AxiosResponse } from 'axios';
-import {ReponseEnteteEnsembleReglementStationnement,ReponseEnsembleReglementComplet, ReponseEntetesEnsemblesReglement, ReponseEntetesReglements, ReponseComboERsRoleFoncier, ReponseAssociationEnsembleReglement} from '../types/serviceTypes';
+import {ReponseEnteteEnsembleReglementStationnement,ReponseEnsembleReglementComplet, ReponseEntetesEnsemblesReglement, ReponseEntetesReglements, ReponseComboERsRoleFoncier, ReponseAssociationEnsembleReglement,ReponseUnitesGraph, ReponseDataGraphique} from '../types/serviceTypes';
 import api from './api';
-import { association_util_reglement, entete_ensembles_reglement_stationnement } from '../types/DataTypes';
+import { association_util_reglement, entete_ensembles_reglement_stationnement, ProprietesRequetesER } from '../types/DataTypes';
 
 
 class ServiceEnsemblesReglements {
@@ -21,6 +21,44 @@ class ServiceEnsemblesReglements {
             throw error; // Re-throw if necessary
         }
     } 
+
+    async chercheEntetesParPropriete(paramsRequetes:ProprietesRequetesER):Promise<ReponseEntetesEnsemblesReglement>{
+        try {
+            let query:string = `/ens-reg/entete`
+            let queryAdds = []
+            
+            if (typeof(paramsRequetes.dateDebutAvant)!=='undefined'){
+                queryAdds.push(`date_debut_er_avant=${paramsRequetes.dateDebutAvant}`)
+            }
+            if (typeof(paramsRequetes.dateDebutApres)!=='undefined'){
+                queryAdds.push(`date_debut_er_apres=${paramsRequetes.dateDebutApres}`)
+            }
+            if (typeof(paramsRequetes.dateFinAvant)!=='undefined'){
+                queryAdds.push(`date_fin_er_avant=${paramsRequetes.dateFinAvant}`)
+            }
+            if (typeof(paramsRequetes.dateFinApres)!=='undefined'){
+                queryAdds.push(`date_fin_er_apres=${paramsRequetes.dateFinApres}`)
+            }
+            if (typeof(paramsRequetes.descriptionLike)!=='undefined'){
+                queryAdds.push(`description_like=${encodeURIComponent(paramsRequetes.descriptionLike)}`)
+            }
+            if (queryAdds.length>0){
+                query+= '?'+queryAdds.join('&')
+            }
+            const response: AxiosResponse<ReponseEntetesEnsemblesReglement> = await api.get(query);
+            const data_res = response.data.data;
+            return {success:response.data.success,data:data_res};
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
 
     async chercheEnsembleReglementParId(id:number|number[]):Promise<ReponseEnsembleReglementComplet> {
         try{
@@ -210,6 +248,44 @@ class ServiceEnsemblesReglements {
             throw error; // Re-throw if necessary
         }
     }
+
+    async obtiensReglementsUnitesParCUBF(idEnsReg:number[],cubf:number):Promise<ReponseUnitesGraph>{
+        try{
+            const dbData={
+                cubf:cubf,
+                id_er:idEnsReg
+            }
+            const response:AxiosResponse<ReponseUnitesGraph>= await api.post(`/ens-reg/informations-pour-graphique`,[dbData]);
+            const data_res = response.data.data;
+            return{success:response.data.success,data:data_res};
+        } catch(error){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
+
+    async obtiensDonneesGraphiques(idEnsReg:number[],cubf:number,unite:number,valMin:number,valMax:number,pas:number):Promise<ReponseDataGraphique>{
+        try{
+            const response:AxiosResponse<ReponseDataGraphique>= await api.get(`/ens-reg/data-graphique?cubf=${cubf}&id_er=${idEnsReg.join(',')}&unite=${unite}&val_min=${valMin}&val_max=${valMax}&pas_graphe=${pas}`,);
+            const data_res = response.data.data;
+            return{success:response.data.success,data:data_res};
+        } catch(error){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
 }
 
-export const serviceEnsemblesReglements =  new ServiceEnsemblesReglements();
+export const   serviceEnsemblesReglements =  new ServiceEnsemblesReglements();

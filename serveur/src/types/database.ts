@@ -224,3 +224,14 @@ export interface barChartData{
     nom_quartier:string,
     valeurs:number
 }
+
+export interface unit_reg_reg_set_land_use_query{
+    id_er:number,
+    id_reg_stat:number,
+    unite:number[]
+}
+export interface unit_reg_reg_set_land_use_output extends unit_reg_reg_set_land_use_query{
+    desc_er:string,
+    desc_reg_stat:string,
+    desc_unite:string[]
+}

@@ -20,23 +20,43 @@ export const creationRouteurProfileAccumVehiculeQuartier = (pool: Pool): Router 
             const stringForReq = selectedIds.map(String).join('');
             console.log('Obtention Profile Accumulation vehicule');
             client = await pool.connect();
-            const query_total = `
-                SELECT 
-                    id_quartier,
-                    nom_quartier,
-                    inv_${stringForReq} AS valeur
-                FROM public.stat_agrege 
-                WHERE id_quartier = $1
-                ORDER BY id_quartier;
-            `;
-
-            const result = await client.query(query_total, [id_quartier]);
-            const query_PAV = `
-            SELECT * 
-            FROM public.profile_accumulation_vehicule
-            WHERE id_quartier = $1
-            ORDER BY heure ASC
-        `
+            let query_total;
+            let query_PAV;
+            let result;
+            if (Number(id_quartier) !==0){
+                 query_total = `
+                    SELECT 
+                        id_quartier,
+                        nom_quartier,
+                        inv_${stringForReq} AS valeur
+                    FROM public.stat_agrege 
+                    WHERE id_quartier = $1
+                    ORDER BY id_quartier;
+                `;
+                 query_PAV = `
+                    SELECT * 
+                    FROM public.profile_accumulation_vehicule
+                    WHERE id_quartier = $1
+                    ORDER BY heure ASC
+                `
+                result = await client.query(query_total, [id_quartier]);
+            }else{
+                query_total = `
+                    SELECT 
+                        0 as id_quartier,
+                        'Ville Complète' as nom_quartier,
+                        SUM(COALESCE(inv_${stringForReq},0)) AS valeur
+                    FROM public.stat_agrege;
+                `;
+                 query_PAV = `
+                    SELECT * 
+                    FROM public.profile_accumulation_vehicule
+                    WHERE id_quartier = $1
+                    ORDER BY heure ASC
+                `
+                result = await client.query(query_total);
+            }
+            
             const result_PAV = await client.query(query_PAV, [id_quartier])
             const row = result.rows[0];
             const output = {

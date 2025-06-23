@@ -43,9 +43,9 @@ export interface operation_reglement_stationnement{
 export interface unites_reglement_stationnement{
     id_unite:number,
     desc_unite:string,
-    colonne_role_foncier:string,
-    facteur_correction:number,
-    abscisse_correction:number
+    colonne_role_foncier?:string,
+    facteur_correction?:number,
+    abscisse_correction?:number
 }
 
 export interface reglement_complet{
@@ -237,6 +237,27 @@ export interface informations_reglementaire_manuelle{
     unite:number,
     desc_unite:string
 }
+export interface informations_pour_graph_unite_er_reg{
+    id_er:number,
+    desc_er:string,
+    id_reg_stat:number,
+    desc_reg_stat:string,
+    unite:number[]
+    desc_unite:string[]
+}
+
+export interface y_serie_data_graphique{
+    label:string,
+    data:number[],
+    id_er?:number,
+    desc_er?:string,
+    id_reg_stat?:number,
+    desc_reg_stat?: string
+}
+export interface data_graphique{
+    labels:number[]
+    datasets:y_serie_data_graphique[]
+}
 
 export interface requete_calcul_manuel_reg{
     g_no_lot:string,
@@ -245,4 +266,12 @@ export interface requete_calcul_manuel_reg{
     id_er:number,
     unite:number,
     valeur:number,
+}
+
+export interface ProprietesRequetesER{
+    dateDebutAvant?:number|null,
+    dateDebutApres?:number|null,
+    dateFinAvant?:number|null,
+    dateFinApres?:number|null,
+    descriptionLike?:string
 }

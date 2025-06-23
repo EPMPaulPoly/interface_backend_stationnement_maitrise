@@ -309,6 +309,24 @@ const AnalyseQuartiers:React.FC = () =>{
                 descriptionVariable:'Valeur Foncière Résidentielle par superficie',
                 requiertOrdrePriorite:false,
                 queryKey:'val-tot-log-sup'
+            },
+            {
+                idVariable:46,
+                descriptionVariable:'Places inutilisées',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-inu'
+            },
+            {
+                idVariable:47,
+                descriptionVariable:'Superf Places inutilisée',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-inu-sup'
+            },
+            {
+                idVariable:48,
+                descriptionVariable:'Nombre de Logements',
+                requiertOrdrePriorite:false,
+                queryKey:'n-logements'
             }
         ];
     const prioritesPossibles:PrioriteEstimeInventaire[]=[

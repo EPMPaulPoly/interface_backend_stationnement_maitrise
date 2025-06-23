@@ -2,7 +2,8 @@ import pandas as pd
 import geopandas as gpd
 from config import config_db
 from typing import Union,Self
-
+import classes.parking_reg_sets as PRS
+import classes.parking_regs as PR
 class ParkingCalculationInputs(pd.DataFrame):
     """Class that inherits from pandas.DataFrame then customizes it with additonal methods."""
     def __init__(self,*args,**kwargs):
@@ -75,3 +76,78 @@ class ParkingCalculationInputs(pd.DataFrame):
             return True
         else:
             return False
+        
+def generate_values_based_on_available_data(entree:dict)->ParkingCalculationInputs:
+    units = entree.get('id_unite','0')
+    reglements = entree.get('id_reg_stat','0').split(',')
+    ensembles_reglements = entree.get('id_er', '0').split(',')
+    valeur_min = entree.get('min','0')
+    valeur_max = entree.get('max','100')
+    pas = entree.get('pas','10')
+    cubf = entree.get('cubf','0')
+    if int(units)==0:
+        ValueError('Vous devez spécifier une unité pour le graphique')
+    if int(valeur_min)<= int(valeur_max) and int(valeur_min)+int(pas)<=int(valeur_max):
+        parking_inputs = list(range(int(valeur_min),int(valeur_max),int(pas)))
+    else:
+        ValueError('Votre combinaison de min, max et pas est mathématiquement incompatible')
+
+    
+    if reglements != ['0'] and ensembles_reglements != ['0']:
+        KeyError('Il ne faut pas fournir les ensembles de règlements et les règlements en même temps')
+    if reglements ==['0'] and ensembles_reglements == ['0']:
+        KeyError("Il faut au moins fournir un identifiant de règlement ou un identifiant d'ensemble de règlements")
+    if ensembles_reglements != ['0'] and cubf =='0':
+        KeyError('Pour fournir les ensembles de règlements, il faut aussi fournir un CUBF')
+    if int(cubf)<0 and int(cubf)>9999:
+       ValueError('cubf doit être en 1 et 9999') 
+    df_out = pd.DataFrame()
+    if reglements !=['0']:
+        for i, reglement in enumerate(reglements):
+            df_reg_uni = pd.DataFrame()
+            df_reg_uni['valeur'] = parking_inputs
+            df_reg_uni['id_reg_stat'] = int(reglement)
+            df_reg_uni['id_er'] = 0
+            reglement:PR.ParkingRegulations = PR.from_postgis(int(reglement))
+            unites = reglement.reg_def[config_db.db_column_parking_unit_id].unique().tolist()
+            if len(unites)>1 and unites[0]!= int(units):
+                ValueError("L'option graphique ne supporte pas plus d'une unité à l'heure actuelle")
+            df_reg_uni['unite'] = int(units)
+            df_reg_uni['cubf'] = int(cubf)
+            if i == 0:
+                df_out = df_reg_uni
+            else:
+                df_out = pd.concat([df_out, df_reg_uni], ignore_index=True)
+        df_out['g_no_lot'] = df_out.index.astype(str)
+        df_out['er-reg-key'] = df_out['id_reg_stat'].astype(str) +'-' + df_out['id_er'].astype(str)
+        parking_inputs_out = ParkingCalculationInputs(df_out)
+        #breakpoint()
+        return parking_inputs_out
+    elif ensembles_reglements!= ['0']:
+        # ensembles_reglements is a list, so this line is not correct as-is.
+        # If you want to get PRS.ParkingRegulationSet objects for each id in the list, you should iterate:
+        n_er = len(ensembles_reglements)
+        er_pert: list[PRS.ParkingRegulationSet]
+        er_pert = PRS.from_sql([int(er) for er in ensembles_reglements])
+        for i, id_er_pert in enumerate(ensembles_reglements):
+            df_reg_uni = pd.DataFrame()
+            df_reg_uni['valeur'] = parking_inputs
+            df_reg_uni['id_er'] = int(id_er_pert)
+            er_a_util:list[PRS.ParkingRegulationSet] = [er_fin for er_fin in er_pert if er_fin.ruleset_id == int(id_er_pert)]
+            reg_a_util:int= int(er_a_util[0].get_unique_reg_ids_using_land_use([int(cubf)])[0])
+            df_reg_uni['id_reg_stat'] = reg_a_util
+            reglement:PR.ParkingRegulations = PR.from_postgis(reg_a_util)
+            unites = reglement.reg_def[config_db.db_column_parking_unit_id].unique().tolist()
+            if len(unites)>1 and unites[0]!= int(units):
+                ValueError("L'option graphique ne supporte pas plus d'une unité à l'heure actuelle")
+            df_reg_uni['unite'] = int(units)
+            df_reg_uni['cubf'] = int(cubf)
+            if i == 0:
+                df_out = df_reg_uni
+            else:
+                df_out = pd.concat([df_out, df_reg_uni], ignore_index=True)
+        df_out['g_no_lot'] = df_out.index.astype(str)
+        df_out['er-reg-key'] = df_out['id_reg_stat'].astype(str) +'-' + df_out['id_er'].astype(str)
+        parking_inputs_out = ParkingCalculationInputs(df_out)
+        #breakpoint()
+        return parking_inputs_out

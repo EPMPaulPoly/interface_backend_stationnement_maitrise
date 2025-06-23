@@ -6,9 +6,7 @@ import { FeatureCollection, Geometry,Feature } from 'geojson';
 import { ensemble_reglement_territoire, informations_reglementaire_manuelle, inventaire_stationnement,  reglement_complet,requete_calcul_manuel_reg } from '../types/DataTypes';
 import TableauInventaireUnique from './TableauInventaireUnique';
 import recalculeInventaireLot from '../utils/recalculeInventaireLot';
-import ObtRegLots from '../utils/obtRegLots';
 import obtRegManuel from '../utils/obtRegManuel';
-import { LockTwoTone } from '@mui/icons-material';
 
 // Define the structure of the input values state
 interface InputValues {

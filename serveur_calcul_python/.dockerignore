@@ -9,6 +9,6 @@ __pycache__/
 tests/
 *.log
 *.ipynb
-.env
-*.env
+#.env
+#*.env
 *.sqlite

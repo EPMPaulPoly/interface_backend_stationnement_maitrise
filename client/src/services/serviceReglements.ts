@@ -1,6 +1,6 @@
 import axios,{ AxiosResponse } from 'axios';
 import { definition_reglement_stationnement, entete_reglement_stationnement, parametres_requete_filtree_stationnement,  } from '../types/DataTypes';
-import { ReponseEntetesReglements, ReponseReglementComplet,ReponseDBInfoInventaireReglementManuel, ReponseEntetesEnsemblesReglement, ReponseOperationsReglements,ReponseUnitesReglements, ReponseLigneDefReglement} from '../types/serviceTypes';
+import { ReponseEntetesReglements, ReponseReglementComplet,ReponseDBInfoInventaireReglementManuel, ReponseEntetesEnsemblesReglement, ReponseOperationsReglements,ReponseUnitesReglements, ReponseLigneDefReglement, ReponseDataGraphique} from '../types/serviceTypes';
 import api from './api';
 import { promises } from 'dns';
 
@@ -275,6 +275,22 @@ class ServiceReglements {
         try{
             const response:AxiosResponse<ReponseEntetesReglements> = await api.delete(`/reglements/ligne-def/${idLigne}`)
             return response.data.success?response.data.success:false;
+        }catch(error){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
+
+    async obtiensRepresentationGraphique(idER:number[],idUnite:number,Min:number,Max:number,Pas:Number,cubf:number){
+        try{
+            const response:AxiosResponse<ReponseDataGraphique> = await api.get(`/reglements/graphiques?id_er=${idER.join(',')}&id_unite=${idUnite}&min=${Min}&max=${Max}&pas=${Pas}&cubf=${cubf}`)
+            return {success:true,data:response.data.data}
         }catch(error){
             if (axios.isAxiosError(error)) {
                 console.error('Axios Error:', error.response?.data);

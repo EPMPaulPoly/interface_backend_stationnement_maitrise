@@ -79,6 +79,21 @@ class ServiceEnsRegTerr{
             throw error; // Re-throw if necessary
         }
     }
+    async obtiensEnsRegEtAssocParLatLong(Lat:number,long:number):Promise<ReponseAssosTerritoireEnteteEnsembleReglement>{
+        try{
+            const response:AxiosResponse<ReponseAssosTerritoireEnteteEnsembleReglement> = await api.get(`/ens-reg-terr/associations?lat=${Lat}&long=${long}`)
+            return {success:response.data.success,data:response.data.data}
+        }catch(error){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
 }
 
 export const serviceEnsRegTerr =  new ServiceEnsRegTerr();

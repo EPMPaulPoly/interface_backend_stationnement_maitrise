@@ -1,5 +1,5 @@
 
-import { ReponseInventaire,ReponseDBInventaire, ReponseDBCadastreGeoSeul} from '../types/serviceTypes';
+import { ReponseInventaire,ReponseDBInventaire, ReponseDBCadastreGeoSeul, ReponseInventaireSeuil} from '../types/serviceTypes';
 import api from './api';
 import axios,{AxiosResponse} from 'axios';
 import { FeatureCollection,Geometry,Feature } from 'geojson';
@@ -104,7 +104,7 @@ export const serviceInventaire = {
         }
     },
 
-    modifieInventaire:async(id_inv:number|null,inventaireAEnvoyer:inventaire_stationnement) :Promise<boolean>=>{
+    modifieInventaire:async(id_inv:number|null,inventaireAEnvoyer:inventaire_stationnement) :Promise<ReponseInventaireSeuil>=>{
         try {
             if (!isNaN(Number(id_inv))){
                 const dbData: Partial<inventaire_stationnement> = {
@@ -120,7 +120,7 @@ export const serviceInventaire = {
                     cubf: inventaireAEnvoyer.cubf
                   };
                 const reponseMAJInv = await api.post(`/inventaire/${id_inv}`,dbData);
-                return reponseMAJInv.data.success
+                return {success:reponseMAJInv.data.success,data:reponseMAJInv.data.data}
             } else{
                 throw new Error("id_inv doit être défini pour cette fonction");
             }
@@ -136,7 +136,7 @@ export const serviceInventaire = {
         }
     },
 
-    nouvelInventaire:async(nouvelInventaire:Omit<inventaire_stationnement,'id_inv'>):Promise<boolean>=>{
+    nouvelInventaire:async(nouvelInventaire:Omit<inventaire_stationnement,'id_inv'>):Promise<ReponseInventaireSeuil>=>{
         try {
             const dbData: Partial<inventaire_stationnement> = {
                 g_no_lot: nouvelInventaire.g_no_lot ,
@@ -151,7 +151,7 @@ export const serviceInventaire = {
                 cubf: nouvelInventaire.cubf
                 };
             const reponseMAJInv = await api.put(`/inventaire/`,dbData);
-            return reponseMAJInv.data.success
+            return {success:reponseMAJInv.data.success,data:reponseMAJInv.data.data}
         } catch (error:any) {
             if (axios.isAxiosError(error)) {
                 console.error('Axios Error:', error.response?.data);
