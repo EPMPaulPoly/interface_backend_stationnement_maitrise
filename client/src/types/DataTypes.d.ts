@@ -267,3 +267,11 @@ export interface requete_calcul_manuel_reg{
     unite:number,
     valeur:number,
 }
+
+export interface ProprietesRequetesER{
+    dateDebutAvant?:number|null,
+    dateDebutApres?:number|null,
+    dateFinAvant?:number|null,
+    dateFinApres?:number|null,
+    descriptionLike?:string
+}

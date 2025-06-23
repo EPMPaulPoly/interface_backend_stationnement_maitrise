@@ -8,18 +8,82 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
   const router = Router();
   // Get all lines
   const obtiensTousEntetesEnsemblesReglements: RequestHandler = async (req, res): Promise<void> => {
-    console.log('Serveur - Obtention toutes entetes ensembles reglements')
+    console.log('Serveur - Obtention entetes ensembles reglements')
     let client;
     try {
-      client = await pool.connect();
-      const { start_year_before, start_year_after, end_year_before, end_year_after, description_like, lat,lon} = req.query;
-      const query = `
+      try {
+        client = await pool.connect();
+      } catch (connErr) {
+        console.error('Database connection error:', connErr);
+        res.status(500).json({ success: false, error: 'Database connection error' });
+        return;
+      }
+      //console.log(client)
+      const { date_debut_er_avant, date_debut_er_apres, date_fin_er_avant, date_fin_er_apres, description_like} = req.query;
+      let queryConds = [];
+      let queryVals = [];
+      let countquery =1;
+      let query = `
         SELECT *
         FROM public.ensembles_reglements_stat
-        ORDER BY id_er ASC
-      `;
-
-      const result = await client.query<DbEnteteEnsembleReglement>(query,);
+      `
+      console.log('arrivee au point ou on commence a ajouter des conditions')
+      if (typeof(date_debut_er_avant)!=='undefined'){
+        console.log('ajout condition date_debut_er_avant')
+        if (date_debut_er_avant !=='null'){
+          queryConds.push(`date_debut_er <= $${countquery}`);
+          queryVals.push(date_debut_er_avant);
+          countquery++;
+        } else{
+          queryConds.push(`date_debut_er IS NULL`);
+        }
+      }
+      if (typeof(date_debut_er_apres)!=='undefined'){
+        console.log('ajout condition date_debut_er_apres')
+        if (date_debut_er_apres !=='null'){
+          queryConds.push(`date_debut_er >= $${countquery}`);
+          queryVals.push(date_debut_er_apres);
+          countquery++;
+        }else{
+          queryConds.push(`date_debut_er IS NULL`);
+        }
+      }
+      if (typeof(date_fin_er_avant)!=='undefined'){
+        console.log('ajout condition date_fin_er_avant')
+        if (date_fin_er_avant !=='null'){
+          queryConds.push(`date_fin_er <= $${countquery}`);
+          queryVals.push(date_fin_er_avant);
+          countquery++;
+        }else{
+          queryConds.push(`date_fin_er IS NULL`);
+        }
+      }
+      if (typeof(date_fin_er_apres)!=='undefined'){
+        console.log('ajout condition date_fin_er_apres')
+        if (date_fin_er_apres!=='null'){
+          queryConds.push(`(date_fin_er >= $${countquery} OR date_fin_er IS null)`);
+          queryVals.push(date_fin_er_apres);
+          countquery++;
+        }else{
+          queryConds.push(`date_fin_er IS NULL`);
+        }
+      }
+      if (typeof(description_like)!=='undefined'){
+        console.log('ajout condition description')
+        queryConds.push(`to_tsvector('french', description_er) @@ plainto_tsquery('french', $${countquery})`)
+        queryVals.push(decodeURIComponent(description_like as string))
+        countquery++;
+      }
+      if (queryConds.length>0){
+        query += '\n WHERE ' + queryConds.join(' \n AND ')
+      }
+      query += `\n ORDER BY id_er ASC`
+      let result;
+      if (queryConds.length>0){
+        result = await client.query<DbEnteteEnsembleReglement>(query,queryVals);
+      }else{
+        result = await client.query<DbEnteteEnsembleReglement>(query);
+      }
       res.json({ success: true, data: result.rows });
     } catch (err) {
       res.status(500).json({ success: false, error: 'Database error test' });

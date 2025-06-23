@@ -1,14 +1,17 @@
 import { FC, useState, useEffect } from 'react'
 import { serviceEnsemblesReglements } from '../services';
 import { ControlAnaRegProps } from '../types/InterfaceTypes';
-import { entete_ensembles_reglement_stationnement } from '../types/DataTypes';
+import { entete_ensembles_reglement_stationnement, ProprietesRequetesER } from '../types/DataTypes';
 import {
     Modal,
     Box,
     Button,
     Autocomplete,
     TextField,
-    Select, MenuItem, InputLabel, FormControl
+    Select, 
+    MenuItem, 
+    InputLabel, 
+    FormControl
 } from '@mui/material';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { Marker } from 'react-leaflet';
@@ -18,7 +21,9 @@ const ControlAnaReg: FC<ControlAnaRegProps> = (props: ControlAnaRegProps) => {
     const [tousEnsReg, defTousEnsRegs] = useState<entete_ensembles_reglement_stationnement[]>([])
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [mapModalOpen, setMapModalOpen] = useState<boolean>(false);
-    const [selectedLocation, setSelectedLocation] = useState<L.LatLngExpression | null>(null)
+    const [dateModalOpen,setDateModalOpen] = useState<boolean>(false);
+    const [selectedLocation, setSelectedLocation] = useState<L.LatLngExpression | null>(null);
+    const [selectedDate,setSelectedDate] = useState<number|null>(null);
     const [mapZoom, setMapZoom] = useState<number>(13);
     const [mapCenter, setMapCenter] = useState<L.LatLngExpression>([46.8139, -71.2082]);
     const [regSetOptionsForLocale,defRegSetOptionsForLocale] = useState<entete_ensembles_reglement_stationnement[]>([])
@@ -76,6 +81,22 @@ const ControlAnaReg: FC<ControlAnaRegProps> = (props: ControlAnaRegProps) => {
             console.error('selectedLocation is not a valid LatLng tuple:', selectedLocation);
         }
 
+    }
+
+    const gestObtentionERDate = async()=>{
+        let params:ProprietesRequetesER;
+        if (selectedDate !== null){
+            params={
+                dateDebutAvant: selectedDate,
+                dateFinApres: selectedDate
+        }}else{
+             params={
+                dateFinApres: selectedDate
+        }}
+        const reponse = await serviceEnsemblesReglements.chercheEntetesParPropriete(params)
+        const idER = Array.from(new Set(reponse.data.map((item) => item.id_er)));
+        props.defEnsRegSelectionnesHaut(idER)
+        setDateModalOpen(false)
     }
 
     return (<div className="control-comp-reg">
@@ -302,7 +323,89 @@ const ControlAnaReg: FC<ControlAnaRegProps> = (props: ControlAnaRegProps) => {
                     </>}
                 </Box>
             </Modal>
-
+            <Button variant="outlined"
+                sx={{
+                    ml: 2,
+                    color: 'white',
+                    borderColor: 'white',
+                    '&:hover': {
+                        backgroundColor: '#222',
+                        borderColor: 'white',
+                    },
+                }}
+                onClick={() => setDateModalOpen(true)}
+            >
+                Choisir les Ens. Règ par date
+            </Button>
+            <Modal open={dateModalOpen} onClose={() => setDateModalOpen(false)}>
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: 500,
+                        bgcolor: 'black',
+                        color: 'white',
+                        boxShadow: 24,
+                        p: 4,
+                        borderRadius: 2,
+                    }}
+                >
+                    {selectedDate!==null?(<>
+                    <TextField
+                        onChange={(e)=>setSelectedDate(Number(e.target.value))}
+                        value={selectedDate}
+                        type='number'
+                        sx={{
+                                    input: { color: 'white' },
+                                    label: { color: 'white' },
+                                    '& .MuiOutlinedInput-root': {
+                                        '& fieldset': {
+                                            borderColor: '#888',
+                                        },
+                                        '&:hover fieldset': {
+                                            borderColor: '#aaa',
+                                        },
+                                        '&.Mui-focused fieldset': {
+                                            borderColor: '#ccc',
+                                        },
+                                    },
+                                }}
+                    />
+                        <label htmlFor='en-vigueur'>En Vigueur</label>
+                        <input 
+                            id='en-vigueur'
+                            type='checkbox'
+                            checked={selectedDate===null}
+                            onClick={()=>setSelectedDate(null)}></input>
+                    </>
+                    ):(
+                        <>
+                        <label htmlFor='en-vigueur'>En Vigueur</label>
+                        <input 
+                            id='en-vigueur'
+                            type='checkbox'
+                            checked={selectedDate===null}
+                            onClick={()=>setSelectedDate(2024)}></input></>
+                    )
+                    }
+                    <Button variant="outlined"
+                        sx={{
+                            ml: 2,
+                            color: 'white',
+                            borderColor: 'white',
+                            '&:hover': {
+                                backgroundColor: '#222',
+                                borderColor: 'white',
+                            },
+                        }}
+                        onClick={gestObtentionERDate}
+                        >
+                            Obtenir Ensembles Règlements
+                    </Button>
+                </Box>
+            </Modal>
         </>
     </div>)
 }
