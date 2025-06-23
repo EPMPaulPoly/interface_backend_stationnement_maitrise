@@ -158,7 +158,7 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
       center={props.startPosition}
       zoom={props.startZoom}
       style={{ height: '100%', width: '100%' }}
-      maxZoom={25}
+      maxZoom={30}
     >
       <TileLayer
         url={urlCarto}
