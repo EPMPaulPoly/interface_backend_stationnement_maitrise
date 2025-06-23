@@ -7,8 +7,11 @@ import EnsemblesReglements from './pages/EnsemblesReglements';
 import EnsRegTerritoire from './pages/EnsRegTerr';
 import AnalyseQuartiers from './pages/AnalyseQuartiers';
 import AnalyseReglements from './pages/AnalyseReglements';
+import AnalyseVariabilite from './pages/AnalyseVariabilite';
+import { FournisseurContexte } from './contexte/ContexteImmobilisation';
 const app: React.FC = () => {
   return (
+    <FournisseurContexte>
       <Router>
         <Routes>
           <Route path="/" element={<Navigate to="/historique" />} />
@@ -18,9 +21,11 @@ const app: React.FC = () => {
           <Route path="/ens-reg" element={<EnsemblesReglements/>}/>
           <Route path="/ens-reg-terr" element={<EnsRegTerritoire/>}/>
           <Route path="/ana-reg" element={<AnalyseReglements/>}/>
+          <Route path="/ana-var" element={<AnalyseVariabilite/>}/>
           <Route path="/ana-quartiers" element={<AnalyseQuartiers/>}/>
         </Routes>
       </Router>
+    </FournisseurContexte>
   );
 };
 

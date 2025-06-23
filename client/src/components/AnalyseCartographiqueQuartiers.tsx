@@ -8,6 +8,7 @@ import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
 import "leaflet/dist/leaflet.css";
 import L, { LeafletEvent,LatLngExpression } from 'leaflet';
 import chroma from 'chroma-js';
+import { utiliserContexte } from '../contexte/ContexteImmobilisation';
 const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:AnalyseCartoQuartierProps)=>{
     const [typeCarto,defTypeCarto] = useState<number>(-1);
     const [cartoAMontrer,defCartoAMontrer] = useState<FeatureCollection<Geometry,GeoJSONPropsAnaQuartier>>({
@@ -43,6 +44,14 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
             descriptionAnalyseCarto: "Pourcentage Territoire"
         }
     ];
+
+    const contexte = utiliserContexte();
+    const optionCartoChoisie = contexte?.optionCartoChoisie ?? "";
+    const changerCarto = contexte?.changerCarto ?? (() => {});
+    const optionsCartos = contexte?.optionsCartos ?? [];
+
+    const urlCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.URL??"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    const attributionCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.attribution??'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     const geoJsonLayerGroupRef = useRef<L.LayerGroup | null>(null); // Refe
     const prevInventaireRef = useRef<GeoJSON.FeatureCollection<GeoJSON.Geometry, GeoJSONPropsAnaQuartier> | null>(null);
     const MapComponent = () => {
@@ -171,10 +180,14 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
                   center={positionDepart}
                   zoom={zoomDepart}
                   style={{ height: '100%', width: '100%' }}
+                  
                 >
                   <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url={urlCarto}
+                    attribution={attributionCarto}
+                    maxZoom={21}
+                    minZoom={1}
+                    zoomOffset={-3} // 21-18 = -3
                   />
                   {cartoValid && (<>
                     <MapComponent />

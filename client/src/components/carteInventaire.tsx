@@ -7,6 +7,7 @@ import selectLotInventaire from '../utils/selectLotInventaire';
 import { selectLotProps } from '../types/utilTypes';
 import {  lotCadastralAvecBoolInvGeoJsonProperties } from '../types/DataTypes';
 import chroma from 'chroma-js';
+import { utiliserContexte } from '../contexte/ContexteImmobilisation';
 const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
   const handleLotClick = (e: LeafletEvent) => {
     const key = e.target.feature.properties.g_no_lot;
@@ -35,7 +36,13 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
     }
     selectLotInventaire(propsLot)
   }
+  const contexte = utiliserContexte();
+    const optionCartoChoisie = contexte?.optionCartoChoisie ?? "";
+    const changerCarto = contexte?.changerCarto ?? (() => {});
+    const optionsCartos = contexte?.optionsCartos ?? [];
 
+    const urlCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.URL??"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    const attributionCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.attribution??'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   const geoJsonLayerGroupRef = useRef<L.LayerGroup | null>(null); // Refe
   const prevInventaireRef = useRef<GeoJSON.FeatureCollection<GeoJSON.Geometry, lotCadastralAvecBoolInvGeoJsonProperties> | null>(null);
   const MapComponent = () => {
@@ -151,10 +158,14 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
       center={props.startPosition}
       zoom={props.startZoom}
       style={{ height: '100%', width: '100%' }}
+      maxZoom={25}
     >
       <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url={urlCarto}
+        attribution={attributionCarto}
+        maxZoom={30}
+        minZoom={1}
+        zoomOffset={-14} // 21-18 = -3
       />
       {props.inventaire && (<>
         <MapComponent />
