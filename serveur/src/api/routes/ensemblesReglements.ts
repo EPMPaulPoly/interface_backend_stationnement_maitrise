@@ -31,7 +31,7 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
       if (typeof(date_debut_er_avant)!=='undefined'){
         console.log('ajout condition date_debut_er_avant')
         if (date_debut_er_avant !=='null'){
-          queryConds.push(`date_debut_er <= $${countquery}`);
+          queryConds.push(`(date_debut_er <= $${countquery} OR date_debut_er IS NULL)`);
           queryVals.push(date_debut_er_avant);
           countquery++;
         } else{
