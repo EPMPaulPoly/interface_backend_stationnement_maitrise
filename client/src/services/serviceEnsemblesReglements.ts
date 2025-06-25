@@ -42,6 +42,13 @@ class ServiceEnsemblesReglements {
             if (typeof(paramsRequetes.descriptionLike)!=='undefined'){
                 queryAdds.push(`description_like=${encodeURIComponent(paramsRequetes.descriptionLike)}`)
             }
+            if (typeof(paramsRequetes.idER)!=='undefined'){
+                if (typeof(paramsRequetes.idER)==='number'){
+                    queryAdds.push(`id_er=${paramsRequetes.idER}`)
+                } else{
+                    queryAdds.push(`id_er=${paramsRequetes.idER.join(',')}`)
+                }
+            }
             if (queryAdds.length>0){
                 query+= '?'+queryAdds.join('&')
             }

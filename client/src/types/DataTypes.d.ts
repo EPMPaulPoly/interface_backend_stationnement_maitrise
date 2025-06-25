@@ -96,6 +96,12 @@ export interface utilisation_sol{
     description:string
 }
 
+export interface comptes_utilisations_sol{
+    niveau:number,
+    description:string,
+    n_entrees:number
+}
+
 export interface association_util_reglement{
     id_assoc_er_reg:number,
     cubf:number,
@@ -259,6 +265,11 @@ export interface data_graphique{
     datasets:y_serie_data_graphique[]
 }
 
+export interface methodeAnalyseVariabillite{
+    idMethodeAnalyse:number,
+    descriptionMethodeAnalyse:string
+}
+
 export interface requete_calcul_manuel_reg{
     g_no_lot:string,
     cubf:number,
@@ -273,5 +284,6 @@ export interface ProprietesRequetesER{
     dateDebutApres?:number|null,
     dateFinAvant?:number|null,
     dateFinApres?:number|null,
-    descriptionLike?:string
+    descriptionLike?:string,
+    idER?:number|number[]
 }

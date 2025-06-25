@@ -1,4 +1,4 @@
-import { ReponseCUBF } from '../types/serviceTypes';
+import { ReponseCompteCUBF, ReponseCUBF } from '../types/serviceTypes';
 import api from './api';
 import axios,{AxiosResponse} from 'axios';
 import { FeatureCollection,Geometry } from 'geojson';
@@ -36,7 +36,22 @@ export const serviceUtilisationDuSol = {
             throw error; // Re-throw if necessary
         }
     },
-    
+    obtientComptesUtilsiationSol:async():Promise<ReponseCompteCUBF>=>{
+        try {
+            let response:AxiosResponse<ReponseCompteCUBF>
+            response = await api.get('/cubf/n_entrees')
+            return {success:true,data:response.data.data};
+        } catch (error: any) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
 };
 
 export default serviceUtilisationDuSol;

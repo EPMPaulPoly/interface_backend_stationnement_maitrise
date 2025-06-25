@@ -70,9 +70,9 @@ const CarteEnsRegTerr:React.FC<CarteEnsRegTerrProps>=(props:CarteEnsRegTerrProps
             <TileLayer
                 url={urlCarto}
                 attribution={attributionCarto}
-                maxZoom={21}
+                maxZoom={20}
                 minZoom={1}
-                zoomOffset={-3} // 21-18 = -3
+                
             />
             <MapComponent/>
         </MapContainer>

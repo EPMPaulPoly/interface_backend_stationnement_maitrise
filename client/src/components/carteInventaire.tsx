@@ -163,9 +163,8 @@ const CarteInventaire: React.FC<CarteInventaireProps> = (props) => {
       <TileLayer
         url={urlCarto}
         attribution={attributionCarto}
-        maxZoom={30}
+        maxZoom={20}
         minZoom={1}
-        zoomOffset={-14} // 21-18 = -3
       />
       {props.inventaire && (<>
         <MapComponent />
