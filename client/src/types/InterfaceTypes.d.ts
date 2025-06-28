@@ -449,6 +449,7 @@ export interface ControlAnaVarProps{
     ensRegAAnalyser:number[],
     defEnsRegAAnalyser:React.Dispatch<SetStateAction<number[]>>
     colorPalette:string[]
+    defCalculsEnCours:React.Dispatch<SetStateAction<boolean>>
 }
 export interface PropsEditionParametresAnaVarFonc{
     editionParams:boolean,

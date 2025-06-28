@@ -13,6 +13,7 @@ import {
     FormControl
 } from '@mui/material';
 import { serviceEnsemblesReglements } from '../services';
+import { serviceAnaVariabilite } from '../services/serviceAnaVariabilite';
 
 const ControlAnaVar: FC<ControlAnaVarProps> = (props: ControlAnaVarProps) => {
     const [tousEnsReg, defTousEnsRegs] = useState<entete_ensembles_reglement_stationnement[]>([])
@@ -34,6 +35,12 @@ const ControlAnaVar: FC<ControlAnaVarProps> = (props: ControlAnaVarProps) => {
     const gestSelectionTousEnsReg =()=>{
         const listeEnsReg = Array.from(new Set(tousEnsReg.map((entree) => entree.id_er)))
         props.defEnsRegAAnalyser(listeEnsReg)
+    }
+
+    const gestLancementCalculsVariabilite =async()=>{
+        props.defCalculsEnCours(true)
+        await new Promise(resolve => setTimeout(resolve, 10000));
+        props.defCalculsEnCours(false)
     }
 
     return (<div className="control-comp-reg">
@@ -202,6 +209,19 @@ const ControlAnaVar: FC<ControlAnaVarProps> = (props: ControlAnaVarProps) => {
                     </Box>
                 </Box>
             </Modal>
+        </>
+        <>
+            <Button onClick={() => gestLancementCalculsVariabilite()} variant="outlined" sx={{
+                ml: 2,
+                color: 'red',
+                borderColor: 'white',
+                '&:hover': {
+                    backgroundColor: '#222',
+                    borderColor: 'red',
+                },
+            }}>
+                Lancer calculs d'inventaire avec tous les ensembles (très long)
+            </Button>
         </>
     </div>)
 }
