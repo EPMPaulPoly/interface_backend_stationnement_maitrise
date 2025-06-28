@@ -130,7 +130,7 @@ export const creationRouteurCadastre = (pool: Pool): Router => {
     let joins = [];
     let replaceCount = 1;
     try {
-      const { g_no_lot, bbox, superf_plus_grand, inv_plus_grand , id_quartier, estime } = req.query;
+      const { g_no_lot, bbox, superf_plus_grand, inv_plus_grand , id_quartier, estime, inv_surf_plus_grand } = req.query;
       if (typeof bbox ==='string'){
         const bboxLimitsString = bbox.split(',')
         const bboxLimitsNum = bboxLimitsString.map((item)=>Number(item))
@@ -148,11 +148,11 @@ export const creationRouteurCadastre = (pool: Pool): Router => {
         replaceCount++
       }
       if (typeof superf_plus_grand ==='string'){
-        conditions.push(`g_va_suprf>${replaceCount}`)
+        conditions.push(`cad.g_va_suprf>$${replaceCount}`)
         values.push(superf_plus_grand)
         replaceCount++
       }
-      if (typeof inv_plus_grand ==='string' && typeof estime === 'string'){
+      if(typeof estime === 'string'){
         ctePot.push(`inventory AS (
                   SELECT
                     g_no_lot,
@@ -164,11 +164,7 @@ export const creationRouteurCadastre = (pool: Pool): Router => {
         replaceCount++
         values.push(estime)
         joins.push('LEFT JOIN inventory ON inventory.g_no_lot=cad.g_no_lot')
-        conditions.push(`cad.g_va_suprf>$${replaceCount}`)
-        extraVariables.push('inventory.inv')
-        values.push(superf_plus_grand)
-        replaceCount++
-      } else{
+      }else{
         ctePot.push(`inventory AS (
                   SELECT
                     g_no_lot,
@@ -180,12 +176,24 @@ export const creationRouteurCadastre = (pool: Pool): Router => {
         joins.push('LEFT JOIN inventory ON inventory.g_no_lot=cad.g_no_lot')
         extraVariables.push('inventory.inv')
       }
+      if (typeof inv_plus_grand ==='string' ){
+        conditions.push(`inventory.inv>$${replaceCount}`)
+        extraVariables.push('inventory.inv as valeur_affich')
+        values.push(inv_plus_grand)
+        replaceCount++
+      } 
       if (typeof id_quartier ==='string'){
         joins.push(`JOIN 
           public.sec_analyse AS polygons
           ON ST_Intersects(cad.geometry, polygons.geometry)
-          AND polygons.id_quartier = $${replaceCount}}`)
+          AND polygons.id_quartier = $${replaceCount}`)
         values.push(id_quartier)
+        replaceCount++
+      }
+      if (typeof inv_surf_plus_grand ==='string'){
+        conditions.push(`inventory.inv/cad.g_va_suprf>$${replaceCount}`)
+        extraVariables.push('inventory.inv/cad.g_va_suprf as valeur_affich')
+        values.push(inv_surf_plus_grand)
         replaceCount++
       }
       

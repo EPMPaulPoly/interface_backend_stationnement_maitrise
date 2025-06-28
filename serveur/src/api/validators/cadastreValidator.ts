@@ -5,7 +5,7 @@ export const validateBboxQuery = (req: Request, res: Response, next: NextFunctio
   if (bbox === undefined) {
     // No bbox provided, skip validation
      next();
-    
+    return
   }
   if (typeof bbox !== 'string') {
      res.status(400).json({ success: false, error: 'bbox must be a string if provided' });
