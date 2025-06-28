@@ -3,6 +3,7 @@ import { Pool } from 'pg';
 import cors from 'cors';
 import { createApiRouter } from './api/routes';
 import config from './config';
+import listEndpoints from 'express-list-endpoints';
 
 const app = express();
 const port = config.server.port;
@@ -14,12 +15,6 @@ app.use(express.json({ limit: '10mb' }));
 // Database connection
 const pool = new Pool(config.database);
 
-//setInterval(() => {
-//  console.log('Connection Pool Stats:');
-//  console.log('Total connections in pool:', pool.totalCount); // Total connections
-//  console.log('Idle connections:', pool.idleCount);          // Idle connections
-//  console.log('Waiting connections:', pool.waitingCount);    // Waiting connections
-//}, 5000);
 
 // Routes
 app.use('/api', createApiRouter(pool));
@@ -41,6 +36,10 @@ app.listen(port, () => {
   console.log(`Server running at ${new Date().toISOString()}`); 
 });
 
+app.get('/api/routes', (req, res) => {
+  const routes = listEndpoints(app);
+  res.json(routes);
+});
 
 
 // Graceful shutdown

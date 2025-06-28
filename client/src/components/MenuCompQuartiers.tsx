@@ -18,7 +18,7 @@ const MenuCompQuartiers:React.FC<MenuCompQuartiersProps>=(props:MenuCompQuartier
         const succes = await serviceAnalyseInventaire.recalculeDonneesFoncieresBackend()
         props.defCalculEnCours(false)
     }
-
+    
     return(
         <div className="menu-comp-quartiers">
             <label htmlFor="select-type">Type d'analyse</label>

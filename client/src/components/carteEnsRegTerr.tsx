@@ -13,6 +13,7 @@ const CarteEnsRegTerr:React.FC<CarteEnsRegTerrProps>=(props:CarteEnsRegTerrProps
 
     const urlCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.URL??"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
     const attributionCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.attribution??'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    const zoomCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.zoomMax??18
     const geoJsonLayerGroupRef = useRef<L.LayerGroup | null>(null); // Refe
     const MapComponent = () => {
             const map = useMap(); // Access the map instance
@@ -70,7 +71,7 @@ const CarteEnsRegTerr:React.FC<CarteEnsRegTerrProps>=(props:CarteEnsRegTerrProps
             <TileLayer
                 url={urlCarto}
                 attribution={attributionCarto}
-                maxZoom={20}
+                maxZoom={zoomCarto}
                 minZoom={1}
                 
             />

@@ -49,7 +49,7 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
     const optionCartoChoisie = contexte?.optionCartoChoisie ?? "";
     const changerCarto = contexte?.changerCarto ?? (() => {});
     const optionsCartos = contexte?.optionsCartos ?? [];
-
+    const zoomCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.zoomMax??18
     const urlCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.URL??"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
     const attributionCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.attribution??'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     const geoJsonLayerGroupRef = useRef<L.LayerGroup | null>(null); // Refe
@@ -108,10 +108,13 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
                         // Create a legend based on the color scale
                         const legend = new L.Control({ position: 'bottomright' });
 
+                        if ((map as any)._legendControl) {
+                            map.removeControl((map as any)._legendControl);
+                        }
                         legend.onAdd = function () {
                             const div = L.DomUtil.create('div', 'info legend');
                             const grades = [minValue, (maxValue + minValue) / 2, maxValue]; // Define breakpoints
-                            const labels:string[] = [];
+                            const labels: string[] = [];
 
                             // Generate legend items based on color scale
                             grades.forEach((grade, index) => {
@@ -124,6 +127,8 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
                             div.innerHTML = labels.join('<br>');
                             return div;
                         };
+                        // Store the legend control on the map instance to remove it next time
+                        (map as any)._legendControl = legend;
 
                         // Add legend to the map
                         legend.addTo(map);
@@ -185,9 +190,8 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
                   <TileLayer
                     url={urlCarto}
                     attribution={attributionCarto}
-                    maxZoom={21}
+                    maxZoom={zoomCarto}
                     minZoom={1}
-                    zoomOffset={-3} // 21-18 = -3
                   />
                   {cartoValid && (<>
                     <MapComponent />
