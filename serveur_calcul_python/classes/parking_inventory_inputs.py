@@ -4,6 +4,7 @@ from config import config_db
 from typing import Union,Self
 import classes.parking_reg_sets as PRS
 import classes.parking_regs as PR
+import classes.tax_dataset as TD
 class ParkingCalculationInputs(pd.DataFrame):
     """Class that inherits from pandas.DataFrame then customizes it with additonal methods."""
     def __init__(self,*args,**kwargs):
@@ -151,3 +152,27 @@ def generate_values_based_on_available_data(entree:dict)->ParkingCalculationInpu
         parking_inputs_out = ParkingCalculationInputs(df_out)
         #breakpoint()
         return parking_inputs_out
+
+def generate_calculation_input_from_tax_data(reg_to_calculate:PR.ParkingRegulations,tax_data: TD.TaxDataset)->ParkingCalculationInputs:
+    if (reg_to_calculate.check_only_one_regulation()):
+        unique_units = reg_to_calculate.get_units()
+        lots= tax_data.lot_table
+        lots_w_assoc = lots.merge(tax_data.lot_association, on=config_db.db_column_lot_id,how='inner')
+        lots_w_tax_entries = lots_w_assoc.merge(tax_data.tax_table,on=config_db.db_column_tax_id,how='inner')
+        lots_w_tax_entries[config_db.db_column_parking_regs_id] = reg_to_calculate.get_reg_id()
+        units_dict = {config_db.db_column_parking_regs_id:[reg_to_calculate.get_reg_id()] * len(unique_units),config_db.db_column_parking_unit_id:unique_units}
+        units_df = pd.DataFrame(units_dict)
+        output_start = lots_w_tax_entries.merge(units_df,on=config_db.db_column_parking_regs_id,how='left')
+        output_start = output_start.merge(reg_to_calculate.units_table,left_on=config_db.db_column_parking_unit_id,right_on=config_db.db_column_units_id,how='left')
+        # Compute 'valeur' by retrieving the column specified in each row by db_column_tax_data_column_to_multiply
+        output_start['valeur'] = output_start.apply(
+            lambda row: row[row[config_db.db_column_tax_data_column_to_multiply]] * row[config_db.db_column_tax_data_conversion_slope] + row[config_db.db_column_tax_data_conversion_zero],
+            axis=1
+        )
+        output = output_start[[config_db.db_column_lot_id,config_db.db_column_tax_land_use,config_db.db_column_parking_regs_id,config_db.db_column_parking_unit_id,'valeur']].copy().rename(columns={config_db.db_column_tax_land_use:config_db.db_column_land_use_id})
+        output_gb = output.groupby(by=[config_db.db_column_lot_id,config_db.db_column_land_use_id,config_db.db_column_parking_regs_id,config_db.db_column_parking_unit_id]).agg({'valeur':'sum'}).reset_index()
+        print('test')
+        output_pii = ParkingCalculationInputs(output_gb)
+        return output_pii
+    else:
+        ValueError('Doit contenir seulement un règlement')

@@ -15,7 +15,7 @@ class ParkingRegulations():
     
     def __repr__(self)->str:
         n_regs  = len(self.reg_head[config_db.db_column_parking_regs_id].unique())
-        n_lines = len(self.reg_head[config_db.db_column_parking_regs_id].unique())
+        n_lines = len(self.reg_def[config_db.db_column_stacked_parking_id].unique())
 
         return f"{n_regs} règlements sur {n_lines} lignes"
 
@@ -69,6 +69,7 @@ class ParkingRegulations():
         return object_out
 
     def get_units(self)->list[int]:
+        '''get_units renvoie une liste des unités utilisées dans le règlement'''
         units = self.reg_def[config_db.db_column_parking_unit_id].unique().tolist()
         return units
     
