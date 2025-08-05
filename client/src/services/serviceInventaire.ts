@@ -119,7 +119,7 @@ export const serviceInventaire = {
                     methode_estime: inventaireAEnvoyer.methode_estime,
                     cubf: inventaireAEnvoyer.cubf
                   };
-                const reponseMAJInv = await api.post(`/inventaire/${id_inv}`,dbData);
+                const reponseMAJInv = await api.put(`/inventaire/${id_inv}`,dbData);
                 return {success:reponseMAJInv.data.success,data:reponseMAJInv.data.data}
             } else{
                 throw new Error("id_inv doit être défini pour cette fonction");
@@ -150,7 +150,7 @@ export const serviceInventaire = {
                 methode_estime: nouvelInventaire.methode_estime,
                 cubf: nouvelInventaire.cubf
                 };
-            const reponseMAJInv = await api.put(`/inventaire/`,dbData);
+            const reponseMAJInv = await api.post(`/inventaire/`,dbData);
             return {success:reponseMAJInv.data.success,data:reponseMAJInv.data.data}
         } catch (error:any) {
             if (axios.isAxiosError(error)) {
@@ -189,7 +189,7 @@ export const serviceInventaire = {
                     throw new Error(`Item with g_no_lot ${item.g_no_lot} is missing id_inv`);
                 }
             });
-            const reponseMAJInv = await api.post(`/inventaire/maj-en-gros/`,inventaireAMAJ);
+            const reponseMAJInv = await api.put(`/inventaire/maj-en-gros/`,inventaireAMAJ);
             return {success:reponseMAJInv.data.success,data:reponseMAJInv.data.data};
         } catch (error:any) {
             if (axios.isAxiosError(error)) {
@@ -205,7 +205,7 @@ export const serviceInventaire = {
 
     plusieursNouveauxInventaires:async(nouvelInventaire:Omit<inventaire_stationnement[],'id_inv'>):Promise<ReponseInventaire>=>{
         try {
-            const reponseMAJInv = await api.put(`/inventaire/nouv-en-gros`,nouvelInventaire);
+            const reponseMAJInv = await api.post(`/inventaire/nouv-en-gros`,nouvelInventaire);
             return reponseMAJInv.data.success
         } catch (error:any) {
             if (axios.isAxiosError(error)) {
