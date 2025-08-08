@@ -272,6 +272,28 @@ def get_parking_reg_for_lot(lot_id:str)->pd.DataFrame:
     association_with_rule= association_with_rule.merge(units,how='left',on=config_db.db_column_parking_regs_id)
     return association_with_rule
 
+def get_all_reg_sets_from_database(engine:sqlalchemy.Engine=None)->list[ParkingRegulationSet]:
+    '''
+        # get_all_reg_sets_from_database
+        Renvoie tous les ensembles de règlements dans une liste
+            Intrants:
+                - engine: Engine sqlalchemy de la connection
+            Extrants:
+                - liste[ParkingRegulationSet]: list des ensembles de règlements
+    '''
+    query = f'''
+        SELECT
+            {config_db.db_column_reg_sets_id}
+        FROM {config_db.db_table_reg_sets_header}
+
+    '''
+    if engine is None:
+        engine = sqlalchemy.create_engine(config_db.pg_string)
+    with engine.connect() as con:
+        reg_sets_ids:pd.DataFrame = pd.read_sql(query,con=con)
+        rsi_list:list[int] = reg_sets_ids[config_db.db_column_reg_sets_id].unique().tolist()
+        reg_sets = from_sql(rsi_list)
+    return reg_sets
 if __name__=="__main__":
     #entete_reglement = pd.DataFrame([[100,"test",1995,2009,"VQZ3","Annexe D","3.1-st-sacrement","CUQ"],
     #                                 [101,"test",1995,2009,"VQZ3","Annexe D","6.1-st-sacrement","CUQ"]],

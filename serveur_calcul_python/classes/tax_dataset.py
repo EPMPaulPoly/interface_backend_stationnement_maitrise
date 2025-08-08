@@ -207,6 +207,62 @@ def tax_database_from_lot_id(lot_id:Union[str,list[str]],engine:sqlalchemy.Engin
         tax_data_set_to_return = TaxDataset(tax_base_data,association_database,lot_database)
     return tax_data_set_to_return
 
+from typing import Tuple
+
+def get_all_lots_with_valid_data(engine:sqlalchemy.Engine=None) -> Tuple[TaxDataset, pd.DataFrame]:
+    '''
+        # get_all_lots_with_valid_data
+        Retrieves all tax_data in the city which have supposedly valid input. Assuming that's number of dwellings in housing and GFA otherwise
+    '''
+    if engine is None:
+        engine = create_engine(config_db.pg_string)
+    with engine.connect() as con:
+        query=  f'''WITH tax_data AS (
+                        SELECT
+                            acr.{config_db.db_column_tax_id},
+                            acr.{config_db.db_column_lot_id},
+                            rf.{config_db.db_column_tax_land_use}::int AS cubf,
+                            rf.{config_db.db_column_tax_gross_floor_area} AS gfa,
+                            rf.{config_db.db_column_tax_number_dwellings} AS n_dwellings,
+                            (rf.{config_db.db_column_tax_land_use}::int = 1000 AND rf.{config_db.db_column_tax_number_dwellings} IS NOT NULL) 
+                                OR (rf.{config_db.db_column_tax_land_use}::int != 1000 AND rf.{config_db.db_column_tax_gross_floor_area}  IS NOT NULL) AS condition
+                        FROM association_cadastre_role acr
+                        LEFT JOIN role_foncier rf ON rf.{config_db.db_column_tax_id} = acr.{config_db.db_column_tax_id}
+                        LEFT JOIN cadastre cad ON cad.{config_db.db_column_lot_id} = acr.{config_db.db_column_lot_id}
+                    )
+                    SELECT 
+                        td.{config_db.db_column_lot_id},
+                        bool_and(td.condition) AS lot_condition,
+                        array_agg(DISTINCT td.cubf ORDER BY td.cubf) AS cubf_list,
+                        cardinality(array_agg(DISTINCT td.cubf ORDER BY td.cubf)) AS n_cubf,
+                        -- Single cubf if there's only one
+                        CASE 
+                            WHEN cardinality(array_agg(DISTINCT td.cubf ORDER BY td.cubf)) = 1
+                            THEN (array_agg(DISTINCT td.cubf ORDER BY td.cubf))[1]
+                        END AS single_cubf,
+                        -- Hierarchy extraction if only one cubf
+                        CASE 
+                            WHEN cardinality(array_agg(DISTINCT td.cubf ORDER BY td.cubf)) = 1
+                            THEN left((array_agg(DISTINCT td.cubf ORDER BY td.cubf))[1]::text, 1)::int
+                        END AS cubf_lvl1,
+                        CASE 
+                            WHEN cardinality(array_agg(DISTINCT td.cubf ORDER BY td.cubf)) = 1
+                            THEN left((array_agg(DISTINCT td.cubf ORDER BY td.cubf))[1]::text, 2)::int
+                        END AS cubf_lvl2,
+                        CASE 
+                            WHEN cardinality(array_agg(DISTINCT td.cubf ORDER BY td.cubf)) = 1
+                            THEN left((array_agg(DISTINCT td.cubf ORDER BY td.cubf))[1]::text, 3)::int
+                        END AS cubf_lvl3
+                    FROM tax_data td
+                    GROUP BY td.{config_db.db_column_lot_id}
+                    HAVING bool_and(td.condition) = true;
+                '''
+        valid_lots = pd.read_sql(query,con=con)
+        valid_tax_lots = valid_lots[config_db.db_column_lot_id].unique().tolist()
+        tax_dataset_to_out = tax_database_from_lot_id(valid_tax_lots)
+    return [tax_dataset_to_out,valid_lots]
+    
+
 def from_postgis(**kwargs):
     polygon = kwargs.get("polygon",None)
     engine = create_engine(config_db.pg_string)

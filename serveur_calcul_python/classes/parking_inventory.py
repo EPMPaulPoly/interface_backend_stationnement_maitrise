@@ -87,6 +87,42 @@ class ParkingInventory():
         else: 
             logger.info('No duplicate entries, continue,continuting on')
 
+    def aggregate_statistics_by_land_use(self:Self, lot_uses:pd.DataFrame, level:int=1)->pd.DataFrame:
+        logging.info('Entrée dans la création de statistiques agrégées')
+        stats = []
+        match level:
+            case 1:
+                unique_land_uses = lot_uses['cubf_lvl1'].unique().tolist()
+                for land_use in unique_land_uses:
+                    lots_to_aggregate = lot_uses.loc[lot_uses['cubf_lvl1']==land_use, config_db.db_column_lot_id].unique().tolist()
+                    subset = self.parking_frame[self.parking_frame[config_db.db_column_lot_id].isin(lots_to_aggregate)]
+                    stats.append({
+                        'land_use': land_use,
+                        'n_lots': len(lots_to_aggregate),
+                        'n_places_min': subset['n_places_min'].sum()
+                    })
+            case 2:
+                unique_land_uses = lot_uses['cubf_lvl2'].unique().tolist()
+                for land_use in unique_land_uses:
+                    lots_to_aggregate = lot_uses.loc[lot_uses['cubf_lvl2']==land_use, config_db.db_column_lot_id].unique().tolist()
+                    subset = self.parking_frame[self.parking_frame[config_db.db_column_lot_id].isin(lots_to_aggregate)]
+                    stats.append({
+                        'land_use': land_use,
+                        'n_lots': len(lots_to_aggregate),
+                        'n_places_min': subset['n_places_min'].sum()
+                    })
+            case 3:
+                unique_land_uses = lot_uses['cubf_lvl3'].unique().tolist()
+                for land_use in unique_land_uses:
+                    lots_to_aggregate = lot_uses.loc[lot_uses['cubf_lvl3']==land_use, config_db.db_column_lot_id].unique().tolist()
+                    subset = self.parking_frame[self.parking_frame[config_db.db_column_lot_id].isin(lots_to_aggregate)]
+                    stats.append({
+                        'land_use': land_use,
+                        'n_lots': len(lots_to_aggregate),
+                        'n_places_min': subset['n_places_min'].sum()
+                    })
+        return pd.DataFrame(stats)
+
 def subset_operation(inventory_1:ParkingInventory,operator,inventory_2:ParkingInventory) ->ParkingInventory:
     logger = logging.getLogger(__name__)
     if isinstance(operator,int):

@@ -148,6 +148,18 @@ export interface RequeteInventaireGros{
     data: RequeteInventaireGrosItem[]
 }
 
+export interface RequeteAnalyseVariabilite{
+    id_er: number[];
+}
+export interface dataHistogrammeVariabilite{
+    valeur_actuelle:number,
+    datasets:serieHistogrammeVariabilite[]
+}
+export interface serieHistogrammeVariabilite{
+    label:string,
+    data:number[]
+}
+
 
 export interface RequeteCalculeInventaireRegMan{
     cubf:number,

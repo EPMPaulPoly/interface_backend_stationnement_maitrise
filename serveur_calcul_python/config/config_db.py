@@ -47,6 +47,8 @@ db_column_RST_id = 'id_asso_er_ter'
 db_column_tax_id = 'id_provinc'
 db_column_tax_constr_year = 'rl0307a'
 db_column_tax_land_use = 'rl0105a'
+db_column_tax_gross_floor_area ='rl0308a'
+db_column_tax_number_dwellings = 'rl0311a'
 # cadastre
 db_column_lot_id = 'g_no_lot'
 # cartographie_secteurs
