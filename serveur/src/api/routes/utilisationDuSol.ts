@@ -16,6 +16,7 @@ export const creationRouteurUtilsationDuSol = (pool: Pool): Router => {
 
             if (typeof(cubf) !== 'string' && typeof(Number(cubf)) !== 'number' && typeof(niveau)!=='string' && typeof(Number(niveau))!=='number' ) {
                 // type guard
+                console.log('entering typeguard')
             } else if (typeof(cubf)==='undefined' && typeof(niveau)==='undefined'){
                 query = `SELECT 
                         cubf::int,
@@ -40,6 +41,8 @@ export const creationRouteurUtilsationDuSol = (pool: Pool): Router => {
                 if (Number(cubf)<10){
                     minCubf = Number(cubf)*10;
                     maxCubf = Number(cubf)*10 +9;
+                } else if(Number(cubf)>10){
+                    throw new Error('Combinaison invalide de niveau et cubf')
                 }
                 query = `SELECT 
                         cubf::int,
@@ -56,6 +59,8 @@ export const creationRouteurUtilsationDuSol = (pool: Pool): Router => {
                 if ((Number(cubf)>=10 && Number(cubf) < 100)){
                     minCubf = Number(cubf)*10;
                     maxCubf = Number(cubf)*10 +9;
+                } else if ((Number(cubf)<10 || Number(cubf) >= 100)){
+                    throw new Error('Combinaison invalide de niveau et cubf')
                 }
                 query = `SELECT 
                         cubf::int,
@@ -69,9 +74,11 @@ export const creationRouteurUtilsationDuSol = (pool: Pool): Router => {
             } else if (Number(niveau)===4 ) {
                 let minCubf = 1000;
                 let maxCubf = 9999;
-                if ((Number(cubf)>=100 && Number(cubf) < 1000)){
+                if ((Number(cubf)>=100 || Number(cubf) < 1000)){
                     minCubf = Number(cubf)*10;
                     maxCubf = Number(cubf)*10 +9;
+                } else if (((Number(cubf)<100 || Number(cubf) >= 1000))){
+                    throw new Error('Combinaison invalide de niveau et cubf')
                 }
                 query = `SELECT 
                         cubf::int,
@@ -82,23 +89,27 @@ export const creationRouteurUtilsationDuSol = (pool: Pool): Router => {
                         cubf>=${minCubf} AND cubf<=${maxCubf}
                     order by cubf asc`;
                 result = await client.query(query)
-            } else if(Number(cubf)>=1000){
+            } else if(Number(cubf)>=1){
                 query = `SELECT 
-                        *
+                        cubf::int,
+                        description
                     FROM
                         public.cubf 
                     WHERE 
                         cubf=${cubf}
                     order by cubf asc`;
                 result = await client.query(query)
-            }
-            else {
+            } else {
                 // Handle other cases or throw an error if needed
-                throw new Error('combinaison invalide de cubf et niveau');
+                throw new Error('Combinaison invalide de niveau et cubf');
             }
             res.json({ success: true, data: result.rows });
-        } catch (err) {
+        } catch (err:any) {
+            if (err.message ==='Combinaison invalide de niveau et cubf'){
+                res.status(400).json({ success: false, error: 'Combinaison invalide de niveau et cubf' });
+            } else{
             res.status(500).json({ success: false, error: 'Database error' });
+            }
         } finally {
             if (client) {
                 client.release()
