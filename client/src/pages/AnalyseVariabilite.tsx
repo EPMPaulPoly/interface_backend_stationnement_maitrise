@@ -54,12 +54,15 @@ const AnalyseVariabilite:React.FC = () =>{
                             defEnsRegReference={defEnsRegReference}
                             niveauCUBF={niveauCUBF}
                             defNiveauCUBF={defNiveauCUBF}
+                            colorPalette={colorPalette}
                         />
                         :
                         <VisualisationResAnaVarFonc
                             editionParams={editionParametres}
                             defEditionParams={defEditionParametres}
                             ensRegAAnalyser={ensRegAAnalyser}
+                            ensRegReference={ensRegReference}
+                            colorPalette={colorPalette}
                         />
                         }
                     </>:

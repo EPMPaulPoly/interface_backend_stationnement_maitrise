@@ -151,14 +151,23 @@ export interface RequeteInventaireGros{
 export interface RequeteAnalyseVariabilite{
     id_er: string;
     cubf_n1:string;
+    id_ref:string;
 }
 export interface dataHistogrammeVariabilite{
-    valeur_actuelle:number,
+    labels:string[],
     datasets:serieHistogrammeVariabilite[]
 }
 export interface serieHistogrammeVariabilite{
     label:string,
     data:number[]
+}
+export interface RetourBDAnalyseVariabilite{
+    land_use:number,
+    valeur:number,
+    id_er:number,
+    description_er:string,
+    n_lots:number,
+    land_use_desc:string
 }
 
 

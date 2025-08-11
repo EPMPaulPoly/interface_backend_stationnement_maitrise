@@ -442,6 +442,10 @@ export interface ControlAnaRegProps{
     defNGraphiques:React.Dispatch<SetStateAction<number>>
     colorPalette:string[]
 }
+// ----------------------------------------------------------------------------
+// -------------------- Graphiques Variabilité Règlements ---------------------
+// ---------------------------------------------------------------------------- 
+
 export interface ControlAnaVarProps{
     methodeAnalyse:methodeAnalyseVariabillite,
     defMethodeAnalyse:React.Dispatch<SetStateAction<methodeAnalyseVariabillite>>
@@ -458,11 +462,21 @@ export interface PropsEditionParametresAnaVarFonc{
     ensRegReference:number,
     defEnsRegReference:React.Dispatch<SetStateAction<number>>
     niveauCUBF:comptes_utilisations_sol
-    defNiveauCUBF:React.Dispatch<SetStateAction<comptes_utilisations_sol>>
+    defNiveauCUBF:React.Dispatch<SetStateAction<comptes_utilisations_sol>>,
+    colorPalette:string[]
 }
 
 export interface PropsVisualisationAnaVarFonc{
     editionParams:boolean,
     defEditionParams:React.Dispatch<SetStateAction<boolean>>,
-    ensRegAAnalyser:number[]
+    ensRegAAnalyser:number[],
+    ensRegReference: number,
+    colorPalette:string[]
+}
+
+export interface PropsGraphAnaVar{
+    ensRegAGraph:number[],
+    ensRegReference: number,
+    index:number,
+    colorPalette:string[]
 }
