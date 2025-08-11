@@ -6,6 +6,7 @@ import classes.parking_reg_sets as PRS
 import classes.tax_dataset as TD
 import config.config_db as cf
 import pandas as pd
+import numpy as np
 import sqlalchemy
 if __name__== "__main__":
     try:
@@ -21,7 +22,8 @@ if __name__== "__main__":
                 final_aggregate_data = aggregate_data
             else:
                 final_aggregate_data=pd.concat([final_aggregate_data,aggregate_data])
+        final_aggregate_data['n_places_min']= final_aggregate_data['n_places_min'].apply(np.ceil)
         final_aggregate_data.to_sql('variabilite',con=con.connect(),if_exists='replace')
-        print('true')
+        print('[true]')
     except Exception as e:
-        print('false')
+        print('[false]')

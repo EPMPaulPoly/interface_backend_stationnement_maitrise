@@ -149,7 +149,8 @@ export interface RequeteInventaireGros{
 }
 
 export interface RequeteAnalyseVariabilite{
-    id_er: number[];
+    id_er: string;
+    cubf_n1:string;
 }
 export interface dataHistogrammeVariabilite{
     valeur_actuelle:number,

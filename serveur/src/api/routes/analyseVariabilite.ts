@@ -44,9 +44,13 @@ export const creationRouteurAnalyseVariabilite = (pool:Pool):Router =>{
                 if (jsonStartIndex !== -1) {
                     const jsonString = outputData.slice(jsonStartIndex).trim();
                     const jsonData = JSON.parse(jsonString);
-                    
-                    //console.log('Parsed JSON:', jsonData);
-                    return res.status(200).json({success:true,data:jsonData});  //  Send JSON response
+                    if (jsonData==='true'){
+                        //console.log('Parsed JSON:', jsonData);
+                        return res.status(200).json({success:true,data:jsonData});  //  Send JSON response
+                    }else{
+                       console.error('No JSON found in output:', outputData);
+                        return res.status(500).send('Erreur: Erreur dans le script python.'); 
+                    }
                 } else {
                     console.error('No JSON found in output:', outputData);
                     return res.status(500).send('Erreur: No valid JSON found in output.');
@@ -62,17 +66,26 @@ export const creationRouteurAnalyseVariabilite = (pool:Pool):Router =>{
         });
     };
 
-    const obtiensAnalyseVariabilite:RequestHandler = async(req,res,next):Promise<void>=>{
+    const obtiensAnalyseVariabilite:RequestHandler<RequeteAnalyseVariabilite> = async(req,res,next):Promise<void>=>{
         
         console.log('obtention nombre utilisation du sol par niveau')
         let client;
         try {
             client = await pool.connect();
-            const {ids}=req.params;
-            const id_out = ids.split(',')
+            const {id_er,cubf_n1}=req.query;
+            const id_out: number[] = (typeof id_er === 'string' ? id_er.split(',').map(Number) : []);
+            const cubf_out: number[] = (typeof cubf_n1 ==='string' ? cubf_n1.split(',').map(Number):[]);
             let query: string
             let result: any;
-            query = `
+            let conditions: string[]=[];
+            if (id_out.length>0){
+                conditions.push(`id_er IN (${id_out.join(',')})`)
+            }
+            if (cubf_out.length>0){
+                conditions.push(`land_use IN (${cubf_out.join(',')})`)
+            }
+            if(conditions.length>0){
+                query = `
                 WITH reg_set_defs AS (
                     SELECT
                         id_er,
@@ -84,12 +97,38 @@ export const creationRouteurAnalyseVariabilite = (pool:Pool):Router =>{
                     av.cubf,
                     av.n_places_min,
                     av.id_er,
+                    av.n_lots,
+                    av.land_use,
                     rsd.description_er
                 FROM 
                     analyse_variabilite av
                 LEFT JOIN
                     reg_set_defs rsd ON rsd.id_er=av.id_er
             `
+            }else{
+                query=`
+                WITH reg_set_defs AS (
+                    SELECT
+                        id_er,
+                        description_er
+                    FROM 
+                        ensembles_reglements_stat
+                )
+                SELECT
+                    av.cubf,
+                    av.n_places_min,
+                    av.id_er,
+                    av.n_lots,
+                    av.land_use,
+                    rsd.description_er
+                FROM 
+                    analyse_variabilite av
+                LEFT JOIN
+                    reg_set_defs rsd ON rsd.id_er=av.id_er
+                `
+                query += 'WHERE ' + conditions.join(' AND ');
+            }
+            
             result = await client.query(query)
             res.json({ success: true, data: result.rows });
         } catch (err) {
@@ -101,6 +140,6 @@ export const creationRouteurAnalyseVariabilite = (pool:Pool):Router =>{
         }
     }
     router.get('/recalcule-inventaires-tous-ens-regs',calculeAnalyseVariabilite)
-    router.get('/obtiens-donnees-varia/:ids')
+    router.get('/obtiens-donnees-varia',obtiensAnalyseVariabilite)
     return router;
 };
