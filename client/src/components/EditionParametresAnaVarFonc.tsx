@@ -53,66 +53,67 @@ const EditionParametresAnaVarFonc: React.FC<PropsEditionParametresAnaVarFonc> = 
             /> Retour à la page de comparaison
             </div>
             <div style={{ height: 24 }} />
-            <FormControl variant="outlined" size="small" style={{ minWidth: 120 }}>
-                <InputLabel id="select-reference-ER-label"
-                    sx={{
-                        color: 'white',
-                        '&.Mui-focused': { color: 'white' },
-                        '&.MuiInputLabel-shrink': { color: 'white' },
-                    }}
-                >
-                    Ensemble Règlement de Référence
-                </InputLabel>
-                <Select
-                    labelId="select-reference-ER-label"
-                    id="select-reference-ER"
-                    value={props.ensRegReference}
-                    onChange={(e) => gestChangementEnsRegReference(Number(e.target.value))}
-                    label="Methode analyse"
-                    sx={{
-                        backgroundColor: 'black',
-                        minWidth: 300,
-                        color: 'white',
-                        '& .MuiSvgIcon-root': { color: 'white' }, // arrow
-                        '& .MuiOutlinedInput-notchedOutline': { borderColor: '#666' },
-                        '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#888' },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#aaa' },
+                {props.ensRegAAnalyser.length>0?<><FormControl variant="outlined" size="small" style={{ minWidth: 120 }}>
+                    <InputLabel id="select-reference-ER-label"
+                        sx={{
+                            color: 'white',
+                            '&.Mui-focused': { color: 'white' },
+                            '&.MuiInputLabel-shrink': { color: 'white' },
+                        }}
+                    >
+                        Ensemble Règlement de Référence
+                    </InputLabel>
+                    <Select
+                        labelId="select-reference-ER-label"
+                        id="select-reference-ER"
+                        value={props.ensRegReference}
+                        onChange={(e) => gestChangementEnsRegReference(Number(e.target.value))}
+                        label="Methode analyse"
+                        sx={{
+                            backgroundColor: 'black',
+                            minWidth: 300,
+                            color: 'white',
+                            '& .MuiSvgIcon-root': { color: 'white' }, // arrow
+                            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#666' },
+                            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#888' },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#aaa' },
 
-                    }}
-                    MenuProps={{
-                        PaperProps: {
-                            sx: {
-                                bgcolor: 'black',
-                                color: 'white',
-                            },
-                        },
-                    }}
-                >
-                    {entetesEnsRegAAnalyser.map((val) => (
-                        <MenuItem
-                            key={val.id_er}
-                            value={val.id_er}
-                            sx={{
-                                backgroundColor: 'black',
-                                color: 'white',
-                                '&.Mui-selected': {
-                                    backgroundColor: '#222',
+                        }}
+                        MenuProps={{
+                            PaperProps: {
+                                sx: {
+                                    bgcolor: 'black',
                                     color: 'white',
                                 },
-                                '&.Mui-selected:hover': {
-                                    backgroundColor: '#333',
-                                },
-                            }}
-                        >
-                            {val.description_er}
-                        </MenuItem>
-                    ))}
-                </Select>
+                            },
+                        }}
+                    >
+                        {entetesEnsRegAAnalyser.map((val) => (
+                            <MenuItem
+                                key={val.id_er}
+                                value={val.id_er}
+                                sx={{
+                                    backgroundColor: 'black',
+                                    color: 'white',
+                                    '&.Mui-selected': {
+                                        backgroundColor: '#222',
+                                        color: 'white',
+                                    },
+                                    '&.Mui-selected:hover': {
+                                        backgroundColor: '#333',
+                                    },
+                                }}
+                            >
+                                {val.description_er}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                    
+                </FormControl></>:<><p color="red">Sélectionner des ensembles de règlements</p></>}
                 
-            </FormControl>
 
             {/* Finesse de la comparaison */}
-            <FormControl variant="outlined" size="small" style={{ minWidth: 120 }}>
+            {/*<FormControl variant="outlined" size="small" style={{ minWidth: 120 }}>
                 <InputLabel id="select-level-label"
                     sx={{
                         color: 'white',
@@ -167,7 +168,7 @@ const EditionParametresAnaVarFonc: React.FC<PropsEditionParametresAnaVarFonc> = 
                         </MenuItem>
                     ))}
                 </Select>
-            </FormControl>
+            </FormControl>*/}
         </div>
     )
 }

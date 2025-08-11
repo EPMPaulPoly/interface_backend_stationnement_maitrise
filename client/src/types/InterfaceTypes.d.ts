@@ -463,5 +463,6 @@ export interface PropsEditionParametresAnaVarFonc{
 
 export interface PropsVisualisationAnaVarFonc{
     editionParams:boolean,
-    defEditionParams:React.Dispatch<SetStateAction<boolean>>
+    defEditionParams:React.Dispatch<SetStateAction<boolean>>,
+    ensRegAAnalyser:number[]
 }

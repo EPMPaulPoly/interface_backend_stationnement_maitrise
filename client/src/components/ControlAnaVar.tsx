@@ -39,7 +39,10 @@ const ControlAnaVar: FC<ControlAnaVarProps> = (props: ControlAnaVarProps) => {
 
     const gestLancementCalculsVariabilite =async()=>{
         props.defCalculsEnCours(true)
-        await new Promise(resolve => setTimeout(resolve, 10000));
+        const calculReussi = await serviceAnaVariabilite.recalculeInventairesFonciersAvecTousEnsRegs()
+        if (calculReussi){
+            
+        }
         props.defCalculsEnCours(false)
     }
 

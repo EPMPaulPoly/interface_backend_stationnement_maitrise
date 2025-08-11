@@ -7,6 +7,14 @@ const VisualisationResAnaVarFonc:React.FC<PropsVisualisationAnaVarFonc>=(props: 
             <Settings
                 onClick={() => props.defEditionParams(true)}
             />
+            {props.ensRegAAnalyser.length>0?
+                <div className="pan-vis-resultats-graph">
+
+                </div>
+                :<>
+                </>
+            }
+            
         </div>
     )
 }

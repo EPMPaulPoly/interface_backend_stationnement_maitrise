@@ -59,6 +59,7 @@ const AnalyseVariabilite:React.FC = () =>{
                         <VisualisationResAnaVarFonc
                             editionParams={editionParametres}
                             defEditionParams={defEditionParametres}
+                            ensRegAAnalyser={ensRegAAnalyser}
                         />
                         }
                     </>:

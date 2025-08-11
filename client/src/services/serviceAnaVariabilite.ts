@@ -5,7 +5,7 @@ import { data_graphique } from '../types/DataTypes';
 export const serviceAnaVariabilite = {
     recalculeInventairesFonciersAvecTousEnsRegs:async() :Promise<boolean>=>{
         try {
-            const response: AxiosResponse<ReponseCalculComplete> = await api.get(`/ana-variabilite/recalcule-inventaires-tous-ens-regs`);
+            const response: AxiosResponse<ReponseCalculComplete> = await api.get(`/ana-var/recalcule-inventaires-tous-ens-regs`);
             return response.data.success??false;
         } catch (error: any) {
             if (axios.isAxiosError(error)) {
@@ -21,7 +21,7 @@ export const serviceAnaVariabilite = {
 
     obtiensInventairesEnsRegs:async(ids:number[]):Promise<ReponseDataGraphique>=>{
         try {
-            const response: AxiosResponse<ReponseDataGraphique> = await api.get(`/ana-variabilite/obtiens-donnees-varia/${ids.join(',')}`);
+            const response: AxiosResponse<ReponseDataGraphique> = await api.get(`/ana-variabilite/obtiens-donnees-varia?id_er=${ids.join(',')}`);
             return ({success:response.data.success,
                     data:response.data.data
             });

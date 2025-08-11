@@ -39,16 +39,16 @@ export const creationRouteurAnalyseVariabilite = (pool:Pool):Router =>{
             //console.log(`Output: ${outputData}`)
             console.log(`Processus enfant terminé avec succès.`);
             try {
-                // 🔹 Extract JSON by finding the first `{` (start of JSON)
+                // Extract JSON by finding the first `{` (start of JSON)
                 const jsonStartIndex = outputData.indexOf('[');
                 if (jsonStartIndex !== -1) {
                     const jsonString = outputData.slice(jsonStartIndex).trim();
                     const jsonData = JSON.parse(jsonString);
-                    if (jsonData==='true'){
+                    if (jsonData[0]===true){
                         //console.log('Parsed JSON:', jsonData);
-                        return res.status(200).json({success:true,data:jsonData});  //  Send JSON response
+                        return res.status(200).json({success:true});  //  Send JSON response
                     }else{
-                       console.error('No JSON found in output:', outputData);
+                        console.error('No JSON found in output:', outputData);
                         return res.status(500).send('Erreur: Erreur dans le script python.'); 
                     }
                 } else {
