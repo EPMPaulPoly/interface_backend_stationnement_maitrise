@@ -34,7 +34,7 @@ class ParkingRegulations():
         return self.reg_def.loc[self.reg_def[config_db.db_column_parking_subset_id]==subset_id]
 
     def get_subset_intra_operation_type(self,subset:int)->int:
-        subset_def = self.get_subset_def(subset)
+        subset_def = self.get_subset_def(subset).copy()
         if len(subset_def)>1:
             subset_def.sort_values(by=config_db.db_column_stacked_parking_id,ascending=True,inplace=True)
             other_operators = subset_def[config_db.db_column_parking_operation].iloc[1:].unique().tolist()
