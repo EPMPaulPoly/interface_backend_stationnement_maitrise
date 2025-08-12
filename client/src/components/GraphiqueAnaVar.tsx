@@ -6,6 +6,7 @@ import { data_graphique, informations_pour_graph_unite_er_reg, utilisation_sol }
 import { serviceEnsemblesReglements, serviceReglements } from '../services';
 import { serviceAnaVariabilite } from '../services/serviceAnaVariabilite';
 import serviceUtilisationDuSol from '../services/serviceUtilisationDuSol';
+import { FaLevelDownAlt } from 'react-icons/fa';
 
 const GraphiqueAnaVar:FC<PropsGraphAnaVar>=(props:PropsGraphAnaVar)=>{
     const [cubf,defCUBF] = useState<utilisation_sol>({cubf:-1,description:'N/A'})
@@ -17,32 +18,44 @@ const GraphiqueAnaVar:FC<PropsGraphAnaVar>=(props:PropsGraphAnaVar)=>{
         }],
     })
 
-    const { ensRegAGraph, ensRegReference, index } = props;
+    const { ensRegAGraph, ensRegReference, index,voirInv } = props;
 
     useEffect(() => {
         const fetchData = async () => {
             if (ensRegAGraph.length > 0 && ensRegReference !== -1) {
-                const [data_in] = await Promise.all([
+                const [data_in,cubf] = await Promise.all([
                     serviceAnaVariabilite.obtiensInventairesEnsRegs(
                         ensRegAGraph,
                         ensRegReference,
-                        index + 1
-                    )
+                        index < 9 ? index + 1 : undefined,
+                        props.voirInv
+                    ),serviceUtilisationDuSol.obtientUtilisationDuSol(index+1,false)
                 ]);
                 defData(data_in.data);
+                if (props.index!==9){
+                    defCUBF(cubf.data[0]);
+                }else{
+                    defCUBF({cubf:0,description:"Tous"})
+                }
             } else if (ensRegAGraph.length > 0 ){
-                const [data_in] = await Promise.all([
+                const [data_in,cubf] = await Promise.all([
                     serviceAnaVariabilite.obtiensInventairesEnsRegs(
                         ensRegAGraph,
                         undefined,
-                        index + 1
-                    )
+                        index < 9 ? index + 1 : undefined,
+                        props.voirInv
+                    ),serviceUtilisationDuSol.obtientUtilisationDuSol(index+1,false)
                 ]);
                 defData(data_in.data);
+                if (props.index!==9){
+                    defCUBF(cubf.data[0]);
+                }else{
+                    defCUBF({cubf:0,description:"Tous"})
+                }
             }
         };
         fetchData();
-    }, [ensRegAGraph, ensRegReference, index]);
+    }, [ensRegAGraph, ensRegReference, index,voirInv]);
     
 
     const options = {
@@ -81,6 +94,7 @@ const GraphiqueAnaVar:FC<PropsGraphAnaVar>=(props:PropsGraphAnaVar)=>{
                         size: 18,
                     },
                 },
+                stacked: index === 9
             },
             y: {
                 ticks: {
@@ -97,6 +111,7 @@ const GraphiqueAnaVar:FC<PropsGraphAnaVar>=(props:PropsGraphAnaVar)=>{
                         size: 18,
                     },
                 },
+                stacked: index === 9
             },
         },
     };
@@ -108,15 +123,10 @@ const GraphiqueAnaVar:FC<PropsGraphAnaVar>=(props:PropsGraphAnaVar)=>{
             data={{
                 ...data,
                 datasets: data.datasets.map((ds, i) => {
-                // Find the matching reglement by id_er
-                const reglement = props.ensRegAGraph.find(r => r === ds.id_er);
-                // Get color from palette by index or fallback
-                const colorIndex = reglement ? props.ensRegAGraph.indexOf(reglement) : i;
-                const color = props.colorPalette[colorIndex % props.colorPalette.length] || '#cccccc';
                 return {
                     ...ds,
-                    borderColor: color,
-                    backgroundColor: color + '80', // add alpha for background
+                    color: props.colorPalette[ds.cubf ?? index],
+                    backgroundColor:props.colorPalette[ds.cubf ?? index]
                 };
                 }),
             }}
@@ -131,16 +141,13 @@ const GraphiqueAnaVar:FC<PropsGraphAnaVar>=(props:PropsGraphAnaVar)=>{
                         // Find reglement by id_er
                         const reglement = props.ensRegAGraph.find(r => r === ds.id_er);
                         // Try to get desc_er and desc_reg_stat if available
-                        const desc_er = ds?.desc_er || '';
-                        const desc_reg_stat = ds?.desc_reg_stat || '';
                         const value = context.parsed.y;
+
                         let label = '';
-                        if (desc_er && desc_reg_stat) {
-                            label = `${desc_er} (${desc_reg_stat}): ${value} places`;
-                        } else if (desc_er) {
-                            label = `${desc_er}: ${value} places`;
-                        } else {
-                            label = `${ds.label}: ${value} places`;
+                        if (props.ensRegReference!==-1) {
+                            label = `Indice pour ${context.label}par rapport à référence (100): ${value.toFixed(2)}`;
+                        }else {
+                            label = `${ds.label}: ${value.toFixed(2)} places`;
                         }
                         return label;
                     }

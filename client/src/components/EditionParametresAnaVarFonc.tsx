@@ -23,7 +23,7 @@ const EditionParametresAnaVarFonc: React.FC<PropsEditionParametresAnaVarFonc> = 
         }
         fetchData()
     }, [props.ensRegAAnalyser])
-    useEffect(() => {
+    /*useEffect(() => {
         const fetchCUBF = async () => {
             if (niveauxCUBFPossibles.length === 0) {
                 const reponse = await serviceUtilisationDuSol.obtientComptesUtilsiationSol()
@@ -35,7 +35,7 @@ const EditionParametresAnaVarFonc: React.FC<PropsEditionParametresAnaVarFonc> = 
             }
         }
         fetchCUBF();
-    }, [props.editionParams])
+    }, [props.editionParams])*/
 
     const gestChangementEnsRegReference = (idEnsReg: number) => {
         props.defEnsRegReference(idEnsReg)
@@ -88,6 +88,23 @@ const EditionParametresAnaVarFonc: React.FC<PropsEditionParametresAnaVarFonc> = 
                             },
                         }}
                     >
+                        <MenuItem
+                            key={-1}
+                            value={-1}
+                            sx={{
+                                backgroundColor: 'black',
+                                color: 'white',
+                                '&.Mui-selected': {
+                                    backgroundColor: '#222',
+                                    color: 'white',
+                                },
+                                '&.Mui-selected:hover': {
+                                    backgroundColor: '#333',
+                                },
+                            }}>
+                            Aucune référence
+                        </MenuItem>
+
                         {entetesEnsRegAAnalyser.map((val) => (
                             <MenuItem
                                 key={val.id_er}
@@ -169,6 +186,7 @@ const EditionParametresAnaVarFonc: React.FC<PropsEditionParametresAnaVarFonc> = 
                     ))}
                 </Select>
             </FormControl>*/}
+            
         </div>
     )
 }

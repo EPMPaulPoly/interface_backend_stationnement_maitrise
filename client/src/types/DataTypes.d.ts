@@ -258,7 +258,8 @@ export interface y_serie_data_graphique{
     id_er?:number,
     desc_er?:string,
     id_reg_stat?:number,
-    desc_reg_stat?: string
+    desc_reg_stat?: string,
+    cubf?:number
 }
 export interface data_graphique{
     labels:number[]

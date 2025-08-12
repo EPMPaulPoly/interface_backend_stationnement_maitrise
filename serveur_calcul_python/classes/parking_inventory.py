@@ -807,3 +807,18 @@ def calculate_addition_based_subset(reg_to_calculate:PR.ParkingRegulations,subse
                 return ParkingInventory(inventory_out)
             else:
                 ValueError('You need to provide all relevant units for a regulation')
+
+def get_lot_data_by_estimation(lot_ids:list[str],estimation_method:int,con:Engine=None)->ParkingInventory:
+    if con is None:
+        con = create_engine(config_db.pg_string)
+    with con.connect() as con2:
+        query = f'''
+                    SELECT 
+                        *
+                    FROM 
+                        {config_db.db_table_parking_inventory}
+                    WHERE {config_db.db_column_lot_id} in ('{("','").join(lot_ids)}') AND methode_estime={estimation_method}
+                '''
+        data = pd.read_sql(query,con=con2)
+        data_PI = ParkingInventory(data)
+    return data_PI

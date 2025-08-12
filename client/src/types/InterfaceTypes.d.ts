@@ -453,7 +453,9 @@ export interface ControlAnaVarProps{
     ensRegAAnalyser:number[],
     defEnsRegAAnalyser:React.Dispatch<SetStateAction<number[]>>
     colorPalette:string[]
-    defCalculsEnCours:React.Dispatch<SetStateAction<boolean>>
+    defCalculsEnCours:React.Dispatch<SetStateAction<boolean>>,
+    voirInv:boolean,
+    defVoirInv: React.Dispatch<SetStateAction<boolean>>
 }
 export interface PropsEditionParametresAnaVarFonc{
     editionParams:boolean,
@@ -471,12 +473,14 @@ export interface PropsVisualisationAnaVarFonc{
     defEditionParams:React.Dispatch<SetStateAction<boolean>>,
     ensRegAAnalyser:number[],
     ensRegReference: number,
-    colorPalette:string[]
+    colorPalette:string[],
+    voirInv:boolean
 }
 
 export interface PropsGraphAnaVar{
     ensRegAGraph:number[],
     ensRegReference: number,
     index:number,
-    colorPalette:string[]
+    colorPalette:string[],
+    voirInv:boolean
 }

@@ -9,20 +9,18 @@ import { ClimbingBoxLoader } from 'react-spinners';
 
 
 const AnalyseVariabilite:React.FC = () =>{
-    const [methodeAnalyse,defMethodeAnalyse] = useState<methodeAnalyseVariabillite>({idMethodeAnalyse:0,
-        descriptionMethodeAnalyse:'Entrées Manuelles'});
+    const [methodeAnalyse,defMethodeAnalyse] = useState<methodeAnalyseVariabillite>({idMethodeAnalyse:1,
+        descriptionMethodeAnalyse:'Données Foncières'});
     const [ensRegAAnalyser, defEnsRegAAnalyser] = useState<number[]>([]);
     const [editionParametres,defEditionParametres] = useState<boolean>(false);
     const [ensRegReference,defEnsRegReference] = useState<number>(-1);
     const [niveauCUBF,defNiveauCUBF] = useState<comptes_utilisations_sol>({niveau:-1,description:'invalide',n_entrees:0})
     const [calculsEnCours,defCalculsEnCours] = useState<boolean>(false);
+    const [voirInv,defVoirInv] = useState<boolean>(false)
     const colorPalette = [
     '#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe'
     ];
-    const methodesAnalysesPossibles:methodeAnalyseVariabillite[] =[{
-        idMethodeAnalyse:0,
-        descriptionMethodeAnalyse:'Entrées Manuelles'
-    },
+    const methodesAnalysesPossibles:methodeAnalyseVariabillite[] =[
     {
         idMethodeAnalyse:1,
         descriptionMethodeAnalyse:'Données Foncières'
@@ -42,6 +40,8 @@ const AnalyseVariabilite:React.FC = () =>{
                     defEnsRegAAnalyser={defEnsRegAAnalyser}
                     colorPalette={colorPalette}
                     defCalculsEnCours = {defCalculsEnCours}
+                    voirInv={voirInv}
+                    defVoirInv={defVoirInv}
                 />
                 {methodeAnalyse.idMethodeAnalyse===1?
                     <>
@@ -63,6 +63,7 @@ const AnalyseVariabilite:React.FC = () =>{
                             ensRegAAnalyser={ensRegAAnalyser}
                             ensRegReference={ensRegReference}
                             colorPalette={colorPalette}
+                            voirInv={voirInv}
                         />
                         }
                     </>:

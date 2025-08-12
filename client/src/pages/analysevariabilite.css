@@ -54,3 +54,13 @@
   min-height: 0;
   overflow: hidden;
 }
+.control-comp-reg{
+  display: flex;
+  flex-direction: row;
+  align-items: center; /* optional: vertically center items */
+  gap: 1rem; /* optional: add spacing between items */
+}
+h2{
+  color:white;
+  flex:1
+}

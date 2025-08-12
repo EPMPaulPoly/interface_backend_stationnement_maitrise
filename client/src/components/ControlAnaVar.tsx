@@ -10,7 +10,10 @@ import {
     Select, 
     MenuItem, 
     InputLabel, 
-    FormControl
+    FormControl,
+    Checkbox,
+    FormGroup,
+    FormControlLabel
 } from '@mui/material';
 import { serviceEnsemblesReglements } from '../services';
 import { serviceAnaVariabilite } from '../services/serviceAnaVariabilite';
@@ -21,6 +24,7 @@ const ControlAnaVar: FC<ControlAnaVarProps> = (props: ControlAnaVarProps) => {
     const ensRegColorMap = Object.fromEntries(
         props.ensRegAAnalyser.map((id_er, idx) => [id_er, props.colorPalette[idx % props.colorPalette.length]])
     );
+
     useEffect(() => {
             const fetchData = async () => {
                 const reponseEnsReg = await serviceEnsemblesReglements.chercheTousEntetesEnsemblesReglements()
@@ -226,6 +230,27 @@ const ControlAnaVar: FC<ControlAnaVarProps> = (props: ControlAnaVarProps) => {
                 Lancer calculs d'inventaire avec tous les ensembles (très long)
             </Button>
         </>
+        <>  
+            <Box
+                sx={{
+                    border: "1px solid",
+                    borderColor: "white", // uses theme divider color
+                    borderRadius: 1,
+                    padding: 1,
+                    display: "inline-block", // makes it shrink to fit
+                    cursor: "pointer",
+                    "&:hover": {
+                    backgroundColor: "action.hover",
+                    },
+                }}
+                >
+                <FormGroup>
+                    <FormControlLabel control={<Checkbox  checked={props.voirInv} onChange={()=>props.defVoirInv(!props.voirInv)}/>} label="Voir Inventaire calculé"/>
+                </FormGroup>
+            </Box>
+        </>
+        
+        <h2 style={{ color: "white" }}>Analyse de Variabilité</h2>
     </div>)
 }
 

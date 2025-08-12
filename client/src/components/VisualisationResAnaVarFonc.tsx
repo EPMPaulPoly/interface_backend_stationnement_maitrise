@@ -16,13 +16,14 @@ const VisualisationResAnaVarFonc:React.FC<PropsVisualisationAnaVarFonc>=(props: 
                     gap: '8px' // optional spacing
                     }}
                 >
-                    {Array.from({ length: 9 }, (_, i) => (
+                    {Array.from({ length: 10 }, (_, i) => (
                         <GraphiqueAnaVar 
                             key={i} 
                             index={i} 
                             ensRegAGraph={props.ensRegAAnalyser}
                             ensRegReference={props.ensRegReference}
                             colorPalette={props.colorPalette}
+                            voirInv={props.voirInv}
                         />
                     ))}
                 </div>

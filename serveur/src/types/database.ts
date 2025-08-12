@@ -152,6 +152,7 @@ export interface RequeteAnalyseVariabilite{
     id_er: string;
     cubf_n1:string;
     id_ref:string;
+    voir_inv:boolean;
 }
 export interface dataHistogrammeVariabilite{
     labels:string[],
@@ -159,7 +160,8 @@ export interface dataHistogrammeVariabilite{
 }
 export interface serieHistogrammeVariabilite{
     label:string,
-    data:number[]
+    data:number[],
+    cubf?:number
 }
 export interface RetourBDAnalyseVariabilite{
     land_use:number,

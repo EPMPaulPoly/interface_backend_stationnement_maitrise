@@ -19,7 +19,7 @@ export const serviceAnaVariabilite = {
 
         }
     },
-    obtiensInventairesEnsRegs: async (ids: number[], idRef?: number, cubf_n1?: number): Promise<ReponseDataGraphique> => {
+    obtiensInventairesEnsRegs: async (ids: number[], idRef?: number, cubf_n1?: number,voirInv?:boolean): Promise<ReponseDataGraphique> => {
         try {
             let query_add: string[] = [];
             if (typeof idRef !== 'undefined') {
@@ -27,6 +27,9 @@ export const serviceAnaVariabilite = {
             }
             if (typeof cubf_n1 !== 'undefined') {
                 query_add.push(`cubf_n1=${cubf_n1}`)
+            }
+            if (typeof voirInv !=='undefined'){
+                query_add.push(`voir_inv=${voirInv}`)
             }
             let base_query: string = `/ana-var/obtiens-donnees-varia?id_er=${ids.join(',')}`
             if (query_add.length > 0) {

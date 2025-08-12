@@ -128,7 +128,14 @@ class TaxDataset():
     def get_land_uses_in_set(self)->list[int]:
         land_uses_to_return = self.tax_table[config_db.db_column_tax_land_use].unique().tolist()
         return land_uses_to_return
-
+    
+    def filter_by_id(self:Self,list:list[str])->list[int]:
+        relevant_lots = self.lot_table.loc[self.lot_table[config_db.db_column_lot_id].isin(list)].copy()
+        relevant_association = self.lot_association.loc[self.lot_association[config_db.db_column_lot_id].isin(list)].copy()
+        relevant_provincial_tax_list = relevant_association[config_db.db_column_tax_id].unique().tolist()
+        relevant_tax = self.tax_table.loc[self.tax_table[config_db.db_column_tax_id].isin(relevant_provincial_tax_list)].copy()
+        new_tax_dataset = TaxDataset(relevant_tax,relevant_association,relevant_lots)
+        return new_tax_dataset
 def tax_database_points_from_date_territory(id_territory:Union[int,list[int]],start_year:int,end_year:int)->TaxDataset:
     '''# tax_database_points_from_polygon \n
         Permet de tirer les données du rôle, du cadastre et l\'association qui permet de sortir un objet TaxDataset
@@ -213,6 +220,10 @@ def get_all_lots_with_valid_data(engine:sqlalchemy.Engine=None) -> Tuple[TaxData
     '''
         # get_all_lots_with_valid_data
         Retrieves all tax_data in the city which have supposedly valid input. Assuming that's number of dwellings in housing and GFA otherwise
+        input:
+            - Engine: sqlalchemy engine à utiliser pour la connection à la BD
+        Output 
+            - TaxDataset: ensemble de données foncier 
     '''
     if engine is None:
         engine = create_engine(config_db.pg_string)
