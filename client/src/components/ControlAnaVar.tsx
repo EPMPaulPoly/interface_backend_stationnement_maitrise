@@ -36,6 +36,10 @@ const ControlAnaVar: FC<ControlAnaVarProps> = (props: ControlAnaVarProps) => {
         const nouvelleMethode = props.methodessAnalysesPossibles.find((item)=>item.idMethodeAnalyse===idMethode)??{idMethodeAnalyse:0,descriptionMethodeAnalyse:'Entrées Manuelles'}
             props.defMethodeAnalyse(nouvelleMethode)
     }
+    const gestChangementVisu = (idVisu:number)=>{
+        const nouvelleMethode = props.methodeVisualisationPossibles.find((item)=>item.idMethodeAnalyse===idVisu)??{idMethodeAnalyse:0,descriptionMethodeAnalyse:'Barres'}
+        props.defMethodeVisualisation(nouvelleMethode)
+    }
     const gestSelectionTousEnsReg =()=>{
         const listeEnsReg = Array.from(new Set(tousEnsReg.map((entree) => entree.id_er)))
         props.defEnsRegAAnalyser(listeEnsReg)
@@ -87,6 +91,62 @@ const ControlAnaVar: FC<ControlAnaVarProps> = (props: ControlAnaVarProps) => {
                 }}
             >
                 {props.methodessAnalysesPossibles.map((val) => (
+                    <MenuItem
+                        key={val.idMethodeAnalyse}
+                        value={val.idMethodeAnalyse}
+                        sx={{
+                            backgroundColor: 'black',
+                            color: 'white',
+                            '&.Mui-selected': {
+                                backgroundColor: '#222',
+                                color: 'white',
+                            },
+                            '&.Mui-selected:hover': {
+                                backgroundColor: '#333',
+                            },
+                        }}
+                    >
+                        {val.descriptionMethodeAnalyse}
+                    </MenuItem>
+                ))}
+            </Select>
+        </FormControl>
+        <FormControl variant="outlined" size="small" style={{ minWidth: 120 }}>
+            <InputLabel id="select-ana-var-method-label"
+                sx={{
+                    color: 'white',
+                    '&.Mui-focused': { color: 'white' },
+                    '&.MuiInputLabel-shrink': { color: 'white' },
+                }}
+            >
+                Methode Visualisation
+            </InputLabel>
+            <Select
+                labelId="select-ana-var-visu-label"
+                id="select-ana-var-visu"
+                value={props.methodeVisualisation.idMethodeAnalyse}
+                onChange={(e) => gestChangementVisu(Number(e.target.value))}
+                label="Methode analyse"
+                sx={{
+                    backgroundColor: 'black',
+                    minWidth: '120px',
+                    color: 'white',
+                    '& .MuiSvgIcon-root': { color: 'white' }, // arrow
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#666' },
+                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#888' },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#aaa' },
+                    
+                }}
+                MenuProps={{
+                    PaperProps: {
+                        sx: {
+                            bgcolor: 'black',
+                            color: 'white',
+                        },
+                    },
+                }}
+            >
+                {props.methodeVisualisationPossibles.map((val) => (
                     <MenuItem
                         key={val.idMethodeAnalyse}
                         value={val.idMethodeAnalyse}
@@ -230,7 +290,7 @@ const ControlAnaVar: FC<ControlAnaVarProps> = (props: ControlAnaVarProps) => {
                 Lancer calculs d'inventaire avec tous les ensembles (très long)
             </Button>
         </>
-        <>  
+        <>  {props.methodeVisualisation.idMethodeAnalyse===0?
             <Box
                 sx={{
                     border: "1px solid",
@@ -244,10 +304,13 @@ const ControlAnaVar: FC<ControlAnaVarProps> = (props: ControlAnaVarProps) => {
                     },
                 }}
                 >
+                
                 <FormGroup>
                     <FormControlLabel control={<Checkbox  checked={props.voirInv} onChange={()=>props.defVoirInv(!props.voirInv)}/>} label="Voir Inventaire calculé"/>
                 </FormGroup>
-            </Box>
+                
+                
+            </Box>:<></>}
         </>
         
         <h2 style={{ color: "white" }}>Analyse de Variabilité</h2>

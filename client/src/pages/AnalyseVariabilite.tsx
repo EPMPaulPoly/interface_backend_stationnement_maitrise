@@ -11,6 +11,8 @@ import { ClimbingBoxLoader } from 'react-spinners';
 const AnalyseVariabilite:React.FC = () =>{
     const [methodeAnalyse,defMethodeAnalyse] = useState<methodeAnalyseVariabillite>({idMethodeAnalyse:1,
         descriptionMethodeAnalyse:'Données Foncières'});
+    const [visualisationAnalyse,defVisualisationAnalyse] = useState<methodeAnalyseVariabillite>({idMethodeAnalyse:0,
+        descriptionMethodeAnalyse:'Barres'})
     const [ensRegAAnalyser, defEnsRegAAnalyser] = useState<number[]>([]);
     const [editionParametres,defEditionParametres] = useState<boolean>(false);
     const [ensRegReference,defEnsRegReference] = useState<number>(-1);
@@ -25,7 +27,16 @@ const AnalyseVariabilite:React.FC = () =>{
         idMethodeAnalyse:1,
         descriptionMethodeAnalyse:'Données Foncières'
     }] 
-
+    const visualisationAnalysePossibles:methodeAnalyseVariabillite[]=[
+        {
+            idMethodeAnalyse:0,
+            descriptionMethodeAnalyse:'Barres'
+        },
+        {
+            idMethodeAnalyse:1,
+            descriptionMethodeAnalyse:'Distribution'
+        }
+    ]
 
     return(
         <div className="page-ana-var">
@@ -42,39 +53,55 @@ const AnalyseVariabilite:React.FC = () =>{
                     defCalculsEnCours = {defCalculsEnCours}
                     voirInv={voirInv}
                     defVoirInv={defVoirInv}
+                    methodeVisualisationPossibles={visualisationAnalysePossibles}
+                    methodeVisualisation={visualisationAnalyse}
+                    defMethodeVisualisation={defVisualisationAnalyse}
                 />
-                {methodeAnalyse.idMethodeAnalyse===1?
+                {(methodeAnalyse.idMethodeAnalyse === 1 && visualisationAnalyse.idMethodeAnalyse === 0) ? (
                     <>
-                        {editionParametres?
-                        <EditionParametresAnaVarFonc
-                            editionParams={editionParametres}
-                            defEditionParams={defEditionParametres}
-                            ensRegAAnalyser={ensRegAAnalyser}
-                            ensRegReference={ensRegReference}
-                            defEnsRegReference={defEnsRegReference}
-                            niveauCUBF={niveauCUBF}
-                            defNiveauCUBF={defNiveauCUBF}
-                            colorPalette={colorPalette}
-                        />
-                        :
-                        <VisualisationResAnaVarFonc
-                            editionParams={editionParametres}
-                            defEditionParams={defEditionParametres}
-                            ensRegAAnalyser={ensRegAAnalyser}
-                            ensRegReference={ensRegReference}
-                            colorPalette={colorPalette}
-                            voirInv={voirInv}
-                        />
-                        }
-                    </>:
-                    <>
-                    </>}</>
+                        {editionParametres ? (
+                            <EditionParametresAnaVarFonc
+                                editionParams={editionParametres}
+                                defEditionParams={defEditionParametres}
+                                ensRegAAnalyser={ensRegAAnalyser}
+                                ensRegReference={ensRegReference}
+                                defEnsRegReference={defEnsRegReference}
+                                niveauCUBF={niveauCUBF}
+                                defNiveauCUBF={defNiveauCUBF}
+                                colorPalette={colorPalette}
+                            />
+                        ) : (
+                            <VisualisationResAnaVarFonc
+                                editionParams={editionParametres}
+                                defEditionParams={defEditionParametres}
+                                ensRegAAnalyser={ensRegAAnalyser}
+                                ensRegReference={ensRegReference}
+                                colorPalette={colorPalette}
+                                voirInv={voirInv}
+                                methodeVisualisation={visualisationAnalyse}
+                            />
+                        )}
+                    </>
+                ) : (methodeAnalyse.idMethodeAnalyse === 1 && visualisationAnalyse.idMethodeAnalyse === 1) ? (
+                    <VisualisationResAnaVarFonc
+                        editionParams={editionParametres}
+                        defEditionParams={defEditionParametres}
+                        ensRegAAnalyser={ensRegAAnalyser}
+                        ensRegReference={ensRegReference}
+                        colorPalette={colorPalette}
+                        voirInv={voirInv}
+                        methodeVisualisation={visualisationAnalyse}
+                    />
+                ) : (
+                    <></>
+                )}
+            </>
             :<div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                minHeight: '80vh'
-            }}>
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        minHeight: '80vh'
+                    }}>
                 <ClimbingBoxLoader
                     loading={calculsEnCours}
                     size={50}

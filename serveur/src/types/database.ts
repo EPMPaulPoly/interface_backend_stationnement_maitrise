@@ -154,6 +154,13 @@ export interface RequeteAnalyseVariabilite{
     id_ref:string;
     voir_inv:boolean;
 }
+
+export interface RequeteHistoVariabilite{
+    id_er:string,
+    cubf_n1:string,
+    voir_inv:boolean
+}
+
 export interface dataHistogrammeVariabilite{
     labels:string[],
     datasets:serieHistogrammeVariabilite[]

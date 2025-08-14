@@ -7,6 +7,7 @@ import { serviceEnsemblesReglements, serviceReglements } from '../services';
 import { serviceAnaVariabilite } from '../services/serviceAnaVariabilite';
 import serviceUtilisationDuSol from '../services/serviceUtilisationDuSol';
 import { FaLevelDownAlt } from 'react-icons/fa';
+import { scales } from 'chart.js';
 
 const GraphiqueAnaVar:FC<PropsGraphAnaVar>=(props:PropsGraphAnaVar)=>{
     const [cubf,defCUBF] = useState<utilisation_sol>({cubf:-1,description:'N/A'})
@@ -18,104 +19,236 @@ const GraphiqueAnaVar:FC<PropsGraphAnaVar>=(props:PropsGraphAnaVar)=>{
         }],
     })
 
-    const { ensRegAGraph, ensRegReference, index,voirInv } = props;
-
+    const { ensRegAGraph, ensRegReference, index,voirInv,methodeVisualisation } = props;
+    const [options, setOptions] = useState<any>({
+        maintainAspectRatio: false,
+        plugins: {},
+        scales: {}
+    });
     useEffect(() => {
         const fetchData = async () => {
-            if (ensRegAGraph.length > 0 && ensRegReference !== -1) {
-                const [data_in,cubf] = await Promise.all([
-                    serviceAnaVariabilite.obtiensInventairesEnsRegs(
-                        ensRegAGraph,
-                        ensRegReference,
-                        index < 9 ? index + 1 : undefined,
-                        props.voirInv
-                    ),serviceUtilisationDuSol.obtientUtilisationDuSol(index+1,false)
-                ]);
-                defData(data_in.data);
-                if (props.index!==9){
-                    defCUBF(cubf.data[0]);
-                }else{
-                    defCUBF({cubf:0,description:"Tous"})
+            if (methodeVisualisation.idMethodeAnalyse===0){//Diagramme à barres
+                if (ensRegAGraph.length > 0 && ensRegReference !== -1) {
+                    const [data_in,cubf_rep] = await Promise.all([
+                        serviceAnaVariabilite.obtiensInventairesEnsRegs(
+                            ensRegAGraph,
+                            ensRegReference,
+                            index < 9 ? index + 1 : undefined,
+                            props.voirInv
+                        ),serviceUtilisationDuSol.obtientUtilisationDuSol(index+1,false)
+                    ]);
+                    defData(data_in.data);
+                    if (props.index!==9){
+                        defCUBF(cubf_rep.data[0]);
+                    }else{
+                        defCUBF({cubf:0,description:"Tous"})
+                    }
+                    setOptions( {
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'white',
+                                    font: {
+                                        size: 16,
+                                    },
+                                },
+                            },
+                            title: {
+                                display: true,
+                                text: cubf_rep.data[0].cubf !== -1 ? cubf_rep.data[0].description : 'N/A',
+                                color:'white',
+                                font:{
+                                    size:25
+                                }
+                            },
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: 'white',
+                                    font: {
+                                        size: 16,
+                                    },
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Ensemble de règlement',
+                                    color: 'white',
+                                    font: {
+                                        size: 18,
+                                    },
+                                },
+                                stacked: index === 9
+                            },
+                            y: {
+                                ticks: {
+                                    color: 'white',
+                                    font: {
+                                        size: 16,
+                                    },
+                                },
+                                title: {
+                                    display: true,
+                                    text: (props.ensRegReference !== -1 ? 'Indice (100 = ER de référence)' : 'Places de stationnement'),
+                                    color: 'white',
+                                    font: {
+                                        size: 18,
+                                    },
+                                },
+                                stacked: index === 9
+                            },
+                        },
+                    })
+                } else if (ensRegAGraph.length > 0 ){
+                    const [data_in,cubf_rep] = await Promise.all([
+                        serviceAnaVariabilite.obtiensInventairesEnsRegs(
+                            ensRegAGraph,
+                            undefined,
+                            index < 9 ? index + 1 : undefined,
+                            props.voirInv
+                        ),serviceUtilisationDuSol.obtientUtilisationDuSol(index+1,false)
+                    ]);
+                    defData(data_in.data);
+                    if (props.index!==9){
+                        defCUBF(cubf_rep.data[0]);
+                    }else{
+                        defCUBF({cubf:0,description:"Tous"})
+                    }
+                    setOptions( {
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'white',
+                                    font: {
+                                        size: 16,
+                                    },
+                                },
+                            },
+                            title: {
+                                display: true,
+                                text: props.index!==9 ? cubf_rep.data[0].description : 'N/A',
+                                color:'white',
+                                font:{
+                                    size:25
+                                }
+                            },
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: 'white',
+                                    font: {
+                                        size: 16,
+                                    },
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Ensemble de règlement',
+                                    color: 'white',
+                                    font: {
+                                        size: 18,
+                                    },
+                                },
+                                stacked: index === 9
+                            },
+                            y: {
+                                ticks: {
+                                    color: 'white',
+                                    font: {
+                                        size: 16,
+                                    },
+                                },
+                                title: {
+                                    display: true,
+                                    text: (props.ensRegReference !== -1 ? 'Indice (100 = ER de référence)' : 'Places de stationnement'),
+                                    color: 'white',
+                                    font: {
+                                        size: 18,
+                                    },
+                                },
+                                stacked: index === 9
+                            },
+                        },
+                    })
                 }
-            } else if (ensRegAGraph.length > 0 ){
-                const [data_in,cubf] = await Promise.all([
-                    serviceAnaVariabilite.obtiensInventairesEnsRegs(
-                        ensRegAGraph,
-                        undefined,
-                        index < 9 ? index + 1 : undefined,
-                        props.voirInv
-                    ),serviceUtilisationDuSol.obtientUtilisationDuSol(index+1,false)
-                ]);
-                defData(data_in.data);
-                if (props.index!==9){
-                    defCUBF(cubf.data[0]);
-                }else{
-                    defCUBF({cubf:0,description:"Tous"})
-                }
+                
+            } else if(methodeVisualisation.idMethodeAnalyse===1){// Histogramme
+                
+                    const [data_in,cubf_rep] = await Promise.all([
+                        serviceAnaVariabilite.obtiensDistributionInventaire(
+                            ensRegAGraph,
+                            index < 9 ? index + 1 : undefined
+                        ),serviceUtilisationDuSol.obtientUtilisationDuSol(index+1,false)
+                    ]);
+                    defData(data_in.data);
+                    if (props.index!==9){
+                        defCUBF(cubf_rep.data[0]);
+                    }else{
+                        defCUBF({cubf:0,description:"Tous"})
+                    }
+                   setOptions( {
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'white',
+                                    font: {
+                                        size: 16,
+                                    },
+                                },
+                            },
+                            title: {
+                                display: true,
+                                text: props.index!==9 ? cubf_rep.data[0].description : 'Tous',
+                                color:'white',
+                                font:{
+                                    size:25
+                                }
+                            },
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: 'white',
+                                    font: {
+                                        size: 16,
+                                    },
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Nombre de places',
+                                    color: 'white',
+                                    font: {
+                                        size: 18,
+                                    },
+                                },
+                                stacked: index === 9
+                            },
+                            y: {
+                                ticks: {
+                                    color: 'white',
+                                    font: {
+                                        size: 16,
+                                    },
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Fréquence',
+                                    color: 'white',
+                                    font: {
+                                        size: 18,
+                                    },
+                                }
+                            },
+                        },
+                })
             }
         };
         fetchData();
-    }, [ensRegAGraph, ensRegReference, index,voirInv]);
+    }, [ensRegAGraph, ensRegReference, index,voirInv,methodeVisualisation]);
     
-
-    const options = {
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                labels: {
-                    color: 'white',
-                    font: {
-                        size: 16,
-                    },
-                },
-            },
-            title: {
-                display: true,
-                text: cubf.cubf !== -1 ? cubf.description : 'N/A',
-                color:'white',
-                font:{
-                    size:25
-                }
-            },
-        },
-        scales: {
-            x: {
-                ticks: {
-                    color: 'white',
-                    font: {
-                        size: 16,
-                    },
-                },
-                title: {
-                    display: true,
-                    text: 'Ensemble de règlement',
-                    color: 'white',
-                    font: {
-                        size: 18,
-                    },
-                },
-                stacked: index === 9
-            },
-            y: {
-                ticks: {
-                    color: 'white',
-                    font: {
-                        size: 16,
-                    },
-                },
-                title: {
-                    display: true,
-                    text: (props.ensRegReference !== -1 ? 'Indice (100 = ER de référence)' : 'Places de stationnement'),
-                    color: 'white',
-                    font: {
-                        size: 18,
-                    },
-                },
-                stacked: index === 9
-            },
-        },
-    };
-
 
     return(<div className="graphique-rendu-ana-var">
         <div className="graphique">
@@ -142,12 +275,16 @@ const GraphiqueAnaVar:FC<PropsGraphAnaVar>=(props:PropsGraphAnaVar)=>{
                         const reglement = props.ensRegAGraph.find(r => r === ds.id_er);
                         // Try to get desc_er and desc_reg_stat if available
                         const value = context.parsed.y;
-
+                        
                         let label = '';
-                        if (props.ensRegReference!==-1) {
-                            label = `Indice pour ${context.label}par rapport à référence (100): ${value.toFixed(2)}`;
-                        }else {
-                            label = `${ds.label}: ${value.toFixed(2)} places`;
+                        if (props.methodeVisualisation.idMethodeAnalyse===0){
+                            if (props.ensRegReference!==-1) {
+                                label = `Indice pour ${context.label}par rapport à référence (100): ${value.toFixed(2)}`;
+                            }else {
+                                label = `${ds.label}: ${value.toFixed(2)} places`;
+                            }
+                        } else{
+                            label = `Fréquence ${value.toFixed(2)}`
                         }
                         return label;
                     }

@@ -3,8 +3,9 @@ import { Pool } from 'pg';
 // Types pour les requêtes
 import { Polygon, MultiPolygon } from 'geojson';
 import path from 'path';
-import { dataHistogrammeVariabilite, RequeteAnalyseVariabilite, RetourBDAnalyseVariabilite } from 'database';
+import { dataHistogrammeVariabilite, RequeteAnalyseVariabilite, RequeteHistoVariabilite, RetourBDAnalyseVariabilite } from 'database';
 import { spawn } from 'child_process';
+import {bin,Bin} from 'd3-array';
 
 export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
 
@@ -87,77 +88,78 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                 conditions.push(`av.land_use =  ${cubf_out}`)
             }
             let pre_query:string = '';
+            // Création des CTE et de l'inventaire tel qu'implémenté
             if (voir_inv_fin){
-                    if (id_ref_out === -1){
-                        pre_query = `
-                            WITH land_use_desc AS(
-                                SELECT
-                                    cubf::int as land_use,
-                                    description as land_use_desc
-                                FROM
-                                    cubf
-                            ),reg_set_defs AS (
-                                SELECT
-                                    id_er,
-                                    description_er
-                                FROM 
-                                    ensembles_reglements_stat
-                            )
+                if (id_ref_out === -1){
+                    pre_query = `
+                        WITH land_use_desc AS(
                             SELECT
-                                inv.land_use,
-                                inv.n_places_min as valeur,
-                                -5::int as id_er,
-                                'Inventaire Actuel' as description_er,
-                                inv.n_lots::int,
-                                lud.land_use_desc
-                            FROM 
-                                inv_reg_aggreg_cubf_n1 inv
-                            LEFT JOIN land_use_desc lud ON lud.land_use = inv.land_use
-                            `
-                        if (cubf_out !== -1){
-                            pre_query+= ` WHERE inv.land_use = ${cubf_out} `
-                        }
-                        pre_query +=" UNION ALL"
-                    } else{
-                        pre_query = `
-                            WITH land_use_desc AS(
-                                SELECT
-                                    cubf::int as land_use,
-                                    description as land_use_desc
-                                FROM
-                                    cubf
-                            ),base_data AS(
-                                SELECT
-                                    id_er,
-                                    land_use,
-                                    n_places_min as n_places_ref
-                                FROM 
-                                    variabilite 
-                                WHERE id_er = ${id_ref_out}
-                            ),reg_set_defs AS (
-                                SELECT
-                                    id_er,
-                                    description_er
-                                FROM 
-                                    ensembles_reglements_stat
-                            )
+                                cubf::int as land_use,
+                                description as land_use_desc
+                            FROM
+                                cubf
+                        ),reg_set_defs AS (
                             SELECT
-                                inv.land_use::int,
-                                COALESCE(inv.n_places_min / NULLIF(bd.n_places_ref, 0) *100, 0) as valeur,
-                                -5::int as id_er,
-                                'Inventaire Actuel' as description_er,
-                                inv.n_lots::int,
-                                lud.land_use_desc
+                                id_er,
+                                description_er
                             FROM 
-                                inv_reg_aggreg_cubf_n1 inv
-                            LEFT JOIN land_use_desc lud ON lud.land_use = inv.land_use
-                            LEFT JOIN base_data bd ON bd.land_use = inv.land_use
-                            `
-                        if (cubf_out !== -1){
-                            pre_query+= ` WHERE inv.land_use = ${cubf_out} `
-                        }
-                        pre_query +=" UNION ALL"
+                                ensembles_reglements_stat
+                        )
+                        SELECT
+                            inv.land_use,
+                            inv.n_places_min as valeur,
+                            -5::int as id_er,
+                            'Inventaire Actuel' as description_er,
+                            inv.n_lots::int,
+                            lud.land_use_desc
+                        FROM 
+                            inv_reg_aggreg_cubf_n1 inv
+                        LEFT JOIN land_use_desc lud ON lud.land_use = inv.land_use
+                        `
+                    if (cubf_out !== -1){
+                        pre_query+= ` WHERE inv.land_use = ${cubf_out} `
                     }
+                    pre_query +=" UNION ALL"
+                } else{
+                    pre_query = `
+                        WITH land_use_desc AS(
+                            SELECT
+                                cubf::int as land_use,
+                                description as land_use_desc
+                            FROM
+                                cubf
+                        ),base_data AS(
+                            SELECT
+                                id_er,
+                                land_use,
+                                n_places_min as n_places_ref
+                            FROM 
+                                variabilite 
+                            WHERE id_er = ${id_ref_out}
+                        ),reg_set_defs AS (
+                            SELECT
+                                id_er,
+                                description_er
+                            FROM 
+                                ensembles_reglements_stat
+                        )
+                        SELECT
+                            inv.land_use::int,
+                            COALESCE(inv.n_places_min / NULLIF(bd.n_places_ref, 0) *100, 0) as valeur,
+                            -5::int as id_er,
+                            'Inventaire Actuel' as description_er,
+                            inv.n_lots::int,
+                            lud.land_use_desc
+                        FROM 
+                            inv_reg_aggreg_cubf_n1 inv
+                        LEFT JOIN land_use_desc lud ON lud.land_use = inv.land_use
+                        LEFT JOIN base_data bd ON bd.land_use = inv.land_use
+                        `
+                    if (cubf_out !== -1){
+                        pre_query+= ` WHERE inv.land_use = ${cubf_out} `
+                    }
+                    pre_query +=" UNION ALL"
+                }
             } else{
                 if (id_ref_out === -1){
                         pre_query = `
@@ -201,6 +203,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                             `
                     }
             }
+            // Aller chercher les calculs d'inventaire en appliquant un règlement à l'ensemble des données foncières
             if (conditions.length > 0) {
                 
                 if (id_ref_out === -1) {
@@ -241,7 +244,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                 }
             } else {
                 if (id_ref_out === -1) {
-                    query = `
+                    query = pre_query +`
                     SELECT
                         av.land_use,
                         av.n_places_min as valeur,
@@ -255,6 +258,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                         reg_set_defs rsd ON rsd.id_er=av.id_er
                     LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
                     `
+
                 } else {
                     query = pre_query + `
                     SELECT
@@ -320,7 +324,174 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
             }
         }
     }
+
+    const obtiensHistoVariabilite: RequestHandler<RequeteHistoVariabilite> = async(req,res,next):Promise<void>=>{
+        console.log('Obtention histo variabilité')
+        let client;
+        try {
+            client = await pool.connect();
+            const { id_er, cubf_n1, voir_inv } = req.query;
+            const id_out: number[] = (typeof id_er === 'string' ? id_er.split(',').map(Number) : []);
+            const cubf_out: number = (typeof cubf_n1 === 'string' ? Number(cubf_n1) : -1);
+            const voir_inv_fin:boolean =(typeof voir_inv ==='string' ?voir_inv.toLowerCase() === 'true' :false);
+            let query: string;
+            let result: any;
+            let inv_result:any;
+            let conditions: string[] = [];
+            if (id_out.length > 0) {
+                conditions.push(`av.id_er IN (${id_out.join(',')})`)
+            }
+            if (cubf_out !== -1) {
+                conditions.push(`av.land_use =  ${cubf_out}`)
+            }
+            let pre_query:string = '';
+            let inv_query:string = '';
+            if (voir_inv_fin){
+                inv_query = `
+                    WITH land_use_desc AS(
+                        SELECT
+                            cubf::int as land_use,
+                            description as land_use_desc
+                        FROM
+                            cubf
+                    )
+                    SELECT
+                        inv.land_use,
+                        inv.n_places_min as valeur,
+                        -5::int as id_er,
+                        'Inventaire Actuel' as description_er,
+                        inv.n_lots::int,
+                        lud.land_use_desc
+                    FROM 
+                        inv_reg_aggreg_cubf_n1 inv
+                    LEFT JOIN land_use_desc lud ON lud.land_use = inv.land_use
+                `
+                if (cubf_out !== -1){
+                    inv_query+= ` WHERE inv.land_use = ${cubf_out} `
+                }
+            }
+            pre_query = `
+                    WITH land_use_desc AS(
+                        SELECT
+                            cubf::int as land_use,
+                            description as land_use_desc
+                        FROM
+                            cubf
+                    ),reg_set_defs AS (
+                        SELECT
+                            id_er,
+                            description_er
+                        FROM 
+                            ensembles_reglements_stat
+                    )
+                    `
+            if (id_out.length > 0 && cubf_out !== -1) {
+                query = `
+                SELECT
+                    av.land_use,
+                    av.n_places_min as valeur,
+                    av.id_er::int,
+                    rsd.description_er,
+                    av.n_lots,
+                    lud.land_use_desc
+                FROM 
+                    variabilite av
+                LEFT JOIN
+                    reg_set_defs rsd ON rsd.id_er=av.id_er
+                LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
+                `
+                query = pre_query + query + 'WHERE ' + `av.id_er IN (${id_out.join(',')}) AND av.land_use = ${cubf_out}`;
+            } else if (id_out.length > 0){
+                query = `
+                SELECT
+                    SUM(av.n_places_min) as valeur,
+                    av.id_er::int,
+                    rsd.description_er,
+                    'Tous' as land_use_desc
+                FROM 
+                    variabilite av
+                LEFT JOIN
+                    reg_set_defs rsd ON rsd.id_er=av.id_er
+                LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
+                
+                `
+                query = pre_query + query + 'WHERE ' + `av.id_er IN (${id_out.join(',')}) GROUP BY av.id_er,rsd.description_er`;
+            }else {
+                query = pre_query+`
+                SELECT
+                    SUM(av.n_places_min) as valeur,
+                    av.id_er::int,
+                    rsd.description_er,
+                    'Tous' as land_use_desc
+                FROM 
+                    variabilite av
+                LEFT JOIN
+                    reg_set_defs rsd ON rsd.id_er=av.id_er
+                LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
+                GROUP BY av.id_er,rsd.description_er
+                `
+            }
+            if (voir_inv_fin){
+                [result,inv_result] = await Promise.all([ client.query(query), client.query(inv_query)])
+            }else {
+                result = await client.query(query)
+            }
+            const donnees: RetourBDAnalyseVariabilite[] = result.rows;
+            
+            const allValues = donnees.flatMap((r)=>r.valeur)
+            const minVal = Math.min(...allValues);
+            const maxVal = Math.max(...allValues);
+            const nValues = allValues.length
+            const binner = bin<number,number>().domain([minVal,maxVal]).thresholds(10);
+            const sampleBins = binner(allValues);
+            const binLabels = sampleBins.map((b:Bin<number, number>) => `${b.x0?.toFixed(0)} - ${b.x1?.toFixed(0)}`);
+            const dataOut = sampleBins.map((b:Bin<number, number>) => b.length/nValues)
+            let formatted_output: dataHistogrammeVariabilite;
+            if (id_out.length > 0) {
+                const land_uses = Array.from(new Set(donnees.map((row) => row.land_use)));
+                if (voir_inv_fin){
+                    id_out.unshift(-5)
+                }
+                formatted_output = {
+                    labels: binLabels,
+                    datasets: land_uses.map((lu) => {
+                        const lu_filter_data = donnees.filter((row) => row.land_use === lu);
+                        return {
+                            label: lu_filter_data[0]?.land_use_desc ?? 'N/A',
+                            data: dataOut
+                        };
+                    })
+                }
+            } else {
+                const land_uses = Array.from(new Set(donnees.map((row) => row.land_use)));
+                const rulesets = Array.from(new Set(donnees.map((row)=>row.id_er)));
+                if (voir_inv_fin){
+                    rulesets.unshift(-5)
+                }
+                formatted_output = {
+                    labels: rulesets.map((id) => { return donnees.find((row) => row.id_er === id)?.description_er ?? 'N/A' }),
+                    datasets: land_uses.map((lu) => {
+                        const lu_filter_data = donnees.filter((row) => row.land_use === lu);
+                        return {
+                            label: lu_filter_data[0]?.land_use_desc ?? 'N/A',
+                            data: rulesets.map((id) => {
+                                return lu_filter_data.find((row) => row.id_er === id)?.valeur ?? 0}),
+                            cubf: lu_filter_data[0]?.land_use ?? -1,
+                        }
+                    })
+                }
+            }
+            res.json({ success: true, data: formatted_output });
+        } catch (err) {
+            res.status(500).json({ success: false, error: 'Database error' });
+        } finally {
+            if (client) {
+                client.release()
+            }
+        }
+    }
     router.get('/recalcule-inventaires-tous-ens-regs', calculeAnalyseVariabilite)
     router.get('/obtiens-donnees-varia', obtiensAnalyseVariabilite)
+    router.get('/histo-varia',obtiensHistoVariabilite)
     return router;
 };

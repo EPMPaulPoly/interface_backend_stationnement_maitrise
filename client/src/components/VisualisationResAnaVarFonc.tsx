@@ -24,6 +24,7 @@ const VisualisationResAnaVarFonc:React.FC<PropsVisualisationAnaVarFonc>=(props: 
                             ensRegReference={props.ensRegReference}
                             colorPalette={props.colorPalette}
                             voirInv={props.voirInv}
+                            methodeVisualisation={props.methodeVisualisation}
                         />
                     ))}
                 </div>

@@ -455,7 +455,10 @@ export interface ControlAnaVarProps{
     colorPalette:string[]
     defCalculsEnCours:React.Dispatch<SetStateAction<boolean>>,
     voirInv:boolean,
-    defVoirInv: React.Dispatch<SetStateAction<boolean>>
+    defVoirInv: React.Dispatch<SetStateAction<boolean>>,
+    methodeVisualisationPossibles: methodeAnalyseVariabillite[],
+    methodeVisualisation: methodeAnalyseVariabillite,
+    defMethodeVisualisation: React.Dispatch<SetStateAction<methodeAnalyseVariabillite>>
 }
 export interface PropsEditionParametresAnaVarFonc{
     editionParams:boolean,
@@ -474,7 +477,8 @@ export interface PropsVisualisationAnaVarFonc{
     ensRegAAnalyser:number[],
     ensRegReference: number,
     colorPalette:string[],
-    voirInv:boolean
+    voirInv:boolean,
+    methodeVisualisation: methodeAnalyseVariabillite
 }
 
 export interface PropsGraphAnaVar{
@@ -482,5 +486,6 @@ export interface PropsGraphAnaVar{
     ensRegReference: number,
     index:number,
     colorPalette:string[],
-    voirInv:boolean
+    voirInv:boolean,
+    methodeVisualisation: methodeAnalyseVariabillite
 }
