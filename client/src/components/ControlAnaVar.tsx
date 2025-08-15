@@ -296,7 +296,7 @@ const ControlAnaVar: FC<ControlAnaVarProps> = (props: ControlAnaVarProps) => {
                     border: "1px solid",
                     borderColor: "white", // uses theme divider color
                     borderRadius: 1,
-                    padding: 1,
+                    padding: '1px',
                     display: "inline-block", // makes it shrink to fit
                     cursor: "pointer",
                     "&:hover": {
@@ -313,7 +313,7 @@ const ControlAnaVar: FC<ControlAnaVarProps> = (props: ControlAnaVarProps) => {
             </Box>:<></>}
         </>
         
-        <h2 style={{ color: "white" }}>Analyse de Variabilité</h2>
+        {/*<h2 style={{ color: "white" }}>Analyse de Variabilité</h2>*/}
     </div>)
 }
 

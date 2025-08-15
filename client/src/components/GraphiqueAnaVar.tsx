@@ -122,7 +122,7 @@ const GraphiqueAnaVar:FC<PropsGraphAnaVar>=(props:PropsGraphAnaVar)=>{
                                 labels: {
                                     color: 'white',
                                     font: {
-                                        size: 16,
+                                        size: 8,
                                     },
                                 },
                             },
@@ -131,7 +131,7 @@ const GraphiqueAnaVar:FC<PropsGraphAnaVar>=(props:PropsGraphAnaVar)=>{
                                 text: props.index!==9 ? cubf_rep.data[0].description : 'N/A',
                                 color:'white',
                                 font:{
-                                    size:25
+                                    size:15
                                 }
                             },
                         },
@@ -140,7 +140,7 @@ const GraphiqueAnaVar:FC<PropsGraphAnaVar>=(props:PropsGraphAnaVar)=>{
                                 ticks: {
                                     color: 'white',
                                     font: {
-                                        size: 16,
+                                        size: 10,
                                     },
                                 },
                                 title: {
@@ -148,7 +148,7 @@ const GraphiqueAnaVar:FC<PropsGraphAnaVar>=(props:PropsGraphAnaVar)=>{
                                     text: 'Ensemble de règlement',
                                     color: 'white',
                                     font: {
-                                        size: 18,
+                                        size: 10,
                                     },
                                 },
                                 stacked: index === 9
@@ -157,7 +157,7 @@ const GraphiqueAnaVar:FC<PropsGraphAnaVar>=(props:PropsGraphAnaVar)=>{
                                 ticks: {
                                     color: 'white',
                                     font: {
-                                        size: 16,
+                                        size: 10,
                                     },
                                 },
                                 title: {
@@ -165,7 +165,7 @@ const GraphiqueAnaVar:FC<PropsGraphAnaVar>=(props:PropsGraphAnaVar)=>{
                                     text: (props.ensRegReference !== -1 ? 'Indice (100 = ER de référence)' : 'Places de stationnement'),
                                     color: 'white',
                                     font: {
-                                        size: 18,
+                                        size: 10,
                                     },
                                 },
                                 stacked: index === 9

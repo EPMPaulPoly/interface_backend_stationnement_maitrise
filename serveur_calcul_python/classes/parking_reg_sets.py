@@ -2,7 +2,7 @@ from classes.parking_regs import ParkingRegulations
 from classes.parking_regs import get_units_for_regs
 import pandas as pd
 import numpy as np
-from typing import Optional, Union
+from typing import Optional, Union,Self
 from sqlalchemy import create_engine,text
 import sqlalchemy
 from config import config_db
@@ -141,6 +141,10 @@ class ParkingRegulationSet(ParkingRegulations):
         new_reg_def = self.reg_def.loc[self.reg_def[config_db.db_column_parking_regs_id]==reg_id]
         new_units_table = self.units_table
         return ParkingRegulations(new_reg_head,new_reg_def,new_units_table)
+
+    def get_all_units_used(self:Self)->list[int]:
+        relevant_units = self.reg_def[config_db.db_column_parking_unit_id].unique().tolist()
+        return relevant_units
 
 def from_sql(ruleset_id:Union[int,list],con:sqlalchemy.Connection=None)->list[ParkingRegulationSet]:
     '''
