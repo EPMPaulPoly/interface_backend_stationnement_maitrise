@@ -400,7 +400,7 @@ def calculate_parking_specific_reg_set( reg_set:PRS.ParkingRegulationSet,tax_dat
 def calculate_parking_specific_reg(reg_to_calculate: PR.ParkingRegulations,tax_data:TD.TaxDataset,rule_set_to_transfer:int = 0)->Self :
     '''
         # calculate_minimum_parking
-        Calcule le minimum de stationnement pour un ensemble de points du rôle foncier.
+        Calcule le minimum de stationnement pour un ensemble de points du rôle foncier. OBSOLETE REMPLACÉ DANS L'UTILISATION PAR DES INPUTS DE CALCUL PLUTOT QUE DE FAIRE LA CONVERSION DANS CETTE FONCTION
     '''
     logger = logging.getLogger(__name__)
     
@@ -436,6 +436,7 @@ def calculate_parking_specific_reg_subset(parking_reg:PR.ParkingRegulations,subs
     '''
         # calculate_parking_minimum_subset
         calculates the parking requirements for one subset of a rule (as opposed to the entire rule)
+        OBSOLETE, UTILISER LES PARKING CALCULATION INPUTS À LA PLACE POUR UNE FONCTION PLUS FACILE À DEBUGGER ET PERMETTANT DES MISES À L'ÉCHELLE
     '''
     logger = logging.getLogger(__name__)
     # get the subset that is relevant. only need definition
