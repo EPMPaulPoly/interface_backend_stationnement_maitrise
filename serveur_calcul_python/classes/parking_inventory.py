@@ -393,19 +393,9 @@ def calculate_parking_specific_reg_set( reg_set:PRS.ParkingRegulationSet,tax_dat
     logger.info('-----------------------------------------------------------------------------------------------')
     logger.info(f'Starting inventory for regset: {reg_set}')
     logger.info('-----------------------------------------------------------------------------------------------')
-    land_uses_to_get_regs_for = tax_data.get_land_uses_in_set()
-    unique_parking_regs = reg_set.get_unique_reg_ids_using_land_use(land_uses_to_get_regs_for) 
-    parking_inventory_final = PI.ParkingInventory(pd.DataFrame(columns=[config_db.db_column_lot_id,config_db.db_column_reg_sets_id,config_db.db_column_parking_regs_id,config_db.db_column_land_use_id,'n_places_min','n_places_max','methode_estime','commentaire','n_places_mesure','n_places_estime']))
-    for reg_id in unique_parking_regs:
-        relevant_land_uses = reg_set.expanded_table.loc[reg_set.expanded_table[config_db.db_column_parking_regs_id]== reg_id,config_db.db_column_land_use_id].tolist()
-        with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
-            reg_set.land_use_table.style.set_properties(**{'text-align': 'left'})
-            logger.info(f'Parking rule #{int(reg_id)} has following relevant land uses:\n {reg_set.land_use_table.loc[reg_set.land_use_table[config_db.db_column_land_use_id].isin(relevant_land_uses)].to_string(index=False,col_space=[10,120],justify='left')}')
-        relevant_tax_data_points = tax_data.select_by_land_uses(relevant_land_uses)
-        parking_reg = reg_set.get_parking_reg_by_id(reg_id)
-        parking_inventory = calculate_parking_specific_reg(parking_reg,relevant_tax_data_points,reg_set.ruleset_id)
-        parking_inventory_final.concat(parking_inventory)
-    return parking_inventory_final
+    parking_calculation_input = PII.generate_input_from_PRS_TD(reg_set,tax_data)
+    parking_inventory = calculate_inventory_from_inputs_class(parking_calculation_input,2)
+    return parking_inventory
 
 def calculate_parking_specific_reg(reg_to_calculate: PR.ParkingRegulations,tax_data:TD.TaxDataset,rule_set_to_transfer:int = 0)->Self :
     '''
@@ -668,7 +658,7 @@ def calculate_parking_subset_from_inputs_class(reg_to_calculate:PR.ParkingRegula
     if reg_to_calculate.check_only_one_regulation():
         match reg_to_calculate.get_subset_intra_operation_type(subset):
             case 1:
-                inventory = calculate_addition_based_subset(reg_to_calculate,subset,relevant_inputs,methode_estime)
+                inventory = calculate_addition_based_subset_from_inputs_class(reg_to_calculate,subset,relevant_inputs,methode_estime)
                 #NotImplementedError('Not yet Implemented')
             case 2:
                 AttributeError('Operation 2  deprecated and no longer in use. Use operator 4 instead')
@@ -742,7 +732,7 @@ def calculate_threshold_based_subset_from_inputs_class(reg_to_calculate:PR.Parki
     else:
         ValueError('Can only calculate one rule at a time')
 
-def calculate_addition_based_subset(reg_to_calculate:PR.ParkingRegulations,subset:int,data:PII.ParkingCalculationInputs,methode_estime:int=3):
+def calculate_addition_based_subset_from_inputs_class(reg_to_calculate:PR.ParkingRegulations,subset:int,data:PII.ParkingCalculationInputs,methode_estime:int=3):
     if reg_to_calculate.check_subset_exists(subset) and reg_to_calculate.check_only_one_regulation():
         operator = reg_to_calculate.get_subset_intra_operation_type(subset)
         if operator==1:
