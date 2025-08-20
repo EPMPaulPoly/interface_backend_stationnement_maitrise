@@ -23,7 +23,8 @@ class ParkingCalculationInputs(pd.DataFrame):
         return ParkingCalculationInputs
     
     def _repr_html_(self):
-        return pd.DataFrame(self)._repr_html_()
+        # Ensure the DataFrame HTML representation is returned for Data Wrangler
+        return pd.DataFrame(self).to_html()
 
     def check_columns(self):
         if ((config_db.db_column_lot_id in self.columns) and 
@@ -205,4 +206,24 @@ def generate_input_from_PRS_TD(prs: PRS.ParkingRegulationSet,td:TD.TaxDataset, s
     tax_rule_table = combined_tax_table.merge(prs.expanded_table,how='left',left_on=config_db.db_column_tax_land_use,right_on=config_db.db_column_land_use_id)
     rule_units_association = prs.reg_def[[config_db.db_column_parking_regs_id, config_db.db_column_parking_unit_id]].drop_duplicates()
     # You can now use rule_units_association as needed, for example:
-    print(rule_units_association)
+    tax_rule_units_merge= tax_rule_table.merge(rule_units_association,how='inner',on=config_db.db_column_parking_regs_id)
+    conversion_factors_merge = tax_rule_units_merge.merge(units_final[[config_db.db_column_units_id,config_db.db_column_tax_data_conversion_slope,config_db.db_column_tax_data_conversion_zero,config_db.db_column_tax_data_column_to_multiply]],how='left',left_on=config_db.db_column_parking_unit_id,right_on=config_db.db_column_units_id)
+    
+    conversion_factors_merge['valeur'] = conversion_factors_merge.apply(
+        lambda row: row[config_db.db_column_tax_data_conversion_zero] +
+                    row[config_db.db_column_tax_data_conversion_slope] *
+                    row[row[config_db.db_column_tax_data_column_to_multiply]],
+        axis=1
+    )
+    conversion_factors_merge_out_start = conversion_factors_merge[[config_db.db_column_lot_id,config_db.db_column_parking_regs_id,config_db.db_column_parking_unit_id,config_db.db_column_land_use_id,'valeur']]
+    final_out = conversion_factors_merge_out_start.groupby(
+        [config_db.db_column_lot_id, config_db.db_column_parking_regs_id, config_db.db_column_parking_unit_id, config_db.db_column_land_use_id]
+    ).agg({'valeur': 'sum'}).reset_index()
+    #duplicates_for_fun = final_out.groupby(config_db.db_column_lot_id).agg(count=(config_db.db_column_lot_id, 'count')).reset_index()
+    #duplicates_for_fun = duplicates_for_fun.loc[duplicates_for_fun['count']>1,config_db.db_column_lot_id].to_list()
+    #complex_outs = final_out.loc[final_out[config_db.db_column_lot_id].isin(duplicates_for_fun)]
+    #print(final_out)
+    final_out[config_db.db_column_reg_sets_id] = int(prs.ruleset_id)
+    final_out[config_db.db_column_parking_regs_id] = final_out[config_db.db_column_parking_regs_id].astype(int)
+    PCI_to_Out = ParkingCalculationInputs(final_out)
+    return PCI_to_Out

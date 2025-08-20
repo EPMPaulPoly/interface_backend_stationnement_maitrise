@@ -2,6 +2,15 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Script with Prompted Args (Conda Env)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "python": "C:/Users/paulc/.conda/envs/masters_data_eng/python.exe",
+            "args": ["${input:myArgs}"]
+        },
+        {
             "name": "Debug Frontend",
             "type": "chrome",
             "request": "launch",
@@ -72,6 +81,13 @@
         {
             "name": "Full Stack: Frontend + Backend + Python",
             "configurations": ["Debug Frontend", "Debug Backend", "Python: Attach Docker"]
+        }
+    ],
+    "inputs": [
+        {
+        "id": "myArgs",
+        "type": "promptString",
+        "description": "Enter arguments"
         }
     ]
 }
