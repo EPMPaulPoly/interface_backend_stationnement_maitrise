@@ -651,8 +651,6 @@ def calculate_inventory_from_inputs_class(donnees_calcul:PII.ParkingCalculationI
         if unites.sort()==unites_donnees.sort():
             parking_last = calculate_parking_specific_reg_from_inputs_class(reglement,donnees_pertinentes,methode_estime)
             parking_out.append(parking_last)
-    if donnees_calcul['id_er'].iloc[0]==63:
-        print('debugging')
     parking_final = dissolve_list(parking_out)
     parking_final.merge_lot_data()
     return parking_final
