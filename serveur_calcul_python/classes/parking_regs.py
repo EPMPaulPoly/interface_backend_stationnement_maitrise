@@ -140,11 +140,20 @@ class ParkingRegulations():
             IndexError('Function only implemented for single regs and existing subsets')
 
     def get_subset_inter_operation_type(self,subset:int)->int:
-        subset_def = self.get_subset_def(subset).sort_values(by=config_db.db_column_stacked_parking_id,ascending=True)
-        inter_operator_out = int(subset_def[config_db.db_column_parking_operation].iloc[0])
-        if subset == 1:
-            inter_operator_out = int(3)
-        return inter_operator_out
+        try:
+            subset_def = self.get_subset_def(subset).sort_values(by=config_db.db_column_stacked_parking_id,ascending=True)
+            first_op = subset_def[config_db.db_column_parking_operation].iloc[0]
+            if pd.isna(first_op):
+                inter_operator_out = int(3)  # or any default value you prefer
+            else:
+                inter_operator_out = int(first_op)
+            if subset == 1:
+                inter_operator_out = int(3)
+            return inter_operator_out
+        except Exception as e:
+            print(f'issue with the following rule: \n {self.get_subset_def(subset)}')
+            return 3
+        
     @singledispatchmethod
     def get_reg_by_id(self,id_to_get_)->Self:
         raise NotImplementedError("Cannot retrieve this data type")

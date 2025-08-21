@@ -23,7 +23,10 @@ if __name__== "__main__":
             connection = psycopg2.connect(cf.pg_string)
             print("Connexion à la base de données réussie")
         con = sqlalchemy.create_engine(cf.pg_string)
-        success = PI.analyse_variabilite(con,[])
-        print('[true]')
+        success = PI.analyse_variabilite(con,[0.75,1,1.25])
+        if success:
+            print('[true]')
+        else:
+            print('[false]')
     except Exception as e:
-        print('[false]')
+        print('caught exception in calcul_variabilite_secteurs_facteurs')

@@ -41,6 +41,9 @@ class ParkingInventory():
         return f'N_lots ={len(self.parking_frame[config_db.db_column_lot_id].unique())}, N_places_min = {self.parking_frame['n_places_min'].agg('sum')}'
            
     def concat(self,inventory_2:Self)->Self:
+        '''# concat
+            concatène deux inventaire de stationnement en un sans en modificer le contenu
+        '''
         logger = logging.getLogger(__name__)
         if self.parking_frame.empty==False and inventory_2.parking_frame.empty ==False:
             logger.info('Inventory concatenation - 2 inventories with data')
@@ -50,7 +53,7 @@ class ParkingInventory():
             self.parking_frame = inventory_2.parking_frame
         else:
             logger.warning('Inventory concatenation - Both datasets are empty - continuing')
-
+        
     def to_postgis(self,con:db_alchemy.Engine=None):
         '''
         # to_postgis
@@ -64,9 +67,16 @@ class ParkingInventory():
         self.parking_frame.to_sql(config_db.db_table_parking_inventory,con=con,if_exists='replace',index=False)
 
     def to_json(self)->str :
+        '''# to_json
+            Transforme les données         
+        '''
         return self.parking_frame.to_json(orient='records',force_ascii=False)
     
     def copy(self:Self)->Self:
+        '''
+            # copy
+            renvoie une copie du dataframe.
+        '''
         return ParkingInventory(self.parking_frame.copy())
 
     def merge_lot_data(self:Self)->None:
@@ -388,12 +398,14 @@ def calculate_parking_for_reg_set_territories(reg_set_territories:Union[RST.RegS
     return parking_inventory_list
 
 
-def calculate_parking_specific_reg_set( reg_set:PRS.ParkingRegulationSet,tax_data:TD.TaxDataset,reg_set_territory_to_transfer:int=0)->PI.ParkingInventory:
+def calculate_parking_specific_reg_set( reg_set:PRS.ParkingRegulationSet,tax_data:TD.TaxDataset,reg_set_territory_to_transfer:int=0,scale:float=None)->PI.ParkingInventory:
     logger = logging.getLogger(__name__)
     logger.info('-----------------------------------------------------------------------------------------------')
     logger.info(f'Starting inventory for regset: {reg_set}')
     logger.info('-----------------------------------------------------------------------------------------------')
-    parking_calculation_input = PII.generate_input_from_PRS_TD(reg_set,tax_data)
+    if scale is None:
+        scale = 1
+    parking_calculation_input = PII.generate_input_from_PRS_TD(reg_set,tax_data,scale)
     parking_inventory = calculate_inventory_from_inputs_class(parking_calculation_input,2)
     return parking_inventory
 
@@ -639,6 +651,8 @@ def calculate_inventory_from_inputs_class(donnees_calcul:PII.ParkingCalculationI
         if unites.sort()==unites_donnees.sort():
             parking_last = calculate_parking_specific_reg_from_inputs_class(reglement,donnees_pertinentes,methode_estime)
             parking_out.append(parking_last)
+    if donnees_calcul['id_er'].iloc[0]==63:
+        print('debugging')
     parking_final = dissolve_list(parking_out)
     parking_final.merge_lot_data()
     return parking_final
@@ -818,28 +832,42 @@ def get_lot_data_by_estimation(lot_ids:list[str],estimation_method:int,con:Engin
         data_PI = ParkingInventory(data)
     return data_PI
 
-def analyse_variabilite(engine:Engine,scales:list[int]):
-    try:
+def analyse_variabilite(engine:Engine,scales:list[float]=None):
+        # obtenir les lots
         tax_dataset,lot_list = TD.get_all_lots_with_valid_data(engine=engine)
+        # conversion a une liste d'identifiants
         lot_list_list = lot_list[config_db.db_column_lot_id].unique().tolist()
+        # obtenir les données actuelles de l'inventaire chacune calculée avec l'ER pertinent
         inventory_data = PI.get_lot_data_by_estimation(lot_list_list,2) # Obtiens les données calculées
+        # Liste de lots ou un inventaire demeure
         inventory_data_lot_list = inventory_data.parking_frame[config_db.db_column_lot_id].unique().tolist()
+        # filtrer la liste de données opur que la comparaison soit valide entre l'inventaire calculé et l'analyse de variabilité
         tax_data_set_final = tax_dataset.filter_by_id(inventory_data_lot_list)
         lot_list_final = lot_list.loc[lot_list[config_db.db_column_lot_id].isin(inventory_data_lot_list)]
+        # Obtention ensembles de règlements
         reg_sets = PRS.get_all_reg_sets_from_database(engine=engine)
         final_aggregate_data = pd.DataFrame()
-        for reg_set in reg_sets:
-            parking_inventory_indiv_reg_set =  PI.calculate_parking_specific_reg_set(reg_set,tax_data_set_final)
-            aggregate_data = parking_inventory_indiv_reg_set.aggregate_statistics_by_land_use(lot_uses=lot_list_final,level=1)
-            aggregate_data['id_er']=reg_set.ruleset_id
-            if final_aggregate_data.empty:
-                final_aggregate_data = aggregate_data
-            else:
-                final_aggregate_data=pd.concat([final_aggregate_data,aggregate_data])
+        # itération sur les ensembles de règlements
+        if scales is None:
+            scales = [1]
+        for scale in scales:
+            for reg_set in reg_sets:
+                # calcul des inputs pour l'ER sélectionné pour la boucle
+                parking_inventory_indiv_reg_set =  PI.calculate_parking_specific_reg_set(reg_set,tax_data_set_final,scale=scale)
+                # calcul de l'inventaire
+                aggregate_data = parking_inventory_indiv_reg_set.aggregate_statistics_by_land_use(lot_uses=lot_list_final,level=1)
+                aggregate_data['id_er']=reg_set.ruleset_id
+                aggregate_data['facteur_echelle'] = scale
+                # Concaténation dans un dataframe
+                if final_aggregate_data.empty:
+                    final_aggregate_data = aggregate_data
+                else:
+                    final_aggregate_data=pd.concat([final_aggregate_data,aggregate_data])
+        # application d'un ceil pour approximer au nombre de places entier supérieur
         final_aggregate_data['n_places_min']= final_aggregate_data['n_places_min'].apply(np.ceil)
+        # injection dans la base de données
         final_aggregate_data.to_sql('variabilite',con=engine.connect(),if_exists='replace')
+        # Agrégation de l'inventaire actuel par utilisation du sol pour l'inventaire actuel
         actual_inv_aggregate = inventory_data.aggregate_statistics_by_land_use(lot_uses=lot_list_final,level=1)
         actual_inv_aggregate.to_sql('inv_reg_aggreg_cubf_n1',con=engine.connect(),if_exists='replace')
         return True
-    except Exception as e:
-        return False
