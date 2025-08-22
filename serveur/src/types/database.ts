@@ -158,9 +158,13 @@ export interface RequeteAnalyseVariabilite{
 export interface RequeteHistoVariabilite{
     id_er:string,
     cubf_n1:string,
-    voir_inv:boolean
+    voir_inv:boolean,
+    echelle:string
 }
-
+export interface RequeteAnalyseFacteurEchelle{
+    id_er:string,
+    cubf_n1:string
+}
 export interface dataHistogrammeVariabilite{
     labels:string[],
     datasets:serieHistogrammeVariabilite[]
@@ -170,14 +174,26 @@ export interface serieHistogrammeVariabilite{
     data:number[],
     cubf?:number
 }
+
+export interface dataBoxPlotVariabilite{
+    labels:string[],
+    datasets:serieBoxplotVariabilite[]
+}
+export interface serieBoxplotVariabilite{
+    label?:string,
+    data: number[][]
+}
+
 export interface RetourBDAnalyseVariabilite{
     land_use:number,
     valeur:number,
     id_er:number,
     description_er:string,
     n_lots:number,
-    land_use_desc:string
+    land_use_desc:string,
+    facteur_echelle?:number
 }
+
 
 
 export interface RequeteCalculeInventaireRegMan{

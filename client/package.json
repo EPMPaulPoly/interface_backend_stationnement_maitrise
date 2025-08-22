@@ -21,6 +21,7 @@
     "@emotion/styled": "^11.10.0",
     "@mui/icons-material": "^5.10.0",
     "@mui/material": "^5.10.0",
+    "@sgratzl/chartjs-chart-boxplot": "^4.4.4",
     "axios": "^1.7.9",
     "chart.js": "^4.4.8",
     "chroma-js": "^3.1.2",

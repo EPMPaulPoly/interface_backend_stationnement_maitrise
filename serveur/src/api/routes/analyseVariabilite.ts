@@ -3,7 +3,7 @@ import { Pool } from 'pg';
 // Types pour les requêtes
 import { Polygon, MultiPolygon } from 'geojson';
 import path from 'path';
-import { dataHistogrammeVariabilite, RequeteAnalyseVariabilite, RequeteHistoVariabilite, RetourBDAnalyseVariabilite } from 'database';
+import { dataBoxPlotVariabilite, dataHistogrammeVariabilite, RequeteAnalyseFacteurEchelle, RequeteAnalyseVariabilite, RequeteHistoVariabilite, RetourBDAnalyseVariabilite } from 'database';
 import { spawn } from 'child_process';
 import {bin,Bin} from 'd3-array';
 
@@ -73,11 +73,12 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
         let client;
         try {
             client = await pool.connect();
-            const { id_er, cubf_n1, id_ref,voir_inv } = req.query;
+            const { id_er, cubf_n1, id_ref,voir_inv,echelle } = req.query;
             const id_out: number[] = (typeof id_er === 'string' ? id_er.split(',').map(Number) : []);
             const cubf_out: number = (typeof cubf_n1 === 'string' ? Number(cubf_n1) : -1);
             const id_ref_out: number = (typeof id_ref === 'string' ? Number(id_ref) : -1);
             const voir_inv_fin:boolean =(typeof voir_inv ==='string' ?voir_inv.toLowerCase() === 'true' :false);
+            const echelle_fin: number = (typeof echelle === 'string' ? Number(echelle) : 1);
             let query: string;
             let result: any;
             let conditions: string[] = [];
@@ -87,6 +88,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
             if (cubf_out !== -1) {
                 conditions.push(`av.land_use =  ${cubf_out}`)
             }
+            conditions.push(`av.facteur_echelle = ${echelle_fin}`)
             let pre_query:string = '';
             // Création des CTE et de l'inventaire tel qu'implémenté
             if (voir_inv_fin){
@@ -111,7 +113,8 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                             -5::int as id_er,
                             'Inventaire Actuel' as description_er,
                             inv.n_lots::int,
-                            lud.land_use_desc
+                            lud.land_use_desc,
+                            1 as facteur_echelle
                         FROM 
                             inv_reg_aggreg_cubf_n1 inv
                         LEFT JOIN land_use_desc lud ON lud.land_use = inv.land_use
@@ -149,7 +152,8 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                             -5::int as id_er,
                             'Inventaire Actuel' as description_er,
                             inv.n_lots::int,
-                            lud.land_use_desc
+                            lud.land_use_desc,
+                            1 as facteur_echelle
                         FROM 
                             inv_reg_aggreg_cubf_n1 inv
                         LEFT JOIN land_use_desc lud ON lud.land_use = inv.land_use
@@ -215,7 +219,8 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                         av.id_er::int,
                         rsd.description_er,
                         av.n_lots,
-                        lud.land_use_desc
+                        lud.land_use_desc,
+                        av.facteur_echelle
                     FROM 
                         variabilite av
                     LEFT JOIN
@@ -231,7 +236,8 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                         av.id_er::int,
                         rsd.description_er,
                         av.n_lots,
-                        lud.land_use_desc
+                        lud.land_use_desc,
+                        av.facteur_echelle
                     FROM 
                         variabilite av
                     LEFT JOIN
@@ -273,6 +279,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                     LEFT JOIN
                         reg_set_defs rsd ON rsd.id_er=av.id_er
                     LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
+                    WHERE facteur_echelle = 
                     `
                 }
             }
@@ -330,10 +337,11 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
         let client;
         try {
             client = await pool.connect();
-            const { id_er, cubf_n1, voir_inv } = req.query;
+            const { id_er, cubf_n1, voir_inv,echelle } = req.query;
             const id_out: number[] = (typeof id_er === 'string' ? id_er.split(',').map(Number) : []);
             const cubf_out: number = (typeof cubf_n1 === 'string' ? Number(cubf_n1) : -1);
             const voir_inv_fin:boolean =(typeof voir_inv ==='string' ?voir_inv.toLowerCase() === 'true' :false);
+            const echelle_fin:number=(typeof echelle ==='string'?Number(echelle):1);
             let query: string;
             let result: any;
             let inv_result:any;
@@ -344,6 +352,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
             if (cubf_out !== -1) {
                 conditions.push(`av.land_use =  ${cubf_out}`)
             }
+            conditions.push(`facteur_echelle = ${echelle_fin}`)
             let pre_query:string = '';
             let inv_query:string = '';
             if (voir_inv_fin){
@@ -400,7 +409,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                     reg_set_defs rsd ON rsd.id_er=av.id_er
                 LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
                 `
-                query = pre_query + query + 'WHERE ' + `av.id_er IN (${id_out.join(',')}) AND av.land_use = ${cubf_out}`;
+                query = pre_query + query + 'WHERE ' + `av.id_er IN (${id_out.join(',')}) AND av.land_use = ${cubf_out} AND av.facteur_echelle = ${echelle_fin}`;
             } else if (id_out.length > 0){
                 query = `
                 SELECT
@@ -415,7 +424,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                 LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
                 
                 `
-                query = pre_query + query + 'WHERE ' + `av.id_er IN (${id_out.join(',')}) GROUP BY av.id_er,rsd.description_er`;
+                query = pre_query + query + 'WHERE ' + `av.id_er IN (${id_out.join(',')}) AND av.facteur_echelle = ${echelle_fin} GROUP BY av.id_er,rsd.description_er`;
             }else {
                 query = pre_query+`
                 SELECT
@@ -428,6 +437,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                 LEFT JOIN
                     reg_set_defs rsd ON rsd.id_er=av.id_er
                 LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
+                WHERE av.facteur_echelle = ${echelle_fin}
                 GROUP BY av.id_er,rsd.description_er
                 `
             }
@@ -490,8 +500,136 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
             }
         }
     }
+
+    const obtiensBoxPlot:RequestHandler<RequeteAnalyseFacteurEchelle> = async(req,res,next):Promise<void>=>{
+        console.log('Obtention Box Plot ')
+        let client;
+        try {
+            client = await pool.connect();
+            const { id_er, cubf_n1} = req.query;
+            const id_out: number[] = (typeof id_er === 'string' ? id_er.split(',').map(Number) : []);
+            const cubf_out: number = (typeof cubf_n1 === 'string' ? Number(cubf_n1) : -1);
+            let query: string;
+            let result: any;
+            let conditions: string[] = [];
+            if (id_out.length > 0) {
+                conditions.push(`av.id_er IN (${id_out.join(',')})`)
+            }
+            if (cubf_out !== -1) {
+                conditions.push(`av.land_use =  ${cubf_out}`)
+            }
+            let pre_query:string = '';
+            pre_query = `
+                    WITH land_use_desc AS(
+                        SELECT
+                            cubf::int as land_use,
+                            description as land_use_desc
+                        FROM
+                            cubf
+                    ),reg_set_defs AS (
+                        SELECT
+                            id_er,
+                            description_er
+                        FROM 
+                            ensembles_reglements_stat
+                    )
+                    `
+            if (id_out.length > 0 && cubf_out !== -1) {
+                query = `
+                SELECT
+                    av.land_use,
+                    av.n_places_min as valeur,
+                    av.id_er::int,
+                    rsd.description_er,
+                    av.n_lots,
+                    lud.land_use_desc,
+                    av.facteur_echelle
+                FROM 
+                    variabilite av
+                LEFT JOIN
+                    reg_set_defs rsd ON rsd.id_er=av.id_er
+                LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
+                `
+                query = pre_query + query + 'WHERE ' + `av.id_er IN (${id_out.join(',')}) AND av.land_use = ${cubf_out} `;
+            } else if (id_out.length > 0){
+                query = `
+                SELECT
+                    SUM(av.n_places_min) as valeur,
+                    av.id_er::int,
+                    rsd.description_er,
+                    'Tous' as land_use_desc,
+                    av.facteur_echelle
+                FROM 
+                    variabilite av
+                LEFT JOIN
+                    reg_set_defs rsd ON rsd.id_er=av.id_er
+                LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
+                
+                `
+                query = pre_query + query + 'WHERE ' + `av.id_er IN (${id_out.join(',')}) GROUP BY av.id_er,rsd.description_er,av.facteur_echelle`;
+            }else {
+                query = pre_query+`
+                SELECT
+                    SUM(av.n_places_min) as valeur,
+                    av.id_er::int,
+                    rsd.description_er,
+                    'Tous' as land_use_desc,
+                    av.facteur_echelle
+                FROM 
+                    variabilite av
+                LEFT JOIN
+                    reg_set_defs rsd ON rsd.id_er=av.id_er
+                LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
+                GROUP BY av.id_er,rsd.description_er,av.facteur_echelle
+                `
+            }
+            
+            result = await client.query(query)
+            
+            const donnees: RetourBDAnalyseVariabilite[] = result.rows;
+            let formatted_output: dataBoxPlotVariabilite;
+            if (id_out.length > 0) {
+                const scales = Array.from(new Set(donnees.map((row)=>row.facteur_echelle)));
+                formatted_output = {
+                    labels: scales.map((s) => String(donnees.find((row) => row.facteur_echelle === s)?.facteur_echelle ?? '1' )),
+                    // Convert each dataset's data to an array of arrays for boxplot
+                    datasets: [{
+                        label:'rando',
+                        data:scales.map((s) => {
+                        const scale_filter_data = donnees.filter((row) => row.facteur_echelle === s);
+                        const out = id_out.map((id) => scale_filter_data.find((row) => row.id_er === id)?.valeur ?? 0);
+                        // For each id, wrap the value in an array to match number[][]
+                        return out;})
+                    }]                    
+                }
+            } else {
+                const rulesets = Array.from(new Set(donnees.map((row)=>row.id_er)));
+                const scales = Array.from(new Set(donnees.map((row)=>row.id_er)));
+                formatted_output = {
+                    labels: scales.map((s) => String(donnees.find((row) => row.facteur_echelle === s)?.facteur_echelle ?? '1' )),
+                    // Convert each dataset's data to an array of arrays for boxplot
+                    datasets: [{
+                        label:'rando',
+                        data:scales.map((s) => {
+                        const scale_filter_data = donnees.filter((row) => row.facteur_echelle === s);
+                        const out = rulesets.map((id) => scale_filter_data.find((row) => row.id_er === id)?.valeur ?? 0);
+                        // For each id, wrap the value in an array to match number[][]
+                        return out;})
+                    }]                  
+                }
+            }
+            res.json({ success: true, data: formatted_output });
+        } catch (err) {
+            res.status(500).json({ success: false, error: 'Database error' });
+        } finally {
+            if (client) {
+                client.release()
+            }
+        }
+    }
     router.get('/recalcule-inventaires-tous-ens-regs', calculeAnalyseVariabilite)
     router.get('/obtiens-donnees-varia', obtiensAnalyseVariabilite)
     router.get('/histo-varia',obtiensHistoVariabilite)
+    router.get('/boxplot-facteurs',obtiensBoxPlot)
     return router;
 };

@@ -266,6 +266,8 @@ export interface data_graphique{
     datasets:y_serie_data_graphique[]
 }
 
+export type data_box_plot = ChartData<'boxplot', BoxPlotDataPoint[], string>;
+
 export interface methodeAnalyseVariabillite{
     idMethodeAnalyse:number,
     descriptionMethodeAnalyse:string
