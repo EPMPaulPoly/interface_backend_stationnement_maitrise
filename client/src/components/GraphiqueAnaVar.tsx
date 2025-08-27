@@ -251,7 +251,7 @@ const GraphiqueAnaVar: FC<PropsGraphAnaVar> = (props: PropsGraphAnaVar) => {
                         },
                     },
                 })
-            } else if (methodeVisualisation.idMethodeAnalyse == 2) {
+            } else if (methodeVisualisation.idMethodeAnalyse === 2) {
                 const [data_in, cubf_rep] = await Promise.all([
                     serviceAnaVariabilite.obtiensBoxPlotFacteurEchelle(
                         ensRegAGraph,
@@ -320,6 +320,70 @@ const GraphiqueAnaVar: FC<PropsGraphAnaVar> = (props: PropsGraphAnaVar) => {
                         },
                     },
                 })
+            } else if (methodeVisualisation.idMethodeAnalyse === 3) {
+                const [data_in, cubf_rep] = await Promise.all([
+                    serviceAnaVariabilite.obtiensBoxPlotEstimeCental(
+                        ensRegAGraph,
+                        index < 9 ? index + 1 : undefined
+                    ), serviceUtilisationDuSol.obtientUtilisationDuSol(index + 1, false)
+                ]);
+                defDataBP(data_in.data);
+                if (props.index !== 9) {
+                    defCUBF(cubf_rep.data[0]);
+                } else {
+                    defCUBF({ cubf: 0, description: "TOUS" })
+                }
+                setOptions({
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white',
+                                font: {
+                                    size: 16,
+                                },
+                            },
+                        },
+                        title: {
+                            display: true,
+                            text: props.index !== 9 ? cubf_rep.data[0].description : 'TOUS',
+                            color: 'white',
+                            font: {
+                                size: 25
+                            }
+                        },
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: 'white',
+                                font: {
+                                    size: 16,
+                                },
+                            },
+                            title: {
+                                display: false
+                            },
+                            stacked: index === 9
+                        },
+                        y: {
+                            ticks: {
+                                color: 'white',
+                                font: {
+                                    size: 16,
+                                },
+                            },
+                            title: {
+                                display: true,
+                                text: 'Nombre de places',
+                                color: 'white',
+                                font: {
+                                    size: 18,
+                                },
+                            }
+                        },
+                    },
+                })
             }
         };
         fetchData();
@@ -328,7 +392,7 @@ const GraphiqueAnaVar: FC<PropsGraphAnaVar> = (props: PropsGraphAnaVar) => {
 
     return (
         <div className="graphique-rendu-ana-var">
-            {props.methodeVisualisation.idMethodeAnalyse != 2 ?
+            {(props.methodeVisualisation.idMethodeAnalyse != 2 && props.methodeVisualisation.idMethodeAnalyse != 3) ?
                 <div className="graphique">
                     <Bar
                         data={{

@@ -39,6 +39,10 @@ const AnalyseVariabilite:React.FC = () =>{
         {
             idMethodeAnalyse:2,
             descriptionMethodeAnalyse:'Box Plot - par échelle conversion'
+        },
+        {
+            idMethodeAnalyse:3,
+            descriptionMethodeAnalyse:'Box Plot - Estimé principal'
         }
     ]
 
@@ -97,6 +101,16 @@ const AnalyseVariabilite:React.FC = () =>{
                         methodeVisualisation={visualisationAnalyse}
                     />
                 ) : (methodeAnalyse.idMethodeAnalyse === 1 && visualisationAnalyse.idMethodeAnalyse === 2)?(
+                    <VisualisationResAnaVarFonc
+                        editionParams={editionParametres}
+                        defEditionParams={defEditionParametres}
+                        ensRegAAnalyser={ensRegAAnalyser}
+                        ensRegReference={ensRegReference}
+                        colorPalette={colorPalette}
+                        voirInv={voirInv}
+                        methodeVisualisation={visualisationAnalyse}
+                    />
+                ):(methodeAnalyse.idMethodeAnalyse === 1 && visualisationAnalyse.idMethodeAnalyse === 3)?(
                     <VisualisationResAnaVarFonc
                         editionParams={editionParametres}
                         defEditionParams={defEditionParametres}
