@@ -124,7 +124,10 @@ export interface TableRevueProps{
     defInventaireQuartier:React.Dispatch<SetStateAction<inventaire_stationnement[]>>
 }
 
-
+export interface SubMenuProps{
+    label:string,
+    options:{label:string, path:string}[]
+}
 
 export interface TableauInventaireUniqueProps{
     inventaire: inventaire_stationnement

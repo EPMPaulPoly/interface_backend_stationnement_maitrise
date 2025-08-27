@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from "react-router";
 import { FournisseurContexte,utiliserContexte } from '../contexte/ContexteImmobilisation';
 import { donneesCarteDeFond } from '../types/ContextTypes';
+import SubMenuComponent from './SubMenuComponent';
 const MenuBar: React.FC<{}> = () => {
 
     const contexte = utiliserContexte();
@@ -12,14 +13,30 @@ const MenuBar: React.FC<{}> = () => {
     return(
         <div className="menu-bar">
             <h1>Immobilisation</h1>
-            <Link className="menu-links" to="/historique">Histoire</Link>
-            <Link className="menu-links"to="/reg">Règlements</Link>
-            <Link className="menu-links"to="/ens-reg">Ens. Règ</Link>
-            <Link className="menu-links"to="/ens-reg-terr">Ens. Règ. Terr.</Link>
-            <Link className="menu-links"to="/ana-reg">Analyse Règlements</Link>
-            <Link className="menu-links"to="/ana-var">Analyse Variabilité</Link>
-            <Link className="menu-links"to="/inventaire">Inventaire</Link>
-            <Link className="menu-links"to="/ana-quartiers">Analyse Quartiers</Link>
+            <SubMenuComponent
+                label={"Entrée Règlementation"}
+                options={[
+                    {label:"Historique",path:"/historique"},
+                    {label:"Règlements",path:"/reg"},
+                    {label:"Ensembles de règlements",path:"/ens-reg"},
+                    {label:"Ensembles de règlements territoires",path:"/ens-reg-terr"}]}
+            />
+            <SubMenuComponent
+                label={"Inventaire"}
+                options={[
+                    {label:"Manipulation Inventaire", path:"/inventaire"},
+                    {label:"Validation Statistique", path:"/valid-stat"}
+                ]}
+            />
+            <SubMenuComponent
+                label={"Pages d'analyse"}
+                options={[
+                    {label:"Visualisation Ensembles de règlements",path:"/ana-reg"},
+                    {label:"Analyse de variabilité",path:"/ana-var"},
+                    {label:"Analyse agrégée quartiers",path:"/ana-quartiers"}
+                ]}
+            />
+            
             <div className="control-dds">
                 <div className="ville-control">
                     <label 

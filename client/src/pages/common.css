@@ -118,6 +118,31 @@ body,html{
     color: white;
     background-color: blue;
 }
+
+/* Button styling */
+.nav-button {
+  background-color: black !important;
+  color: white !important;
+  border: 2px solid white !important;
+  text-transform: none; /* keeps text normal case */
+}
+
+/* Dropdown menu box */
+.nav-menu {
+  background-color: black !important;
+  color: white !important;
+  border: 2px solid white !important;
+}
+
+/* Menu items */
+.nav-menu .MuiMenuItem-root {
+  color: white !important;
+}
+
+.nav-menu .MuiMenuItem-root:hover {
+  background-color: white !important;
+  color: black !important;
+}
 /* ---------------------------------------------------------------------------------------- */
 /* --------------------------------- Form defaults -----------------------------------------*/
 /* ---------------------------------------------------------------------------------------- */
