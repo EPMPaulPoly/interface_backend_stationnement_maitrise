@@ -443,6 +443,9 @@ export const creationRouteurReglements = (pool: Pool): Router => {
   }
   const obtiensGraphiquesReglements: RequestHandler = async (req, res, next): Promise<void> => {
     console.log('Calcul des données nécessaires pour faire un graphique de règlements')
+    if (typeof(req.query['id_reg_stat']) === 'undefined' &&  typeof(req.query['id_unite']) ==='undefined'){
+      res.status(400).json({ error: "Doit fournir id_reg_stat et id_unite" });
+    }
     const scriptPath = path.resolve(__dirname, "../../../../serveur_calcul_python/calculer_valeurs_graphiques.py");
 
     // Chemin direct vers l'interpréteur Python dans l'environnement Conda

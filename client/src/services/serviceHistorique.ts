@@ -27,7 +27,7 @@ export const serviceHistorique = {
                             date_debut_periode: nouvellePeriode.date_debut_periode,
                             date_fin_periode: nouvellePeriode.date_fin_periode
                             };
-            const response:AxiosResponse<ReponsePeriode>=await api.put(`/historique`,dbData)
+            const response:AxiosResponse<ReponsePeriode>=await api.post(`/historique`,dbData)
             console.log(`Création nouvel historique ${nouvellePeriode.nom_periode} de ${nouvellePeriode.date_debut_periode} à ${nouvellePeriode.date_fin_periode!==null?nouvellePeriode.date_fin_periode:'Présent'}`)
             return{success:response.data.success,data:response.data.data}
         }catch(error:any){
@@ -49,7 +49,7 @@ export const serviceHistorique = {
                     date_debut_periode: periodeAMaj.date_debut_periode,
                     date_fin_periode: periodeAMaj.date_fin_periode
                   };
-                const reponseMAJInv = await api.post(`/historique/${idPeriode}`,dbData);
+                const reponseMAJInv = await api.put(`/historique/${idPeriode}`,dbData);
                 return {success:reponseMAJInv.data.success,data:reponseMAJInv.data.data}
             } else{
                 throw new Error("id_inv doit être défini pour cette fonction");

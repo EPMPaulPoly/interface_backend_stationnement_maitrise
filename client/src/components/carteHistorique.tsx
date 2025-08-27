@@ -5,10 +5,18 @@ import { territoire } from '../types/DataTypes';
 import { FeatureCollection,Geometry } from 'geojson';
 import "leaflet/dist/leaflet.css";
 import L from 'leaflet';
+import { utiliserContexte } from '../contexte/ContexteImmobilisation';
 
 const CarteHistorique: React.FC<CarteHistoriqueProps> = (props) => {
     
+    const contexte = utiliserContexte();
+    const optionCartoChoisie = contexte?.optionCartoChoisie ?? "";
+    const changerCarto = contexte?.changerCarto ?? (() => {});
+    const optionsCartos = contexte?.optionsCartos ?? [];
 
+    const urlCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.URL??"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    const attributionCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.attribution??'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    const zoomCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.zoomMax??18
     console.log('Map received  zone data:', JSON.stringify(props.territoires, null, 0));
     const geoJsonLayerGroupRef = useRef<L.LayerGroup | null>(null); // Refe
   
@@ -96,10 +104,14 @@ const CarteHistorique: React.FC<CarteHistoriqueProps> = (props) => {
             center={props.startPosition}
             zoom={props.startZoom}
             style={{ height: '100%', width: '100%' }}
+            minZoom={1}
+            maxZoom={zoomCarto}
         >
             <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url={urlCarto}
+                attribution={attributionCarto}
+                maxZoom={zoomCarto}
+                minZoom={1}
             />
             {props.territoires && (<>
                 {props.territoires.features?.map((feature, index) => {

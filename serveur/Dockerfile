@@ -22,7 +22,9 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86
 # Configurer Conda
 SHELL ["/bin/bash", "-c"]
 RUN /opt/conda/bin/conda config --set show_channel_urls yes
-RUN /opt/conda/bin/conda update -n base -c defaults conda
+RUN /opt/conda/bin/conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main && \
+    /opt/conda/bin/conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r && \
+    /opt/conda/bin/conda update -n base -c defaults conda
 RUN /opt/conda/bin/conda config --add channels conda-forge
 
 COPY ../serveur_calcul_python/environment.yml .

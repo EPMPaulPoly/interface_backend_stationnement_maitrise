@@ -7,7 +7,7 @@ import { spawn } from 'child_process';
 export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
   const router = Router();
   // Get all lines
-  const obtiensTousEntetesEnsemblesReglements: RequestHandler = async (req, res): Promise<void> => {
+  const obtiensEntetesEnsemblesReglements: RequestHandler = async (req, res): Promise<void> => {
     console.log('Serveur - Obtention entetes ensembles reglements')
     let client;
     try {
@@ -19,7 +19,7 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
         return;
       }
       //console.log(client)
-      const { date_debut_er_avant, date_debut_er_apres, date_fin_er_avant, date_fin_er_apres, description_like} = req.query;
+      const { date_debut_er_avant, date_debut_er_apres, date_fin_er_avant, date_fin_er_apres, description_like,id_er} = req.query;
       let queryConds = [];
       let queryVals = [];
       let countquery =1;
@@ -27,7 +27,6 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
         SELECT *
         FROM public.ensembles_reglements_stat
       `
-      console.log('arrivee au point ou on commence a ajouter des conditions')
       if (typeof(date_debut_er_avant)!=='undefined'){
         console.log('ajout condition date_debut_er_avant')
         if (date_debut_er_avant !=='null'){
@@ -73,6 +72,25 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
         queryConds.push(`to_tsvector('french', description_er) @@ plainto_tsquery('french', $${countquery})`)
         queryVals.push(decodeURIComponent(description_like as string))
         countquery++;
+      }
+      if (typeof(id_er) !== 'undefined') {
+        let id_er_list: string[] = [];
+        if (typeof id_er === 'string') {
+          id_er_list = id_er.split(',');
+        } else if (Array.isArray(id_er)) {
+          id_er_list = id_er.flatMap(item => typeof item === 'string' ? item.split(',') : []);
+        }
+        if (id_er_list.length === 1) {
+          queryConds.push(`id_er = $${countquery}`);
+          queryVals.push(id_er_list[0]);
+          countquery++;
+        } else if (id_er_list.length > 1) {
+          // Generate placeholders for each id_er
+          const placeholders = id_er_list.map((_, idx) => `$${countquery + idx}`).join(',');
+          queryConds.push(`id_er IN (${placeholders})`);
+          queryVals.push(...id_er_list);
+          countquery += id_er_list.length;
+        }
       }
       if (queryConds.length>0){
         query += '\n WHERE ' + queryConds.join(' \n AND ')
@@ -512,7 +530,7 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
   // basiques
   router.delete('/:id', supprimeEnsembleReglement)
   router.get('/complet/:id', obtiensEnsembleReglementCompletParId)
-  router.get('/entete', obtiensTousEntetesEnsemblesReglements);
+  router.get('/entete', obtiensEntetesEnsemblesReglements);
   router.post('/entete', nouvelleEnteteEnsembleReglement)
   router.put('/entete/:id', modifieEnteteEnsembleReglement)
   router.post('/assoc', nouvelleAssociationEnsembleReglement)

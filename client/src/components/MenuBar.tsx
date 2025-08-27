@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from "react-router";
-
+import { FournisseurContexte,utiliserContexte } from '../contexte/ContexteImmobilisation';
+import { donneesCarteDeFond } from '../types/ContextTypes';
 const MenuBar: React.FC<{}> = () => {
-    const gestFondDeCarte=()=>{
-        console.log("Fond de carte non-implémenté")
-    }
+
+    const contexte = utiliserContexte();
+    const optionCartoChoisie = contexte?.optionCartoChoisie ?? "";
+    const changerCarto = contexte?.changerCarto ?? (() => {});
+    const optionsCartos = contexte?.optionsCartos ?? [];
 
     return(
         <div className="menu-bar">
@@ -14,6 +17,7 @@ const MenuBar: React.FC<{}> = () => {
             <Link className="menu-links"to="/ens-reg">Ens. Règ</Link>
             <Link className="menu-links"to="/ens-reg-terr">Ens. Règ. Terr.</Link>
             <Link className="menu-links"to="/ana-reg">Analyse Règlements</Link>
+            <Link className="menu-links"to="/ana-var">Analyse Variabilité</Link>
             <Link className="menu-links"to="/inventaire">Inventaire</Link>
             <Link className="menu-links"to="/ana-quartiers">Analyse Quartiers</Link>
             <div className="control-dds">
@@ -35,9 +39,8 @@ const MenuBar: React.FC<{}> = () => {
                         className="label-fond-de-carte">
                             Tuiles
                     </label>
-                    <select id="fond-de-carte" name="fond-de-carte" onChange={gestFondDeCarte}>
-                        <option>OSM</option>
-                        <option>Géodésie Québec</option>
+                    <select id="fond-de-carte" name="fond-de-carte" value={optionCartoChoisie} onChange={(e)=>changerCarto(Number(e.target.value))}>
+                        {optionsCartos.map((entree: donneesCarteDeFond) => <option value={entree.id}>{entree.description}</option>)}
                     </select>
                 </div>
             </div>

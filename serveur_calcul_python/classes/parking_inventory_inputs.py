@@ -4,6 +4,7 @@ from config import config_db
 from typing import Union,Self
 import classes.parking_reg_sets as PRS
 import classes.parking_regs as PR
+import classes.tax_dataset as TD
 class ParkingCalculationInputs(pd.DataFrame):
     """Class that inherits from pandas.DataFrame then customizes it with additonal methods."""
     def __init__(self,*args,**kwargs):
@@ -22,7 +23,8 @@ class ParkingCalculationInputs(pd.DataFrame):
         return ParkingCalculationInputs
     
     def _repr_html_(self):
-        return pd.DataFrame(self)._repr_html_()
+        # Ensure the DataFrame HTML representation is returned for Data Wrangler
+        return pd.DataFrame(self).to_html()
 
     def check_columns(self):
         if ((config_db.db_column_lot_id in self.columns) and 
@@ -78,6 +80,12 @@ class ParkingCalculationInputs(pd.DataFrame):
             return False
         
 def generate_values_based_on_available_data(entree:dict)->ParkingCalculationInputs:
+    '''# generate_values_based_on_available_data
+        inputs: 
+            entree: dictionnaire contenant les informations fournies par le front end pour le calcul des entrées pertinentes
+        outputs:
+            parking_inputs_out: un ParkingCalculationInputs qui peut être utilisé pour calculer le stationnement pour le ou les lots inclus
+    '''
     units = entree.get('id_unite','0')
     reglements = entree.get('id_reg_stat','0').split(',')
     ensembles_reglements = entree.get('id_er', '0').split(',')
@@ -151,3 +159,80 @@ def generate_values_based_on_available_data(entree:dict)->ParkingCalculationInpu
         parking_inputs_out = ParkingCalculationInputs(df_out)
         #breakpoint()
         return parking_inputs_out
+
+def generate_calculation_input_from_tax_data(reg_to_calculate:PR.ParkingRegulations,tax_data: TD.TaxDataset)->ParkingCalculationInputs:
+    if (reg_to_calculate.check_only_one_regulation()):
+        unique_units = reg_to_calculate.get_units()
+        lots= tax_data.lot_table
+        lots_w_assoc = lots.merge(tax_data.lot_association, on=config_db.db_column_lot_id,how='inner')
+        lots_w_tax_entries = lots_w_assoc.merge(tax_data.tax_table,on=config_db.db_column_tax_id,how='inner')
+        lots_w_tax_entries[config_db.db_column_parking_regs_id] = reg_to_calculate.get_reg_id()
+        units_dict = {config_db.db_column_parking_regs_id:[reg_to_calculate.get_reg_id()] * len(unique_units),config_db.db_column_parking_unit_id:unique_units}
+        units_df = pd.DataFrame(units_dict)
+        output_start = lots_w_tax_entries.merge(units_df,on=config_db.db_column_parking_regs_id,how='left')
+        output_start = output_start.merge(reg_to_calculate.units_table,left_on=config_db.db_column_parking_unit_id,right_on=config_db.db_column_units_id,how='left')
+        # Compute 'valeur' by retrieving the column specified in each row by db_column_tax_data_column_to_multiply
+        output_start['valeur'] = output_start.apply(
+            lambda row: row[row[config_db.db_column_tax_data_column_to_multiply]] * row[config_db.db_column_tax_data_conversion_slope] + row[config_db.db_column_tax_data_conversion_zero],
+            axis=1
+        )
+        output = output_start[[config_db.db_column_lot_id,config_db.db_column_tax_land_use,config_db.db_column_parking_regs_id,config_db.db_column_parking_unit_id,'valeur']].copy().rename(columns={config_db.db_column_tax_land_use:config_db.db_column_land_use_id})
+        output_gb = output.groupby(by=[config_db.db_column_lot_id,config_db.db_column_land_use_id,config_db.db_column_parking_regs_id,config_db.db_column_parking_unit_id]).agg({'valeur':'sum'}).reset_index()
+        print('test')
+        output_pii = ParkingCalculationInputs(output_gb)
+        return output_pii
+    else:
+        ValueError('Doit contenir seulement un règlement')
+
+
+def generate_input_from_PRS_TD(prs: PRS.ParkingRegulationSet,td:TD.TaxDataset, scale:float=None)->ParkingCalculationInputs:
+    ''' # generate_input_from_PRS_TD
+            Fonction permettant de créer un ParkingCalculationInput. L'hyopthèse principale de la fonction est que le PRS est applicable à l'ensemble fourni aucune segmentation des données foncières n'est faite pour valider les intrants
+            Entrées:
+                - prs: PRS.ParkingRegulationSet qui nous permet d'indéxer un ensemble de règlements en vigueur à un moment
+                - td: TD.TaxDataset qui est l'ensemble des données entrantes à partir desquels ont veut créer un intrant de calcul
+                - scale: utilisé seulement pour faire de l'analyse de sensibilité au facteurs de conversion
+            Sorties: 
+                - ParkingCalculationsInput: Objet de la class ParkingCalculationsInputs (essentiellement un dataframe pandas) qui peut être utilisé pour le calcul de la capacité de stationnement
+    '''
+    try:
+        if scale is None:
+            units= prs.units_table
+        else:
+            units= prs.units_table
+            units.loc[units[config_db.db_column_tax_data_conversion_slope]!=1,config_db.db_column_tax_data_conversion_slope] =  units.loc[units[config_db.db_column_tax_data_conversion_slope]!=1,config_db.db_column_tax_data_conversion_slope] * scale
+        # relevant reg ids
+        relevant_regulation_ids = prs.get_unique_reg_ids()
+        # 
+        units_used = prs.get_all_units_used()
+        units_final = units.loc[units[config_db.db_column_units_id].isin(units_used)]
+        relevant_columns:list[str] = units_final[config_db.db_column_tax_data_column_to_multiply].unique().tolist()
+        relevant_columns.append(config_db.db_column_tax_id)
+        relevant_columns.append(config_db.db_column_tax_land_use)
+        combined_tax_table = td.lot_table[[config_db.db_column_lot_id,'g_va_suprf']].merge(td.lot_association,how='left',on=config_db.db_column_lot_id).merge(td.tax_table[relevant_columns],how='left',on=config_db.db_column_tax_id)
+        tax_rule_table = combined_tax_table.merge(prs.expanded_table,how='left',left_on=config_db.db_column_tax_land_use,right_on=config_db.db_column_land_use_id)
+        rule_units_association = prs.reg_def[[config_db.db_column_parking_regs_id, config_db.db_column_parking_unit_id]].drop_duplicates()
+        # You can now use rule_units_association as needed, for example:
+        tax_rule_units_merge= tax_rule_table.merge(rule_units_association,how='inner',on=config_db.db_column_parking_regs_id)
+        conversion_factors_merge = tax_rule_units_merge.merge(units_final[[config_db.db_column_units_id,config_db.db_column_tax_data_conversion_slope,config_db.db_column_tax_data_conversion_zero,config_db.db_column_tax_data_column_to_multiply]],how='left',left_on=config_db.db_column_parking_unit_id,right_on=config_db.db_column_units_id)
+        
+        conversion_factors_merge['valeur'] = conversion_factors_merge.apply(
+            lambda row: row[config_db.db_column_tax_data_conversion_zero] +
+                        row[config_db.db_column_tax_data_conversion_slope] *
+                        row[row[config_db.db_column_tax_data_column_to_multiply]],
+            axis=1
+        )
+        conversion_factors_merge_out_start = conversion_factors_merge[[config_db.db_column_lot_id,config_db.db_column_parking_regs_id,config_db.db_column_parking_unit_id,config_db.db_column_land_use_id,'valeur']]
+        final_out = conversion_factors_merge_out_start.groupby(
+            [config_db.db_column_lot_id, config_db.db_column_parking_regs_id, config_db.db_column_parking_unit_id, config_db.db_column_land_use_id]
+        ).agg({'valeur': 'sum'}).reset_index()
+        #duplicates_for_fun = final_out.groupby(config_db.db_column_lot_id).agg(count=(config_db.db_column_lot_id, 'count')).reset_index()
+        #duplicates_for_fun = duplicates_for_fun.loc[duplicates_for_fun['count']>1,config_db.db_column_lot_id].to_list()
+        #complex_outs = final_out.loc[final_out[config_db.db_column_lot_id].isin(duplicates_for_fun)]
+        #print(final_out)
+        final_out[config_db.db_column_reg_sets_id] = int(prs.ruleset_id)
+        final_out[config_db.db_column_parking_regs_id] = final_out[config_db.db_column_parking_regs_id].astype(int)
+        PCI_to_Out = ParkingCalculationInputs(final_out)
+        return PCI_to_Out
+    except Exception as e:
+        print('caught error in conversion from tax dataset to relevant calculation input')

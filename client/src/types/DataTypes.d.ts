@@ -96,6 +96,12 @@ export interface utilisation_sol{
     description:string
 }
 
+export interface comptes_utilisations_sol{
+    niveau:number,
+    description:string,
+    n_entrees:number
+}
+
 export interface association_util_reglement{
     id_assoc_er_reg:number,
     cubf:number,
@@ -252,11 +258,19 @@ export interface y_serie_data_graphique{
     id_er?:number,
     desc_er?:string,
     id_reg_stat?:number,
-    desc_reg_stat?: string
+    desc_reg_stat?: string,
+    cubf?:number
 }
 export interface data_graphique{
     labels:number[]
     datasets:y_serie_data_graphique[]
+}
+
+export type data_box_plot = ChartData<'boxplot', BoxPlotDataPoint[], string>;
+
+export interface methodeAnalyseVariabillite{
+    idMethodeAnalyse:number,
+    descriptionMethodeAnalyse:string
 }
 
 export interface requete_calcul_manuel_reg{
@@ -273,5 +287,6 @@ export interface ProprietesRequetesER{
     dateDebutApres?:number|null,
     dateFinAvant?:number|null,
     dateFinApres?:number|null,
-    descriptionLike?:string
+    descriptionLike?:string,
+    idER?:number|number[]
 }

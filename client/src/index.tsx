@@ -17,6 +17,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { BoxPlotController, BoxAndWiskers } from '@sgratzl/chartjs-chart-boxplot';
 
 ChartJS.register(
   CategoryScale,
@@ -26,7 +27,9 @@ ChartJS.register(
   PointElement, // <-- THIS
   Title,
   Tooltip,
-  Legend
+  Legend, 
+  BoxPlotController, 
+  BoxAndWiskers
 );
 
 

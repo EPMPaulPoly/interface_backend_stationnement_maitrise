@@ -114,8 +114,8 @@ export const creationRouteurHistorique = (pool: Pool): Router => {
   };
   // Routes
   router.get('/', obtiensTousPeriodes);
-  router.put('/',nouvellePeriode);
-  router.post('/:id',majPeriode);
+  router.post('/',nouvellePeriode);
+  router.put('/:id',majPeriode);
   router.delete('/:id',supprimePeriode);
   return router;
 };

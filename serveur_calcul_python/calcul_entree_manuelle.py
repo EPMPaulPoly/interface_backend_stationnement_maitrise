@@ -28,7 +28,7 @@ def main():
     PII_transmit = PII.ParkingCalculationInputs(array)
 
     # Perform your calculations here
-    inventaire = PI.calculate_inventory_from_manual_entry(PII_transmit)
+    inventaire = PI.calculate_inventory_from_inputs_class(PII_transmit)
     # convert dataframe to string for dumping it to console
     string_output = inventaire.to_json()
     # Print the result to stdout

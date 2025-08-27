@@ -1,6 +1,5 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { Pool } from 'pg';
-import { DbTerritoire, ParamsCadastre, ParamsPeriode,DbRole,DbCadastre,ParamsQuartier,DbCadastreGeomIdOnly } from '../../types/database';
 // Types pour les requêtes
 import { Polygon,MultiPolygon } from 'geojson';
 import { ParamsTerritoire } from '../../types/database';

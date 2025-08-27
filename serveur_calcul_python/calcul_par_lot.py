@@ -11,7 +11,7 @@ if __name__=="__main__":
     try:
         lot_a_analyser = sys.argv[1]
         if os.getenv("DEBUGPY_CALC_ENABLE", "true").lower() == "true":
-            print(f'Quartier à analyser: {lot_a_analyser}')
+            print(f'Lot à analyser: {lot_a_analyser}')
             time.sleep(10) 
             debugpy.listen(("0.0.0.0", 5678))
             print("Waiting for debugger attach...")

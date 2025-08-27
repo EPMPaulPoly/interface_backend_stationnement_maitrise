@@ -2,8 +2,18 @@ import React,{useRef,useEffect} from 'react';
 import { CarteEnsRegTerrProps } from '../types/InterfaceTypes';
 import { MapContainer, TileLayer,GeoJSON,useMap } from 'react-leaflet';
 import L from 'leaflet';
+import { utiliserContexte } from '../contexte/ContexteImmobilisation';
 
 const CarteEnsRegTerr:React.FC<CarteEnsRegTerrProps>=(props:CarteEnsRegTerrProps)=>{
+
+    const contexte = utiliserContexte();
+    const optionCartoChoisie = contexte?.optionCartoChoisie ?? "";
+    const changerCarto = contexte?.changerCarto ?? (() => {});
+    const optionsCartos = contexte?.optionsCartos ?? [];
+
+    const urlCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.URL??"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    const attributionCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.attribution??'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    const zoomCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.zoomMax??18
     const geoJsonLayerGroupRef = useRef<L.LayerGroup | null>(null); // Refe
     const MapComponent = () => {
             const map = useMap(); // Access the map instance
@@ -59,8 +69,11 @@ const CarteEnsRegTerr:React.FC<CarteEnsRegTerrProps>=(props:CarteEnsRegTerrProps
             zoom={props.zoom}
             style={{ height: '100%', width: '100%' }}>
             <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url={urlCarto}
+                attribution={attributionCarto}
+                maxZoom={zoomCarto}
+                minZoom={1}
+                
             />
             <MapComponent/>
         </MapContainer>

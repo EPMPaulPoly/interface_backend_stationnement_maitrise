@@ -1,0 +1,66 @@
+.page-ana-var {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+.comp-reg-charts {
+    flex-grow: 1;
+    /* fill remaining height */
+    overflow-y: auto;
+    /* vertical scroll if needed */
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+    grid-auto-rows: 1fr;
+    /* equal height rows */
+    box-sizing: border-box;
+    /* avoid overflow from padding */
+    /* grid-template-columns is set inline from React */
+}
+
+.pan-visualisation-resultats {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+}
+.pan-vis-resultats-graph {
+  flex: 1 1 0;
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 8px;
+}
+.graphique {
+    flex: 1 1 0;
+    height: 0; /* Ensures it shrinks/grows with parent */
+    width: 100%;
+    height:100%;
+    overflow: hidden;
+}
+.graphique-rendu-ana-var {
+  height: 100%;
+  width: 100%;
+  display: flex;
+}
+.graphique {
+  flex: 1 1 0;
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+.control-comp-reg{
+  display: flex;
+  flex-direction: row;
+  align-items: center; /* optional: vertically center items */
+  gap: 1rem; /* optional: add spacing between items */
+}
+h2{
+  color:white;
+  flex:1
+}

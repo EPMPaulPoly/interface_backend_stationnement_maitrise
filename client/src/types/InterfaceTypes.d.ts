@@ -1,6 +1,6 @@
 import {LatLng, LatLngExpression} from "leaflet";
-import { SetStateAction } from "react";
-import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties, lotCadastralAvecBoolInvGeoJsonProperties, informations_reglementaire_manuelle, utilisation_sol, data_graphique } from "./DataTypes";
+import React, { SetStateAction } from "react";
+import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties, lotCadastralAvecBoolInvGeoJsonProperties, informations_reglementaire_manuelle, utilisation_sol, data_graphique, methodeAnalyseVariabillite, comptes_utilisations_sol } from "./DataTypes";
 import { FeatureCollection, Geometry } from "geojson";
 import { PrioriteEstimeQuartier, TypesVisualisationAnalyseQuartier, VariablesPossibles } from "./AnalysisTypes";
 import { N } from "react-router/dist/development/register-BkDIKxVz";
@@ -441,4 +441,51 @@ export interface ControlAnaRegProps{
     nGraphiques:number,
     defNGraphiques:React.Dispatch<SetStateAction<number>>
     colorPalette:string[]
+}
+// ----------------------------------------------------------------------------
+// -------------------- Graphiques Variabilité Règlements ---------------------
+// ---------------------------------------------------------------------------- 
+
+export interface ControlAnaVarProps{
+    methodeAnalyse:methodeAnalyseVariabillite,
+    defMethodeAnalyse:React.Dispatch<SetStateAction<methodeAnalyseVariabillite>>
+    methodessAnalysesPossibles: methodeAnalyseVariabillite[],
+    ensRegAAnalyser:number[],
+    defEnsRegAAnalyser:React.Dispatch<SetStateAction<number[]>>
+    colorPalette:string[]
+    defCalculsEnCours:React.Dispatch<SetStateAction<boolean>>,
+    voirInv:boolean,
+    defVoirInv: React.Dispatch<SetStateAction<boolean>>,
+    methodeVisualisationPossibles: methodeAnalyseVariabillite[],
+    methodeVisualisation: methodeAnalyseVariabillite,
+    defMethodeVisualisation: React.Dispatch<SetStateAction<methodeAnalyseVariabillite>>
+}
+export interface PropsEditionParametresAnaVarFonc{
+    editionParams:boolean,
+    defEditionParams:React.Dispatch<SetStateAction<boolean>>
+    ensRegAAnalyser:number[],
+    ensRegReference:number,
+    defEnsRegReference:React.Dispatch<SetStateAction<number>>
+    niveauCUBF:comptes_utilisations_sol
+    defNiveauCUBF:React.Dispatch<SetStateAction<comptes_utilisations_sol>>,
+    colorPalette:string[]
+}
+
+export interface PropsVisualisationAnaVarFonc{
+    editionParams:boolean,
+    defEditionParams:React.Dispatch<SetStateAction<boolean>>,
+    ensRegAAnalyser:number[],
+    ensRegReference: number,
+    colorPalette:string[],
+    voirInv:boolean,
+    methodeVisualisation: methodeAnalyseVariabillite
+}
+
+export interface PropsGraphAnaVar{
+    ensRegAGraph:number[],
+    ensRegReference: number,
+    index:number,
+    colorPalette:string[],
+    voirInv:boolean,
+    methodeVisualisation: methodeAnalyseVariabillite
 }

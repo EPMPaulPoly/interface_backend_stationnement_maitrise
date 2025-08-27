@@ -31,7 +31,7 @@ def main():
     generated_parking_inventory_inputs = PII.generate_values_based_on_available_data(array)
     #breakpoint()
     # Perform your calculations here
-    inventaire = PI.calculate_inventory_from_manual_entry(generated_parking_inventory_inputs)
+    inventaire = PI.calculate_inventory_from_inputs_class(generated_parking_inventory_inputs)
 
     # cleaning up the data set in order to output it
     inventaire_frame = inventaire.parking_frame.drop(columns=cf_db.db_column_parking_regs_id)

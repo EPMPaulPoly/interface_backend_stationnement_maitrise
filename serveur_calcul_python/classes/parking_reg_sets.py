@@ -2,7 +2,7 @@ from classes.parking_regs import ParkingRegulations
 from classes.parking_regs import get_units_for_regs
 import pandas as pd
 import numpy as np
-from typing import Optional, Union
+from typing import Optional, Union,Self
 from sqlalchemy import create_engine,text
 import sqlalchemy
 from config import config_db
@@ -142,6 +142,10 @@ class ParkingRegulationSet(ParkingRegulations):
         new_units_table = self.units_table
         return ParkingRegulations(new_reg_head,new_reg_def,new_units_table)
 
+    def get_all_units_used(self:Self)->list[int]:
+        relevant_units = self.reg_def[config_db.db_column_parking_unit_id].unique().tolist()
+        return relevant_units
+
 def from_sql(ruleset_id:Union[int,list],con:sqlalchemy.Connection=None)->list[ParkingRegulationSet]:
     '''
     from_sql generates a ParkingRegulationSetObject from the PostgreSQL database
@@ -272,6 +276,28 @@ def get_parking_reg_for_lot(lot_id:str)->pd.DataFrame:
     association_with_rule= association_with_rule.merge(units,how='left',on=config_db.db_column_parking_regs_id)
     return association_with_rule
 
+def get_all_reg_sets_from_database(engine:sqlalchemy.Engine=None)->list[ParkingRegulationSet]:
+    '''
+        # get_all_reg_sets_from_database
+        Renvoie tous les ensembles de règlements dans une liste
+            Intrants:
+                - engine: Engine sqlalchemy de la connection
+            Extrants:
+                - liste[ParkingRegulationSet]: list des ensembles de règlements
+    '''
+    query = f'''
+        SELECT
+            {config_db.db_column_reg_sets_id}
+        FROM {config_db.db_table_reg_sets_header}
+
+    '''
+    if engine is None:
+        engine = sqlalchemy.create_engine(config_db.pg_string)
+    with engine.connect() as con:
+        reg_sets_ids:pd.DataFrame = pd.read_sql(query,con=con)
+        rsi_list:list[int] = reg_sets_ids[config_db.db_column_reg_sets_id].unique().tolist()
+        reg_sets = from_sql(rsi_list)
+    return reg_sets
 if __name__=="__main__":
     #entete_reglement = pd.DataFrame([[100,"test",1995,2009,"VQZ3","Annexe D","3.1-st-sacrement","CUQ"],
     #                                 [101,"test",1995,2009,"VQZ3","Annexe D","6.1-st-sacrement","CUQ"]],

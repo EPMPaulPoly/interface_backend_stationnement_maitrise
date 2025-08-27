@@ -8,6 +8,7 @@ import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
 import "leaflet/dist/leaflet.css";
 import L, { LeafletEvent,LatLngExpression } from 'leaflet';
 import chroma from 'chroma-js';
+import { utiliserContexte } from '../contexte/ContexteImmobilisation';
 const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:AnalyseCartoQuartierProps)=>{
     const [typeCarto,defTypeCarto] = useState<number>(-1);
     const [cartoAMontrer,defCartoAMontrer] = useState<FeatureCollection<Geometry,GeoJSONPropsAnaQuartier>>({
@@ -43,6 +44,14 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
             descriptionAnalyseCarto: "Pourcentage Territoire"
         }
     ];
+
+    const contexte = utiliserContexte();
+    const optionCartoChoisie = contexte?.optionCartoChoisie ?? "";
+    const changerCarto = contexte?.changerCarto ?? (() => {});
+    const optionsCartos = contexte?.optionsCartos ?? [];
+    const zoomCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.zoomMax??18
+    const urlCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.URL??"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    const attributionCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.attribution??'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     const geoJsonLayerGroupRef = useRef<L.LayerGroup | null>(null); // Refe
     const prevInventaireRef = useRef<GeoJSON.FeatureCollection<GeoJSON.Geometry, GeoJSONPropsAnaQuartier> | null>(null);
     const MapComponent = () => {
@@ -99,10 +108,13 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
                         // Create a legend based on the color scale
                         const legend = new L.Control({ position: 'bottomright' });
 
+                        if ((map as any)._legendControl) {
+                            map.removeControl((map as any)._legendControl);
+                        }
                         legend.onAdd = function () {
                             const div = L.DomUtil.create('div', 'info legend');
                             const grades = [minValue, (maxValue + minValue) / 2, maxValue]; // Define breakpoints
-                            const labels:string[] = [];
+                            const labels: string[] = [];
 
                             // Generate legend items based on color scale
                             grades.forEach((grade, index) => {
@@ -115,6 +127,8 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
                             div.innerHTML = labels.join('<br>');
                             return div;
                         };
+                        // Store the legend control on the map instance to remove it next time
+                        (map as any)._legendControl = legend;
 
                         // Add legend to the map
                         legend.addTo(map);
@@ -171,10 +185,13 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
                   center={positionDepart}
                   zoom={zoomDepart}
                   style={{ height: '100%', width: '100%' }}
+                  
                 >
                   <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url={urlCarto}
+                    attribution={attributionCarto}
+                    maxZoom={zoomCarto}
+                    minZoom={1}
                   />
                   {cartoValid && (<>
                     <MapComponent />

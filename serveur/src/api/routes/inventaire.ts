@@ -395,10 +395,10 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
   router.get('/calcul/quartier/:id',calculInventairePythonQuartier);
   router.get('/calcul/lot/:id',calculInventairePythonLot);
   router.post('/calcul/reg-val-man',calculeInventaireValeursManuelles) 
-  router.post('/maj-en-gros',metAJourInventaireEnGros)
-  router.post('/:id_inv',metAJourInventaire)
-  router.put('/',nouvelInventaire)
-  router.put('/nouv-en-gros',nouvelInventaireEnGros)
+  router.put('/maj-en-gros',metAJourInventaireEnGros)
+  router.put('/:id_inv',metAJourInventaire)
+  router.post('/',nouvelInventaire)
+  router.post('/nouv-en-gros',nouvelInventaireEnGros)
   router.delete('/:id_inv',supprimerInventaire)
   return router;
 };
