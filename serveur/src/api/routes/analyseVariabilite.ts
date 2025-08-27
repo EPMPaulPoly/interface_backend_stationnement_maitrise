@@ -227,7 +227,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                         reg_set_defs rsd ON rsd.id_er=av.id_er
                     LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
                     `
-                    query = pre_query + query + 'WHERE ' + conditions.join(' AND ');
+                    query = pre_query + query + 'WHERE ' + conditions.join(' AND ') + ' ORDER BY valeur ASC';
                 } else {
                     query = `
                     SELECT
@@ -246,7 +246,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                         base_data bd ON bd.land_use = av.land_use
                     LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
                     `
-                    query = pre_query + query + 'WHERE ' + conditions.join(' AND ') + 'AND av.facteur_echelle = 1';
+                    query = pre_query + query + 'WHERE ' + conditions.join(' AND ') + 'AND av.facteur_echelle = 1 ORDER BY valeur ASC';
                 }
             } else {
                 if (id_ref_out === -1) {
@@ -263,7 +263,8 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                     LEFT JOIN
                         reg_set_defs rsd ON rsd.id_er=av.id_er
                     LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
-                    WHERE av.facteur_echelle = 1
+                    WHERE av.facteur_echelle = 1 
+                    ORDER BY valeur ASC
                     `
 
                 } else {
@@ -280,7 +281,8 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                     LEFT JOIN
                         reg_set_defs rsd ON rsd.id_er=av.id_er
                     LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
-                    WHERE av.facteur_echelle = 1
+                    WHERE av.facteur_echelle = 1 
+                    ORDER BY valeur ASC
                     `
                 }
             }
