@@ -65,3 +65,4 @@ export type ReponseCalculComplete = ApiResponse<boolean>
 
 // types pour la validation state
 export type ReponseStrateValide = ApiResponse<Strate[]>
+export type ReponseStrateUnique = ApiResponse<Strate>

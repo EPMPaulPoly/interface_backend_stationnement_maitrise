@@ -37,3 +37,16 @@ export interface selectLotProps{
     defRoleRegard:React.Dispatch<SetStateAction<string>>,
     lotsDuQuartier: GeoJSON.FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>
 }
+
+export interface strataManipProps{
+    strates:Strate[]
+    defStrates:React.Dispatch<SetStateAction<Strate[]>>
+    strateAct:Strate,
+    defStrate:React.Dispatch<SetStateAction<Strate>>
+    ancinnesStrates:Strate[]
+    defAnciennesStrates:React.Dispatch<SetStateAction<Strate[]>>
+    ancienneStrateAct:Strate,
+    defAncienneStrateAct:React.Dispatch<SetStateAction<Strate>>
+    modif:boolean
+    defModif:React.Dispatch<SetStateAction<boolean>>
+}

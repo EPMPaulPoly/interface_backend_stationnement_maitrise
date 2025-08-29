@@ -4,23 +4,29 @@ import ArbreStrates from "./arbreStrates"
 import { Edit, Save } from "@mui/icons-material"
 import { useState } from "react"
 import Cancel from "@mui/icons-material/Cancel"
+import manipStrates from "../utils/manipStrates"
 
 const ModifStrates: React.FC<PropsModifStrate> = (props: PropsModifStrate) => {
-    const [modif, defModif] = useState<boolean>(false)
-
     const handleItemChange = (field: string, value: string) => {
-
+        manipStrates.modifStrateAct(field,value,props.strateAct,props.strates,props.defStrateAct,props.defStrates)
     }
 
     const turnOnEditing = () => {
-        defModif(true)
+        props.defModif(true)
     }
-    const turnOffEditing = () => {
-        defModif(false)
+    const saveEdits=()=>{
+        props.defModif(false)
+    }
+    const cancelEditing = () => {
+        props.defStrateAct(props.ancienneStrateAct)
+        props.defStrates(props.anciennesStrates)
+        props.defAncienneStrateAct({id_strate:0,nom_strate:'',nom_colonne:'',nom_table:'',index_ordre:0,est_racine:false,id_enfants:null,condition:{condition_type:'equals',condition_valeur:0}})
+        props.defAnciennesStrates([])
+        props.defModif(false)
     }
     return (
         <div className="modif-strate">
-            {!modif ? <Edit sx={{ paddingBottom: "8px" }} onClick={turnOnEditing} /> : (<><Save /><Cancel onClick={turnOffEditing} /></>)}
+            {!props.modif ? <Edit sx={{ paddingBottom: "8px" }} onClick={turnOnEditing} /> : (<><Save onClick={saveEdits} /><Cancel onClick={cancelEditing} /></>)}
             <FormControl variant="standard" fullWidth sx={{ gap: 2 }}>
                 <FormLabel sx={{ color: "white" }}>Informations de base</FormLabel>
 
@@ -29,7 +35,7 @@ const ModifStrates: React.FC<PropsModifStrate> = (props: PropsModifStrate) => {
                         key={field}
                         label={field.replace("_", " ").toUpperCase()}
                         value={(props.strateAct as any)[field]}
-                        disabled={!modif}
+                        disabled={!props.modif}
                         onChange={(e) => handleItemChange(field, e.target.value)}
                         variant="standard"
                         sx={{
@@ -67,8 +73,8 @@ const ModifStrates: React.FC<PropsModifStrate> = (props: PropsModifStrate) => {
                     <Select
                         labelId="strate-select-label"
                         value={props.strateAct.condition.condition_type}
-                        disabled={!modif}
-                        onChange={(e) => handleItemChange("condition", String(e.target.value))}
+                        disabled={!props.modif}
+                        onChange={(e) => handleItemChange("condition_type", String(e.target.value))}
                         sx={{
                             "& .MuiSelect-select": { color: "white", backgroundColor: "#1f1f1f" },
                             "& .MuiSelect-select.Mui-disabled": {
@@ -90,7 +96,7 @@ const ModifStrates: React.FC<PropsModifStrate> = (props: PropsModifStrate) => {
                         key={field}
                         label={field.replace("_", " ").toUpperCase()}
                         value={(props.strateAct.condition as any)[field]}
-                        disabled={!modif}
+                        disabled={!props.modif}
                         onChange={(e) => handleItemChange(field, e.target.value)}
                         variant="standard"
                         sx={{
@@ -118,7 +124,7 @@ const ModifStrates: React.FC<PropsModifStrate> = (props: PropsModifStrate) => {
                         key={props.strateAct.condition.condition_valeur}
                         label={"Valeur exacte"}
                         value={props.strateAct.condition.condition_valeur}
-                        disabled={!modif}
+                        disabled={!props.modif}
                         onChange={(e) => handleItemChange("condition_valeur", e.target.value)}
                         variant="standard"
                         sx={{

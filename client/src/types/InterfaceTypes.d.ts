@@ -505,16 +505,35 @@ export interface ControlValStatProps{
 export interface PropsArbreStrates{
     strates:Strate[],
     defStrates:React.Dispatch<SetStateAction<Strate[]>>
+    strateAct:Strate
     defStrateAct:React.Dispatch<SetStateAction<Strate>>
+    modif:boolean;
+    defModif:React.Dispatch<SetStateAction<boolean>>,
+    anciennesStrates:Strate[],
+    defAnciennesStrates:React.Dispatch<SetStateAction<Strate[]>>,
+    ancienneStrateAct:Strate,
+    defAncienneStrateAct:React.Dispatch<SetStateAction<Strate>>,
 }
 export interface PropsModifStrate{
     strateAct:Strate,
-    defStrateAct:React.Dispatch<SetStateAction<Strate>>
+    defStrateAct:React.Dispatch<SetStateAction<Strate>>,
+    strates:Strate[],
+    defStrates:React.Dispatch<SetStateAction<Strate[]>>,
+    modif:boolean;
+    defModif:React.Dispatch<SetStateAction<boolean>>,
+    anciennesStrates:Strate[],
+    defAnciennesStrates:React.Dispatch<SetStateAction<Strate[]>>,
+    ancienneStrateAct:Strate,
+    defAncienneStrateAct:React.Dispatch<SetStateAction<Strate>>,
 }
 
 export interface PropsInterfaceStrates{
     strates:Strate[],
     defStrates:React.Dispatch<SetStateAction<Strate[]>>,
     strateActuelle: Strate,
-    defStrateActuelle: React.Dispatch<SetStateAction<Strate>>
+    defStrateActuelle: React.Dispatch<SetStateAction<Strate>>,
+    anciennesStrates:Strate[],
+    defAnciennesStrates:React.Dispatch<SetStateAction<Strate[]>>,
+    ancienneStrateAct:Strate,
+    defAncienneStrateAct:React.Dispatch<SetStateAction<Strate>>,
 }

@@ -303,7 +303,7 @@ export interface Strate {
     nom_colonne: string;
     id_enfants:number[]|null,
     est_racine:boolean|null,
-    ordre_index:number,
+    index_ordre:number,
     condition: ConditionStrate;
     subStrata?: Strate[]; // recursion
     n_sample?:number|null;

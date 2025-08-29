@@ -76,6 +76,7 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                     nom_strate,
                     est_racine,
                     index_ordre,
+                    nom_table,
                     nom_colonne,
                     condition_type,
                     condition_min::int,
