@@ -290,3 +290,28 @@ export interface ProprietesRequetesER{
     descriptionLike?:string,
     idER?:number|number[]
 }
+
+export type ConditionStrate =
+  | { condition_type: "equals"; condition_valeur: string | number }
+  | { condition_type: "range"; condition_min: number; condition_max: number };
+
+// Recursive Strata definition
+export interface Strate {
+    id_strate:number,
+    nom_strate:string,
+    nom_table: string;
+    nom_colonne: string;
+    id_enfants:number[]|null,
+    est_racine:boolean|null,
+    ordre_index:number,
+    condition: ConditionStrate;
+    subStrata?: Strate[]; // recursion
+    n_sample?:number|null;
+}
+
+export interface RequeteApiStrate{
+    id_strate?:number|null,
+    n_sample_ge?:number|null,
+    n_sample_se?:number|null,
+    colonne_sample?:string|null
+}

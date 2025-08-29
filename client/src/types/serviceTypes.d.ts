@@ -62,3 +62,6 @@ export type ReponseUnitesGraph = ApiResponse<informations_pour_graph_unite_er_re
 export type ReponseDataGraphique = ApiResponse<data_graphique>
 // types pour analyse de variabilite
 export type ReponseCalculComplete = ApiResponse<boolean>
+
+// types pour la validation state
+export type ReponseStrateValide = ApiResponse<Strate[]>

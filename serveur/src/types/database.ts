@@ -282,3 +282,28 @@ export interface unit_reg_reg_set_land_use_output extends unit_reg_reg_set_land_
     desc_reg_stat:string,
     desc_unite:string[]
 }
+
+export type condition_strate =
+  | { condition_type: "equals"; condition_valeur: string | number}
+  | { condition_type: "range"; condition_min: number|null; condition_max: number|null };
+
+// Recursive Strata definition
+export interface strate extends strate_db{
+    subStrata?: strate[]; // recursion
+    condition?: condition_strate;
+}
+
+export interface strate_db{
+    id_strate:number,
+    nom_strate:string,
+    nom_table: string;
+    nom_colonne: string;
+    ids_enfants:number[]|null,
+    est_racine:boolean|null,
+    ordre_index:number,
+    condition_type:"equals"|"range";
+    condition_min:number|null;
+    condition_max:number|null;
+    condition_valeur:number|null;
+    n_sample?:number|null;
+}
