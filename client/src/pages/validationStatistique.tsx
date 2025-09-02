@@ -100,6 +100,7 @@ const ValidationStatistique: React.FC = () => {
             condition_valeur:0
         }
     })
+    const [strateParent,defStrateParent] = useState<number|null>(null);
     
 
     useEffect(() => {
@@ -134,6 +135,8 @@ const ValidationStatistique: React.FC = () => {
                     defAnciennesStrates={defAnciennesStrates}
                     ancienneStrateAct={ancienneStrateAct}
                     defAncienneStrateAct={defAncienneStrateAct}
+                    idParent={strateParent}
+                    defIdParent={defStrateParent}
                 />
                 :
                 <></>

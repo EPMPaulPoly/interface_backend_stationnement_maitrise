@@ -5,6 +5,9 @@ import { Edit, Save } from "@mui/icons-material"
 import { useState } from "react"
 import Cancel from "@mui/icons-material/Cancel"
 import manipStrates from "../utils/manipStrates"
+import serviceValidation from "../services/serviceValidation"
+import { Strate } from "../types/DataTypes"
+import { ReponseStrateValide } from "../types/serviceTypes"
 
 const ModifStrates: React.FC<PropsModifStrate> = (props: PropsModifStrate) => {
     const handleItemChange = (field: string, value: string) => {
@@ -14,8 +17,20 @@ const ModifStrates: React.FC<PropsModifStrate> = (props: PropsModifStrate) => {
     const turnOnEditing = () => {
         props.defModif(true)
     }
-    const saveEdits=()=>{
+    const saveEdits=async()=>{
         props.defModif(false)
+        let data:ReponseStrateValide
+        if (props.strateAct.id_strate!==-1){
+            data = await serviceValidation.modifieStrate(props.strateAct.id_strate,props.strateAct)
+        } else {
+            if (props.idParent!==null){
+                data = await serviceValidation.nouvelleStrate(props.strateAct,props.idParent)
+            } else{
+                data= await serviceValidation.nouvelleStrate(props.strateAct,null)
+            }
+        }
+        props.defIdParent(null)
+        props.defStrates(data.data)
     }
     const cancelEditing = () => {
         props.defStrateAct(props.ancienneStrateAct)

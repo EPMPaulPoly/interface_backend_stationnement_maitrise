@@ -10,6 +10,10 @@ const ArbreStrates: React.FC<PropsArbreStrates> = (props: PropsArbreStrates) => 
     const selectStrate = (nodeId: string) => {
         if (nodeId.substring(0,3)==='add'){
             console.log('entering creation of new strata')
+            const  idParentString = nodeId.substring(4)
+            if (typeof Number(idParentString)=== 'number' && !Number.isNaN(Number(idParentString))){
+                props.defIdParent(Number(idParentString))
+            }
             manipStrates.ajoutStrate(nodeId,{
                 strates:props.strates,
                 defStrates:props.defStrates,
@@ -20,7 +24,9 @@ const ArbreStrates: React.FC<PropsArbreStrates> = (props: PropsArbreStrates) => 
                 ancienneStrateAct:props.ancienneStrateAct,
                 defAncienneStrateAct:props.defAncienneStrateAct,
                 modif:props.modif,
-                defModif:props.defModif
+                defModif:props.defModif,
+                idParent:props.idParent,
+                defIdParent:props.defIdParent
             })
         }else{
             console.log('entering selection of existing strata')
@@ -71,6 +77,7 @@ const ArbreStrates: React.FC<PropsArbreStrates> = (props: PropsArbreStrates) => 
                     <TreeItem
                         key="add-top"
                         itemId="add-top"
+                        disabled={!props.modif}
                         label={
                             <span
                                 style={{
@@ -87,6 +94,7 @@ const ArbreStrates: React.FC<PropsArbreStrates> = (props: PropsArbreStrates) => 
                     :<TreeItem
                         key={`add-${parentId}`}
                         itemId={`add-${parentId}`}
+                        disabled={!props.modif}
                         label={
                             <span
                                 style={{

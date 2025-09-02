@@ -18,6 +18,8 @@ const DefinitionStratesEchantionnage:React.FC<PropsInterfaceStrates>=(props:Prop
                 defAncienneStrateAct={props.defAncienneStrateAct}
                 anciennesStrates={props.anciennesStrates}
                 defAnciennesStrates={props.defAnciennesStrates}
+                idParent={props.idParent}
+                defIdParent={props.defIdParent}
             />
             <ModifStrates
                 strateAct={props.strateActuelle}
@@ -30,6 +32,8 @@ const DefinitionStratesEchantionnage:React.FC<PropsInterfaceStrates>=(props:Prop
                 defAncienneStrateAct={props.defAncienneStrateAct}
                 anciennesStrates={props.anciennesStrates}
                 defAnciennesStrates={props.defAnciennesStrates}
+                idParent={props.idParent}
+                defIdParent={props.defIdParent}
             />
         </div>
     )

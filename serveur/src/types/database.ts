@@ -300,10 +300,14 @@ export interface strate_db{
     nom_colonne: string;
     ids_enfants:number[]|null,
     est_racine:boolean|null,
-    ordre_index:number,
+    index_ordre:number,
     condition_type:"equals"|"range";
     condition_min:number|null;
     condition_max:number|null;
     condition_valeur:number|null;
     n_sample?:number|null;
+}
+
+export interface RequeteModifStrate extends ParamsDictionary{
+    id_strate:string
 }

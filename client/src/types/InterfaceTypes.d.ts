@@ -513,6 +513,8 @@ export interface PropsArbreStrates{
     defAnciennesStrates:React.Dispatch<SetStateAction<Strate[]>>,
     ancienneStrateAct:Strate,
     defAncienneStrateAct:React.Dispatch<SetStateAction<Strate>>,
+    idParent:number|null,
+    defIdParent:React.Dispatch<SetStateAction<number|null>>
 }
 export interface PropsModifStrate{
     strateAct:Strate,
@@ -525,6 +527,8 @@ export interface PropsModifStrate{
     defAnciennesStrates:React.Dispatch<SetStateAction<Strate[]>>,
     ancienneStrateAct:Strate,
     defAncienneStrateAct:React.Dispatch<SetStateAction<Strate>>,
+    idParent:number|null,
+    defIdParent:React.Dispatch<SetStateAction<number|null>>
 }
 
 export interface PropsInterfaceStrates{
@@ -536,4 +540,6 @@ export interface PropsInterfaceStrates{
     defAnciennesStrates:React.Dispatch<SetStateAction<Strate[]>>,
     ancienneStrateAct:Strate,
     defAncienneStrateAct:React.Dispatch<SetStateAction<Strate>>,
+    idParent:number|null,
+    defIdParent:React.Dispatch<SetStateAction<number|null>>
 }

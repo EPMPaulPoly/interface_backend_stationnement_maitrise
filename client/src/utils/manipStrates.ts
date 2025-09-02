@@ -48,7 +48,6 @@ const manipStrates = {
         const newStrates = manipStrates.ajouteFeuilleArbre(id_parent_num, props.strates, newStrate)
         props.defAnciennesStrates(old_strates)
         props.defAncienneStrateAct(old_strate)
-        console.log('test')
         props.defStrates(newStrates)
         props.defStrate(newStrate)
         props.defModif(true)

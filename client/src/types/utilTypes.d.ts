@@ -48,5 +48,7 @@ export interface strataManipProps{
     ancienneStrateAct:Strate,
     defAncienneStrateAct:React.Dispatch<SetStateAction<Strate>>
     modif:boolean
-    defModif:React.Dispatch<SetStateAction<boolean>>
+    defModif:React.Dispatch<SetStateAction<boolean>>,
+    idParent:number|null,
+    defIdParent: React.Dispatch<SetStateAction<number|null>>
 }
