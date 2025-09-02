@@ -37,7 +37,7 @@ const manipStrates = {
             nom_strate: '',
             nom_colonne: '',
             nom_table: '',
-            id_enfants: null,
+            ids_enfants: null,
             est_racine: id_parent_num === null ? true : false,
             index_ordre: prochainOrdreIndex,
             condition: {
@@ -92,6 +92,7 @@ const manipStrates = {
         if (['condition_min','condition_max','condition_valeur'].includes(champ)){
             strateAModif= {
                 ...StrateAct,
+                [champ]:Number(valeur),
                 condition:{
                     ...StrateAct.condition,
                     [champ]:Number(valeur)
@@ -105,6 +106,12 @@ const manipStrates = {
                     ...StrateAct.condition,
                     [champ]:valeur
                 }
+            }
+        }
+        if (['n_sample'].includes(champ)){
+            strateAModif= {
+                ...StrateAct,
+                [champ]:Number(valeur)
             }
         }
         const stratesOut = manipStrates.modifieItemArbre(strateAModif,Strates) 

@@ -31,3 +31,12 @@
 .strate-form-data{
     color:#ffffff
 }
+
+.strate-edit-del{
+    display:flex;
+    flex-direction:'row'
+}
+.strate-save-cancel{
+    display:flex;
+    flex-direction:'row'
+}

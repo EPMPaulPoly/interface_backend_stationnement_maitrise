@@ -301,7 +301,7 @@ export interface Strate {
     nom_strate:string,
     nom_table: string;
     nom_colonne: string;
-    id_enfants:number[]|null,
+    ids_enfants:number[]|null,
     est_racine:boolean|null,
     index_ordre:number,
     condition: ConditionStrate;

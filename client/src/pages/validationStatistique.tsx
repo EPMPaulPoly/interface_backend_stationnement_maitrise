@@ -17,7 +17,7 @@ const ValidationStatistique: React.FC = () => {
         nom_table: 'test',
         est_racine: true,
         index_ordre: 0,
-        id_enfants: [2, 3],
+        ids_enfants: [2, 3],
         condition: {
             condition_type: "range",
             condition_min: 1000,
@@ -32,7 +32,7 @@ const ValidationStatistique: React.FC = () => {
             nom_table: 'test',
             est_racine: true,
             index_ordre: 0,
-            id_enfants: [2, 3],
+            ids_enfants: [2, 3],
             condition: {
                 condition_type: "range",
                 condition_min: 1000,
@@ -46,7 +46,7 @@ const ValidationStatistique: React.FC = () => {
                     nom_table: 'test',
                     est_racine: true,
                     index_ordre: 0,
-                    id_enfants: null,
+                    ids_enfants: null,
                     condition: {
                         condition_type: "equals",
                         condition_valeur: 1
@@ -60,7 +60,7 @@ const ValidationStatistique: React.FC = () => {
                     nom_table: 'test',
                     est_racine: true,
                     index_ordre: 0,
-                    id_enfants: null,
+                    ids_enfants: null,
                     condition: {
                         condition_type: "range",
                         condition_min: 2,
@@ -76,7 +76,7 @@ const ValidationStatistique: React.FC = () => {
             nom_table: 'test',
             est_racine: true,
             index_ordre: 0,
-            id_enfants: null,
+            ids_enfants: null,
             condition: {
                 condition_type: "range",
                 condition_min: 2000,
@@ -92,7 +92,7 @@ const ValidationStatistique: React.FC = () => {
         nom_table:'',
         nom_strate:'',
         n_sample:0,
-        id_enfants:null,
+        ids_enfants:null,
         est_racine:false,
         index_ordre:0,
         condition:{

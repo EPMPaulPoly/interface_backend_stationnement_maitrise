@@ -1,4 +1,4 @@
-import { Add } from "@mui/icons-material";
+import { Add, Delete } from "@mui/icons-material";
 import { Strate } from "../types/DataTypes";
 import { PropsArbreStrates } from "../types/InterfaceTypes"
 import { SimpleTreeView, TreeItem } from "@mui/x-tree-view";

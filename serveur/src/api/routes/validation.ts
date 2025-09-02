@@ -117,12 +117,14 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                     condition_min::int,
                     condition_max::int,
                     condition_valeur::int,
-                    ids_enfants
+                    ids_enfants,
+                    n_sample
                 FROM
                     public.strates_echantillonage`;
             if (conditions.length > 0) {
                 query += ' WHERE ' + conditions.join(' AND ')
             }
+            query += ' ORDER BY index_ordre ASC'
             result = await client.query(query)
             const head: number[] = result.rows.filter((row: strate_db) => row.est_racine === true).map((row: strate_db) => row.id_strate);   
             const output = creationStrateCorrecte(head,result.rows)
@@ -173,18 +175,20 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                 let strate_parent = result_parent.rows[0]
                 let new_strate_parent
                 if (strate_parent.ids_enfants=== null){
-                    new_strate_parent = {...strate_parent,ids_enfants:[id_nouveau]}
+                    new_strate_parent = {...strate_parent,ids_enfants:[id_nouveau],n_sample:null}
                 } else{
-                    strate_parent.ids_enfants.push(id_nouveau)
-                    new_strate_parent = {...strate_parent}
+                    new_strate_parent = {...strate_parent,n_sample:null}
+                    new_strate_parent.ids_enfants.push(id_nouveau)
                 }
                 query_update_parent = 
                     `UPDATE public.strates_echantillonage
-                    SET ids_enfants = $1
-                    WHERE id_strate = $2
+                    SET 
+                        ids_enfants = $1,
+                        n_sample = $2
+                    WHERE id_strate = $3
                     RETURNING *;
                 `
-                result_update_parent = await client.query(query_update_parent,[new_strate_parent.ids_enfants,new_strate_parent.id_strate])
+                result_update_parent = await client.query(query_update_parent,[new_strate_parent.ids_enfants,new_strate_parent.n_sample,new_strate_parent.id_strate])
                 console.log('check insertion')
             }
             query_all = `SELECT 
@@ -198,20 +202,19 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                     condition_min::int,
                     condition_max::int,
                     condition_valeur::int,
-                    ids_enfants
+                    ids_enfants,
+                    n_sample
                 FROM
-                    public.strates_echantillonage`;
+                    public.strates_echantillonage
+                ORDER BY index_ordre ASC`;
             
             result_all = await client.query(query_all)
             const head: number[] = result_all.rows.filter((row: strate_db) => row.est_racine === true).map((row: strate_db) => row.id_strate);   
             const output = creationStrateCorrecte(head,result_all.rows)
             res.json({ success: true, data: output });
         } catch (err: any) {
-            if (err.message === 'Combinaison invalide de niveau et cubf') {
-                res.status(400).json({ success: false, error: 'Combinaison invalide de niveau et cubf' });
-            } else {
-                res.status(500).json({ success: false, error: 'Database error' });
-            }
+            res.status(500).json({ success: false, error: 'Database error' });
+            
         } finally {
             if (client) {
                 client.release()
@@ -260,9 +263,11 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                     condition_min::int,
                     condition_max::int,
                     condition_valeur::int,
-                    ids_enfants
+                    ids_enfants,
+                    n_sample
                 FROM
-                    public.strates_echantillonage`;
+                    public.strates_echantillonage
+                ORDER BY index_ordre ASC`;
             
             result_all = await client.query(query_all)
             const head: number[] = result_all.rows.filter((row: strate_db) => row.est_racine === true).map((row: strate_db) => row.id_strate);   
@@ -276,9 +281,71 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             }
         }
     }
+    const supprimeStrateEtEnfants: RequestHandler<RequeteModifStrate>=async(req,res):Promise<void>=>{
+        console.log('Suppression strate débutée')
+        let client;
+        try {
+            const {id_strate} = req.params;
+            client = await pool.connect();
+            let query_child: string;
+            let result_child: any;
+            let query_all:string;
+            let result_all:any
+            let query_out:string;
+            let result_out:any
+            query_child = 
+                `SELECT 
+                    id_strate,
+                    ids_enfants
+                FROM
+                    public.strates_echantillonage
+                WHERE id_strate = $1;
+            `
+            result_child = await client.query(query_child,[id_strate])
+            const data = result_child.rows[0];
+            let ids_to_delete:number[]= [Number(id_strate)];
+
+            if (data.ids_enfants !==null){
+                for (let id of data.ids_enfants){
+                    ids_to_delete.push(Number(id))
+                }
+            }
+            const placeholders = ids_to_delete.map((_, index) => `$${index + 1}`).join(',');
+            query_all = `DELETE FROM public.strates_echantillonage
+                WHERE id_strate IN (${placeholders});`;
+            await client.query(query_all, ids_to_delete);
+            query_out = `SELECT 
+                    id_strate,
+                    nom_strate,
+                    est_racine,
+                    index_ordre,
+                    nom_table,
+                    nom_colonne,
+                    condition_type,
+                    condition_min::int,
+                    condition_max::int,
+                    condition_valeur::int,
+                    ids_enfants,
+                    n_sample
+                FROM
+                    public.strates_echantillonage
+                ORDER BY index_ordre ASC`
+            result_out = await client.query(query_out)
+            const head: number[] = result_out.rows.filter((row: strate_db) => row.est_racine === true).map((row: strate_db) => row.id_strate);   
+            const output = creationStrateCorrecte(head,result_out.rows)
+            res.json({ success: true, data: output });
+        } catch (err: any) {
+            res.status(500).json({ success: false, error: 'Database error' });
+        } finally {
+            if (client) {
+                client.release()
+            }
+        }
+    }
     // Routes
     router.get('/strate', obtiensStrates)
     router.post('/strate',nouvelleStrate)
     router.put('/strate/:id_strate',modifieStrate)
+    router.delete('/strate/:id_strate',supprimeStrateEtEnfants)
     return router;
 };
