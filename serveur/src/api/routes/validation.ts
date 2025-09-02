@@ -472,10 +472,7 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                 ) AS src;
                 `;
             result = await client.query(query)
-            const head: number[] = result.rows.filter((row: strate_db) => row.est_racine === true).map((row: strate_db) => row.id_strate);   
-            const output = creationStrateCorrecte(head,result.rows)
-
-            res.json({ success: true, data: output });
+            res.json({ success: true});
         } catch (err: any) {
             res.status(500).json({ success: false, error: 'Database error' });
         } finally {
@@ -489,5 +486,6 @@ export const creationRouteurValidation = (pool: Pool): Router => {
     router.post('/strate',nouvelleStrate)
     router.put('/strate/:id_strate',modifieStrate)
     router.delete('/strate/:id_strate',supprimeStrateEtEnfants)
+    router.get('/strate/donnees_intrantes',creationDonneesEntree)
     return router;
 };
