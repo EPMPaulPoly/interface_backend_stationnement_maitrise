@@ -311,3 +311,10 @@ export interface strate_db{
 export interface RequeteModifStrate extends ParamsDictionary{
     id_strate:string
 }
+
+export interface condition_echantillonage{
+    condition:string,
+    id_strate:number,
+    colonnes_pertinentes:string[]
+    desc_concat:string
+}

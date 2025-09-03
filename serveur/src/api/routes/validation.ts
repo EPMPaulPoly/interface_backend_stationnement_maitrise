@@ -1,4 +1,4 @@
-import { condition_strate, RequeteModifStrate, strate, strate_db } from 'database';
+import { condition_strate, RequeteModifStrate, strate, strate_db,condition_echantillonage } from 'database';
 import { Router, RequestHandler } from 'express';
 import { Pool } from 'pg';
 
@@ -85,6 +85,230 @@ export const creationRouteurValidation = (pool: Pool): Router => {
         }
         return output
     }
+
+    const creeValeursPertinents = async():Promise<boolean>=>{
+        console.log('creation données pertinentes')
+        let client;
+        try {
+            client = await pool.connect();
+            let query: string
+            let result: any;
+            let query_strates:string;
+            let result_strates:any;
+            /* creation des valeurs pour l'échantillonage */
+            query = 
+                `DROP TABLE inputs_validation;
+
+                CREATE TABLE inputs_validation (
+                    g_no_lot                VARCHAR(255) PRIMARY KEY,
+                    nb_entrees              BIGINT,
+                    cubf_presents           INTEGER[],
+                    n_cubf                  INTEGER,
+                    toutes_surfaces_valides BOOLEAN,
+                    toutes_dates_valides    BOOLEAN,
+                    tous_logements_valides  BOOLEAN,
+                    sup_planch_tot          DOUBLE PRECISION,
+                    n_logements_tot         INTEGER,
+                    premiere_constr         INTEGER,
+                    valeur_totale           BIGINT,
+                    cubf_principal          INTEGER,
+                    valeur_maximale         INTEGER,
+                    random_value            DOUBLE PRECISION
+                );
+                INSERT INTO inputs_validation (
+                    g_no_lot,
+                    nb_entrees,
+                    cubf_presents,
+                    n_cubf,
+                    toutes_surfaces_valides,
+                    toutes_dates_valides,
+                    tous_logements_valides,
+                    sup_planch_tot,
+                    n_logements_tot,
+                    premiere_constr,
+                    valeur_totale,
+                    cubf_principal,
+                    valeur_maximale,
+                    random_value
+                )
+                SELECT
+                    g_no_lot,
+                    nb_entrees,
+                    cubf_presents,
+                    n_cubf,
+                    toutes_surfaces_valides,
+                    toutes_dates_valides,
+                    tous_logements_valides,
+                    sup_planch_tot,
+                    n_logements_tot,
+                    premiere_constr,
+                    valeur_totale,
+                    cubf_principal,
+                    valeur_maximale,
+                    random_value
+                FROM (
+                    /* -------------------------------------------------
+                    1 CTE – enrichissement des rôles
+                    ------------------------------------------------- */
+                    WITH role_augmente AS (
+                        SELECT
+                            id_provinc,
+                            rl0105a::int                     AS cubf,
+                            rl0308a                          AS sup_planch,
+                            rl0311a                          AS n_logements,
+                            rl0307a                          AS annee_constr,
+                            rl0308a IS NOT NULL              AS sup_planch_valid,
+                            rl0311a IS NOT NULL              AS n_logements_valid,
+                            rl0307a IS NOT NULL              AS annee_const_valid,
+                            rl0404a                          AS valeur_au_role
+                        FROM role_foncier
+                    ),
+
+                    /* -------------------------------------------------
+                    2 -  Jointure + rang pour choisir le CUBF « principal »
+                    ------------------------------------------------- */
+                    joined AS (
+                        SELECT
+                            acr.g_no_lot,
+                            ra.id_provinc,
+                            ra.cubf,
+                            ra.valeur_au_role,
+                            ra.sup_planch_valid,
+                            ra.n_logements_valid,
+                            ra.annee_const_valid,
+                            ra.sup_planch,
+                            ra.n_logements,
+                            ra.annee_constr::int,
+                            ROW_NUMBER() OVER (
+                                PARTITION BY acr.g_no_lot
+                                ORDER BY ra.valeur_au_role DESC NULLS LAST, ra.cubf
+                            ) AS rn
+                        FROM public.association_cadastre_role AS acr
+                        LEFT JOIN role_augmente AS ra
+                            ON ra.id_provinc = acr.id_provinc
+                        where acr.g_no_lot is not null
+                    ),
+
+                    /* -------------------------------------------------
+                    3 - Agrégation finale par lot
+                    ------------------------------------------------- */
+                    aggregated AS (
+                        SELECT
+                            g_no_lot,
+                            COUNT(id_provinc)                                   AS nb_entrees,
+                            ARRAY_AGG(DISTINCT cubf)                            AS cubf_presents,
+                            CARDINALITY(ARRAY_AGG(DISTINCT cubf))               AS n_cubf,
+                            BOOL_AND(sup_planch_valid)                         AS toutes_surfaces_valides,
+                            BOOL_AND(annee_const_valid)                        AS toutes_dates_valides,
+                            BOOL_AND(n_logements_valid)                         AS tous_logements_valides,
+                            SUM(sup_planch)                                    AS sup_planch_tot,
+                            SUM(n_logements)::int                               AS n_logements_tot,
+                            MIN(annee_constr)                                   AS premiere_constr,
+                            SUM(valeur_au_role)                                 AS valeur_totale,
+                            MAX(CASE WHEN rn = 1 THEN cubf END)                AS cubf_principal,
+                            MAX(CASE WHEN rn = 1 THEN valeur_au_role END)      AS valeur_maximale,
+
+                            /* -------------------------------------------------
+                            Valeur pseudo‑aléatoire déterministe (hash)
+                            ------------------------------------------------- */
+                            (('x' || substr(md5(g_no_lot::text),1,8))::bit(32)::bigint )::numeric
+                                / (power(2,31) - 1)                             AS random_value
+                        FROM joined
+                        GROUP BY g_no_lot
+                    )
+                    SELECT * FROM aggregated
+                ) AS src;
+                `;
+            result = await client.query(query)
+            return true
+        } catch (err: any) {
+            return false
+        } finally {
+            if (client) {
+                client.release()
+            }
+        }
+    }
+    const genereRequeteParEndPoint = (strates:strate[],condition?:string,description?:string,colonnes?:string[]):condition_echantillonage[]=>{
+        let conditions_init:string[]=[];
+        let description_init:string[]=[]
+        let conditions_out:condition_echantillonage[]=[];
+        let conditions_inter:string[]=[];
+        let description_inter:string[]=[]
+        let colonnes_init:string[]=[]
+        let colonnes_inter:string[]=[]
+        if (condition){
+            conditions_init =[structuredClone(condition)];
+        }
+        if (description){
+            description_init = [structuredClone(description)]
+        }
+        if (colonnes){
+            colonnes_init = structuredClone(colonnes)
+        }
+        for (let strate of strates){
+            conditions_inter= structuredClone(conditions_init)
+            description_inter = structuredClone(description_init)
+            colonnes_inter = structuredClone(colonnes_init)
+            const conditionStr = strate.condition
+                    ? (strate.condition.condition_type === 'equals'
+                        ? strate.nom_colonne + ' = ' + strate.condition.condition_valeur
+                        : strate.nom_colonne + ' >= ' + strate.condition.condition_min + ' AND ' + strate.nom_colonne + ' <= ' + strate.condition.condition_max)
+                    : '';
+            conditions_inter.push(conditionStr);
+            colonnes_inter.push(strate.nom_colonne)
+            const descriptionStr = strate.nom_strate
+            description_inter.push(descriptionStr)
+            const condition_join = conditions_inter.join(' AND ')
+            const description_join = description_inter.join(' - ')
+            if (strate.subStrata){
+                const conditions_string:condition_echantillonage[] = genereRequeteParEndPoint(strate.subStrata,condition_join,description_join,colonnes_inter)
+                conditions_string.map((row)=>conditions_out.push({...row}))
+            } else {
+                const out:condition_echantillonage = {
+                    id_strate:strate.id_strate,
+                    condition:condition_join,desc_concat:description_join,
+                    colonnes_pertinentes:colonnes_inter}
+                conditions_out.push(out)
+            }
+        }
+        return conditions_out
+    }
+    const assigneStratesAuCadastre = async():Promise<boolean>=>{
+        let client;
+        try{
+            const query_strates = `SELECT 
+                    id_strate,
+                    nom_strate,
+                    est_racine,
+                    index_ordre,
+                    nom_table,
+                    nom_colonne,
+                    condition_type,
+                    condition_min::int,
+                    condition_max::int,
+                    condition_valeur::int,
+                    ids_enfants,
+                    n_sample
+                FROM
+                    public.strates_echantillonage`
+            client = await pool.connect()
+            const result_strates = await client.query(query_strates);
+            const head: number[] = result_strates.rows.filter((row: strate_db) => row.est_racine === true).map((row: strate_db) => row.id_strate);   
+            const output:strate[] = creationStrateCorrecte(head,result_strates.rows)
+            const conditions:condition_echantillonage[]= genereRequeteParEndPoint(output)
+            return true
+        }catch (err:any){
+            return false
+        }finally{
+            if (client){
+                client.release()
+            }
+        }
+        
+        
+    }
+
     const obtiensStrates: RequestHandler<void> = async (req, res): Promise<void> => {
         console.log('obtention strates')
         let client;
@@ -343,142 +567,14 @@ export const creationRouteurValidation = (pool: Pool): Router => {
         }
     }
     const creationDonneesEntree: RequestHandler<void> = async(_,res):Promise<void>=>{
-        let client;
         try {
-            client = await pool.connect();
-            let query: string
-            let result: any;
-            query = 
-                `DROP TABLE inputs_validation;
-
-                CREATE TABLE inputs_validation (
-                    g_no_lot                VARCHAR(255) PRIMARY KEY,
-                    nb_entrees              BIGINT,
-                    cubf_presents           INTEGER[],
-                    n_cubf                  INTEGER,
-                    toutes_surfaces_valides BOOLEAN,
-                    toutes_dates_valides    BOOLEAN,
-                    tous_logements_valides  BOOLEAN,
-                    sup_planch_tot          DOUBLE PRECISION,
-                    n_logements_tot         INTEGER,
-                    premiere_constr         INTEGER,
-                    valeur_totale           BIGINT,
-                    cubf_principal          INTEGER,
-                    valeur_maximale         INTEGER,
-                    random_value            DOUBLE PRECISION
-                );
-                INSERT INTO inputs_validation (
-                    g_no_lot,
-                    nb_entrees,
-                    cubf_presents,
-                    n_cubf,
-                    toutes_surfaces_valides,
-                    toutes_dates_valides,
-                    tous_logements_valides,
-                    sup_planch_tot,
-                    n_logements_tot,
-                    premiere_constr,
-                    valeur_totale,
-                    cubf_principal,
-                    valeur_maximale,
-                    random_value
-                )
-                SELECT
-                    g_no_lot,
-                    nb_entrees,
-                    cubf_presents,
-                    n_cubf,
-                    toutes_surfaces_valides,
-                    toutes_dates_valides,
-                    tous_logements_valides,
-                    sup_planch_tot,
-                    n_logements_tot,
-                    premiere_constr,
-                    valeur_totale,
-                    cubf_principal,
-                    valeur_maximale,
-                    random_value
-                FROM (
-                    /* -------------------------------------------------
-                    1 CTE – enrichissement des rôles
-                    ------------------------------------------------- */
-                    WITH role_augmente AS (
-                        SELECT
-                            id_provinc,
-                            rl0105a::int                     AS cubf,
-                            rl0308a                          AS sup_planch,
-                            rl0311a                          AS n_logements,
-                            rl0307a                          AS annee_constr,
-                            rl0308a IS NOT NULL              AS sup_planch_valid,
-                            rl0311a IS NOT NULL              AS n_logements_valid,
-                            rl0307a IS NOT NULL              AS annee_const_valid,
-                            rl0404a                          AS valeur_au_role
-                        FROM role_foncier
-                    ),
-
-                    /* -------------------------------------------------
-                    2 -  Jointure + rang pour choisir le CUBF « principal »
-                    ------------------------------------------------- */
-                    joined AS (
-                        SELECT
-                            acr.g_no_lot,
-                            ra.id_provinc,
-                            ra.cubf,
-                            ra.valeur_au_role,
-                            ra.sup_planch_valid,
-                            ra.n_logements_valid,
-                            ra.annee_const_valid,
-                            ra.sup_planch,
-                            ra.n_logements,
-                            ra.annee_constr::int,
-                            ROW_NUMBER() OVER (
-                                PARTITION BY acr.g_no_lot
-                                ORDER BY ra.valeur_au_role DESC NULLS LAST, ra.cubf
-                            ) AS rn
-                        FROM public.association_cadastre_role AS acr
-                        LEFT JOIN role_augmente AS ra
-                            ON ra.id_provinc = acr.id_provinc
-                        where acr.g_no_lot is not null
-                    ),
-
-                    /* -------------------------------------------------
-                    3 - Agrégation finale par lot
-                    ------------------------------------------------- */
-                    aggregated AS (
-                        SELECT
-                            g_no_lot,
-                            COUNT(id_provinc)                                   AS nb_entrees,
-                            ARRAY_AGG(DISTINCT cubf)                            AS cubf_presents,
-                            CARDINALITY(ARRAY_AGG(DISTINCT cubf))               AS n_cubf,
-                            BOOL_AND(sup_planch_valid)                         AS toutes_surfaces_valides,
-                            BOOL_AND(annee_const_valid)                        AS toutes_dates_valides,
-                            BOOL_AND(n_logements_valid)                         AS tous_logements_valides,
-                            SUM(sup_planch)                                    AS sup_planch_tot,
-                            SUM(n_logements)::int                               AS n_logements_tot,
-                            MIN(annee_constr)                                   AS premiere_constr,
-                            SUM(valeur_au_role)                                 AS valeur_totale,
-                            MAX(CASE WHEN rn = 1 THEN cubf END)                AS cubf_principal,
-                            MAX(CASE WHEN rn = 1 THEN valeur_au_role END)      AS valeur_maximale,
-
-                            /* -------------------------------------------------
-                            Valeur pseudo‑aléatoire déterministe (hash)
-                            ------------------------------------------------- */
-                            (('x' || substr(md5(g_no_lot::text),1,8))::bit(32)::bigint )::numeric
-                                / (power(2,31) - 1)                             AS random_value
-                        FROM joined
-                        GROUP BY g_no_lot
-                    )
-                    SELECT * FROM aggregated
-                ) AS src;
-                `;
-            result = await client.query(query)
+            const donnees_creees = await creeValeursPertinents()
+            const strates_assignees = await assigneStratesAuCadastre()
             res.json({ success: true});
         } catch (err: any) {
             res.status(500).json({ success: false, error: 'Database error' });
         } finally {
-            if (client) {
-                client.release()
-            }
+            
         }
     }
     // Routes
