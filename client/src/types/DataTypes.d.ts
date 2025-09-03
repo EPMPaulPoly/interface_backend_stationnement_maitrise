@@ -307,6 +307,9 @@ export interface Strate {
     condition: ConditionStrate;
     subStrata?: Strate[]; // recursion
     n_sample?:number|null;
+    logements_valides:boolean|null;
+    superf_valide: boolean|null;
+    date_valide:boolean|null;
 }
 
 export interface RequeteApiStrate{

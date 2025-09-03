@@ -1,7 +1,7 @@
 import { RequeteApiStrate, Strate } from "../types/DataTypes";
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import api from './api';
-import { ReponseStrateUnique, ReponseStrateValide } from "../types/serviceTypes";
+import { ApiResponse, ReponseStrateUnique, ReponseStrateValide } from "../types/serviceTypes";
 export const serviceValidation = {
     obtiensStrates:async(requeteApiStrate?:RequeteApiStrate):Promise<ReponseStrateValide>=>{
         try{
@@ -74,6 +74,38 @@ export const serviceValidation = {
             const output = await api.delete(query_new);
             return {success:true,data:output.data.data};
         } catch (error: any) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    },
+    obtiensColonnesValides:async():Promise<ApiResponse<string[]>>=>{
+        try{
+            let query_new:string = `/valid/strate/colonnes_possibles`
+            const output = await api.get(query_new);
+            return {success:true,data:output.data.data};
+        }catch(error:any){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    },
+    regenereInputs:async():Promise<ApiResponse<boolean>>=>{
+        try{
+            let query_new:string = '/valid/strate/donnees_intrantes'
+            const output:AxiosResponse<boolean> = await api.get(query_new);
+            return {success:output.data,data:output.data};
+        }catch(error:any){
             if (axios.isAxiosError(error)) {
                 console.error('Axios Error:', error.response?.data);
                 console.error('Axios Error Status:', error.response?.status);

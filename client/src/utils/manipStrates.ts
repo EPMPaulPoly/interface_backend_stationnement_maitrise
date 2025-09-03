@@ -40,6 +40,9 @@ const manipStrates = {
             ids_enfants: null,
             est_racine: id_parent_num === null ? true : false,
             index_ordre: prochainOrdreIndex,
+            logements_valides:null,
+            superf_valide:null,
+            date_valide:null,
             condition: {
                 condition_type: 'equals',
                 condition_valeur: 0
@@ -75,6 +78,11 @@ const manipStrates = {
             }
         }
         return stratesAMod
+    },
+    stringToBool: (v: string): boolean | null => {
+        if (v === 'true')  return true;
+        if (v === 'false') return false;
+        return null;               // « null » ou toute valeur inattendue
     },
     modifStrateAct:(
         champ:string,
@@ -112,6 +120,12 @@ const manipStrates = {
             strateAModif= {
                 ...StrateAct,
                 [champ]:Number(valeur)
+            }
+        }
+        if (['logements_valides','date_valide','superf_valide'].includes(champ)){
+            strateAModif= {
+                ...StrateAct,
+                [champ]:manipStrates.stringToBool(valeur)
             }
         }
         const stratesOut = manipStrates.modifieItemArbre(strateAModif,Strates) 

@@ -301,6 +301,9 @@ export interface strate_db{
     ids_enfants:number[]|null,
     est_racine:boolean|null,
     index_ordre:number,
+    logements_valides:boolean|null,
+    date_valide:boolean|null,
+    superf_valide:boolean|null,
     condition_type:"equals"|"range";
     condition_min:number|null;
     condition_max:number|null;
@@ -316,5 +319,6 @@ export interface condition_echantillonage{
     condition:string,
     id_strate:number,
     colonnes_pertinentes:string[]
-    desc_concat:string
+    desc_concat:string,
+    n_sample:number| null | undefined
 }

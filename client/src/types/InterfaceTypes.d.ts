@@ -500,6 +500,8 @@ export interface PropsGraphAnaVar{
 export interface ControlValStatProps{
     definitionStrate:boolean
     defDefinitionStrate: React.Dispatch<SetStateAction<boolean>>
+    calculEnCours:boolean,
+    defCalculEnCours:React.Dispatch<SetStateAction<boolean>>
 }
 
 export interface PropsArbreStrates{
