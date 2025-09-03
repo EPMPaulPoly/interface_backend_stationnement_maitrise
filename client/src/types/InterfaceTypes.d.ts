@@ -1,6 +1,6 @@
 import {LatLng, LatLngExpression} from "leaflet";
 import React, { SetStateAction } from "react";
-import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties, lotCadastralAvecBoolInvGeoJsonProperties, informations_reglementaire_manuelle, utilisation_sol, data_graphique, methodeAnalyseVariabillite, comptes_utilisations_sol, Strate } from "./DataTypes";
+import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties, lotCadastralAvecBoolInvGeoJsonProperties, informations_reglementaire_manuelle, utilisation_sol, data_graphique, methodeAnalyseVariabillite, comptes_utilisations_sol, Strate, FeuilleFinaleStrate } from "./DataTypes";
 import { FeatureCollection, Geometry } from "geojson";
 import { PrioriteEstimeQuartier, TypesVisualisationAnalyseQuartier, VariablesPossibles } from "./AnalysisTypes";
 import { N } from "react-router/dist/development/register-BkDIKxVz";
@@ -502,6 +502,10 @@ export interface ControlValStatProps{
     defDefinitionStrate: React.Dispatch<SetStateAction<boolean>>
     calculEnCours:boolean,
     defCalculEnCours:React.Dispatch<SetStateAction<boolean>>
+    feuillesPossibles: FeuilleFinaleStrate[],
+    defFeuillesPossibles: React.Dispatch<SetStateAction<FeuilleFinaleStrate[]>>,
+    feuilleSelect:FeuilleFinaleStrate,
+    defFeuilleSelect:React.Dispatch<SetStateAction<FeuilleFinaleStrate>>
 }
 
 export interface PropsArbreStrates{
@@ -544,4 +548,9 @@ export interface PropsInterfaceStrates{
     defAncienneStrateAct:React.Dispatch<SetStateAction<Strate>>,
     idParent:number|null,
     defIdParent:React.Dispatch<SetStateAction<number|null>>
+}
+
+export interface PropsPanneauValid{
+    feuilleStrate:FeuilleFinaleStrate,
+    defFeuilleStrate:React.Dispatch<SetStateAction<FeuilleFinaleStrate>>
 }

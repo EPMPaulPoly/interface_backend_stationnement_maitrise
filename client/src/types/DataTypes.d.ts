@@ -318,3 +318,9 @@ export interface RequeteApiStrate{
     n_sample_se?:number|null,
     colonne_sample?:string|null
 }
+
+export interface FeuilleFinaleStrate{
+    id_strate:number,
+    desc_concat:string,
+    n_sample?:number
+}

@@ -1,7 +1,7 @@
-import { RequeteApiStrate, Strate } from "../types/DataTypes";
+import { FeuilleFinaleStrate, RequeteApiStrate, Strate } from "../types/DataTypes";
 import axios, { AxiosResponse } from 'axios';
 import api from './api';
-import { ApiResponse, ReponseStrateUnique, ReponseStrateValide } from "../types/serviceTypes";
+import { ApiResponse, ReponseFeuilles, ReponseStrateUnique, ReponseStrateValide } from "../types/serviceTypes";
 export const serviceValidation = {
     obtiensStrates:async(requeteApiStrate?:RequeteApiStrate):Promise<ReponseStrateValide>=>{
         try{
@@ -105,6 +105,22 @@ export const serviceValidation = {
             let query_new:string = '/valid/strate/donnees_intrantes'
             const output:AxiosResponse<boolean> = await api.get(query_new);
             return {success:output.data,data:output.data};
+        }catch(error:any){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    },
+    obtiensFeuilles:async():Promise<ReponseFeuilles>=>{
+        try{
+            let query_new:string = '/valid/feuilles'
+            const output:AxiosResponse = await api.get(query_new);
+            return {success:true,data:output.data.data};
         }catch(error:any){
             if (axios.isAxiosError(error)) {
                 console.error('Axios Error:', error.response?.data);

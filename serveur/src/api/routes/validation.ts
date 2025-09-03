@@ -670,6 +670,35 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             }
         }
     }
+
+    const obtiensFeuilles:RequestHandler<void>=async(_,res):Promise<void>=>{
+        console.log('obtention Feuilles')
+        let client;
+        try {
+
+            client = await pool.connect();
+            let query: string
+            let result: any;
+            query = `SELECT 
+                    cse.id_strate::int,
+                    cse.desc_concat,
+                    se.n_sample
+                FROM
+                    public.conditions_strates_a_echant cse
+                LEFT JOIN public.strates_echantillonage se ON se.id_strate=cse.id_strate
+            `;
+            result = await client.query(query)
+
+
+            res.json({ success: true, data: result.rows });
+        } catch (err: any) {
+            res.status(500).json({ success: false, error: 'Database error' });
+        } finally {
+            if (client) {
+                client.release()
+            }
+        }
+    }
     // Routes
     router.get('/strate', obtiensStrates)
     router.post('/strate', nouvelleStrate)
@@ -677,5 +706,6 @@ export const creationRouteurValidation = (pool: Pool): Router => {
     router.delete('/strate/:id_strate', supprimeStrateEtEnfants)
     router.get('/strate/donnees_intrantes', creationDonneesEntree)
     router.get('/strate/colonnes_possibles', obtiensColonnesValides)
+    router.get('/feuilles',obtiensFeuilles)
     return router;
 };

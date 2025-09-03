@@ -4,7 +4,7 @@ import './common.css';
 import './validationStatistique.css'
 import ControlValStat from '../components/ControlValStat';
 import ModifStrates from '../components/modifStrates';
-import { Strate } from '../types/DataTypes';
+import { FeuilleFinaleStrate, Strate } from '../types/DataTypes';
 import DefinitionStratesEchantionnage from '../components/definitionStratesEchantionnage';
 import serviceValidation from '../services/serviceValidation';
 import { ClimbingBoxLoader } from 'react-spinners';
@@ -121,13 +121,17 @@ const ValidationStatistique: React.FC = () => {
     })
     const [strateParent,defStrateParent] = useState<number|null>(null);
     const [calculEnCours,defCalculEnCours] = useState<boolean>(false);
-
+    const [feuillesPossibles,defFeuillesPossibles] = useState<FeuilleFinaleStrate[]>([])
+    const [feuilleSelect,defFeuilleSelect]= useState<FeuilleFinaleStrate>({id_strate:-1,desc_concat:''})
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const resStrates = await serviceValidation.obtiensStrates();
+                const resFeuilles = await serviceValidation.obtiensFeuilles();
                 console.log('Recu les strates', resStrates);
                 defToutesStrates(resStrates.data)
+                defFeuillesPossibles(resFeuilles.data)
+                defFeuilleSelect(resFeuilles.data[0])
             } catch (error) {
                 console.error('Error fetching data:', error);
             } finally {
@@ -146,6 +150,10 @@ const ValidationStatistique: React.FC = () => {
                 defDefinitionStrate={defDefinitionStrate}
                 calculEnCours={calculEnCours}
                 defCalculEnCours={defCalculEnCours}
+                feuillesPossibles={feuillesPossibles}
+                defFeuillesPossibles={defFeuillesPossibles}
+                feuilleSelect={feuilleSelect}
+                defFeuilleSelect={defFeuilleSelect}
             />
             {definitionStrate === true ?
                 <DefinitionStratesEchantionnage
