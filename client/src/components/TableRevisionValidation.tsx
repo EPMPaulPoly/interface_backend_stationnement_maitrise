@@ -31,7 +31,21 @@ const TableRevisionValidation: React.FC<PropsTableRevValid> = (props: PropsTable
                             </TableCell>
                         </TableRow>
                     ))}
-                    {['id_strate','n_places'].map((champsValid)=><TableRow
+                    <TableRow
+                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                        >
+                            <TableCell component="th" scope="row" align="center">
+                                Adresse
+                            </TableCell>
+                            <TableCell component="th" scope="row" align="center">
+                                {props.adresse}
+                            </TableCell>
+                            <TableCell component="th" scope="row" align="center">
+
+                            </TableCell>
+                        </TableRow>
+                    {['id_strate','n_places'].map((champsValid)=>
+                        <TableRow
                             sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                         >
                             <TableCell component="th" scope="row" align="center">

@@ -181,6 +181,7 @@ const ValidationStatistique: React.FC = () => {
     })
     const [centre, defCentre] = useState<LatLngExpression>([-71.208, 46.813]);
     const [zoom, defZoom] = useState<number>(16);
+    const [adresse,defAdresse] = useState<string>('');
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -251,6 +252,8 @@ const ValidationStatistique: React.FC = () => {
                             defZoom={defZoom}
                             lotSelect={lotSelect}
                             defLotSelect={defLotSelect}
+                            adresse={adresse}
+                            defAdresse={defAdresse}
                         />
                     </>
                 }

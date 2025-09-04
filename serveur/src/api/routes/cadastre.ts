@@ -67,6 +67,9 @@ export const creationRouteurCadastre = (pool: Pool): Router => {
             rf.rl0311a,
             rf.rl0312a,
             rf.rl0404a,
+            rf.rl0101a,
+            rf.rl0101e,
+            rf.rl0101g,
             ST_AsGeoJSON(rf.geometry) AS geojson_geometry
         FROM public.role_foncier AS rf
         RIGHT JOIN table_assoc AS ta ON rf.id_provinc = ta.id_provinc;

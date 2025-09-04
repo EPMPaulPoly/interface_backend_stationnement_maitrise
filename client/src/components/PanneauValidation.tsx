@@ -16,12 +16,16 @@ const PanneauValidation:React.FC<PropsPanneauValid>=(props:PropsPanneauValid)=>{
                 feuilleSelect={props.feuilleSelect}
                 lotSelect={props.lotSelect}
                 defLotSelect={props.defLotSelect}
+                adresse={props.adresse}
+                defAdresse={props.defAdresse}
             />
             <TableRevisionValidation
                 inventairePert={props.inventairePert}
                 defInventairePert={props.defInventairePert}
                 entreeValid={props.entreeValid}
                 defEntreeValid={props.defEntreeValid}
+                adresse={props.adresse}
+                defAdresse={props.defAdresse}
             />
             <CarteValidation
                 lotSelect={props.lotSelect}

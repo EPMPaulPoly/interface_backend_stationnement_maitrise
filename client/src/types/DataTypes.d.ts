@@ -195,6 +195,9 @@ export interface roleFoncierGeoJsonProps{
     rl0311a:number,
     rl0312a:number,
     rl0404a:number,
+    rl0101a:string|null,
+    rl0101e:string|null,
+    rl0101g:string|null
 }
 
 export interface roleFoncierDB extends roleFoncierGeoJsonProps{

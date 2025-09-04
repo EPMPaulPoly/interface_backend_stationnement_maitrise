@@ -30,17 +30,17 @@ const CarteValidation: React.FC<PropsCartoValidation> = (props: PropsCartoValida
                     // Create a new GeoJSON layer from props.geoJsondata
                     const geoJsonLayer = L.geoJSON(props.lotSelect, {
                         style: {
-                            color: 'blue', // Border color
+                            color: 'red', // Border color
                             weight: 2,     // Border thickness
                             fillColor: 'cyan', // Fill color
-                            fillOpacity: 0.5,  // Fill transparency
+                            fillOpacity: 0,  // Fill transparency
                         },
                         onEachFeature: (feature: any, layer: any) => {
                             if (feature.properties) {
                                 const { g_no_lot, g_va_suprf } = feature.properties; // Destructure properties
                                 const formattedPopupContent = `
                             <strong>Feature ID:</strong> ${g_no_lot} <br/>
-                            <strong>Name:</strong> ${g_va_suprf} <br/>
+                            <strong>Superficie Terrain:</strong> ${g_va_suprf} <br/>
                           `;
                                 layer.bindPopup(formattedPopupContent);
                             }

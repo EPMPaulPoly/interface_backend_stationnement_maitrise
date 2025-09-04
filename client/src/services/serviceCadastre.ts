@@ -142,7 +142,10 @@ class ServiceCadastre {
                         rl0308a:item.rl0308a,
                         rl0311a:item.rl0311a,
                         rl0312a:item.rl0312a,
-                        rl0404a:item.rl0404a
+                        rl0404a:item.rl0404a,
+                        rl0101a:item.rl0101a,
+                        rl0101e:item.rl0101e,
+                        rl0101g:item.rl0101g
                     }
                 }))
             };

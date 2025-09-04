@@ -1,6 +1,6 @@
 import { FormControl, List, ListItem, ListItemButton, ListItemText, ListSubheader, Box } from "@mui/material"
 import { PropsListeLotsValid } from "../types/InterfaceTypes"
-import { serviceInventaire } from "../services"
+import { serviceCadastre, serviceInventaire } from "../services"
 import serviceValidation from "../services/serviceValidation"
 import { utiliserContexte } from "../contexte/ContexteImmobilisation"
 import { FeatureCollection, Geometry } from "geojson"
@@ -18,8 +18,14 @@ const ListeLotsValidation: React.FC<PropsListeLotsValid> = (props: PropsListeLot
     const optCarto = optionsCartos.find((entree) => entree.id === optionCartoChoisie)?.description ?? "N/A"
 
     const handleListClick = async (lot: string) => {
-        const inventaire = await serviceInventaire.obtiensInventaireQuery({ g_no_lot: lot, methode_estime: 2 })
-        const validation = await serviceValidation.obtiensResultatValidation({ g_no_lot: lot, id_strate: props.feuilleSelect.id_strate })
+        const [inventaire,validation,role] = await Promise.all(
+            [
+                serviceInventaire.obtiensInventaireQuery({ g_no_lot: lot, methode_estime: 2 }),
+                serviceValidation.obtiensResultatValidation({ g_no_lot: lot, id_strate: props.feuilleSelect.id_strate }),
+                serviceCadastre.chercheRoleAssocieParId(lot)
+            ]
+        )
+    
         if (inventaire.data.length > 0) {
             props.defInventairePert(inventaire.data[0])
         }
@@ -28,6 +34,35 @@ const ListeLotsValidation: React.FC<PropsListeLotsValid> = (props: PropsListeLot
         } else {
             console.log('creation Nouvelle entree valid')
             props.defEntreeValid({ id_strate: props.feuilleSelect.id_strate, fond_tuile: optCarto, g_no_lot: lot, n_places: 0 })
+        }
+        let add_bits:string[]=[];
+        let new_add:string='';
+        if(role.data.features.length>0){
+            const num = role.data.features[0].properties.rl0101a;
+            const type =role.data.features[0].properties.rl0101e;
+            const rue =role.data.features[0].properties.rl0101g;
+            if (num!==null){    
+                add_bits.push(num)
+            }
+            if (type!==null){    
+                if (type==='BO'){
+                    add_bits.push('Blvd')
+                }
+                if (type==='RU'){
+                    add_bits.push('Rue')
+                }
+                if (type==='AV'){
+                    add_bits.push('Avenue')
+                }
+                if(type==='CH'){
+                    add_bits.push('Chemin')
+                }
+            }
+            if (rue!==null){    
+                add_bits.push(rue)
+            }
+            new_add= add_bits.join(' ')
+            props.defAdresse(new_add)
         }
         const foundFeature = props.lots.features.find((feature) => feature.properties.g_no_lot === lot);
         const lotSelect:FeatureCollection<Geometry,lotCadastralGeoJsonProperties> = {
@@ -105,7 +140,7 @@ const ListeLotsValidation: React.FC<PropsListeLotsValid> = (props: PropsListeLot
                                 primaryTypographyProps={{
                                     sx: {
                                         color: "white",
-                                        bgcolor: "#1f1f1f"
+                                        bgcolor:'inherit'
                                     }
                                 }}
                             />
