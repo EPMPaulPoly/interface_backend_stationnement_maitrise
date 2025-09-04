@@ -1,4 +1,4 @@
-import { condition_strate, RequeteModifStrate, strate, strate_db, condition_echantillonage } from 'database';
+import { condition_strate, RequeteModifStrate, strate, strate_db, condition_echantillonage, RequeteResValide } from 'database';
 import { Router, RequestHandler } from 'express';
 import { Pool } from 'pg';
 
@@ -699,6 +699,58 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             }
         }
     }
+
+    const obtiensResultats:RequestHandler<any,any,RequeteResValide>=async(req,res):Promise<void>=>{
+        console.log('obtention Feuilles')
+        let client;
+        try {
+            const {id_strate,g_no_lot,fond_tuile}=req.query
+            let conditions:string[]=[]
+            let replaceCount:number=1;
+            let values:any[]=[];
+            if( id_strate!==undefined){
+                conditions.push(`rv.id_strate=$${replaceCount}`)
+                values.push(Number(id_strate))
+                replaceCount++
+            }
+            if( g_no_lot!==undefined){
+                conditions.push(`rv.g_no_lot=$${replaceCount}`)
+                values.push(String(g_no_lot).replace('_',' '))
+                replaceCount++
+            }
+            if (fond_tuile!==undefined){
+                conditions.push(`rv.fond_tuile LIKE ${replaceCount}`)
+                values.push(fond_tuile)
+                replaceCount
+            }
+            client = await pool.connect();
+            let query: string
+            let result: any;
+            query = `SELECT 
+                    rv.id_strate,
+                    rv.g_no_lot,
+                    rv.n_places,
+                    rv.fond_tuile
+                FROM
+                    public.resultats_validation rv
+            `;
+            if (conditions.length>0){
+                query+='\n WHERE ' +conditions.join(' AND ')
+            }
+            query +=';'
+            result = await client.query(query,values)
+
+
+            res.json({ success: true, data: result.rows });
+        } catch (err: any) {
+            res.status(500).json({ success: false, error: 'Database error' });
+        } finally {
+            if (client) {
+                client.release()
+            }
+        }
+    }
+
     // Routes
     router.get('/strate', obtiensStrates)
     router.post('/strate', nouvelleStrate)
@@ -707,5 +759,6 @@ export const creationRouteurValidation = (pool: Pool): Router => {
     router.get('/strate/donnees_intrantes', creationDonneesEntree)
     router.get('/strate/colonnes_possibles', obtiensColonnesValides)
     router.get('/feuilles',obtiensFeuilles)
+    router.get('/resultats',obtiensResultats)
     return router;
 };

@@ -1,4 +1,4 @@
-import { periode, territoire, quartiers_analyse, inventaire_stationnement, territoireGeoJsonProperties, entete_reglement_stationnement, reglement_complet, entete_ensembles_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties, roleFoncierGeoJsonProps, lotCadastralDB, roleFoncierDB, lotCadastralGeomSeulDb, comboERRoleFoncier, lotCadastralBoolInvDB, lotCadastralAvecBoolInvGeoJsonProperties, PAV_quartier, entreePAV, operation_reglement_stationnement, unites_reglement_stationnement, definition_reglement_stationnement, association_territoire_entete_ensemble_reglement, association_util_reglement, utilisation_sol, associaion_territoire_ensemble_reglement, data_graphique, comptes_utilisations_sol, FeuilleFinaleStrate } from './DataTypes'
+import { periode, territoire, quartiers_analyse, inventaire_stationnement, territoireGeoJsonProperties, entete_reglement_stationnement, reglement_complet, entete_ensembles_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties, roleFoncierGeoJsonProps, lotCadastralDB, roleFoncierDB, lotCadastralGeomSeulDb, comboERRoleFoncier, lotCadastralBoolInvDB, lotCadastralAvecBoolInvGeoJsonProperties, PAV_quartier, entreePAV, operation_reglement_stationnement, unites_reglement_stationnement, definition_reglement_stationnement, association_territoire_entete_ensemble_reglement, association_util_reglement, utilisation_sol, associaion_territoire_ensemble_reglement, data_graphique, comptes_utilisations_sol, FeuilleFinaleStrate, EntreeValidation } from './DataTypes'
 import { Feature, FeatureCollection, Geometry } from 'geojson';
 import { GeoJSONPropsAnaQuartierTotal, GeoJSONPropsAnaQuartierTotalParHab, GeoJSONPropsAnaQuartierTotalParSuperf, NhoodXYGraphDatasets, StatTotalDBAnaQuartier, StatTotalParSuperfDBAnaQuartier, VariableCartoDBAnaQuartier } from './AnalysisTypes';
 export interface ApiResponse<T> {
@@ -67,7 +67,7 @@ export type ReponseCalculComplete = ApiResponse<boolean>
 export type ReponseStrateValide = ApiResponse<Strate[]>
 export type ReponseStrateUnique = ApiResponse<Strate>
 export type ReponseFeuilles = ApiResponse<FeuilleFinaleStrate[]>
-
+export type ReponseResultatValidation = ApiResponse<EntreeValidation[]>
 
 // Requetes
 export interface RequeteApiStrate {
@@ -86,4 +86,19 @@ export interface RequeteApiCadastre {
     estime?:number,
     inv_surf_plus_grand?:number
     inv_plus_grand?:number
+}
+
+export interface RequeteInventaire{
+    id_inv?:number,
+    g_no_lot?:string,
+    n_places_plus_grand?:number,
+    dens_places_plus_grand?:number,
+    methode_estime?:number,
+    cubf?:number
+}
+
+export interface RequeteResultatValidation{
+    id_strate?:number,
+    g_no_lot?:string,
+    fond_tuile?:string
 }

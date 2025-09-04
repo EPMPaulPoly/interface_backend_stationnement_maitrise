@@ -1,6 +1,6 @@
 import {LatLng, LatLngExpression} from "leaflet";
 import React, { SetStateAction } from "react";
-import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties, lotCadastralAvecBoolInvGeoJsonProperties, informations_reglementaire_manuelle, utilisation_sol, data_graphique, methodeAnalyseVariabillite, comptes_utilisations_sol, Strate, FeuilleFinaleStrate } from "./DataTypes";
+import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties, lotCadastralAvecBoolInvGeoJsonProperties, informations_reglementaire_manuelle, utilisation_sol, data_graphique, methodeAnalyseVariabillite, comptes_utilisations_sol, Strate, FeuilleFinaleStrate, EntreeValidation } from "./DataTypes";
 import { Feature, FeatureCollection, Geometry } from "geojson";
 import { PrioriteEstimeQuartier, TypesVisualisationAnalyseQuartier, VariablesPossibles } from "./AnalysisTypes";
 import { N } from "react-router/dist/development/register-BkDIKxVz";
@@ -557,9 +557,25 @@ export interface PropsPanneauValid{
     defFeuilleStrate:React.Dispatch<SetStateAction<FeuilleFinaleStrate>>
     lots:FeatureCollection<Geometry,lotCadastralGeoJsonProperties>
     defLots:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>>
+    inventairePert:inventaire_stationnement;
+    defInventairePert:React.Dispatch<SetStateAction<inventaire_stationnement>>
+    entreeValid:EntreeValidation
+    defEntreeValid:React.Dispatch<SetStateAction<EntreeValidation>>
+    feuilleSelect:FeuilleFinaleStrate
 }
 
 export interface PropsListeLotsValid{
     lots:FeatureCollection<Geometry,lotCadastralGeoJsonProperties>
     defLots:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>>
+    inventairePert:inventaire_stationnement;
+    defInventairePert:React.Dispatch<SetStateAction<inventaire_stationnement>>
+    entreeValid:EntreeValidation
+    defEntreeValid:React.Dispatch<SetStateAction<EntreeValidation>>
+    feuilleSelect:FeuilleFinaleStrate
+}
+export interface PropsTableRevValid{
+    inventairePert:inventaire_stationnement;
+    defInventairePert:React.Dispatch<SetStateAction<inventaire_stationnement>>
+    entreeValid:EntreeValidation
+    defEntreeValid:React.Dispatch<SetStateAction<EntreeValidation>>
 }

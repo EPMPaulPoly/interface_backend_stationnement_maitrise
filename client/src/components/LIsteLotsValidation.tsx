@@ -1,15 +1,33 @@
 import { FormControl, List, ListItem, ListItemButton, ListItemText, ListSubheader, Box } from "@mui/material"
 import { PropsListeLotsValid } from "../types/InterfaceTypes"
 import { serviceInventaire } from "../services"
+import serviceValidation from "../services/serviceValidation"
+import { utiliserContexte } from "../contexte/ContexteImmobilisation"
 
 
 const ListeLotsValidation: React.FC<PropsListeLotsValid> = (props: PropsListeLotsValid) => {
+    const contexte = utiliserContexte();
+    const optionCartoChoisie = contexte?.optionCartoChoisie ?? "";
+    const changerCarto = contexte?.changerCarto ?? (() => {});
+    const optionsCartos = contexte?.optionsCartos ?? [];
+
+    const urlCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.URL??"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    const attributionCarto = optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.attribution??'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    const optCarto= optionsCartos.find((entree)=>entree.id===optionCartoChoisie)?.description??"N/A"
+
     const handleListClick=async(lot:string)=>{
-        const inventaire = await serviceInventaire.obtientInventaireParId(lot)
-        const inventaire_pert =  inventaire.data.find((item)=>item.methode_estime==2)
-        if (inventaire_pert!==undefined){
-            
+        const inventaire = await serviceInventaire.obtiensInventaireQuery({g_no_lot:lot,methode_estime:2})
+        const validation = await serviceValidation.obtiensResultatValidation({g_no_lot:lot,id_strate:props.feuilleSelect.id_strate})
+        if (inventaire.data.length>0){
+            props.defInventairePert(inventaire.data[0])
         }
+        if (validation.data.length>0){
+            props.defEntreeValid(validation.data[0])
+        }else{
+            console.log('creation Nouvelle entree valid')
+            props.defEntreeValid({id_strate:props.feuilleSelect.id_strate,fond_tuile:optCarto,g_no_lot:lot,n_places:0})
+        }
+
     }
     return (<>
         <Box
@@ -59,7 +77,7 @@ const ListeLotsValidation: React.FC<PropsListeLotsValid> = (props: PropsListeLot
                 >
 
                     {props.lots.features.map((item) => (
-                        <ListItemButton onClick={()=>handleListClick(item.properties.g_no_lot)}>
+                        <ListItemButton onClick={()=>handleListClick(item.properties.g_no_lot)} selected={props.inventairePert.g_no_lot===item.properties.g_no_lot}>
                             <ListItemText
                                 primary={item.properties.g_no_lot}
                                 primaryTypographyProps={{

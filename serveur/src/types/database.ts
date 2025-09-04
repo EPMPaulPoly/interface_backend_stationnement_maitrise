@@ -113,7 +113,7 @@ export interface DbAssociationReglementUtilSol{
     id_er:number
 }
 
-export interface RequeteInventaire{
+export interface CorpsRequeteInventaire{
     g_no_lot:string,
     n_places_min:number,
     n_places_max:number,
@@ -125,10 +125,24 @@ export interface RequeteInventaire{
     methode_estime:number,
     cubf:string,
 }
-export interface RequeteNouvelInventaireGros{
-    data: RequeteInventaire[]
+export interface CorpsRequeteInventaireGros{
+    data: CorpsRequeteInventaire[]
 }
 
+export interface RequeteInventaire{
+    g_no_lot:string,
+    n_places_ge:string,
+    dens_places_ge:string,
+    cubf:string,
+    methode_estime:string,
+    id_inv:string
+}
+
+export interface RequeteResValide{
+    g_no_lot:string,
+    id_strate:string,
+    fond_tuile:string
+}
 
 export interface RequeteInventaireGrosItem{
     id_inv:number,

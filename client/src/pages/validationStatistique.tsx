@@ -4,7 +4,7 @@ import './common.css';
 import './validationStatistique.css'
 import ControlValStat from '../components/ControlValStat';
 import ModifStrates from '../components/modifStrates';
-import { FeuilleFinaleStrate, lotCadastralAvecBoolInvGeoJsonProperties, lotCadastralGeoJsonProperties, Strate } from '../types/DataTypes';
+import { EntreeValidation, FeuilleFinaleStrate, inventaire_stationnement, lotCadastralAvecBoolInvGeoJsonProperties, lotCadastralGeoJsonProperties, Strate } from '../types/DataTypes';
 import DefinitionStratesEchantionnage from '../components/definitionStratesEchantionnage';
 import serviceValidation from '../services/serviceValidation';
 import { ClimbingBoxLoader } from 'react-spinners';
@@ -141,6 +141,25 @@ const ValidationStatistique: React.FC = () => {
             }
         ]
     })
+    const [inventairePert,defInventairePert]=useState<inventaire_stationnement>({
+        id_inv:-1,
+        g_no_lot:'',
+        n_places_min:0,
+        n_places_max:0,
+        n_places_estime:0,
+        n_places_mesure:0,
+        methode_estime:2,
+        id_er:'',
+        id_reg_stat:'',
+        cubf:'',
+        commentaire:''
+    })
+    const [resultValid,defResultValid]=useState<EntreeValidation>({
+        id_strate:-1,
+        g_no_lot:'',
+        n_places:0,
+        fond_tuile:''
+    })
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -200,6 +219,11 @@ const ValidationStatistique: React.FC = () => {
                         defFeuilleStrate={defFeuilleSelect}
                         lots={lots}
                         defLots={defLots}
+                        inventairePert={inventairePert}
+                        defInventairePert={defInventairePert}
+                        entreeValid={resultValid}
+                        defEntreeValid={defResultValid}
+                        feuilleSelect={feuilleSelect}
                     />
                 </>
             }

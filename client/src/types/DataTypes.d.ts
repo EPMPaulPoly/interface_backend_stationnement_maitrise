@@ -318,3 +318,10 @@ export interface FeuilleFinaleStrate{
     desc_concat:string,
     n_sample?:number
 }
+
+export interface EntreeValidation{
+    g_no_lot:string,
+    id_strate:number,
+    n_places:number,
+    fond_tuile:string
+}

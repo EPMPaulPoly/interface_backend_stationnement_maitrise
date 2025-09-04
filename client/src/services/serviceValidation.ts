@@ -1,7 +1,7 @@
 import { FeuilleFinaleStrate,  Strate } from "../types/DataTypes";
 import axios, { AxiosResponse } from 'axios';
 import api from './api';
-import { ApiResponse, ReponseFeuilles, ReponseStrateUnique, ReponseStrateValide,RequeteApiStrate } from "../types/serviceTypes";
+import { ApiResponse, ReponseFeuilles, ReponseResultatValidation, ReponseStrateUnique, ReponseStrateValide,RequeteApiStrate, RequeteResultatValidation } from "../types/serviceTypes";
 export const serviceValidation = {
     obtiensStrates:async(requeteApiStrate?:RequeteApiStrate):Promise<ReponseStrateValide>=>{
         try{
@@ -119,6 +119,35 @@ export const serviceValidation = {
     obtiensFeuilles:async():Promise<ReponseFeuilles>=>{
         try{
             let query_new:string = '/valid/feuilles'
+            const output:AxiosResponse = await api.get(query_new);
+            return {success:true,data:output.data.data};
+        }catch(error:any){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    },
+    obtiensResultatValidation:async(requete:RequeteResultatValidation):Promise<ReponseResultatValidation>=>{
+        try{
+            let query_new:string = '/valid/resultats'
+            let queries:string[]=[]
+            if (requete.id_strate!==undefined){
+                queries.push(`id_strate=${requete.id_strate}`)
+            }
+            if (requete.g_no_lot!==undefined){
+                queries.push(`g_no_lot=${requete.g_no_lot.replace(' ','_')}`)
+            }
+            if (requete.fond_tuile!==undefined){
+                queries.push(`fond_tuile=${requete.fond_tuile}`)
+            }
+            if (queries.length>0){
+                query_new += '?' + queries.join('&')
+            }
             const output:AxiosResponse = await api.get(query_new);
             return {success:true,data:output.data.data};
         }catch(error:any){

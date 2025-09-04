@@ -44,8 +44,13 @@
 }
 .panneau-valid{
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     flex-grow:1;
     overflow: hidden;  
     padding:8px;
+}
+.table-validation{
+    flex:1;
+    max-width: 30vw;
+    padding:8px
 }

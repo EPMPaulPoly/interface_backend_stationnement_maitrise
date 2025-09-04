@@ -1,5 +1,5 @@
 
-import { ReponseInventaire,ReponseDBInventaire, ReponseDBCadastreGeoSeul, ReponseInventaireSeuil} from '../types/serviceTypes';
+import { ReponseInventaire,ReponseDBInventaire, ReponseDBCadastreGeoSeul, ReponseInventaireSeuil, RequeteInventaire} from '../types/serviceTypes';
 import api from './api';
 import axios,{AxiosResponse} from 'axios';
 import { FeatureCollection,Geometry,Feature } from 'geojson';
@@ -41,6 +41,47 @@ export const serviceInventaire = {
             }
             throw error; // Re-throw if necessary
         }
+    },
+    obtiensInventaireQuery:async(queryParams:RequeteInventaire):Promise<ReponseInventaire>=>{
+        try {
+            let queries:string[]=[]
+            let query:string = '/inventaire/query'
+            if(queryParams.id_inv!==undefined){
+                queries.push(`id_inv=${queryParams.id_inv}`)
+            }
+            if (queryParams.cubf!==undefined){
+                queries.push(`cubf=${queryParams.cubf}`)
+            }
+            if (queryParams.g_no_lot!==undefined){
+                queries.push(`g_no_lot=${queryParams.g_no_lot.replace(' ','_')}`)
+            }
+            if (queryParams.methode_estime!==undefined){
+                queries.push(`methode_estime=${queryParams.methode_estime}`)
+            }
+            if(queryParams.n_places_plus_grand!==undefined){
+                queries.push(`n_places_ge=${queryParams.n_places_plus_grand}`)
+            }
+            if(queryParams.dens_places_plus_grand!==undefined){
+                queries.push(`dens_places_ge=${queryParams.n_places_plus_grand}`)
+            }
+            if (queries.length>0){
+                query += '?'+queries.join('&')
+            }
+            const response: AxiosResponse<ReponseDBInventaire> = await api.get(query);
+            const data_res = response.data.data;
+            console.log('Recu Inventaire')
+            return {success:response.data.success,data:data_res};
+        } catch (error: any) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+        
     },
 
     recalculeQuartierComplet:async(id_quartier:number) : Promise<ReponseInventaire> =>{
