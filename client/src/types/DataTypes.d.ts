@@ -312,12 +312,6 @@ export interface Strate {
     date_valide:boolean|null;
 }
 
-export interface RequeteApiStrate{
-    id_strate?:number|null,
-    n_sample_ge?:number|null,
-    n_sample_se?:number|null,
-    colonne_sample?:string|null
-}
 
 export interface FeuilleFinaleStrate{
     id_strate:number,

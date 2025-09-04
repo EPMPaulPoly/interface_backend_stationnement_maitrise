@@ -4,10 +4,13 @@ import './common.css';
 import './validationStatistique.css'
 import ControlValStat from '../components/ControlValStat';
 import ModifStrates from '../components/modifStrates';
-import { FeuilleFinaleStrate, Strate } from '../types/DataTypes';
+import { FeuilleFinaleStrate, lotCadastralAvecBoolInvGeoJsonProperties, lotCadastralGeoJsonProperties, Strate } from '../types/DataTypes';
 import DefinitionStratesEchantionnage from '../components/definitionStratesEchantionnage';
 import serviceValidation from '../services/serviceValidation';
 import { ClimbingBoxLoader } from 'react-spinners';
+import PanneauValidation from '../components/PanneauValidation';
+import { FeatureCollection, Geometry } from 'geojson';
+import { serviceCadastre } from '../services';
 
 const ValidationStatistique: React.FC = () => {
     const [definitionStrate, defDefinitionStrate] = useState<boolean>(false);
@@ -123,15 +126,35 @@ const ValidationStatistique: React.FC = () => {
     const [calculEnCours,defCalculEnCours] = useState<boolean>(false);
     const [feuillesPossibles,defFeuillesPossibles] = useState<FeuilleFinaleStrate[]>([])
     const [feuilleSelect,defFeuilleSelect]= useState<FeuilleFinaleStrate>({id_strate:-1,desc_concat:''})
+    const [lots,defLots]= useState<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>({
+        type:'FeatureCollection',
+        features:[
+            {
+                geometry:{ type: 'Point', coordinates: [0, 0] },
+                type:'Feature',
+                properties:{
+                    g_no_lot:'',
+                    g_va_suprf:0,
+                    g_nb_coo_1:0,
+                    g_nb_coord:0,
+                }
+            }
+        ]
+    })
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const resStrates = await serviceValidation.obtiensStrates();
                 const resFeuilles = await serviceValidation.obtiensFeuilles();
+                
+                if (resFeuilles.data.length>0){
+                    defFeuillesPossibles(resFeuilles.data)
+                    defFeuilleSelect(resFeuilles.data[0])
+                    const resLots = await serviceCadastre.chercheCadastreQuery({id_strate:resFeuilles.data[0].id_strate})
+                    defLots(resLots.data)
+                }
                 console.log('Recu les strates', resStrates);
                 defToutesStrates(resStrates.data)
-                defFeuillesPossibles(resFeuilles.data)
-                defFeuilleSelect(resFeuilles.data[0])
             } catch (error) {
                 console.error('Error fetching data:', error);
             } finally {
@@ -154,6 +177,8 @@ const ValidationStatistique: React.FC = () => {
                 defFeuillesPossibles={defFeuillesPossibles}
                 feuilleSelect={feuilleSelect}
                 defFeuilleSelect={defFeuilleSelect}
+                lots={lots}
+                defLots={defLots}
             />
             {definitionStrate === true ?
                 <DefinitionStratesEchantionnage
@@ -169,7 +194,14 @@ const ValidationStatistique: React.FC = () => {
                     defIdParent={defStrateParent}
                 />
                 :
-                <></>
+                <>
+                    <PanneauValidation
+                        feuilleStrate={feuilleSelect}
+                        defFeuilleStrate={defFeuilleSelect}
+                        lots={lots}
+                        defLots={defLots}
+                    />
+                </>
             }
             </>
             :<div style={{

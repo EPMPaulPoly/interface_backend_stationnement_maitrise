@@ -1,7 +1,7 @@
-import { FeuilleFinaleStrate, RequeteApiStrate, Strate } from "../types/DataTypes";
+import { FeuilleFinaleStrate,  Strate } from "../types/DataTypes";
 import axios, { AxiosResponse } from 'axios';
 import api from './api';
-import { ApiResponse, ReponseFeuilles, ReponseStrateUnique, ReponseStrateValide } from "../types/serviceTypes";
+import { ApiResponse, ReponseFeuilles, ReponseStrateUnique, ReponseStrateValide,RequeteApiStrate } from "../types/serviceTypes";
 export const serviceValidation = {
     obtiensStrates:async(requeteApiStrate?:RequeteApiStrate):Promise<ReponseStrateValide>=>{
         try{

@@ -3,6 +3,7 @@ import { ControlValStatProps } from "../types/InterfaceTypes";
 import { Button, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import { width } from "@mui/system";
 import serviceValidation from "../services/serviceValidation";
+import { serviceCadastre } from "../services";
 
 
 
@@ -19,6 +20,10 @@ const ControlValStat : React.FC<ControlValStatProps>=(props:ControlValStatProps)
         const idStrateSearch = Number(valeur)
         const nouvelleFeuille = props.feuillesPossibles.find((rangee)=>rangee.id_strate ===idStrateSearch)??{id_strate:-1,desc_concat:''}
         props.defFeuilleSelect(nouvelleFeuille)
+        if (nouvelleFeuille.id_strate!==-1){
+            const lotsRecus = await serviceCadastre.chercheCadastreQuery({id_strate:nouvelleFeuille.id_strate})
+            props.defLots(lotsRecus.data)
+        }
     }
     const selectedStrate = props.feuilleSelect.id_strate
     return(<div className='validation-menu'>

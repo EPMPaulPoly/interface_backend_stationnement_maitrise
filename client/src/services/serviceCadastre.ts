@@ -1,6 +1,6 @@
 import axios,{ AxiosResponse } from 'axios';
 import { lotCadastralGeoJsonProperties, quartiers_analyse, roleFoncierGeoJsonProps,lotCadastralAvecBoolInvGeoJsonProperties } from '../types/DataTypes';
-import { ReponseCadastre, ReponseRole,ReponseDBCadastre,ReponseDBRole, ReponseDBCadastreBoolInv,ReponseCadastreBoolInv } from '../types/serviceTypes';
+import { ReponseCadastre, ReponseRole,ReponseDBCadastre,ReponseDBRole, ReponseDBCadastreBoolInv,ReponseCadastreBoolInv, RequeteApiStrate, RequeteApiCadastre } from '../types/serviceTypes';
 import api from './api';
 import {FeatureCollection, Geometry } from 'geojson';
 
@@ -25,6 +25,64 @@ class ServiceCadastre {
             };
             return {success:response.data.success,data:featureCollection};
         } catch (error: any) {
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
+    async chercheCadastreQuery(requete:RequeteApiCadastre):Promise<ReponseCadastre>{
+        try{
+            let queries:string[]=[]
+            if(requete.id_strate!==undefined){
+                queries.push(`id_strate=${requete.id_strate}`)
+            }
+            if (requete.id_quartier!==undefined){
+                queries.push(`id_quartier=${requete.id_quartier}`)
+            }
+            if (requete.bbox!==undefined){
+                queries.push(`bbox=${requete.bbox.join(',')}`)
+            }
+            if (requete.estime!==undefined){
+                queries.push(`estime=${requete.estime}`)
+            }
+            if (requete.inv_surf_plus_grand!==undefined){
+                queries.push(`inv_surf_plus_grand=${requete.inv_surf_plus_grand}`)
+            }
+            if (requete.inv_plus_grand!==undefined){
+                queries.push(`inv_plus_grand=${requete.inv_plus_grand}`)
+            }
+            if (requete.superf_plus_grand!==undefined){
+                queries.push(`superf_plus_grand=${requete.superf_plus_grand}`)
+            }
+            if (requete.g_no_lot!==undefined){
+                queries.push(`g_no_lot=${requete.g_no_lot.replace(" ","_")}`)
+            }
+            let final_query = '/cadastre/lot-query'
+            if (queries.length>0){
+                final_query+='?'+queries.join('&')
+            } 
+            const response: AxiosResponse<ReponseDBCadastre> = await api.get(final_query);
+            const data_res = response.data.data;
+            const featureCollection: FeatureCollection<Geometry, lotCadastralGeoJsonProperties> = {
+                type: "FeatureCollection",
+                features: data_res.map((item) => ({
+                    type: "Feature",
+                    geometry: JSON.parse(item.geojson_geometry),
+                    properties: {
+                        g_no_lot:item.g_no_lot,
+                        g_va_suprf:item.g_va_suprf,
+                        g_nb_coo_1:item.g_nb_coo_1,
+                        g_nb_coord:item.g_nb_coord,
+                    }
+                }))
+            };
+            return {success:response.data.success,data:featureCollection};
+        }catch(error:any){
             if (axios.isAxiosError(error)) {
                 console.error('Axios Error:', error.response?.data);
                 console.error('Axios Error Status:', error.response?.status);
