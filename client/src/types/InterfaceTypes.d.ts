@@ -562,6 +562,12 @@ export interface PropsPanneauValid{
     entreeValid:EntreeValidation
     defEntreeValid:React.Dispatch<SetStateAction<EntreeValidation>>
     feuilleSelect:FeuilleFinaleStrate
+    centre:LatLngExpression
+    defCentre: React.Dispatch<SetStateAction<LatLngExpression>>
+    zoom:number,
+    defZoom:React.Dispatch<SetStateAction<number>>
+    lotSelect:FeatureCollection<Geometry,lotCadastralGeoJsonProperties>
+    defLotSelect:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>>
 }
 
 export interface PropsListeLotsValid{
@@ -572,10 +578,21 @@ export interface PropsListeLotsValid{
     entreeValid:EntreeValidation
     defEntreeValid:React.Dispatch<SetStateAction<EntreeValidation>>
     feuilleSelect:FeuilleFinaleStrate
+    lotSelect:FeatureCollection<Geometry,lotCadastralGeoJsonProperties>
+    defLotSelect:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>>
 }
 export interface PropsTableRevValid{
     inventairePert:inventaire_stationnement;
     defInventairePert:React.Dispatch<SetStateAction<inventaire_stationnement>>
     entreeValid:EntreeValidation
     defEntreeValid:React.Dispatch<SetStateAction<EntreeValidation>>
+}
+
+export interface PropsCartoValidation{
+    lotSelect:FeatureCollection<Geometry,lotCadastralGeoJsonProperties>
+    defLotSelect:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>>;
+    startPosition: LatLngExpression;
+    setStartPosition:React.Dispatch<SetStateAction<LatLngExpression>>;
+    startZoom: number;
+    setStartZoom: React.Dispatch<SetStateAction<number>>;
 }

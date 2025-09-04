@@ -1,6 +1,8 @@
 import { PropsPanneauValid } from "../types/InterfaceTypes"
+import CarteValidation from "./CarteValidation";
 import ListeLotsValidation from "./ListeLotsValidation";
 import TableRevisionValidation from "./TableRevisionValidation";
+
 const PanneauValidation:React.FC<PropsPanneauValid>=(props:PropsPanneauValid)=>{
     return(
         <div className='panneau-valid'>
@@ -12,12 +14,22 @@ const PanneauValidation:React.FC<PropsPanneauValid>=(props:PropsPanneauValid)=>{
                 entreeValid={props.entreeValid}
                 defEntreeValid={props.defEntreeValid}
                 feuilleSelect={props.feuilleSelect}
+                lotSelect={props.lotSelect}
+                defLotSelect={props.defLotSelect}
             />
             <TableRevisionValidation
                 inventairePert={props.inventairePert}
                 defInventairePert={props.defInventairePert}
                 entreeValid={props.entreeValid}
                 defEntreeValid={props.defEntreeValid}
+            />
+            <CarteValidation
+                lotSelect={props.lotSelect}
+                defLotSelect={props.defLotSelect}
+                startPosition={props.centre}
+                setStartPosition={props.defCentre}
+                startZoom={props.zoom}
+                setStartZoom={props.defZoom}
             />
         </div>
     )

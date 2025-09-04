@@ -11,6 +11,7 @@ import { ClimbingBoxLoader } from 'react-spinners';
 import PanneauValidation from '../components/PanneauValidation';
 import { FeatureCollection, Geometry } from 'geojson';
 import { serviceCadastre } from '../services';
+import { LatLngExpression } from 'leaflet';
 
 const ValidationStatistique: React.FC = () => {
     const [definitionStrate, defDefinitionStrate] = useState<boolean>(false);
@@ -22,9 +23,9 @@ const ValidationStatistique: React.FC = () => {
         est_racine: true,
         index_ordre: 0,
         ids_enfants: [2, 3],
-        superf_valide:null,
-        logements_valides:null,
-        date_valide:null,
+        superf_valide: null,
+        logements_valides: null,
+        date_valide: null,
         condition: {
             condition_type: "range",
             condition_min: 1000,
@@ -40,9 +41,9 @@ const ValidationStatistique: React.FC = () => {
             est_racine: true,
             index_ordre: 0,
             ids_enfants: [2, 3],
-            logements_valides:null,
-            superf_valide:null,
-            date_valide:null,
+            logements_valides: null,
+            superf_valide: null,
+            date_valide: null,
             condition: {
                 condition_type: "range",
                 condition_min: 1000,
@@ -57,9 +58,9 @@ const ValidationStatistique: React.FC = () => {
                     est_racine: true,
                     index_ordre: 0,
                     ids_enfants: null,
-                    logements_valides:null,
-                    superf_valide:null,
-                    date_valide:null,
+                    logements_valides: null,
+                    superf_valide: null,
+                    date_valide: null,
                     condition: {
                         condition_type: "equals",
                         condition_valeur: 1
@@ -74,9 +75,9 @@ const ValidationStatistique: React.FC = () => {
                     est_racine: true,
                     index_ordre: 0,
                     ids_enfants: null,
-                    logements_valides:null,
-                    superf_valide:null,
-                    date_valide:null,
+                    logements_valides: null,
+                    superf_valide: null,
+                    date_valide: null,
                     condition: {
                         condition_type: "range",
                         condition_min: 2,
@@ -93,9 +94,9 @@ const ValidationStatistique: React.FC = () => {
             est_racine: true,
             index_ordre: 0,
             ids_enfants: null,
-            logements_valides:null,
-            superf_valide:null,
-            date_valide:null,
+            logements_valides: null,
+            superf_valide: null,
+            date_valide: null,
             condition: {
                 condition_type: "range",
                 condition_min: 2000,
@@ -104,72 +105,92 @@ const ValidationStatistique: React.FC = () => {
             n_sample: 30
         }]
     );
-    const [anciennesStrates,defAnciennesStrates] = useState<Strate[]>([]);
-    const [ancienneStrateAct,defAncienneStrateAct] = useState<Strate>({
-        id_strate:-1,
-        nom_colonne:'',
-        nom_table:'',
-        nom_strate:'',
-        n_sample:0,
-        ids_enfants:null,
-        est_racine:false,
-        index_ordre:0,
-        logements_valides:null,
-        superf_valide:null,
-        date_valide:null,
-        condition:{
-            condition_type:'equals',
-            condition_valeur:0
+    const [anciennesStrates, defAnciennesStrates] = useState<Strate[]>([]);
+    const [ancienneStrateAct, defAncienneStrateAct] = useState<Strate>({
+        id_strate: -1,
+        nom_colonne: '',
+        nom_table: '',
+        nom_strate: '',
+        n_sample: 0,
+        ids_enfants: null,
+        est_racine: false,
+        index_ordre: 0,
+        logements_valides: null,
+        superf_valide: null,
+        date_valide: null,
+        condition: {
+            condition_type: 'equals',
+            condition_valeur: 0
         }
     })
-    const [strateParent,defStrateParent] = useState<number|null>(null);
-    const [calculEnCours,defCalculEnCours] = useState<boolean>(false);
-    const [feuillesPossibles,defFeuillesPossibles] = useState<FeuilleFinaleStrate[]>([])
-    const [feuilleSelect,defFeuilleSelect]= useState<FeuilleFinaleStrate>({id_strate:-1,desc_concat:''})
-    const [lots,defLots]= useState<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>({
-        type:'FeatureCollection',
-        features:[
+    const [strateParent, defStrateParent] = useState<number | null>(null);
+    const [calculEnCours, defCalculEnCours] = useState<boolean>(false);
+    const [feuillesPossibles, defFeuillesPossibles] = useState<FeuilleFinaleStrate[]>([])
+    const [feuilleSelect, defFeuilleSelect] = useState<FeuilleFinaleStrate>({ id_strate: -1, desc_concat: '' })
+    const [lots, defLots] = useState<FeatureCollection<Geometry, lotCadastralGeoJsonProperties>>({
+        type: 'FeatureCollection',
+        features: [
             {
-                geometry:{ type: 'Point', coordinates: [0, 0] },
-                type:'Feature',
-                properties:{
-                    g_no_lot:'',
-                    g_va_suprf:0,
-                    g_nb_coo_1:0,
-                    g_nb_coord:0,
+                geometry: { type: 'Point', coordinates: [0, 0] },
+                type: 'Feature',
+                properties: {
+                    g_no_lot: '',
+                    g_va_suprf: 0,
+                    g_nb_coo_1: 0,
+                    g_nb_coord: 0,
                 }
             }
         ]
     })
-    const [inventairePert,defInventairePert]=useState<inventaire_stationnement>({
-        id_inv:-1,
-        g_no_lot:'',
-        n_places_min:0,
-        n_places_max:0,
-        n_places_estime:0,
-        n_places_mesure:0,
-        methode_estime:2,
-        id_er:'',
-        id_reg_stat:'',
-        cubf:'',
-        commentaire:''
+    const [lotSelect, defLotSelect] = useState<FeatureCollection<Geometry, lotCadastralGeoJsonProperties>>({
+        type: 'FeatureCollection',
+        features: [
+            {
+                geometry: {
+                    type: 'Point',
+                    coordinates: [0, 0]
+                },
+                type: 'Feature',
+                properties: {
+                    g_no_lot: '',
+                    g_va_suprf: 0,
+                    g_nb_coo_1: 0,
+                    g_nb_coord: 0,
+                }
+            }
+        ]
     })
-    const [resultValid,defResultValid]=useState<EntreeValidation>({
-        id_strate:-1,
-        g_no_lot:'',
-        n_places:0,
-        fond_tuile:''
+    const [inventairePert, defInventairePert] = useState<inventaire_stationnement>({
+        id_inv: -1,
+        g_no_lot: '',
+        n_places_min: 0,
+        n_places_max: 0,
+        n_places_estime: 0,
+        n_places_mesure: 0,
+        methode_estime: 2,
+        id_er: '',
+        id_reg_stat: '',
+        cubf: '',
+        commentaire: ''
     })
+    const [resultValid, defResultValid] = useState<EntreeValidation>({
+        id_strate: -1,
+        g_no_lot: '',
+        n_places: 0,
+        fond_tuile: ''
+    })
+    const [centre, defCentre] = useState<LatLngExpression>([-71.208, 46.813]);
+    const [zoom, defZoom] = useState<number>(16);
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const resStrates = await serviceValidation.obtiensStrates();
                 const resFeuilles = await serviceValidation.obtiensFeuilles();
-                
-                if (resFeuilles.data.length>0){
+
+                if (resFeuilles.data.length > 0) {
                     defFeuillesPossibles(resFeuilles.data)
                     defFeuilleSelect(resFeuilles.data[0])
-                    const resLots = await serviceCadastre.chercheCadastreQuery({id_strate:resFeuilles.data[0].id_strate})
+                    const resLots = await serviceCadastre.chercheCadastreQuery({ id_strate: resFeuilles.data[0].id_strate })
                     defLots(resLots.data)
                 }
                 console.log('Recu les strates', resStrates);
@@ -185,65 +206,71 @@ const ValidationStatistique: React.FC = () => {
     }, []); // Empty dependency array means this runs once when the component mounts
     return (
         <div className='page-validation-stat'>
-        {calculEnCours===false?<>
-            <MenuBar />
-            <ControlValStat
-                definitionStrate={definitionStrate}
-                defDefinitionStrate={defDefinitionStrate}
-                calculEnCours={calculEnCours}
-                defCalculEnCours={defCalculEnCours}
-                feuillesPossibles={feuillesPossibles}
-                defFeuillesPossibles={defFeuillesPossibles}
-                feuilleSelect={feuilleSelect}
-                defFeuilleSelect={defFeuilleSelect}
-                lots={lots}
-                defLots={defLots}
-            />
-            {definitionStrate === true ?
-                <DefinitionStratesEchantionnage
-                    strateActuelle={strateActuelle}
-                    defStrateActuelle={defStrateActuelle}
-                    strates={toutesStrates}
-                    defStrates={defToutesStrates}
-                    anciennesStrates={anciennesStrates}
-                    defAnciennesStrates={defAnciennesStrates}
-                    ancienneStrateAct={ancienneStrateAct}
-                    defAncienneStrateAct={defAncienneStrateAct}
-                    idParent={strateParent}
-                    defIdParent={defStrateParent}
+            {calculEnCours === false ? <>
+                <MenuBar />
+                <ControlValStat
+                    definitionStrate={definitionStrate}
+                    defDefinitionStrate={defDefinitionStrate}
+                    calculEnCours={calculEnCours}
+                    defCalculEnCours={defCalculEnCours}
+                    feuillesPossibles={feuillesPossibles}
+                    defFeuillesPossibles={defFeuillesPossibles}
+                    feuilleSelect={feuilleSelect}
+                    defFeuilleSelect={defFeuilleSelect}
+                    lots={lots}
+                    defLots={defLots}
                 />
-                :
-                <>
-                    <PanneauValidation
-                        feuilleStrate={feuilleSelect}
-                        defFeuilleStrate={defFeuilleSelect}
-                        lots={lots}
-                        defLots={defLots}
-                        inventairePert={inventairePert}
-                        defInventairePert={defInventairePert}
-                        entreeValid={resultValid}
-                        defEntreeValid={defResultValid}
-                        feuilleSelect={feuilleSelect}
+                {definitionStrate === true ?
+                    <DefinitionStratesEchantionnage
+                        strateActuelle={strateActuelle}
+                        defStrateActuelle={defStrateActuelle}
+                        strates={toutesStrates}
+                        defStrates={defToutesStrates}
+                        anciennesStrates={anciennesStrates}
+                        defAnciennesStrates={defAnciennesStrates}
+                        ancienneStrateAct={ancienneStrateAct}
+                        defAncienneStrateAct={defAncienneStrateAct}
+                        idParent={strateParent}
+                        defIdParent={defStrateParent}
                     />
-                </>
-            }
+                    :
+                    <>
+                        <PanneauValidation
+                            feuilleStrate={feuilleSelect}
+                            defFeuilleStrate={defFeuilleSelect}
+                            lots={lots}
+                            defLots={defLots}
+                            inventairePert={inventairePert}
+                            defInventairePert={defInventairePert}
+                            entreeValid={resultValid}
+                            defEntreeValid={defResultValid}
+                            feuilleSelect={feuilleSelect}
+                            centre={centre}
+                            defCentre={defCentre}
+                            zoom={zoom}
+                            defZoom={defZoom}
+                            lotSelect={lotSelect}
+                            defLotSelect={defLotSelect}
+                        />
+                    </>
+                }
             </>
-            :<div style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        minHeight: '80vh'
-                    }}>
-                <ClimbingBoxLoader
-                    loading={calculEnCours}
-                    size={50}
-                    color="#fff"
-                    aria-label="Calculs en Cours - Prends ton mal en patience"
-                    data-testid="loader"
-                />
-            </div>
-            }  
-            
+                : <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    minHeight: '80vh'
+                }}>
+                    <ClimbingBoxLoader
+                        loading={calculEnCours}
+                        size={50}
+                        color="#fff"
+                        aria-label="Calculs en Cours - Prends ton mal en patience"
+                        data-testid="loader"
+                    />
+                </div>
+            }
+
         </div>
     )
 }
