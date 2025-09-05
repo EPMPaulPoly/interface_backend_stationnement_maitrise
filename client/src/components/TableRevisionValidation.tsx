@@ -2,9 +2,10 @@ import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow
 import { PropsTableRevValid } from "../types/InterfaceTypes"
 import { Cancel, Edit, Save } from "@mui/icons-material"
 import { useState } from "react"
-import { EntreeValidation } from "../types/DataTypes"
+import { EntreeValidation, methodeCalcul } from "../types/DataTypes"
 import { utiliserContexte } from "../contexte/ContexteImmobilisation"
 import serviceValidation from "../services/serviceValidation"
+import ModalRecomputeInventaire from "./ModalRecomputeInventaire"
 
 const TableRevisionValidation: React.FC<PropsTableRevValid> = (props: PropsTableRevValid) => {
 
@@ -13,8 +14,15 @@ const TableRevisionValidation: React.FC<PropsTableRevValid> = (props: PropsTable
     const changerCarto = contexte?.changerCarto ?? (() => { });
     const optionsCartos = contexte?.optionsCartos ?? [];
 
-    const descriptionCarto = optionsCartos.find((entree) => entree.id === optionCartoChoisie)?.description ?? ''
+    const methodesCalcul:methodeCalcul[]=[{methode_estime:1,description:'Entrée manuelle'},
+    {
+        methode_estime:2,
+        description:'Calcul réglementaire automatique'
+    },
+    {methode_estime:3,description:'Calcul réglementaire valeurs manuelles'}]
 
+    const descriptionCarto = optionsCartos.find((entree) => entree.id === optionCartoChoisie)?.description ?? ''
+    const [modalOuvert,defModalOuvert] =useState<boolean>(false)
     const [modif, defModif] = useState<boolean>(false)
     const [ancienVal, defAncienVal] = useState<EntreeValidation>({
         id_strate: 0,
@@ -55,6 +63,9 @@ const TableRevisionValidation: React.FC<PropsTableRevValid> = (props: PropsTable
             id_val:-1
         })
     }
+    const gestOuvertureModal = async()=>{
+        defModalOuvert(!modalOuvert)
+    }
     return (<div className='table-validation'>
         <TableContainer component={Paper} sx={{ maxHeight: '30vh' }}>
             <Table sx={{ minWidth: 200 }} aria-label="simple table">
@@ -71,13 +82,13 @@ const TableRevisionValidation: React.FC<PropsTableRevValid> = (props: PropsTable
                             sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                         >
                             <TableCell component="th" scope="row" align="center">
-                                {champs.replace("_", " ").toUpperCase()}
+                                {champs.replace(/_/g, " ").toUpperCase()}
                             </TableCell>
                             <TableCell component="th" scope="row" align="center">
-                                {props.inventairePert[champs as keyof typeof props.inventairePert]}
+                                {champs==='n_places_min' ||champs==='n_places_max' ? Number(props.inventairePert![champs as keyof typeof props.inventairePert]).toFixed(2) : props.inventairePert![champs as keyof typeof props.inventairePert]}
                             </TableCell>
                             <TableCell component="th" scope="row" align="center">
-                                {champs === 'n_places_min' || champs === 'n_places_max' ? <Edit /> : <></>}
+                                {champs === 'n_places_min' || champs === 'n_places_max' ? <Edit onClick={gestOuvertureModal}/> : <></>}
                             </TableCell>
                         </TableRow>
                     ))}
@@ -94,12 +105,12 @@ const TableRevisionValidation: React.FC<PropsTableRevValid> = (props: PropsTable
 
                         </TableCell>
                     </TableRow>
-                    {['id_strate', 'n_places'].map((champsValid) =>
+                    {['g_no_lot','id_strate', 'n_places'].map((champsValid) =>
                         <TableRow
                             sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                         >
                             <TableCell component="th" scope="row" align="center">
-                                {champsValid.replace("_", " ").toUpperCase()}
+                                {champsValid.replace(/_/g, " ").toUpperCase()}
                             </TableCell>
                             <TableCell component="th" scope="row" align="center">
                                 {champsValid === 'n_places' && modif ? <TextField
@@ -115,6 +126,13 @@ const TableRevisionValidation: React.FC<PropsTableRevValid> = (props: PropsTable
                 </TableBody>
             </Table>
         </TableContainer>
+        <ModalRecomputeInventaire
+            modalOuvert={modalOuvert}
+            defModalOuvert={defModalOuvert}
+            inventairePert={props.inventairePert}
+            defInventairePert={props.defInventairePert}
+            methodesCalculs={methodesCalcul}
+        />
     </div>)
 }
 

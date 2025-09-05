@@ -329,3 +329,8 @@ export interface EntreeValidation{
     fond_tuile:string,
     id_val:number
 }
+
+export type methodeCalcul = {
+    methode_estime:number,
+    description:string
+}

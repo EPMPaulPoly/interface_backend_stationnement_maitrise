@@ -53,8 +53,8 @@ const MenuInventaire: React.FC<MenuInventaireProps> = (props: MenuInventaireProp
 
             // Return true if no matching item is found or if any of the specified fields have changed
             return !matchingItem ||
-                o.n_places_min !== matchingItem.n_places_min ||
-                o.n_places_max !== matchingItem.n_places_max ||
+                Math.round(o.n_places_min*10)/10 !== Math.round(matchingItem.n_places_min*10)/10 ||
+                Math.round(o.n_places_max*10)/10 !== Math.round(matchingItem.n_places_max*10)/10 ||
                 o.id_er !== matchingItem.id_er ||
                 o.id_reg_stat !== matchingItem.id_reg_stat ||
                 o.cubf !== matchingItem.cubf;

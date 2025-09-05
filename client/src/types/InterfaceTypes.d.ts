@@ -1,9 +1,10 @@
 import {LatLng, LatLngExpression} from "leaflet";
 import React, { SetStateAction } from "react";
-import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties, lotCadastralAvecBoolInvGeoJsonProperties, informations_reglementaire_manuelle, utilisation_sol, data_graphique, methodeAnalyseVariabillite, comptes_utilisations_sol, Strate, FeuilleFinaleStrate, EntreeValidation } from "./DataTypes";
+import { inventaire_stationnement,quartiers_analyse, territoire,entete_reglement_stationnement,definition_reglement_stationnement, reglement_complet, entete_ensemble_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties,roleFoncierGeoJsonProps, territoireGeoJsonProperties, lotCadastralAvecBoolInvGeoJsonProperties, informations_reglementaire_manuelle, utilisation_sol, data_graphique, methodeAnalyseVariabillite, comptes_utilisations_sol, Strate, FeuilleFinaleStrate, EntreeValidation, methodeCalcul } from "./DataTypes";
 import { Feature, FeatureCollection, Geometry } from "geojson";
 import { PrioriteEstimeQuartier, TypesVisualisationAnalyseQuartier, VariablesPossibles } from "./AnalysisTypes";
 import { N } from "react-router/dist/development/register-BkDIKxVz";
+import { SpeedDialActionStaticTooltipLabelSlotPropsOverrides } from "@mui/material";
 // --------------------------------------------------------------------------
 // ------------------------- Interface --------------------------------------
 // --------------------------------------------------------------------------
@@ -607,4 +608,12 @@ export interface PropsCartoValidation{
     setStartPosition:React.Dispatch<SetStateAction<LatLngExpression>>;
     startZoom: number;
     setStartZoom: React.Dispatch<SetStateAction<number>>;
+}
+
+export interface PropsModalRecomputeInventaire{
+    inventairePert:inventaire_stationnement; // Peut-être changer ça pour simplement indiquer le lot plutôt que l'ensemble des données de stationnement. Rendrait le modal plus générique.
+    defInventairePert:React.Dispatch<SetStateAction<inventaire_stationnement>>
+    modalOuvert:boolean
+    defModalOuvert:React.Dispatch<SetStateAction<boolean>>
+    methodesCalculs:methodeCalcul[]
 }

@@ -724,6 +724,8 @@ def calculate_threshold_based_subset_from_inputs_class(reg_to_calculate:PR.Parki
                         parking_frame_thresh['n_places_max'] = zero_crossing_max
                     else: 
                         parking_frame_thresh['n_places_max'] = None
+
+                    parking_frame_thresh.loc[parking_frame_thresh['n_places_max']<parking_frame_thresh['n_places_min'],'n_places_max']=None
                     parking_frame_thresh['n_places_mesure'] = None
                     parking_frame_thresh['n_places_estime'] = None
                     parking_frame_thresh['methode_estime'] = methode_estime
@@ -808,6 +810,7 @@ def calculate_addition_based_subset_from_inputs_class(reg_to_calculate:PR.Parkin
                     'n_places_max':'sum'                         # Sum the values
                 }
                 inventory_out = inventory.groupby(by=config_db.db_column_lot_id).agg(agg_dict).reset_index()
+                inventory_out.loc[inventory_out['n_places_max']<inventory_out['n_places_min'],'n_places_max']=None
                 inventory_out['methode_estime'] = methode_estime
                 inventory_out['n_places_mesure'] = np.nan
                 inventory_out['n_places_estime'] = np.nan

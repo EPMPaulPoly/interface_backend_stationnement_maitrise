@@ -4,7 +4,7 @@ import { serviceCadastre, serviceInventaire } from "../services"
 import serviceValidation from "../services/serviceValidation"
 import { utiliserContexte } from "../contexte/ContexteImmobilisation"
 import { FeatureCollection, Geometry } from "geojson"
-import { lotCadastralGeoJsonProperties } from "../types/DataTypes"
+import { inventaire_stationnement, lotCadastralGeoJsonProperties } from "../types/DataTypes"
 
 
 const ListeLotsValidation: React.FC<PropsListeLotsValid> = (props: PropsListeLotsValid) => {
@@ -16,7 +16,19 @@ const ListeLotsValidation: React.FC<PropsListeLotsValid> = (props: PropsListeLot
     const urlCarto = optionsCartos.find((entree) => entree.id === optionCartoChoisie)?.URL ?? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
     const attributionCarto = optionsCartos.find((entree) => entree.id === optionCartoChoisie)?.attribution ?? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     const optCarto = optionsCartos.find((entree) => entree.id === optionCartoChoisie)?.description ?? "N/A"
-
+    const inventaireVide:inventaire_stationnement={
+        id_inv:-1,
+        n_places_min:0,
+        n_places_max:0,
+        n_places_estime:0,
+        n_places_mesure:0,
+        cubf:'',
+        id_er:'',
+        id_reg_stat:'',
+        commentaire:'',
+        g_no_lot:'',
+        methode_estime:2
+    }
     const handleListClick = async (lot: string) => {
         const [inventaire,validation,role] = await Promise.all(
             [
@@ -28,6 +40,8 @@ const ListeLotsValidation: React.FC<PropsListeLotsValid> = (props: PropsListeLot
     
         if (inventaire.data.length > 0) {
             props.defInventairePert(inventaire.data[0])
+        } else{
+            props.defInventairePert({...inventaireVide,g_no_lot:lot})
         }
         if (validation.data.length > 0) {
             props.defEntreeValid(validation.data[0])
@@ -64,7 +78,7 @@ const ListeLotsValidation: React.FC<PropsListeLotsValid> = (props: PropsListeLot
             }
             new_add= add_bits.join(' ')
             props.defAdresse(new_add)
-        }
+        } else{ props.defAdresse('')}
         const foundFeature = props.lots.features.find((feature) => feature.properties.g_no_lot === lot);
         const lotSelect:FeatureCollection<Geometry,lotCadastralGeoJsonProperties> = {
             type: 'FeatureCollection',
