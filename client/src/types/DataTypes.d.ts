@@ -326,5 +326,6 @@ export interface EntreeValidation{
     g_no_lot:string,
     id_strate:number,
     n_places:number,
-    fond_tuile:string
+    fond_tuile:string,
+    id_val:number
 }

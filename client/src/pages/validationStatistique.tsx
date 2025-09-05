@@ -177,11 +177,13 @@ const ValidationStatistique: React.FC = () => {
         id_strate: -1,
         g_no_lot: '',
         n_places: 0,
-        fond_tuile: ''
+        fond_tuile: '',
+        id_val:-1
     })
     const [centre, defCentre] = useState<LatLngExpression>([-71.208, 46.813]);
     const [zoom, defZoom] = useState<number>(16);
     const [adresse,defAdresse] = useState<string>('');
+    const [newValid,defNewValid] = useState<boolean>(false);
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -254,6 +256,8 @@ const ValidationStatistique: React.FC = () => {
                             defLotSelect={defLotSelect}
                             adresse={adresse}
                             defAdresse={defAdresse}
+                            newValid={newValid}
+                            defNewValid={defNewValid}
                         />
                     </>
                 }

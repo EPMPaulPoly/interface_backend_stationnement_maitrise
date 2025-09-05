@@ -141,7 +141,11 @@ export interface RequeteInventaire{
 export interface RequeteResValide{
     g_no_lot:string,
     id_strate:string,
-    fond_tuile:string
+    fond_tuile:string,
+    id_val:number
+}
+export interface CorpsValide extends RequeteResValide{
+    n_places:number
 }
 
 export interface RequeteInventaireGrosItem{

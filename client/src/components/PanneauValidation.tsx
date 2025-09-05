@@ -18,6 +18,8 @@ const PanneauValidation:React.FC<PropsPanneauValid>=(props:PropsPanneauValid)=>{
                 defLotSelect={props.defLotSelect}
                 adresse={props.adresse}
                 defAdresse={props.defAdresse}
+                newValid={props.newValid}
+                defNewValid={props.defNewValid}
             />
             <TableRevisionValidation
                 inventairePert={props.inventairePert}
@@ -26,6 +28,8 @@ const PanneauValidation:React.FC<PropsPanneauValid>=(props:PropsPanneauValid)=>{
                 defEntreeValid={props.defEntreeValid}
                 adresse={props.adresse}
                 defAdresse={props.defAdresse}
+                newValid={props.newValid}
+                defNewValid={props.defNewValid}
             />
             <CarteValidation
                 lotSelect={props.lotSelect}

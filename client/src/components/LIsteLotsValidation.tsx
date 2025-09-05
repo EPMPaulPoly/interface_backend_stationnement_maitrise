@@ -33,7 +33,8 @@ const ListeLotsValidation: React.FC<PropsListeLotsValid> = (props: PropsListeLot
             props.defEntreeValid(validation.data[0])
         } else {
             console.log('creation Nouvelle entree valid')
-            props.defEntreeValid({ id_strate: props.feuilleSelect.id_strate, fond_tuile: optCarto, g_no_lot: lot, n_places: 0 })
+            props.defEntreeValid({ id_strate: props.feuilleSelect.id_strate, fond_tuile: optCarto, g_no_lot: lot, n_places: 0 ,id_val:-1})
+            props.defNewValid(true)
         }
         let add_bits:string[]=[];
         let new_add:string='';

@@ -1,4 +1,4 @@
-import { condition_strate, RequeteModifStrate, strate, strate_db, condition_echantillonage, RequeteResValide } from 'database';
+import { condition_strate, RequeteModifStrate, strate, strate_db, condition_echantillonage, RequeteResValide, CorpsValide } from 'database';
 import { Router, RequestHandler } from 'express';
 import { Pool } from 'pg';
 
@@ -701,10 +701,10 @@ export const creationRouteurValidation = (pool: Pool): Router => {
     }
 
     const obtiensResultats:RequestHandler<any,any,RequeteResValide>=async(req,res):Promise<void>=>{
-        console.log('obtention Feuilles')
+        console.log('obtention resultats')
         let client;
         try {
-            const {id_strate,g_no_lot,fond_tuile}=req.query
+            const {id_strate,g_no_lot,fond_tuile,id_val}=req.query
             let conditions:string[]=[]
             let replaceCount:number=1;
             let values:any[]=[];
@@ -723,10 +723,16 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                 values.push(fond_tuile)
                 replaceCount
             }
+            if (id_val !==undefined){
+                conditions.push(`rv.id_val = ${replaceCount}`)
+                values.push(Number(id_val))
+                replaceCount 
+            }
             client = await pool.connect();
             let query: string
             let result: any;
             query = `SELECT 
+                    rv.id_val,
                     rv.id_strate,
                     rv.g_no_lot,
                     rv.n_places,
@@ -750,6 +756,77 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             }
         }
     }
+    const nouveauResultat:RequestHandler<any,any,RequeteResValide,any,CorpsValide>=async(req,res):Promise<void>=>{
+        console.log('obtention resultats')
+        let client;
+        try {
+            const {id_strate,g_no_lot,n_places,fond_tuile} = req.body as CorpsValide
+            client = await pool.connect();
+            let query: string
+            let result: any;
+            query = `INSERT INTO resultats_validation(id_strate,g_no_lot,n_places,fond_tuile) 
+                    VALUES($1,$2,$3,$4) RETURNING *`
+            
+            result = await client.query(query,[id_strate,g_no_lot,n_places,fond_tuile])
+
+
+            res.json({ success: true, data: result.rows });
+        } catch (err: any) {
+            res.status(500).json({ success: false, error: 'Database error' });
+        } finally {
+            if (client) {
+                client.release()
+            }
+        }
+    }
+    const modifieResultat:RequestHandler<any,any,RequeteResValide,any,CorpsValide>=async(req,res):Promise<void>=>{
+        console.log('obtention resultats')
+        let client;
+        try {
+            const {id} = req.params;
+            const {id_strate,g_no_lot,n_places,fond_tuile} = req.body as CorpsValide
+            client = await pool.connect();
+            let query: string
+            let result: any;
+            query = `UPDATE resultats_validation
+                        SET id_strate=$1,g_no_lot=$2,n_places=$3,fond_tuile=$4
+                    WHERE id_val = $5 RETURNING *`
+            
+            result = await client.query(query,[id_strate,g_no_lot,n_places,fond_tuile,id])
+
+
+            res.json({ success: true, data: result.rows });
+        } catch (err: any) {
+            res.status(500).json({ success: false, error: 'Database error' });
+        } finally {
+            if (client) {
+                client.release()
+            }
+        }
+    }
+    const supprimeResultat:RequestHandler<any,any,RequeteResValide,any,CorpsValide>=async(req,res):Promise<void>=>{
+        console.log('obtention resultats')
+        let client;
+        try {
+            const {id} = req.params;
+            client = await pool.connect();
+            let query: string
+            let result: any;
+            query = `DELETE FROM resultats_validation
+                    WHERE id_val = $5 RETURNING *`
+            
+            result = await client.query(query,[id])
+
+
+            res.json({ success: true, data: result.rows });
+        } catch (err: any) {
+            res.status(500).json({ success: false, error: 'Database error' });
+        } finally {
+            if (client) {
+                client.release()
+            }
+        }
+    }
 
     // Routes
     router.get('/strate', obtiensStrates)
@@ -760,5 +837,8 @@ export const creationRouteurValidation = (pool: Pool): Router => {
     router.get('/strate/colonnes_possibles', obtiensColonnesValides)
     router.get('/feuilles',obtiensFeuilles)
     router.get('/resultats',obtiensResultats)
+    router.post('/resultats',nouveauResultat)
+    router.put('/resultats/:id',modifieResultat)
+    //router.delete('resultats/:id',supprimeResultat)
     return router;
 };

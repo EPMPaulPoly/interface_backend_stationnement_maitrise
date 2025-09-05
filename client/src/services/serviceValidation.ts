@@ -1,4 +1,4 @@
-import { FeuilleFinaleStrate,  Strate } from "../types/DataTypes";
+import { EntreeValidation, FeuilleFinaleStrate,  Strate } from "../types/DataTypes";
 import axios, { AxiosResponse } from 'axios';
 import api from './api';
 import { ApiResponse, ReponseFeuilles, ReponseResultatValidation, ReponseStrateUnique, ReponseStrateValide,RequeteApiStrate, RequeteResultatValidation } from "../types/serviceTypes";
@@ -160,7 +160,61 @@ export const serviceValidation = {
             }
             throw error; // Re-throw if necessary
         }
+    },
+    nouveauResultatValidation:async(entree:EntreeValidation):Promise<ReponseResultatValidation>=>{
+        try{
+            let query_new:string = '/valid/resultats'
+            const {id_val,...rest} = entree
+            const out:Omit<EntreeValidation,'id_val'>=rest;
+            const output:AxiosResponse = await api.post(query_new,out);
+            return {success:true,data:output.data.data};
+        }catch(error:any){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    },
+    modifieResultatValidation:async(entree:EntreeValidation):Promise<ReponseResultatValidation>=>{
+        try{
+            let query_new:string = `/valid/resultats/${entree.id_val}`
+            const {id_val,...rest} = entree
+            const out:Omit<EntreeValidation,'id_val'>=rest;
+            const output:AxiosResponse = await api.put(query_new,out);
+            return {success:true,data:output.data.data};
+        }catch(error:any){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    },
+    supprimeResultatValidation:async(id_val:number):Promise<ReponseResultatValidation>=>{
+        try{
+            let query_new:string = `/valid/resultats/${id_val}`
+            
+            const output:AxiosResponse = await api.delete(query_new);
+            return {success:true,data:output.data.data};
+        }catch(error:any){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
     }
+
 }
 
 export default serviceValidation;
