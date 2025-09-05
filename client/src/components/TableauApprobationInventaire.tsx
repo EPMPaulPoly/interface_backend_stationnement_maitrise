@@ -35,7 +35,6 @@ const TableauApprobationInventaire: React.FC<{
             commentaire: ''
         }
         const gestAnnulation=()=>{
-            props.defAncienInventaire(inventaireVide)
             props.defNouvelInventaire(inventaireVide)
             props.defFaireComparaison(false)
         }
