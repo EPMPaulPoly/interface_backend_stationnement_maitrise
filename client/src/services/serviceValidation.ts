@@ -1,7 +1,7 @@
 import { EntreeValidation, FeuilleFinaleStrate,  Strate } from "../types/DataTypes";
 import axios, { AxiosResponse } from 'axios';
 import api from './api';
-import { ApiResponse, ReponseFeuilles, ReponseResultatValidation, ReponseStrateUnique, ReponseStrateValide,RequeteApiStrate, RequeteResultatValidation } from "../types/serviceTypes";
+import { ApiResponse, ReponseDataGraphique, ReponseFeuilles, ReponseResultatValidation, ReponseStrateUnique, ReponseStrateValide,RequeteApiStrate, RequeteResultatValidation } from "../types/serviceTypes";
 export const serviceValidation = {
     obtiensStrates:async(requeteApiStrate?:RequeteApiStrate):Promise<ReponseStrateValide>=>{
         try{
@@ -204,6 +204,39 @@ export const serviceValidation = {
             const output:AxiosResponse = await api.delete(query_new);
             return {success:true,data:output.data.data};
         }catch(error:any){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    },
+        obtiensGraphique:async(props:{id_strate?:number,x_max?:number,variable?:string}):Promise<ReponseDataGraphique>=>{
+        try {
+            let query_add: string[] = [];
+            
+            if (typeof props.id_strate !== 'undefined') {
+                query_add.push(`id_strate=${Number(props.id_strate)}`)
+            }
+            if (typeof props.x_max !== 'undefined') {
+                query_add.push(`x_max=${Number(props.x_max)}`)
+            }
+            if (typeof props.variable !== 'undefined') {
+                query_add.push(`type=${props.variable}`)
+            }
+            let base_query: string = `/valid/graphiques`
+            if (query_add.length > 0) {
+                base_query += '?' + query_add.join('&')
+            }
+            const response: AxiosResponse<ReponseDataGraphique> = await api.get(base_query);
+            return ({
+                success: response.data.success,
+                data: response.data.data
+            });
+        } catch (error: any) {
             if (axios.isAxiosError(error)) {
                 console.error('Axios Error:', error.response?.data);
                 console.error('Axios Error Status:', error.response?.status);

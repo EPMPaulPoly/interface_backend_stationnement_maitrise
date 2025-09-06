@@ -340,3 +340,9 @@ export interface condition_echantillonage{
     desc_concat:string,
     n_sample:number| null | undefined
 }
+
+export interface RequeteGraphiqueValidation{
+    id_strate:string,
+    type:"pred_par_reel"|"reel_par_pred"|"stationnement"
+    x_max:string
+}

@@ -1,5 +1,6 @@
 import { PropsPanneauValid } from "../types/InterfaceTypes"
 import CarteValidation from "./CarteValidation";
+import GraphiqueValidation from "./GraphiqueValidation";
 import ListeLotsValidation from "./ListeLotsValidation";
 import TableRevisionValidation from "./TableRevisionValidation";
 
@@ -21,16 +22,22 @@ const PanneauValidation:React.FC<PropsPanneauValid>=(props:PropsPanneauValid)=>{
                 newValid={props.newValid}
                 defNewValid={props.defNewValid}
             />
-            <TableRevisionValidation
-                inventairePert={props.inventairePert}
-                defInventairePert={props.defInventairePert}
-                entreeValid={props.entreeValid}
-                defEntreeValid={props.defEntreeValid}
-                adresse={props.adresse}
-                defAdresse={props.defAdresse}
-                newValid={props.newValid}
-                defNewValid={props.defNewValid}
-            />
+            <div className='panneau-centre'>
+                <TableRevisionValidation
+                    inventairePert={props.inventairePert}
+                    defInventairePert={props.defInventairePert}
+                    entreeValid={props.entreeValid}
+                    defEntreeValid={props.defEntreeValid}
+                    adresse={props.adresse}
+                    defAdresse={props.defAdresse}
+                    newValid={props.newValid}
+                    defNewValid={props.defNewValid}
+                />
+                <GraphiqueValidation 
+                    feuilleSelect={props.feuilleSelect}
+                    inventairePert={props.inventairePert}
+                />
+            </div>
             <CarteValidation
                 lotSelect={props.lotSelect}
                 defLotSelect={props.defLotSelect}

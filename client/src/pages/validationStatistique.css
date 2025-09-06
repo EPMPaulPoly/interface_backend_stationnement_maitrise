@@ -49,15 +49,29 @@
     overflow: hidden;  
     padding:8px;
 }
+.panneau-centre{
+    width:40vw;
+    overflow: hidden;
+    display:flex;
+    flex-direction:column
+}
+.panneau-graph{
+    flex: 1 1 0;            /* grandit, rétrécit, base à 0 px */
+    overflow: hidden;       /* empêche le débordement du canvas */
+}
+.graphique{
+    flex: 1 1 0;            /* grandit, rétrécit, base à 0 px */
+    min-height: 0;          /* évite que le conteneur pousse le parent à grandir */
+    max-height: calc(100vh - 30vh - 12rem); /* optionnel : ne jamais dépasser la hauteur restante */
+    overflow: hidden;       /* empêche le débordement du canvas */
+}
 .table-validation{
-    flex:1;
-    max-width: 30vw;
-    padding:8px
+    max-width: 100%;
+    padding:8px;
+    height:30vh
 }
 .carte-validation{
     flex:1;
-    display:flex;
-    flex-direction: row;
 }
 .leaflet-container {
   flex:1

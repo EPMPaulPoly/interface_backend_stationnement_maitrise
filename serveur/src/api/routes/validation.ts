@@ -1,7 +1,7 @@
-import { condition_strate, RequeteModifStrate, strate, strate_db, condition_echantillonage, RequeteResValide, CorpsValide } from 'database';
+import { condition_strate, RequeteModifStrate, strate, strate_db, condition_echantillonage, RequeteResValide, CorpsValide, RequeteGraphiqueValidation, donneesHisto, serieHistogrammeVariabilite, dataHistogrammeVariabilite } from 'database';
 import { Router, RequestHandler } from 'express';
 import { Pool } from 'pg';
-
+import {bin,Bin,HistogramGeneratorNumber} from 'd3-array';
 export const creationRouteurValidation = (pool: Pool): Router => {
     const router = Router();
     const creationCondition = (ligne: strate_db): condition_strate | undefined => {
@@ -62,9 +62,9 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                 index_ordre: strate_entrante.index_ordre,
                 est_racine: strate_entrante.est_racine,
                 ids_enfants: strate_entrante.ids_enfants,
-                logements_valides:strate_entrante.logements_valides,
-                date_valide:strate_entrante.date_valide,
-                superf_valide:strate_entrante.superf_valide,
+                logements_valides: strate_entrante.logements_valides,
+                date_valide: strate_entrante.date_valide,
+                superf_valide: strate_entrante.superf_valide,
                 condition_type: strate_entrante.condition?.condition_type ?? 'equals',
                 condition_min: strate_entrante.condition?.condition_type === 'equals' ? null : (strate_entrante.condition?.condition_min ?? null),
                 condition_max: strate_entrante.condition?.condition_type === 'equals' ? null : (strate_entrante.condition?.condition_max ?? null),
@@ -80,9 +80,9 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                 index_ordre: strate_entrante.index_ordre,
                 est_racine: strate_entrante.est_racine,
                 ids_enfants: strate_entrante.ids_enfants,
-                logements_valides:strate_entrante.logements_valides,
-                date_valide:strate_entrante.date_valide,
-                superf_valide:strate_entrante.superf_valide,
+                logements_valides: strate_entrante.logements_valides,
+                date_valide: strate_entrante.date_valide,
+                superf_valide: strate_entrante.superf_valide,
                 condition_type: strate_entrante.condition?.condition_type ?? 'equals',
                 condition_min: strate_entrante.condition?.condition_type === 'equals' ? null : (strate_entrante.condition?.condition_min ?? null),
                 condition_max: strate_entrante.condition?.condition_type === 'equals' ? null : (strate_entrante.condition?.condition_max ?? null),
@@ -265,13 +265,13 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             colonnes_inter.push(strate.nom_colonne)
             const descriptionStr = strate.nom_strate
             description_inter.push(descriptionStr)
-            if(strate.logements_valides===true){
+            if (strate.logements_valides === true) {
                 conditions_inter.push('tous_logements_valides = true')
             }
-            if(strate.superf_valide===true){
+            if (strate.superf_valide === true) {
                 conditions_inter.push('toutes_surfaces_valides = true')
             }
-            if(strate.date_valide===true){
+            if (strate.date_valide === true) {
                 conditions_inter.push('toutes_dates_valides = true')
             }
             const condition_join = conditions_inter.join(' AND ')
@@ -433,15 +433,15 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             let result_update_parent: any;
             let result_all: any;
             const stratePlate = applatissementStrate(princip);
-            const { nom_strate, nom_colonne, est_racine, index_ordre, logements_valides,superf_valide,date_valide, condition_type, condition_valeur, condition_min, condition_max, n_sample, ids_enfants } = stratePlate
+            const { nom_strate, nom_colonne, est_racine, index_ordre, logements_valides, superf_valide, date_valide, condition_type, condition_valeur, condition_min, condition_max, n_sample, ids_enfants } = stratePlate
             if (id_parent === undefined || id_parent === null) {
                 query = `INSERT INTO public.strates_echantillonage (nom_strate,est_racine,index_ordre,nom_colonne,logements_valides,superf_valide,date_valide,condition_type,condition_min,condition_max,condition_valeur,ids_enfants,n_sample)
                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`
-                result = await client.query(query, [nom_strate, est_racine, index_ordre,  nom_colonne, logements_valides,superf_valide,date_valide,condition_type, condition_min, condition_max, condition_valeur, ids_enfants, n_sample])
+                result = await client.query(query, [nom_strate, est_racine, index_ordre, nom_colonne, logements_valides, superf_valide, date_valide, condition_type, condition_min, condition_max, condition_valeur, ids_enfants, n_sample])
             } else {
                 query = `INSERT INTO public.strates_echantillonage (nom_strate,est_racine,index_ordre,nom_colonne,logements_valides,superf_valide,date_valide,condition_type,condition_min,condition_max,condition_valeur,ids_enfants,n_sample)
                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`
-                result = await client.query(query, [nom_strate, est_racine, index_ordre, nom_colonne, logements_valides,superf_valide,date_valide,condition_type, condition_min, condition_max, condition_valeur, ids_enfants, n_sample])
+                result = await client.query(query, [nom_strate, est_racine, index_ordre, nom_colonne, logements_valides, superf_valide, date_valide, condition_type, condition_min, condition_max, condition_valeur, ids_enfants, n_sample])
                 const id_nouveau = result.rows[0].id_strate;
                 query_parent =
                     `SELECT
@@ -514,7 +514,7 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             let result: any;
             let result_all: any;
             const stratePlate = applatissementStrate(princip);
-            const { nom_strate, nom_colonne, est_racine, index_ordre, logements_valides,date_valide,superf_valide, condition_type, condition_valeur, condition_min, condition_max, n_sample, ids_enfants } = stratePlate
+            const { nom_strate, nom_colonne, est_racine, index_ordre, logements_valides, date_valide, superf_valide, condition_type, condition_valeur, condition_min, condition_max, n_sample, ids_enfants } = stratePlate
             query =
                 `UPDATE public.strates_echantillonage
                     SET 
@@ -534,7 +534,7 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                 WHERE id_strate = $14
                 RETURNING *;
             `
-            result = await client.query(query, [nom_strate, nom_colonne, est_racine, index_ordre,  ids_enfants, n_sample,logements_valides,date_valide,superf_valide, condition_type, condition_valeur, condition_min, condition_max, id_strate])
+            result = await client.query(query, [nom_strate, nom_colonne, est_racine, index_ordre, ids_enfants, n_sample, logements_valides, date_valide, superf_valide, condition_type, condition_valeur, condition_min, condition_max, id_strate])
             query_all = `SELECT 
                     id_strate,
                     nom_strate,
@@ -633,7 +633,7 @@ export const creationRouteurValidation = (pool: Pool): Router => {
         try {
             const donnees_creees = await creeValeursPertinents()
             const strates_assignees = await assigneStratesAuCadastre()
-            res.json({ success: donnees_creees && strates_assignees});
+            res.json({ success: donnees_creees && strates_assignees });
         } catch (err: any) {
             res.status(500).json({ success: false, error: 'Database error' });
         } finally {
@@ -671,7 +671,7 @@ export const creationRouteurValidation = (pool: Pool): Router => {
         }
     }
 
-    const obtiensFeuilles:RequestHandler<void>=async(_,res):Promise<void>=>{
+    const obtiensFeuilles: RequestHandler<void> = async (_, res): Promise<void> => {
         console.log('obtention Feuilles')
         let client;
         try {
@@ -700,33 +700,33 @@ export const creationRouteurValidation = (pool: Pool): Router => {
         }
     }
 
-    const obtiensResultats:RequestHandler<any,any,RequeteResValide>=async(req,res):Promise<void>=>{
+    const obtiensResultats: RequestHandler<any, any, RequeteResValide> = async (req, res): Promise<void> => {
         console.log('obtention resultats')
         let client;
         try {
-            const {id_strate,g_no_lot,fond_tuile,id_val}=req.query
-            let conditions:string[]=[]
-            let replaceCount:number=1;
-            let values:any[]=[];
-            if( id_strate!==undefined){
+            const { id_strate, g_no_lot, fond_tuile, id_val } = req.query
+            let conditions: string[] = []
+            let replaceCount: number = 1;
+            let values: any[] = [];
+            if (id_strate !== undefined) {
                 conditions.push(`rv.id_strate=$${replaceCount}`)
                 values.push(Number(id_strate))
                 replaceCount++
             }
-            if( g_no_lot!==undefined){
+            if (g_no_lot !== undefined) {
                 conditions.push(`rv.g_no_lot=$${replaceCount}`)
-                values.push(String(g_no_lot).replace('_',' '))
+                values.push(String(g_no_lot).replace('_', ' '))
                 replaceCount++
             }
-            if (fond_tuile!==undefined){
+            if (fond_tuile !== undefined) {
                 conditions.push(`rv.fond_tuile LIKE ${replaceCount}`)
                 values.push(fond_tuile)
                 replaceCount
             }
-            if (id_val !==undefined){
+            if (id_val !== undefined) {
                 conditions.push(`rv.id_val = ${replaceCount}`)
                 values.push(Number(id_val))
-                replaceCount 
+                replaceCount
             }
             client = await pool.connect();
             let query: string
@@ -740,11 +740,11 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                 FROM
                     public.resultats_validation rv
             `;
-            if (conditions.length>0){
-                query+='\n WHERE ' +conditions.join(' AND ')
+            if (conditions.length > 0) {
+                query += '\n WHERE ' + conditions.join(' AND ')
             }
-            query +=';'
-            result = await client.query(query,values)
+            query += ';'
+            result = await client.query(query, values)
 
 
             res.json({ success: true, data: result.rows });
@@ -756,18 +756,18 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             }
         }
     }
-    const nouveauResultat:RequestHandler<any,any,RequeteResValide,any,CorpsValide>=async(req,res):Promise<void>=>{
+    const nouveauResultat: RequestHandler<any, any, RequeteResValide, any, CorpsValide> = async (req, res): Promise<void> => {
         console.log('obtention resultats')
         let client;
         try {
-            const {id_strate,g_no_lot,n_places,fond_tuile} = req.body as CorpsValide
+            const { id_strate, g_no_lot, n_places, fond_tuile } = req.body as CorpsValide
             client = await pool.connect();
             let query: string
             let result: any;
             query = `INSERT INTO resultats_validation(id_strate,g_no_lot,n_places,fond_tuile) 
                     VALUES($1,$2,$3,$4) RETURNING *`
-            
-            result = await client.query(query,[id_strate,g_no_lot,n_places,fond_tuile])
+
+            result = await client.query(query, [id_strate, g_no_lot, n_places, fond_tuile])
 
 
             res.json({ success: true, data: result.rows });
@@ -779,20 +779,20 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             }
         }
     }
-    const modifieResultat:RequestHandler<any,any,RequeteResValide,any,CorpsValide>=async(req,res):Promise<void>=>{
+    const modifieResultat: RequestHandler<any, any, RequeteResValide, any, CorpsValide> = async (req, res): Promise<void> => {
         console.log('obtention resultats')
         let client;
         try {
-            const {id} = req.params;
-            const {id_strate,g_no_lot,n_places,fond_tuile} = req.body as CorpsValide
+            const { id } = req.params;
+            const { id_strate, g_no_lot, n_places, fond_tuile } = req.body as CorpsValide
             client = await pool.connect();
             let query: string
             let result: any;
             query = `UPDATE resultats_validation
                         SET id_strate=$1,g_no_lot=$2,n_places=$3,fond_tuile=$4
                     WHERE id_val = $5 RETURNING *`
-            
-            result = await client.query(query,[id_strate,g_no_lot,n_places,fond_tuile,id])
+
+            result = await client.query(query, [id_strate, g_no_lot, n_places, fond_tuile, id])
 
 
             res.json({ success: true, data: result.rows });
@@ -804,18 +804,18 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             }
         }
     }
-    const supprimeResultat:RequestHandler<any,any,RequeteResValide,any,CorpsValide>=async(req,res):Promise<void>=>{
+    const supprimeResultat: RequestHandler<any, any, RequeteResValide, any, CorpsValide> = async (req, res): Promise<void> => {
         console.log('obtention resultats')
         let client;
         try {
-            const {id} = req.params;
+            const { id } = req.params;
             client = await pool.connect();
             let query: string
             let result: any;
             query = `DELETE FROM resultats_validation
-                    WHERE id_val = $5 RETURNING *`
-            
-            result = await client.query(query,[id])
+                    WHERE id_val = $1 RETURNING *`
+
+            result = await client.query(query, [id])
 
 
             res.json({ success: true, data: result.rows });
@@ -827,7 +827,216 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             }
         }
     }
+    const genereSortieGraphique = (type: String, resultat: any[], x_max?: number): dataHistogrammeVariabilite => {
+        let x_max_final: number;
+        let formatted_output: dataHistogrammeVariabilite={
+            labels:[],
+            datasets:[]
+        };
+        if (x_max !== undefined && x_max !== null && typeof x_max === 'number') {
+            x_max_final = x_max
+        } else {
+            let max_1: number;
+            let max_2: number;
+            let all_values_1:number[]
+            let all_values_2:number[]
+            let n_values_1:number;
+            let n_values_2:number;
+            let binner: HistogramGeneratorNumber<number,number>;
+            let sample_bins_1:Bin<number,number>[]
+            let sample_bins_2:Bin<number,number>[]
+            let bin_labels:string[]
+            let data_out_1:number[]
+            let data_out_2:number[]
+            switch (type) {
+                case 'stationnement':
+                    all_values_1 = resultat.flatMap((item)=>item.places_reelles)
+                    all_values_2 = resultat.flatMap((item)=>item.places_predites)
+                    n_values_1 = all_values_1.length
+                    n_values_2 = all_values_2.length
+                    max_1 = Math.max(...all_values_1)
+                    max_2 = Math.max(...all_values_2)
+                    x_max_final = Math.max(...[max_1, max_2])
+                    binner = bin<number,number>().domain([0,x_max_final]).thresholds(10);
+                    sample_bins_1 = binner(all_values_1)
+                    sample_bins_2 = binner(all_values_2)
+                    bin_labels = sample_bins_1.map((b:Bin<number, number>) => `${b.x0?.toFixed(0)} - ${b.x1?.toFixed(0)}`);
+                    data_out_1 = sample_bins_1.map((b:Bin<number, number>) => b.length/n_values_1)
+                    data_out_2 = sample_bins_2.map((b:Bin<number, number>) => b.length/n_values_2)
+                    formatted_output={
+                        labels:bin_labels,
+                        datasets:[
+                            {
+                                label:'Places Réelles',
+                                data:data_out_1
+                            },
+                            {
+                                label:'Places prédites',
+                                data:data_out_2
+                            }
+                        ]
+                    }
+                    break;
+                case 'stationnement_reel':
+                    all_values_1 = resultat.flatMap((item)=>item.places_reelles)
+                    n_values_1 = all_values_1.length
+                    max_1 = Math.max(...all_values_1)
+                    x_max_final = max_1
+                    binner = bin<number,number>().domain([0,x_max_final]).thresholds(10);
+                    sample_bins_1 = binner(all_values_1)
+                    bin_labels = sample_bins_1.map((b:Bin<number, number>) => `${b.x0?.toFixed(0)} - ${b.x1?.toFixed(0)}`);
+                    data_out_1 = sample_bins_1.map((b:Bin<number, number>) => b.length/n_values_1)
+                    formatted_output={
+                        labels:bin_labels,
+                        datasets:[
+                            {
+                                label:'Places Réelles',
+                                data:data_out_1
+                            }
+                        ]
+                    }
+                    break;
+                case 'stationnement_predit':
+                    all_values_2 = resultat.flatMap((item)=>item.places_predites)
+                    n_values_2 = all_values_2.length
+                    max_2 = Math.max(...all_values_2)
+                    x_max_final = max_2
+                    binner = bin<number,number>().domain([0,x_max_final]).thresholds(10);
+                    sample_bins_2 = binner(all_values_2)
+                    bin_labels = sample_bins_2.map((b:Bin<number, number>) => `${b.x0?.toFixed(0)} - ${b.x1?.toFixed(0)}`);
+                    data_out_2 = sample_bins_2.map((b:Bin<number, number>) => b.length/n_values_1)
+                    formatted_output={
+                        labels:bin_labels,
+                        datasets:[
+                            {
+                                label:'Places prédites',
+                                data:data_out_2
+                            }
+                        ]
+                    }
+                    break;
+                case "pred_par_reel":
+                    all_values_1=resultat.flatMap((item)=>Number(item.valeur))
+                    max_1 = Math.max(...all_values_1)
+                    x_max_final = max_1
+                    n_values_1 = all_values_1.length
+                    binner = bin<number,number>().domain([0,x_max_final]).thresholds(10);
+                    sample_bins_1 = binner(all_values_1)
+                    bin_labels = sample_bins_1.map((b:Bin<number, number>) => `${b.x0?.toFixed(2)} - ${b.x1?.toFixed(2)}`);
+                    data_out_1 = sample_bins_1.map((b:Bin<number, number>) => b.length/n_values_1)
+                    formatted_output={
+                        labels:bin_labels,
+                        datasets:[
+                            {
+                                label:'Places prédites par places place réelle',
+                                data:data_out_1
+                            }
+                        ]
+                    }
+                    break;
+                case "reel_par_pred":
+                    all_values_1=resultat.flatMap((item)=>Number(item.valeur))
+                    n_values_1 = all_values_1.length
+                    max_1 = Math.max(...all_values_1)
+                    x_max_final = max_1
+                    binner = bin<number,number>().domain([0,x_max_final]).thresholds(10);
+                    sample_bins_1 = binner(all_values_1)
+                    bin_labels = sample_bins_1.map((b:Bin<number, number>) => `${b.x0?.toFixed(2)} - ${b.x1?.toFixed(2)}`);
+                    data_out_1 = sample_bins_1.map((b:Bin<number, number>) => b.length/n_values_1)
+                    formatted_output={
+                        labels:bin_labels,
+                        datasets:[
+                            {
+                                label:'Places réelles par places place prédite',
+                                data:data_out_1
+                            }
+                        ]
+                    }
+                    break;
+                default:
+                    throw new Error('unknown type for graph')
+            }
+        }
+        return (formatted_output)
+    }
+    const genereGraphiqueComparaison: RequestHandler<any, any, RequeteGraphiqueValidation> = async (req, res): Promise<void> => {
+        console.log('obtention graphique validation')
+        let client;
+        try {
+            const { id_strate, type, x_max } = req.query
+            let type_out: string = ''
+            let valeur_extraction: string = ''
+           
+            if (type !== undefined && typeof type ==='string') {
+                type_out = String(type)
+            }
+            switch (type_out) {
+                case 'stationnement':
+                    valeur_extraction = 'places_reelles,places_predites'
+                    break;
+                case 'stationnement_reel':
+                    valeur_extraction = 'places_reelles'
+                    break;
+                case 'stationnement_predit':
+                    valeur_extraction = 'places_predites'
+                    break;
+                case "pred_par_reel":
+                    valeur_extraction = 'COALESCE(places_predites/NULLIF(places_reelles, 0),0) as valeur,places_predites,places_reelles'
+                    break;
+                case "reel_par_pred":
+                    valeur_extraction = 'COALESCE(places_reelles/NULLIF(places_predites, 0),0) as valeur,places_predites,places_reelles'
+                    break;
+                default:
+                    valeur_extraction = 'places_reelles,places_predites'
+                    type_out = 'stationnement'
+                    break;
+            }
+            client = await pool.connect();
+            let query: string
+            let result: any;
+            query = `
+                WITH donnees_entree AS(
+                    SELECT
+                        rv.id_val,
+                        rv.id_strate,
+                        rv.n_places::numeric as places_reelles,
+                        rv.g_no_lot,
+                        rv.fond_tuile,
+                        i.n_places_min::numeric as places_predites
+                    FROM 
+                        public.resultats_validation rv
+                    LEFT JOIN inventaire_stationnement i on i.g_no_lot=rv.g_no_lot
+                    WHERE i.methode_estime=2 ${id_strate !== undefined ? 'AND rv.id_strate=' + Number(id_strate) : ''}
+                )
+                SELECT 
+                    id_val,
+                    id_strate,
+                    g_no_lot,
+                    fond_tuile,
+                    ${valeur_extraction}
+                FROM
+                    donnees_entree
+            `;
 
+            result = await client.query(query)
+            let out;
+            if (x_max !== undefined) {
+                out = genereSortieGraphique(type_out, result.rows, Number(x_max))
+            } else {
+                out = genereSortieGraphique(type_out, result.rows)
+            }
+            if (out.labels.length===0){
+                throw new Error('Enjeu weird pendant conversion')
+            }
+            res.json({ success: true, data: out });
+        } catch (err: any) {
+            res.status(500).json({ success: false, error: 'Database error' });
+        } finally {
+            if (client) {
+                client.release()
+            }
+        }
+    }
     // Routes
     router.get('/strate', obtiensStrates)
     router.post('/strate', nouvelleStrate)
@@ -835,10 +1044,11 @@ export const creationRouteurValidation = (pool: Pool): Router => {
     router.delete('/strate/:id_strate', supprimeStrateEtEnfants)
     router.get('/strate/donnees_intrantes', creationDonneesEntree)
     router.get('/strate/colonnes_possibles', obtiensColonnesValides)
-    router.get('/feuilles',obtiensFeuilles)
-    router.get('/resultats',obtiensResultats)
-    router.post('/resultats',nouveauResultat)
-    router.put('/resultats/:id',modifieResultat)
-    //router.delete('resultats/:id',supprimeResultat)
+    router.get('/feuilles', obtiensFeuilles)
+    router.get('/resultats', obtiensResultats)
+    router.post('/resultats', nouveauResultat)
+    router.put('/resultats/:id', modifieResultat)
+    router.delete('resultats/:id', supprimeResultat)
+    router.get('/graphiques', genereGraphiqueComparaison)
     return router;
 };
