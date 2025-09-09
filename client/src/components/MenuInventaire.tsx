@@ -59,8 +59,11 @@ const MenuInventaire: React.FC<MenuInventaireProps> = (props: MenuInventaireProp
                 o.id_reg_stat !== matchingItem.id_reg_stat ||
                 o.cubf !== matchingItem.cubf;
         });
-
-        return filtreStationnementMin;
+        const inventaireAligne = filtreStationnementMin.sort((a, b) => {
+            // b comes before a when its n_places_min is larger
+            return b.n_places_min - a.n_places_min;
+        })
+        return inventaireAligne;
     }
 
     const gestCalculInventaire = async () => {

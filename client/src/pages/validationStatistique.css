@@ -58,6 +58,7 @@
 .panneau-graph{
     flex: 1 1 0;            /* grandit, rétrécit, base à 0 px */
     overflow: hidden;       /* empêche le débordement du canvas */
+    padding:8px;
 }
 .graphique{
     flex: 1 1 0;            /* grandit, rétrécit, base à 0 px */

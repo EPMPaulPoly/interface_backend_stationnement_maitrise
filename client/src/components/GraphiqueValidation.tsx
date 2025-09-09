@@ -21,7 +21,7 @@ const GraphiqueValidation: React.FC<{ feuilleSelect: FeuilleFinaleStrate, invent
         plugins: {},
         scales: {}
     });
-    const color=['red','blue']
+    const color = ['red', 'blue']
     useEffect(() => {
         const fetchData = async () => {
             if (props.feuilleSelect.id_strate !== -1) {
@@ -84,7 +84,7 @@ const GraphiqueValidation: React.FC<{ feuilleSelect: FeuilleFinaleStrate, invent
                                 },
                             },
                         })
-                    } else if(typeGraphique==='pred_par_reel'){
+                    } else if (typeGraphique === 'pred_par_reel') {
                         setOptions({
                             maintainAspectRatio: false,
                             plugins: {
@@ -140,7 +140,7 @@ const GraphiqueValidation: React.FC<{ feuilleSelect: FeuilleFinaleStrate, invent
                                 },
                             },
                         })
-                    } else if(typeGraphique==='reel_par_pred'){
+                    } else if (typeGraphique === 'reel_par_pred') {
                         setOptions({
                             maintainAspectRatio: false,
                             plugins: {
@@ -211,10 +211,29 @@ const GraphiqueValidation: React.FC<{ feuilleSelect: FeuilleFinaleStrate, invent
             <>
                 <ArrowBack onClick={() => defEditParam(false)} />
                 <FormControl>
-                    <InputLabel id='select-type'>
+                    <InputLabel
+                        id='select-type'
+                        sx={{
+                            color: "#cccccc",
+                            "&.Mui-disabled": { color: "#cccccc", WebkitTextFillColor: "#cccccc" },
+                        }}
+                    >
                         Variable
                     </InputLabel>
-                    <Select label='select-type' value={typeGraphique} onChange={(e) => defTypeGraphique(e.target.value)}>
+                    <Select
+                        label='select-type'
+                        value={typeGraphique} onChange={(e) => defTypeGraphique(e.target.value)}
+                        sx={{
+                            backgroundColor: 'black',
+                            minWidth: '120px',
+                            color: 'white',
+                            '& .MuiSvgIcon-root': { color: 'white' }, // arrow
+                            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#666' },
+                            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#888' },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#aaa' },
+
+                        }}
+                    >
                         <MenuItem value='stationnement'>Stat réel et prédit</MenuItem>
                         <MenuItem value='stationnement_reel'>Stat réel </MenuItem>
                         <MenuItem value='stationnement_predit'>Stat réel </MenuItem>
@@ -227,35 +246,35 @@ const GraphiqueValidation: React.FC<{ feuilleSelect: FeuilleFinaleStrate, invent
             <>
                 <Settings onClick={() => defEditParam(true)} />
                 <div className='graphique'>
-                <Bar
-                    data={{
+                    <Bar
+                        data={{
                             ...data,
                             datasets: data.datasets.map((ds, i) => {
                                 return {
                                     ...ds,
-                                    color: color[ i],
+                                    color: color[i],
                                     backgroundColor: color[i]
                                 };
                             }),
                         }}
-                    options={{
-                        ...options,
-                        plugins: {
-                            ...options.plugins,
-                            tooltip: {
-                                callbacks: {
-                                    label: function (context: any) {
-                                        // Try to get desc_er and desc_reg_stat if available
-                                        const value = context.parsed.y;
-                                        let label = '';
-                                        label = `Fréquence ${value.toFixed(2)}`
-                                        return label;
+                        options={{
+                            ...options,
+                            plugins: {
+                                ...options.plugins,
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context: any) {
+                                            // Try to get desc_er and desc_reg_stat if available
+                                            const value = context.parsed.y;
+                                            let label = '';
+                                            label = `Fréquence ${value.toFixed(2)}`
+                                            return label;
+                                        }
                                     }
                                 }
                             }
-                        }
-                    }}
-                />
+                        }}
+                    />
                 </div>
             </>
         )}

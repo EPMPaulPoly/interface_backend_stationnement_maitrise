@@ -325,18 +325,17 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
         INSERT INTO public.inventaire_stationnement (id_inv, g_no_lot, n_places_min, n_places_max, n_places_mesure, n_places_estime, id_er, id_reg_stat, commentaire, methode_estime, cubf)
         VALUES ${values}
         ON CONFLICT (id_inv) DO UPDATE
-        SET g_no_lot = EXCLUDED.g_no_lot,
-            n_places_min = EXCLUDED.n_places_min,
-            n_places_max = EXCLUDED.n_places_max,
+        SET
+            n_places_min    = EXCLUDED.n_places_min,
+            n_places_max    = EXCLUDED.n_places_max,
             n_places_mesure = EXCLUDED.n_places_mesure,
             n_places_estime = EXCLUDED.n_places_estime,
-            id_er = EXCLUDED.id_er,
-            id_reg_stat = EXCLUDED.id_reg_stat,
-            commentaire = EXCLUDED.commentaire,
-            methode_estime = EXCLUDED.methode_estime,
-            cubf = EXCLUDED.cubf
+            id_er           = EXCLUDED.id_er,
+            id_reg_stat     = EXCLUDED.id_reg_stat,
+            commentaire     = EXCLUDED.commentaire,
+            cubf            = EXCLUDED.cubf
         RETURNING *;
-      `;
+        `;
 
             const result = await client.query(insertQuery);
             await client.query('COMMIT');
@@ -372,7 +371,6 @@ export const creationRouteurInventaire = (pool: Pool): Router => {
             const insertQuery = `
         INSERT INTO public.inventaire_stationnement (g_no_lot, n_places_min, n_places_max, n_places_mesure, n_places_estime, id_er, id_reg_stat, commentaire, methode_estime, cubf)
         VALUES ${values}
-        ON CONFLICT (g_no_lot, methode_estime) DO NOTHING
         RETURNING *;
       `;
 

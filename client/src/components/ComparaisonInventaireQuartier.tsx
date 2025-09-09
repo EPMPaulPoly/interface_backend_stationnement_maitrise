@@ -9,6 +9,7 @@ import { serviceInventaire } from "../services";
 import metAJourLotsInventaire from "../utils/metAJourLotsInventaire";
 import { MAJLotsInventaireProps } from "../types/utilTypes";
 import { Geometry } from "geojson";
+import { ApiResponse } from "../types/serviceTypes";
 
 const ComparaisonInventaireQuartier: React.FC<ComparaisonInventaireQuartierProps> = (props: ComparaisonInventaireQuartierProps) => {
     const gestAnnulCalculQuartier = () => {
@@ -171,7 +172,16 @@ const ComparaisonInventaireQuartier: React.FC<ComparaisonInventaireQuartierProps
     const gestApprobationMasse = async () => {
         const { updatedItems: inventaireMAJ, newItems: nouvelItems } = splitNewVsUpdate();
         console.log('Separation entre les nouveaux items et les items à mettre à jour complétée')
-        const [reussiMAJ, reussiNouveau] = await Promise.all([serviceInventaire.modifiePlusieursInventaires(inventaireMAJ), serviceInventaire.plusieursNouveauxInventaires(nouvelItems)])
+        let reussiMAJ:ApiResponse<inventaire_stationnement[]>={success:false,data:[]};
+        let reussiNouveau:ApiResponse<inventaire_stationnement[]>={success:false,data:[]};
+        if (inventaireMAJ.length>0 && nouvelItems.length>0){
+            [reussiMAJ, reussiNouveau] = await Promise.all([serviceInventaire.modifiePlusieursInventaires(inventaireMAJ), serviceInventaire.plusieursNouveauxInventaires(nouvelItems)])
+        } else if(inventaireMAJ.length>0){
+            reussiMAJ = await serviceInventaire.modifiePlusieursInventaires(inventaireMAJ)
+        } else if(nouvelItems.length>0){
+            reussiNouveau = await serviceInventaire.plusieursNouveauxInventaires(nouvelItems)
+        }
+
         console.log('Mis les choses dans la base de données')
         const updatedItems = reussiMAJ?.data ?? [];
         const newItems = reussiNouveau?.data ?? [];
