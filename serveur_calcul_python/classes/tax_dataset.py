@@ -124,7 +124,19 @@ class TaxDataset():
         new_lot_table = self.lot_table.loc[self.lot_table[config_db.db_column_lot_id].isin(lot_ids_to_pull)].copy()
         new_tax_data_set = TaxDataset(new_tax_table,new_association_table,new_lot_table)
         return new_tax_data_set
-        
+    def select_by_land_use_range(self,min:int,max:int)->Self:
+        '''# select_by_land_use
+            Permet de tirer un sous ensemble de données taxe foncière basé sur les identifiants du CUBF. Retourne un ensemble de données de taxe.
+            Si le lot a plusieurs entrées foncières, il retourne toutes les entrées foncières incluant celle qui ne sont pas dans le range
+        '''
+        relevant_tax_ids:list = self.tax_table.loc[self.tax_table[config_db.db_column_tax_land_use]<=max & self.tax_table[config_db.db_column_tax_land_use]>=min,config_db.db_column_tax_id].unique().tolist()
+        relevant_lots = self.lot_association.loc[self.lot_association[config_db.db_column_tax_id].isin(relevant_tax_ids),config_db.db_column_lot_id].unique().tolist()
+        tax_ids_to_pull = self.lot_association.loc[self.lot_association[config_db.db_column_lot_id].isin(relevant_lots),config_db.db_column_tax_id].unique().tolist()
+        new_association_table = self.lot_association.loc[self.lot_association[config_db.db_column_lot_id].isin(relevant_lots)].copy()
+        new_tax_table = self.tax_table.loc[self.tax_table[config_db.db_column_tax_id].isin(tax_ids_to_pull)].copy()
+        new_lot_table = self.lot_table.loc[self.lot_table[config_db.db_column_lot_id].isin(relevant_lots)].copy()
+        new_tax_data_set = TaxDataset(new_tax_table,new_association_table,new_lot_table)
+        return new_tax_data_set
     def get_land_uses_in_set(self)->list[int]:
         land_uses_to_return = self.tax_table[config_db.db_column_tax_land_use].unique().tolist()
         return land_uses_to_return

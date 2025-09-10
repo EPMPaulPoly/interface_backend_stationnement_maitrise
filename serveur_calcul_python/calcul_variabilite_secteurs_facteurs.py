@@ -13,7 +13,7 @@ import time
 import psycopg2
 if __name__== "__main__":
     try:
-        if os.getenv("DEBUGPY_CALC_ENABLE", "true").lower() == "true":
+        if os.getenv("DEBUGPY_CALC_ENABLE", "false").lower() == "true":
             time.sleep(10)
             debugpy.listen(("0.0.0.0", 5678))
             print("Waiting for debugger attach...")
@@ -29,4 +29,4 @@ if __name__== "__main__":
         else:
             print('[false]')
     except Exception as e:
-        print('caught exception in calcul_variabilite_secteurs_facteurs')
+       print('caught exception in calcul_variabilite_secteurs_facteurs [false]')
