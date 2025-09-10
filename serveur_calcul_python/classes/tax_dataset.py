@@ -235,8 +235,8 @@ def get_all_lots_with_valid_data(engine:sqlalchemy.Engine=None) -> Tuple[TaxData
                             rf.{config_db.db_column_tax_land_use}::int AS cubf,
                             rf.{config_db.db_column_tax_gross_floor_area} AS gfa,
                             rf.{config_db.db_column_tax_number_dwellings} AS n_dwellings,
-                            (rf.{config_db.db_column_tax_land_use}::int = 1000 AND rf.{config_db.db_column_tax_number_dwellings} IS NOT NULL) 
-                                OR (rf.{config_db.db_column_tax_land_use}::int != 1000 AND rf.{config_db.db_column_tax_gross_floor_area}  IS NOT NULL) AS condition
+                            (rf.{config_db.db_column_tax_land_use}::int < 2000 AND rf.{config_db.db_column_tax_number_dwellings} IS NOT NULL) 
+                                OR (rf.{config_db.db_column_tax_land_use}::int >= 2000 AND rf.{config_db.db_column_tax_gross_floor_area}  IS NOT NULL) AS condition
                         FROM association_cadastre_role acr
                         LEFT JOIN role_foncier rf ON rf.{config_db.db_column_tax_id} = acr.{config_db.db_column_tax_id}
                         LEFT JOIN cadastre cad ON cad.{config_db.db_column_lot_id} = acr.{config_db.db_column_lot_id}
