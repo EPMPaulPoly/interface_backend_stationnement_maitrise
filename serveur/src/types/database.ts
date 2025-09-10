@@ -176,7 +176,7 @@ export interface RequeteAnalyseVariabilite{
 export interface RequeteHistoVariabilite{
     id_er:string,
     cubf_n1:string,
-    voir_inv:boolean,
+    ratio_inv_act:boolean,
     echelle:string
 }
 export interface RequeteAnalyseFacteurEchelle{

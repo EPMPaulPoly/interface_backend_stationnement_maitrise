@@ -51,17 +51,21 @@ export const serviceAnaVariabilite = {
             throw error; // Re-throw if necessary
         }
     },
-    obtiensDistributionInventaire: async(ids:number[],cubf_n1?:number):Promise<ReponseDataGraphique> =>{
+    obtiensDistributionInventaire: async(ids:number[],cubf_n1?:number,ratioInvAct?:boolean):Promise<ReponseDataGraphique> =>{
         try {
             let query_add: string[] = [];
             
             if (typeof cubf_n1 !== 'undefined') {
                 query_add.push(`cubf_n1=${cubf_n1}`)
             }
+            if (ratioInvAct!==undefined){
+                query_add.push(`ratio_inv_act=${ratioInvAct}`)
+            }
             let base_query: string = `/ana-var/histo-varia?id_er=${ids.join(',')}`
             if (query_add.length > 0) {
                 base_query += '&' + query_add.join('&')
             }
+            
             const response: AxiosResponse<ReponseDataGraphique> = await api.get(base_query);
             return ({
                 success: response.data.success,

@@ -236,9 +236,9 @@ const GraphiqueValidation: React.FC<{ feuilleSelect: FeuilleFinaleStrate, invent
                     >
                         <MenuItem value='stationnement'>Stat réel et prédit</MenuItem>
                         <MenuItem value='stationnement_reel'>Stat réel </MenuItem>
-                        <MenuItem value='stationnement_predit'>Stat réel </MenuItem>
+                        <MenuItem value='stationnement_predit'>Stat Prédit </MenuItem>
                         <MenuItem value='pred_par_reel'>Ratio prédit sur réel</MenuItem>
-                        <MenuItem value='reel_par_predit'>Ratio réel sur prédit</MenuItem>
+                        <MenuItem value='reel_par_pred'>Ratio réel sur prédit</MenuItem>
                     </Select>
                 </FormControl>
             </>

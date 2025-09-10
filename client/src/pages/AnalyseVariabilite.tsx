@@ -4,6 +4,7 @@ import './analysevariabilite.css'
 import { comptes_utilisations_sol, methodeAnalyseVariabillite } from '../types/DataTypes';
 import ControlAnaVar from '../components/ControlAnaVar';
 import EditionParametresAnaVarFonc from '../components/EditionParametresAnaVarFonc';
+import EditionParametreAnaVarDistro from '../components/EditionParametreAnaVarDistro';
 import VisualisationResAnaVarFonc from '../components/VisualisationResAnaVarFonc';
 import { ClimbingBoxLoader } from 'react-spinners';
 
@@ -65,7 +66,7 @@ const AnalyseVariabilite:React.FC = () =>{
                     methodeVisualisation={visualisationAnalyse}
                     defMethodeVisualisation={defVisualisationAnalyse}
                 />
-                {(methodeAnalyse.idMethodeAnalyse === 1 && visualisationAnalyse.idMethodeAnalyse === 0) ? (
+                {(methodeAnalyse.idMethodeAnalyse === 1 && visualisationAnalyse.idMethodeAnalyse === 0) ? (//barre
                     <>
                         {editionParametres ? (
                             <EditionParametresAnaVarFonc
@@ -90,7 +91,27 @@ const AnalyseVariabilite:React.FC = () =>{
                             />
                         )}
                     </>
-                ) : (methodeAnalyse.idMethodeAnalyse === 1 && visualisationAnalyse.idMethodeAnalyse === 1) ? (
+                ) : (methodeAnalyse.idMethodeAnalyse === 1 && visualisationAnalyse.idMethodeAnalyse === 1) ? (//histo
+                    <>
+                    {editionParametres ? (
+                            <EditionParametreAnaVarDistro
+                                voirInv={voirInv}
+                                defVoirInv={defVoirInv}
+                                defEditionParams={defEditionParametres}
+                            />
+                        ):(
+                            <VisualisationResAnaVarFonc
+                                editionParams={editionParametres}
+                                defEditionParams={defEditionParametres}
+                                ensRegAAnalyser={ensRegAAnalyser}
+                                ensRegReference={ensRegReference}
+                                colorPalette={colorPalette}
+                                voirInv={voirInv}
+                                methodeVisualisation={visualisationAnalyse}
+                            />
+                        )}
+                        </>
+                ) : (methodeAnalyse.idMethodeAnalyse === 1 && visualisationAnalyse.idMethodeAnalyse === 2)?(//boxplot echelle
                     <VisualisationResAnaVarFonc
                         editionParams={editionParametres}
                         defEditionParams={defEditionParametres}
@@ -100,17 +121,7 @@ const AnalyseVariabilite:React.FC = () =>{
                         voirInv={voirInv}
                         methodeVisualisation={visualisationAnalyse}
                     />
-                ) : (methodeAnalyse.idMethodeAnalyse === 1 && visualisationAnalyse.idMethodeAnalyse === 2)?(
-                    <VisualisationResAnaVarFonc
-                        editionParams={editionParametres}
-                        defEditionParams={defEditionParametres}
-                        ensRegAAnalyser={ensRegAAnalyser}
-                        ensRegReference={ensRegReference}
-                        colorPalette={colorPalette}
-                        voirInv={voirInv}
-                        methodeVisualisation={visualisationAnalyse}
-                    />
-                ):(methodeAnalyse.idMethodeAnalyse === 1 && visualisationAnalyse.idMethodeAnalyse === 3)?(
+                ):(methodeAnalyse.idMethodeAnalyse === 1 && visualisationAnalyse.idMethodeAnalyse === 3)?(//boxplot standard
                     <VisualisationResAnaVarFonc
                         editionParams={editionParametres}
                         defEditionParams={defEditionParametres}

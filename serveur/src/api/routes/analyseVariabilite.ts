@@ -340,48 +340,39 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
         let client;
         try {
             client = await pool.connect();
-            const { id_er, cubf_n1, voir_inv,echelle } = req.query;
+            const { id_er, cubf_n1, ratio_inv_act,echelle } = req.query;
             const id_out: number[] = (typeof id_er === 'string' ? id_er.split(',').map(Number) : []);
             const cubf_out: number = (typeof cubf_n1 === 'string' ? Number(cubf_n1) : -1);
-            const voir_inv_fin:boolean =(typeof voir_inv ==='string' ?voir_inv.toLowerCase() === 'true' :false);
             const echelle_fin:number=(typeof echelle ==='string'?Number(echelle):1);
+            const ratio_inv_act_fin:boolean=(typeof ratio_inv_act ==='string'?ratio_inv_act.toLowerCase() === 'true':false);
+            let value_out:string='av.n_places_min'
             let query: string;
             let result: any;
-            let inv_result:any;
             let conditions: string[] = [];
+            let joins:string[]=[];
             if (id_out.length > 0) {
                 conditions.push(`av.id_er IN (${id_out.join(',')})`)
+            }
+            if (ratio_inv_act_fin){
+                if (cubf_out!==-1){
+                    value_out='COALESCE(av.n_places_min/NULLIF(ia.n_places_min,0),0)'
+                }else{
+                    value_out='COALESCE(SUM(av.n_places_min)/NULLIF(SUM(ia.n_places_min),0),0)'
+                }
+                joins.push('LEFT JOIN inv_reg_aggreg_cubf_n1 ia on ia.land_use = av.land_use')
+            }else{
+                if (cubf_out!==-1){
+                    value_out='av.n_places_min'
+                }else{
+                    value_out='SUM(av.n_places_min)'
+                }
             }
             if (cubf_out !== -1) {
                 conditions.push(`av.land_use =  ${cubf_out}`)
             }
             conditions.push(`facteur_echelle = ${echelle_fin}`)
             let pre_query:string = '';
-            let inv_query:string = '';
-            if (voir_inv_fin){
-                inv_query = `
-                    WITH land_use_desc AS(
-                        SELECT
-                            cubf::int as land_use,
-                            description as land_use_desc
-                        FROM
-                            cubf
-                    )
-                    SELECT
-                        inv.land_use,
-                        inv.n_places_min as valeur,
-                        -5::int as id_er,
-                        'Inventaire Actuel' as description_er,
-                        inv.n_lots::int,
-                        lud.land_use_desc
-                    FROM 
-                        inv_reg_aggreg_cubf_n1 inv
-                    LEFT JOIN land_use_desc lud ON lud.land_use = inv.land_use
-                `
-                if (cubf_out !== -1){
-                    inv_query+= ` WHERE inv.land_use = ${cubf_out} `
-                }
-            }
+            
             pre_query = `
                     WITH land_use_desc AS(
                         SELECT
@@ -401,7 +392,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                 query = `
                 SELECT
                     av.land_use,
-                    av.n_places_min as valeur,
+                    ${value_out} as valeur,
                     av.id_er::int,
                     rsd.description_er,
                     av.n_lots,
@@ -412,11 +403,11 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                     reg_set_defs rsd ON rsd.id_er=av.id_er
                 LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
                 `
-                query = pre_query + query + 'WHERE ' + `av.id_er IN (${id_out.join(',')}) AND av.land_use = ${cubf_out} AND av.facteur_echelle = ${echelle_fin}`;
+                query = pre_query + query + joins.join('\n')+'\n WHERE ' + `av.id_er IN (${id_out.join(',')}) AND av.land_use = ${cubf_out} AND av.facteur_echelle = ${echelle_fin}`;
             } else if (id_out.length > 0){
                 query = `
                 SELECT
-                    SUM(av.n_places_min) as valeur,
+                    ${value_out} as valeur,
                     av.id_er::int,
                     rsd.description_er,
                     'Tous' as land_use_desc
@@ -427,11 +418,11 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                 LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
                 
                 `
-                query = pre_query + query + 'WHERE ' + `av.id_er IN (${id_out.join(',')}) AND av.facteur_echelle = ${echelle_fin} GROUP BY av.id_er,rsd.description_er `;
+                query = pre_query + query + joins.join('\n') + ' WHERE ' + `av.id_er IN (${id_out.join(',')}) AND av.facteur_echelle = ${echelle_fin} GROUP BY av.id_er,rsd.description_er `;
             }else {
                 query = pre_query+`
                 SELECT
-                    SUM(av.n_places_min) as valeur,
+                    ${value_out} as valeur,
                     av.id_er::int,
                     rsd.description_er,
                     'Tous' as land_use_desc
@@ -439,16 +430,14 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                     variabilite av
                 LEFT JOIN
                     reg_set_defs rsd ON rsd.id_er=av.id_er
-                LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
+                LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use  
+                ` + joins.join('\n') + ` 
                 WHERE av.facteur_echelle = ${echelle_fin}
                 GROUP BY av.id_er,rsd.description_er
-                `
+                ` 
             }
-            if (voir_inv_fin){
-                [result,inv_result] = await Promise.all([ client.query(query), client.query(inv_query)])
-            }else {
-                result = await client.query(query)
-            }
+            result = await client.query(query)
+            
             const donnees: RetourBDAnalyseVariabilite[] = result.rows;
             
             const allValues = donnees.flatMap((r)=>r.valeur)
@@ -457,14 +446,17 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
             const nValues = allValues.length
             const binner = bin<number,number>().domain([minVal,maxVal]).thresholds(10);
             const sampleBins = binner(allValues);
-            const binLabels = sampleBins.map((b:Bin<number, number>) => `${b.x0?.toFixed(0)} - ${b.x1?.toFixed(0)}`);
+            let binLabels:string[]=[]
+            if (ratio_inv_act_fin){
+                binLabels = sampleBins.map((b:Bin<number, number>) => `${b.x0?.toFixed(2)} - ${b.x1?.toFixed(2)}`);
+            }else{
+                binLabels = sampleBins.map((b:Bin<number, number>) => `${b.x0?.toFixed(0)} - ${b.x1?.toFixed(0)}`);
+            }
             const dataOut = sampleBins.map((b:Bin<number, number>) => b.length/nValues)
             let formatted_output: dataHistogrammeVariabilite;
             if (id_out.length > 0) {
                 const land_uses = Array.from(new Set(donnees.map((row) => row.land_use)));
-                if (voir_inv_fin){
-                    id_out.unshift(-5)
-                }
+                
                 formatted_output = {
                     labels: binLabels,
                     datasets: land_uses.map((lu) => {
@@ -478,9 +470,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
             } else {
                 const land_uses = Array.from(new Set(donnees.map((row) => row.land_use)));
                 const rulesets = Array.from(new Set(donnees.map((row)=>row.id_er)));
-                if (voir_inv_fin){
-                    rulesets.unshift(-5)
-                }
+                
                 formatted_output = {
                     labels: rulesets.map((id) => { return donnees.find((row) => row.id_er === id)?.description_er ?? 'N/A' }),
                     datasets: land_uses.map((lu) => {
