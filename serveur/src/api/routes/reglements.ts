@@ -6,253 +6,253 @@ import { spawn } from 'child_process';
 
 
 export const creationRouteurReglements = (pool: Pool): Router => {
-  const router = Router();
-  // Get all lines
-  // Get all lines
-  const obtiensTousEntetesReglements: RequestHandler = async (req, res): Promise<void> => {
-    console.log('Serveur - Obtention toutes entetes')
+    const router = Router();
+    // Get all lines
+    // Get all lines
+    const obtiensTousEntetesReglements: RequestHandler = async (req, res): Promise<void> => {
+        console.log('Serveur - Obtention toutes entetes')
 
-    const {
-      annee_debut_apres,
-      annee_debut_avant,
-      annee_fin_apres,
-      annee_fin_avant,
-      description,
-      ville,
-      texte,
-      article,
-      paragraphe
-    } = req.query;
+        const {
+            annee_debut_apres,
+            annee_debut_avant,
+            annee_fin_apres,
+            annee_fin_avant,
+            description,
+            ville,
+            texte,
+            article,
+            paragraphe
+        } = req.query;
 
-    const conditions: string[] = [];
-    const values: any[] = []; // store parameters
-    let paramIndex = 1;
+        const conditions: string[] = [];
+        const values: any[] = []; // store parameters
+        let paramIndex = 1;
 
-    let client;
+        let client;
 
-    try {
-      // Helper function to add condition and param
-      const addCondition = (sql: string, value: any) => {
-        conditions.push(sql.replace('?', `$${paramIndex}`));
-        values.push(value);
-        paramIndex++;
-      };
+        try {
+            // Helper function to add condition and param
+            const addCondition = (sql: string, value: any) => {
+                conditions.push(sql.replace('?', `$${paramIndex}`));
+                values.push(value);
+                paramIndex++;
+            };
 
-      if (annee_debut_apres !== undefined) {
-        if (annee_debut_apres === 'null') {
-          conditions.push('annee_debut_reg IS NULL');
-        } else {
-          addCondition('annee_debut_reg >= ?', Number(annee_debut_apres));
-        }
-      }
+            if (annee_debut_apres !== undefined) {
+                if (annee_debut_apres === 'null') {
+                    conditions.push('annee_debut_reg IS NULL');
+                } else {
+                    addCondition('annee_debut_reg >= ?', Number(annee_debut_apres));
+                }
+            }
 
-      if (annee_debut_avant !== undefined) {
-        if (annee_debut_avant === 'null') {
-          conditions.push('annee_debut_reg IS NULL');
-        } else {
-          addCondition('annee_debut_reg <= ?', Number(annee_debut_avant));
-        }
-      }
+            if (annee_debut_avant !== undefined) {
+                if (annee_debut_avant === 'null') {
+                    conditions.push('annee_debut_reg IS NULL');
+                } else {
+                    addCondition('annee_debut_reg <= ?', Number(annee_debut_avant));
+                }
+            }
 
-      if (annee_fin_apres !== undefined) {
-        if (annee_fin_apres === 'null') {
-          conditions.push('annee_fin_reg IS NULL');
-        } else {
-          addCondition('annee_fin_reg >= ?', Number(annee_fin_apres));
-        }
-      }
+            if (annee_fin_apres !== undefined) {
+                if (annee_fin_apres === 'null') {
+                    conditions.push('annee_fin_reg IS NULL');
+                } else {
+                    addCondition('annee_fin_reg >= ?', Number(annee_fin_apres));
+                }
+            }
 
-      if (annee_fin_avant !== undefined) {
-        if (annee_fin_avant === 'null') {
-          conditions.push('annee_fin_reg IS NULL');
-        } else {
-          addCondition('annee_fin_reg <= ?', Number(annee_fin_avant));
-        }
-      }
+            if (annee_fin_avant !== undefined) {
+                if (annee_fin_avant === 'null') {
+                    conditions.push('annee_fin_reg IS NULL');
+                } else {
+                    addCondition('annee_fin_reg <= ?', Number(annee_fin_avant));
+                }
+            }
 
-      if (description !== undefined) {
-        addCondition(`to_tsvector('french', description) @@ plainto_tsquery('french', ?)`, decodeURIComponent(description as string));
-      }
+            if (description !== undefined) {
+                addCondition(`to_tsvector('french', description) @@ plainto_tsquery('french', ?)`, decodeURIComponent(description as string));
+            }
 
-      if (ville !== undefined) {
-        addCondition(`to_tsvector('french', ville) @@ plainto_tsquery('french', ?)`, decodeURIComponent(ville as string));
-      }
+            if (ville !== undefined) {
+                addCondition(`to_tsvector('french', ville) @@ plainto_tsquery('french', ?)`, decodeURIComponent(ville as string));
+            }
 
-      if (texte !== undefined) {
-        addCondition(`to_tsvector('french', texte_loi) @@ plainto_tsquery('french', ?)`, decodeURIComponent(texte as string));
-      }
+            if (texte !== undefined) {
+                addCondition(`to_tsvector('french', texte_loi) @@ plainto_tsquery('french', ?)`, decodeURIComponent(texte as string));
+            }
 
-      if (paragraphe !== undefined) {
-        addCondition(`to_tsvector('french', paragraphe_loi) @@ plainto_tsquery('french', ?)`, decodeURIComponent(paragraphe as string));
-      }
+            if (paragraphe !== undefined) {
+                addCondition(`to_tsvector('french', paragraphe_loi) @@ plainto_tsquery('french', ?)`, decodeURIComponent(paragraphe as string));
+            }
 
-      if (article !== undefined) {
-        addCondition(`to_tsvector('french', article_loi) @@ plainto_tsquery('french', ?)`, decodeURIComponent(article as string));
-      }
+            if (article !== undefined) {
+                addCondition(`to_tsvector('french', article_loi) @@ plainto_tsquery('french', ?)`, decodeURIComponent(article as string));
+            }
 
-      // Final SQL build
-      let query = `
+            // Final SQL build
+            let query = `
       SELECT *
       FROM public.entete_reg_stationnement
     `;
 
-      if (conditions.length > 0) {
-        query += 'WHERE ' + conditions.join(' AND ') + '\n';
-      }
+            if (conditions.length > 0) {
+                query += 'WHERE ' + conditions.join(' AND ') + '\n';
+            }
 
-      query += 'ORDER BY id_reg_stat ASC';
+            query += 'ORDER BY id_reg_stat ASC';
 
-      client = await pool.connect();
-      const result = await client.query(query, values);
-      res.json({ success: true, data: result.rows });
-    } catch (err) {
-      res.status(500).json({ success: false, error: 'Database error' });
-    } finally {
-      if (client) {
-        client.release(); // Release the connection back to the pool
-      }
-    }
-  };
+            client = await pool.connect();
+            const result = await client.query(query, values);
+            res.json({ success: true, data: result.rows });
+        } catch (err) {
+            res.status(500).json({ success: false, error: 'Database error' });
+        } finally {
+            if (client) {
+                client.release(); // Release the connection back to the pool
+            }
+        }
+    };
 
-  const obtiensReglementCompletParId: RequestHandler = async (req, res): Promise<void> => {
-    console.log('Serveur - Obtention reg complet par id')
-    let client;
-    try {
-      client = await pool.connect();
-      const { idToSplit } = req.params;
-      // Parse the comma-separated IDs into an array of numbers
-      const idArray = idToSplit.split(',').map(Number);
+    const obtiensReglementCompletParId: RequestHandler = async (req, res): Promise<void> => {
+        console.log('Serveur - Obtention reg complet par id')
+        let client;
+        try {
+            client = await pool.connect();
+            const { idToSplit } = req.params;
+            // Parse the comma-separated IDs into an array of numbers
+            const idArray = idToSplit.split(',').map(Number);
 
-      // Dynamically create placeholders for the query (e.g., $1, $2, $3, ...)
-      const placeholders = idArray.map((_, index: number) => `$${index + 1}`).join(',');
+            // Dynamically create placeholders for the query (e.g., $1, $2, $3, ...)
+            const placeholders = idArray.map((_, index: number) => `$${index + 1}`).join(',');
 
-      // Query to fetch headers
-      const query1 = `
+            // Query to fetch headers
+            const query1 = `
         SELECT *
         FROM public.entete_reg_stationnement
         WHERE id_reg_stat IN (${placeholders})
         ORDER BY id_reg_stat ASC
       `;
-      const result_header = await client.query(query1, idArray);
+            const result_header = await client.query(query1, idArray);
 
-      // Query to fetch rules
-      const query2 = `
+            // Query to fetch rules
+            const query2 = `
         SELECT * 
         FROM public.reg_stationnement_empile
         WHERE id_reg_stat IN (${placeholders})
         ORDER BY id_reg_stat_emp ASC
       `;
-      const result_rules = await client.query(query2, idArray);
+            const result_rules = await client.query(query2, idArray);
 
-      // Group rules by `id_reg_stat` for efficient access
-      const rulesById = new Map<number, DbDefReglement[]>();
-      result_rules.rows.forEach((rule: DbDefReglement) => {
-        if (!rulesById.has(rule.id_reg_stat)) {
-          rulesById.set(rule.id_reg_stat, []);
-        }
-        rulesById.get(rule.id_reg_stat)?.push(rule);
-      });
+            // Group rules by `id_reg_stat` for efficient access
+            const rulesById = new Map<number, DbDefReglement[]>();
+            result_rules.rows.forEach((rule: DbDefReglement) => {
+                if (!rulesById.has(rule.id_reg_stat)) {
+                    rulesById.set(rule.id_reg_stat, []);
+                }
+                rulesById.get(rule.id_reg_stat)?.push(rule);
+            });
 
-      // Combine headers with their corresponding rules
-      const output_2: DbReglementComplet[] = result_header.rows.map((header: DbEnteteReglement) => ({
-        entete: header,
-        definition: rulesById.get(header.id_reg_stat) || [], // Default to an empty array if no rules match
-      }));
+            // Combine headers with their corresponding rules
+            const output_2: DbReglementComplet[] = result_header.rows.map((header: DbEnteteReglement) => ({
+                entete: header,
+                definition: rulesById.get(header.id_reg_stat) || [], // Default to an empty array if no rules match
+            }));
 
-      res.json({ success: true, data: output_2 });
-    } catch (err) {
-      res.status(500).json({ success: false, error: 'Database error' });
-    } finally {
-      if (client) {
-        client.release(); // Release the connection back to the pool
-      }
-    }
-  };
-
-  const obtiensUnitesParLot: RequestHandler = async (req, res): Promise<void> => {
-
-    const { id } = req.params;
-    const decipheredId = id.replace(/_/g, " ");
-    console.log(`obtention des unités pour les règlements s'appliquant au lot : ${decipheredId}`)
-    const scriptPath = path.resolve(__dirname, "../../../../serveur_calcul_python/obtention_reglements_lot.py");
-
-    // Chemin direct vers l'interpréteur Python dans l'environnement Conda
-    const pythonExecutable = '/opt/conda/envs/serveur_calcul_python/bin/python3';
-
-    // Exécuter le script Python avec l'interpréteur de l'environnement
-    const pythonProcess = spawn(pythonExecutable, [scriptPath, decipheredId]);
-    let outputData = '';
-    let errorData = '';
-
-    // Capturer l'output standard
-    pythonProcess.stdout.on('data', (data) => {
-      outputData += data.toString();
-    });
-
-    // Capturer les erreurs standard
-    pythonProcess.stderr.on('data', (data) => {
-      errorData += data.toString();
-    });
-
-    // Capturer la fin du processus
-    pythonProcess.on('close', (code) => {
-      if (code === 0) {
-        //console.log(`Output: ${outputData}`)
-        console.log(`Processus enfant terminé avec succès.`);
-        try {
-          // 🔹 Extract JSON by finding the first `{` (start of JSON)
-          const jsonStartIndex = outputData.indexOf('[');
-          if (jsonStartIndex !== -1) {
-            const jsonString = outputData.slice(jsonStartIndex).trim();
-            const jsonData = JSON.parse(jsonString);
-
-            //console.log('Parsed JSON:', jsonData);
-            return res.status(200).json({ success: true, data: jsonData });  //  Send JSON response
-          } else {
-            console.error('No JSON found in output:', outputData);
-            return res.status(500).send('Erreur: No valid JSON found in output.');
-          }
+            res.json({ success: true, data: output_2 });
         } catch (err) {
-          console.error('Failed to parse JSON:', err);
-          return res.status(500).send('Erreur: JSON parsing failed.');
+            res.status(500).json({ success: false, error: 'Database error' });
+        } finally {
+            if (client) {
+                client.release(); // Release the connection back to the pool
+            }
         }
-      } else {
-        console.error(`Processus enfant échoué avec le code : ${code}`);
-        return res.status(500).send(`Erreur: ${errorData}`);
-      }
-    });
-  };
+    };
 
-  const nouvelEnteteReglement: RequestHandler = async (req, res, next): Promise<void> => {
-    let client;
-    try {
-      const { description, annee_debut_reg, annee_fin_reg, texte_loi, article_loi, paragraphe_loi, ville } = req.body;
-      client = await pool.connect();
-      const query = `INSERT INTO public.entete_reg_stationnement(description,annee_debut_reg,annee_fin_reg,texte_loi,article_loi,paragraphe_loi,ville)
+    const obtiensUnitesParLot: RequestHandler = async (req, res): Promise<void> => {
+
+        const { id } = req.params;
+        const decipheredId = id.replace(/_/g, " ");
+        console.log(`obtention des unités pour les règlements s'appliquant au lot : ${decipheredId}`)
+        const scriptPath = path.resolve(__dirname, "../../../../serveur_calcul_python/obtention_reglements_lot.py");
+
+        // Chemin direct vers l'interpréteur Python dans l'environnement Conda
+        const pythonExecutable = '/opt/conda/envs/serveur_calcul_python/bin/python3';
+
+        // Exécuter le script Python avec l'interpréteur de l'environnement
+        const pythonProcess = spawn(pythonExecutable, [scriptPath, decipheredId]);
+        let outputData = '';
+        let errorData = '';
+
+        // Capturer l'output standard
+        pythonProcess.stdout.on('data', (data) => {
+            outputData += data.toString();
+        });
+
+        // Capturer les erreurs standard
+        pythonProcess.stderr.on('data', (data) => {
+            errorData += data.toString();
+        });
+
+        // Capturer la fin du processus
+        pythonProcess.on('close', (code) => {
+            if (code === 0) {
+                //console.log(`Output: ${outputData}`)
+                console.log(`Processus enfant terminé avec succès.`);
+                try {
+                    // 🔹 Extract JSON by finding the first `{` (start of JSON)
+                    const jsonStartIndex = outputData.indexOf('[');
+                    if (jsonStartIndex !== -1) {
+                        const jsonString = outputData.slice(jsonStartIndex).trim();
+                        const jsonData = JSON.parse(jsonString);
+
+                        //console.log('Parsed JSON:', jsonData);
+                        return res.status(200).json({ success: true, data: jsonData });  //  Send JSON response
+                    } else {
+                        console.error('No JSON found in output:', outputData);
+                        return res.status(500).send('Erreur: No valid JSON found in output.');
+                    }
+                } catch (err) {
+                    console.error('Failed to parse JSON:', err);
+                    return res.status(500).send('Erreur: JSON parsing failed.');
+                }
+            } else {
+                console.error(`Processus enfant échoué avec le code : ${code}`);
+                return res.status(500).send(`Erreur: ${errorData}`);
+            }
+        });
+    };
+
+    const nouvelEnteteReglement: RequestHandler = async (req, res, next): Promise<void> => {
+        let client;
+        try {
+            const { description, annee_debut_reg, annee_fin_reg, texte_loi, article_loi, paragraphe_loi, ville } = req.body;
+            client = await pool.connect();
+            const query = `INSERT INTO public.entete_reg_stationnement(description,annee_debut_reg,annee_fin_reg,texte_loi,article_loi,paragraphe_loi,ville)
       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *;`
-      const response = await client.query(query, [description, annee_debut_reg, annee_fin_reg, texte_loi, article_loi, paragraphe_loi, ville])
-      if (response.rows.length === 0) {
-        res.status(404).json({ success: false, error: 'Entry not found' });
-        return;
-      }
-      res.json({ success: true, data: response.rows });
-    } catch (err) {
-      next(err);
-    } finally {
-      if (client) {
-        client.release();
-      }
+            const response = await client.query(query, [description, annee_debut_reg, annee_fin_reg, texte_loi, article_loi, paragraphe_loi, ville])
+            if (response.rows.length === 0) {
+                res.status(404).json({ success: false, error: 'Entry not found' });
+                return;
+            }
+            res.json({ success: true, data: response.rows });
+        } catch (err) {
+            next(err);
+        } finally {
+            if (client) {
+                client.release();
+            }
+        }
     }
-  }
 
-  const modifieEnteteReglement:RequestHandler = async (req, res, next): Promise<void> => {
-    let client;
-    try {
-      const {id} = req.params;
-      const { description, annee_debut_reg, annee_fin_reg, texte_loi, article_loi, paragraphe_loi, ville } = req.body;
-      client = await pool.connect();
-      const query = 
-      `UPDATE public.entete_reg_stationnement
+    const modifieEnteteReglement: RequestHandler = async (req, res, next): Promise<void> => {
+        let client;
+        try {
+            const { id } = req.params;
+            const { description, annee_debut_reg, annee_fin_reg, texte_loi, article_loi, paragraphe_loi, ville } = req.body;
+            client = await pool.connect();
+            const query =
+                `UPDATE public.entete_reg_stationnement
       SET
         description = $1,
         annee_debut_reg = $2,
@@ -263,135 +263,135 @@ export const creationRouteurReglements = (pool: Pool): Router => {
         ville = $7
       WHERE id_reg_stat = $8 
       RETURNING *;`
-      const response = await client.query(query, [description, annee_debut_reg, annee_fin_reg, texte_loi, article_loi, paragraphe_loi, ville,id])
-      if (response.rows.length === 0) {
-        res.status(404).json({ success: false, error: 'Entry not found' });
-        return;
-      }
-      res.json({ success: true, data: response.rows });
-    } catch (err) {
-      next(err);
-    } finally {
-      if (client) {
-        client.release();
-      }
+            const response = await client.query(query, [description, annee_debut_reg, annee_fin_reg, texte_loi, article_loi, paragraphe_loi, ville, id])
+            if (response.rows.length === 0) {
+                res.status(404).json({ success: false, error: 'Entry not found' });
+                return;
+            }
+            res.json({ success: true, data: response.rows });
+        } catch (err) {
+            next(err);
+        } finally {
+            if (client) {
+                client.release();
+            }
+        }
     }
-  }
 
-  const supprimeReglement: RequestHandler = async (req, res, next): Promise<void> => {
-    let client;
-    try {
-      const { id } = req.params;
-      client = await pool.connect();
-      const queryCount = `SELECT
+    const supprimeReglement: RequestHandler = async (req, res, next): Promise<void> => {
+        let client;
+        try {
+            const { id } = req.params;
+            client = await pool.connect();
+            const queryCount = `SELECT
                             COUNT(*)
                           FROM
                             public.reg_stationnement_empile
                           WHERE
                             id_reg_stat = $1;`
-      const responseCount = await client.query(queryCount, [id])
-      let queryDeleteHeader: string;
-      let queryDeleteStack: string;
-      let responseHeader: any;
-      let responseStacked: any;
-      queryDeleteHeader = `DELETE FROM 
+            const responseCount = await client.query(queryCount, [id])
+            let queryDeleteHeader: string;
+            let queryDeleteStack: string;
+            let responseHeader: any;
+            let responseStacked: any;
+            queryDeleteHeader = `DELETE FROM 
                               public.entete_reg_stationnement 
                             WHERE
                               id_reg_stat = $1;`
-      queryDeleteStack = `DELETE FROM
+            queryDeleteStack = `DELETE FROM
                               public.reg_stationnement_empile
                             WHERE
                               id_reg_stat = $1;`
-      if (Number(responseCount.rows[0].count) === 0) {
-        responseHeader = await client.query(queryDeleteHeader, [id]);
-        responseStacked = { rowCount: 1 };
-      } else {
-        responseHeader = await client.query(queryDeleteHeader, [id])
-        responseStacked = await client.query(queryDeleteStack, [id])
-      }
-      const successHeader = responseHeader && responseHeader.rowCount >= 0 ? true : false;
-      const successStacked = responseStacked && responseStacked.rowCount >= 0 ? true : false;
-      res.json({ success: successHeader && successStacked });
-    } catch (err) {
-      next(err);
-    } finally {
-      if (client) {
-        client.release();
-      }
+            if (Number(responseCount.rows[0].count) === 0) {
+                responseHeader = await client.query(queryDeleteHeader, [id]);
+                responseStacked = { rowCount: 1 };
+            } else {
+                responseHeader = await client.query(queryDeleteHeader, [id])
+                responseStacked = await client.query(queryDeleteStack, [id])
+            }
+            const successHeader = responseHeader && responseHeader.rowCount >= 0 ? true : false;
+            const successStacked = responseStacked && responseStacked.rowCount >= 0 ? true : false;
+            res.json({ success: successHeader && successStacked });
+        } catch (err) {
+            next(err);
+        } finally {
+            if (client) {
+                client.release();
+            }
+        }
     }
-  }
-  const obtiensToutesOperations: RequestHandler = async (_req, res): Promise<void> => {
-    console.log('Serveur - Obtention toutes operations')
-    let client;
-    try {
-      client = await pool.connect();
-      const query = `
+    const obtiensToutesOperations: RequestHandler = async (_req, res): Promise<void> => {
+        console.log('Serveur - Obtention toutes operations')
+        let client;
+        try {
+            client = await pool.connect();
+            const query = `
         SELECT *
         FROM public.liste_operations
         order by id_operation
       `;
 
-      const result = await client.query(query);
-      res.json({ success: true, data: result.rows });
-    } catch (err) {
-      res.status(500).json({ success: false, error: 'Database error' });
-    } finally {
-      if (client) {
-        client.release(); // Release the connection back to the pool
-      }
-    }
-  };
+            const result = await client.query(query);
+            res.json({ success: true, data: result.rows });
+        } catch (err) {
+            res.status(500).json({ success: false, error: 'Database error' });
+        } finally {
+            if (client) {
+                client.release(); // Release the connection back to the pool
+            }
+        }
+    };
 
-  const obtiensToutesUnites: RequestHandler = async (_req, res): Promise<void> => {
-    console.log('Serveur - Obtention toutes unites')
-    let client;
-    try {
-      client = await pool.connect();
-      const query = `
+    const obtiensToutesUnites: RequestHandler = async (_req, res): Promise<void> => {
+        console.log('Serveur - Obtention toutes unites')
+        let client;
+        try {
+            client = await pool.connect();
+            const query = `
         SELECT *
         FROM public.multiplicateur_facteurs_colonnes
         order by id_unite
       `;
 
-      const result = await client.query(query);
-      res.json({ success: true, data: result.rows });
-    } catch (err) {
-      res.status(500).json({ success: false, error: 'Database error' });
-    } finally {
-      if (client) {
-        client.release(); // Release the connection back to the pool
-      }
-    }
-  };
+            const result = await client.query(query);
+            res.json({ success: true, data: result.rows });
+        } catch (err) {
+            res.status(500).json({ success: false, error: 'Database error' });
+        } finally {
+            if (client) {
+                client.release(); // Release the connection back to the pool
+            }
+        }
+    };
 
-  const nouvelleLigneDefinition: RequestHandler = async (req, res, next): Promise<void> => {
-    let client;
-    try {
-      const { id_reg_stat, ss_ensemble, seuil, oper, cases_fix_min, cases_fix_max, pente_min, pente_max, unite } = req.body;
-      client = await pool.connect();
-      const query = `INSERT INTO public.reg_stationnement_empile(id_reg_stat,ss_ensemble,seuil,oper,cases_fix_min,cases_fix_max,pente_min,pente_max,unite)
+    const nouvelleLigneDefinition: RequestHandler = async (req, res, next): Promise<void> => {
+        let client;
+        try {
+            const { id_reg_stat, ss_ensemble, seuil, oper, cases_fix_min, cases_fix_max, pente_min, pente_max, unite } = req.body;
+            client = await pool.connect();
+            const query = `INSERT INTO public.reg_stationnement_empile(id_reg_stat,ss_ensemble,seuil,oper,cases_fix_min,cases_fix_max,pente_min,pente_max,unite)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *;`
-      const response = await client.query(query, [id_reg_stat, ss_ensemble, seuil, oper, cases_fix_min, cases_fix_max, pente_min, pente_max, unite])
-      if (response.rows.length === 0) {
-        res.status(404).json({ success: false, error: 'Entry not found' });
-        return;
-      }
-      res.json({ success: true, data: response.rows });
-    } catch (err) {
-      next(err);
-    } finally {
-      if (client) {
-        client.release();
-      }
+            const response = await client.query(query, [id_reg_stat, ss_ensemble, seuil, oper, cases_fix_min, cases_fix_max, pente_min, pente_max, unite])
+            if (response.rows.length === 0) {
+                res.status(404).json({ success: false, error: 'Entry not found' });
+                return;
+            }
+            res.json({ success: true, data: response.rows });
+        } catch (err) {
+            next(err);
+        } finally {
+            if (client) {
+                client.release();
+            }
+        }
     }
-  }
-  const majLigneDefinition: RequestHandler = async (req, res, next): Promise<void> => {
-    let client;
-    try {
-      const { id_reg_stat, ss_ensemble, seuil, oper, cases_fix_min, cases_fix_max, pente_min, pente_max, unite } = req.body;
-      const { id } = req.params;
-      client = await pool.connect();
-      const query = `UPDATE public.reg_stationnement_empile
+    const majLigneDefinition: RequestHandler = async (req, res, next): Promise<void> => {
+        let client;
+        try {
+            const { id_reg_stat, ss_ensemble, seuil, oper, cases_fix_min, cases_fix_max, pente_min, pente_max, unite } = req.body;
+            const { id } = req.params;
+            client = await pool.connect();
+            const query = `UPDATE public.reg_stationnement_empile
       SET
         id_reg_stat = $1,
         ss_ensemble = $2,
@@ -404,113 +404,113 @@ export const creationRouteurReglements = (pool: Pool): Router => {
         unite = $9
       WHERE id_reg_stat_emp = $10 
       RETURNING *;`
-      const response = await client.query(query, [id_reg_stat, ss_ensemble, seuil, oper, cases_fix_min, cases_fix_max, pente_min, pente_max, unite, id])
-      if (response.rows.length === 0) {
-        res.status(404).json({ success: false, error: 'Entry not found' });
-        return;
-      }
-      res.json({ success: true, data: response.rows });
-    } catch (err) {
-      next(err);
-    } finally {
-      if (client) {
-        client.release();
-      }
+            const response = await client.query(query, [id_reg_stat, ss_ensemble, seuil, oper, cases_fix_min, cases_fix_max, pente_min, pente_max, unite, id])
+            if (response.rows.length === 0) {
+                res.status(404).json({ success: false, error: 'Entry not found' });
+                return;
+            }
+            res.json({ success: true, data: response.rows });
+        } catch (err) {
+            next(err);
+        } finally {
+            if (client) {
+                client.release();
+            }
+        }
     }
-  }
-  const supprimeLigneDefinition: RequestHandler = async (req, res, next): Promise<void> => {
-    let client;
-    try {
-      const { id } = req.params;
-      client = await pool.connect();
+    const supprimeLigneDefinition: RequestHandler = async (req, res, next): Promise<void> => {
+        let client;
+        try {
+            const { id } = req.params;
+            client = await pool.connect();
 
-      let queryDeleteStack: string;
-      let responseStacked: any;
-      queryDeleteStack = `DELETE FROM
+            let queryDeleteStack: string;
+            let responseStacked: any;
+            queryDeleteStack = `DELETE FROM
                             public.reg_stationnement_empile
                           WHERE
                             id_reg_stat_emp = $1`
 
-      responseStacked = await client.query(queryDeleteStack, [id])
-      res.json({ success: responseStacked.rowCount > 0 });
-    } catch (err) {
-      next(err);
-    } finally {
-      if (client) {
-        client.release();
-      }
-    }
-  }
-  const obtiensGraphiquesReglements: RequestHandler = async (req, res, next): Promise<void> => {
-    console.log('Calcul des données nécessaires pour faire un graphique de règlements')
-    if (typeof(req.query['id_reg_stat']) === 'undefined' &&  typeof(req.query['id_unite']) ==='undefined'){
-      res.status(400).json({ error: "Doit fournir id_reg_stat et id_unite" });
-    }
-    const scriptPath = path.resolve(__dirname, "../../../../serveur_calcul_python/calculer_valeurs_graphiques.py");
-
-    // Chemin direct vers l'interpréteur Python dans l'environnement Conda
-    const pythonExecutable = '/opt/conda/envs/serveur_calcul_python/bin/python3';
-
-    // Exécuter le script Python avec l'interpréteur de l'environnement
-    const pythonProcess = spawn(pythonExecutable, [scriptPath]);
-
-    const jsonData = JSON.stringify(req.query);
-    pythonProcess.stdin.write(jsonData);
-    pythonProcess.stdin.end();
-
-    let outputData = '';
-    let errorData = '';
-
-    // Capturer l'output standard
-    pythonProcess.stdout.on('data', (data) => {
-      outputData += data.toString();
-    });
-
-    // Capturer les erreurs standard
-    pythonProcess.stderr.on('data', (data) => {
-      errorData += data.toString();
-    });
-
-    // Capturer la fin du processus
-    pythonProcess.on('close', (code) => {
-      if (code === 0) {
-        //console.log(`Output: ${outputData}`)
-        console.log(`Processus enfant terminé avec succès.`);
-        try {
-          // 🔹 Extract JSON by finding the first `{` (start of JSON)
-          const jsonStartIndex = outputData.indexOf('{');
-          if (jsonStartIndex !== -1) {
-            const jsonString = outputData.slice(jsonStartIndex).trim();
-            const jsonData = JSON.parse(jsonString);
-
-            //console.log('Parsed JSON:', jsonData);
-            return res.status(200).json({ success: true, data: jsonData });  //  Send JSON response
-          } else {
-            console.error('No JSON found in output:', outputData);
-            return res.status(500).send('Erreur: No valid JSON found in output.');
-          }
+            responseStacked = await client.query(queryDeleteStack, [id])
+            res.json({ success: responseStacked.rowCount > 0 });
         } catch (err) {
-          console.error('Failed to parse JSON:', err);
-          return res.status(500).send('Erreur: JSON parsing failed.');
+            next(err);
+        } finally {
+            if (client) {
+                client.release();
+            }
         }
-      } else {
-        console.error(`Processus enfant échoué avec le code : ${code}`);
-        return res.status(500).send(`Erreur: ${errorData}`);
-      }
-    });
-  }
-  // Routes
-  router.get('/entete', obtiensTousEntetesReglements);
-  router.get('/complet/:idToSplit', obtiensReglementCompletParId);
-  router.get('/operations', obtiensToutesOperations)
-  router.get('/unites', obtiensToutesUnites)
-  router.get('/unites/:id', obtiensUnitesParLot)
-  router.post('/entete', nouvelEnteteReglement)
-  router.put('/entete/:id',modifieEnteteReglement)
-  router.delete('/:id', supprimeReglement)
-  router.post('/ligne-def', nouvelleLigneDefinition)
-  router.put('/ligne-def/:id', majLigneDefinition)
-  router.delete('/ligne-def/:id', supprimeLigneDefinition)
-  router.get('/graphiques',obtiensGraphiquesReglements)
-  return router;
+    }
+    const obtiensGraphiquesReglements: RequestHandler = async (req, res, next): Promise<void> => {
+        console.log('Calcul des données nécessaires pour faire un graphique de règlements')
+        if (typeof (req.query['id_reg_stat']) === 'undefined' && typeof (req.query['id_unite']) === 'undefined') {
+            res.status(400).json({ error: "Doit fournir id_reg_stat et id_unite" });
+        }
+        const scriptPath = path.resolve(__dirname, "../../../../serveur_calcul_python/calculer_valeurs_graphiques.py");
+
+        // Chemin direct vers l'interpréteur Python dans l'environnement Conda
+        const pythonExecutable = '/opt/conda/envs/serveur_calcul_python/bin/python3';
+
+        // Exécuter le script Python avec l'interpréteur de l'environnement
+        const pythonProcess = spawn(pythonExecutable, [scriptPath]);
+
+        const jsonData = JSON.stringify(req.query);
+        pythonProcess.stdin.write(jsonData);
+        pythonProcess.stdin.end();
+
+        let outputData = '';
+        let errorData = '';
+
+        // Capturer l'output standard
+        pythonProcess.stdout.on('data', (data) => {
+            outputData += data.toString();
+        });
+
+        // Capturer les erreurs standard
+        pythonProcess.stderr.on('data', (data) => {
+            errorData += data.toString();
+        });
+
+        // Capturer la fin du processus
+        pythonProcess.on('close', (code) => {
+            if (code === 0) {
+                //console.log(`Output: ${outputData}`)
+                console.log(`Processus enfant terminé avec succès.`);
+                try {
+                    // 🔹 Extract JSON by finding the first `{` (start of JSON)
+                    const jsonStartIndex = outputData.indexOf('{');
+                    if (jsonStartIndex !== -1) {
+                        const jsonString = outputData.slice(jsonStartIndex).trim();
+                        const jsonData = JSON.parse(jsonString);
+
+                        //console.log('Parsed JSON:', jsonData);
+                        return res.status(200).json({ success: true, data: jsonData });  //  Send JSON response
+                    } else {
+                        console.error('No JSON found in output:', outputData);
+                        return res.status(500).send('Erreur: No valid JSON found in output.');
+                    }
+                } catch (err) {
+                    console.error('Failed to parse JSON:', err);
+                    return res.status(500).send('Erreur: JSON parsing failed.');
+                }
+            } else {
+                console.error(`Processus enfant échoué avec le code : ${code}`);
+                return res.status(500).send(`Erreur: ${errorData}`);
+            }
+        });
+    }
+    // Routes
+    router.get('/entete', obtiensTousEntetesReglements);
+    router.get('/complet/:idToSplit', obtiensReglementCompletParId);
+    router.get('/operations', obtiensToutesOperations)
+    router.get('/unites', obtiensToutesUnites)
+    router.get('/unites/:id', obtiensUnitesParLot)
+    router.post('/entete', nouvelEnteteReglement)
+    router.put('/entete/:id', modifieEnteteReglement)
+    router.delete('/:id', supprimeReglement)
+    router.post('/ligne-def', nouvelleLigneDefinition)
+    router.put('/ligne-def/:id', majLigneDefinition)
+    router.delete('/ligne-def/:id', supprimeLigneDefinition)
+    router.get('/graphiques', obtiensGraphiquesReglements)
+    return router;
 };
