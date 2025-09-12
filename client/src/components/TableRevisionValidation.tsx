@@ -14,13 +14,6 @@ const TableRevisionValidation: React.FC<PropsTableRevValid> = (props: PropsTable
     const changerCarto = contexte?.changerCarto ?? (() => { });
     const optionsCartos = contexte?.optionsCartos ?? [];
 
-    const methodesCalcul:methodeCalcul[]=[{methode_estime:1,description:'Entrée manuelle'},
-    {
-        methode_estime:2,
-        description:'Calcul réglementaire automatique'
-    },
-    {methode_estime:3,description:'Calcul réglementaire valeurs manuelles'}]
-
     const descriptionCarto = optionsCartos.find((entree) => entree.id === optionCartoChoisie)?.description ?? ''
     const [modalOuvert,defModalOuvert] =useState<boolean>(false)
     const [modif, defModif] = useState<boolean>(false)
@@ -66,6 +59,7 @@ const TableRevisionValidation: React.FC<PropsTableRevValid> = (props: PropsTable
     const gestOuvertureModal = async()=>{
         defModalOuvert(!modalOuvert)
     }
+    const inventaireRegAuto = props.inventairePert.find((item)=>item.methode_estime===2)??{}
     return (<div className='table-validation'>
         <TableContainer component={Paper} sx={{ maxHeight: '30vh' }}>
             <Table sx={{ minWidth: 200 }} aria-label="simple table">
@@ -85,7 +79,7 @@ const TableRevisionValidation: React.FC<PropsTableRevValid> = (props: PropsTable
                                 {champs.replace(/_/g, " ").toUpperCase()}
                             </TableCell>
                             <TableCell component="th" scope="row" align="center">
-                                {champs==='n_places_min' ||champs==='n_places_max' ? Number(props.inventairePert![champs as keyof typeof props.inventairePert]).toFixed(2) : props.inventairePert![champs as keyof typeof props.inventairePert]}
+                                {champs==='n_places_min' ||champs==='n_places_max' ? Number(inventaireRegAuto![champs as keyof typeof inventaireRegAuto]).toFixed(2) : inventaireRegAuto![champs as keyof typeof inventaireRegAuto]}
                             </TableCell>
                             <TableCell component="th" scope="row" align="center">
                                 {champs === 'n_places_min' || champs === 'n_places_max' ? <Edit onClick={gestOuvertureModal}/> : <></>}
@@ -131,7 +125,9 @@ const TableRevisionValidation: React.FC<PropsTableRevValid> = (props: PropsTable
             defModalOuvert={defModalOuvert}
             inventairePert={props.inventairePert}
             defInventairePert={props.defInventairePert}
-            methodesCalculs={methodesCalcul}
+            methodesCalculs={[1,2,3]}
+            lotPert={props.lotSelect}
+            defLotPert={props.defLotSelect}
         />
     </div>)
 }

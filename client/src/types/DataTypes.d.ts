@@ -246,6 +246,11 @@ export interface informations_reglementaire_manuelle{
     unite:number,
     desc_unite:string
 }
+
+export interface InputValues {
+    [key:string]:{valeur:number}
+}
+
 export interface informations_pour_graph_unite_er_reg{
     id_er:number,
     desc_er:string,

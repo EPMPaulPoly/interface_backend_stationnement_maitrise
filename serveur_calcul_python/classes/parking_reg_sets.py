@@ -220,6 +220,7 @@ def get_parking_reg_for_lot(lot_id:str)->pd.DataFrame:
     NotImplementedError('Not Yet Implemented')
     query = f"""SELECT 
                     rf.RL0105A::int,
+                    luc.description as description_cubf,
                     coalesce(rf.rl0307A::int,0) as rl0307a,
                     PRS.id_er,
                     PRS.description_er,
@@ -242,6 +243,7 @@ def get_parking_reg_for_lot(lot_id:str)->pd.DataFrame:
                     public.association_er_territoire AS ass ON ass.id_periode_geo = cs.id_periode_geo
                 JOIN
                     public.ensembles_reglements_stat AS PRS ON ass.id_er = PRS.id_er
+                JOIN public.cubf luc on luc.cubf::int=rf.RL0105A::int
                 WHERE
                     cad.g_no_lot = '{lot_id}' AND
                     (hg.date_debut_periode <= COALESCE(rf.RL0307A::int, 0) OR hg.date_debut_periode IS NULL) AND
@@ -254,7 +256,8 @@ def get_parking_reg_for_lot(lot_id:str)->pd.DataFrame:
                     PRS.description_er,
                     cs.id_periode_geo,
                     cs.ville_sec,
-                    rf.rl0307a;
+                    rf.rl0307a,
+                    luc.description;
             """
     engine = create_engine(config_db.pg_string)
     with engine.connect() as con:

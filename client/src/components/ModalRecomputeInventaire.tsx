@@ -1,9 +1,9 @@
-import { Box, Button, Dialog, FormControl, InputLabel, MenuItem, Modal, Paper, Select, TextField, useMediaQuery, useTheme } from "@mui/material"
+import { Box, Button, Dialog, FormControl, InputLabel, MenuItem, Modal, Paper, Select, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, useMediaQuery, useTheme } from "@mui/material"
 import { PropsModalRecomputeInventaire } from "../types/InterfaceTypes"
 import { useEffect, useState } from "react";
 import { Save } from "@mui/icons-material";
-import { informations_reglementaire_manuelle, inventaire_stationnement } from "../types/DataTypes";
-import { serviceInventaire } from "../services";
+import { informations_reglementaire_manuelle, InputValues, inventaire_stationnement, methodeCalcul, requete_calcul_manuel_reg } from "../types/DataTypes";
+import { serviceEnsemblesReglements, serviceInventaire } from "../services";
 import obtRegManuel from "../utils/obtRegManuel";
 import TableauInventaireUnique from "./TableauInventaireUnique";
 import TableauApprobationInventaire from "./TableauApprobationInventaire";
@@ -25,12 +25,21 @@ const ModalRecomputeInventaire: React.FC<PropsModalRecomputeInventaire> = (props
         id_reg_stat: '',
         commentaire: ''
     }
+
+     const methodesCalcul:methodeCalcul[]=[{methode_estime:1,description:'Entrée manuelle'},
+        {
+            methode_estime:2,
+            description:'Calcul réglementaire automatique'
+        },
+        {methode_estime:3,description:'Calcul réglementaire valeurs manuelles'}]
+
     const [ancienInventaire, defAncienInventaire] = useState<inventaire_stationnement>(inventaireVide);
     const [nouvelInventaire, defNouvelInventaire] = useState<inventaire_stationnement>(inventaireVide);
     const [faireComparaison, defFaireComparaison] = useState<boolean>(false);
     const [entreeManuelleRequise, defEntreeManuelleRequise] = useState<boolean>(false)
     const [calculEnCours, defCalculEnCours] = useState<boolean>(false)
     const [entreesInventaireSemiManuel, defEntreesInventaireSemiManuel] = useState<informations_reglementaire_manuelle[]>([]);
+    const [entreesDonneesPourCalcul,defEntreesDonneesPourCalcul] = useState<InputValues>({});
     useEffect(() => {
         const fetchData = async () => {
             if (props.modalOuvert == true) {
@@ -75,6 +84,46 @@ const ModalRecomputeInventaire: React.FC<PropsModalRecomputeInventaire> = (props
                 break;
         }
     }
+
+    const gestLancementCalculRegEntManuelle=async()=>{
+            const matchCalcul: requete_calcul_manuel_reg[] = entreesInventaireSemiManuel.map((item) => {
+                const key:string = `${item.cubf}-${item.unite}-${item.id_reg_stat}-${item.id_er}`;
+                return {
+                    g_no_lot:props.lotPert.features[0].properties.g_no_lot,
+                    cubf: item.cubf,
+                    id_reg_stat: item.id_reg_stat,
+                    id_er:item.id_er,
+                    unite: item.unite,
+                    valeur: entreesDonneesPourCalcul[key]?.valeur || 0, // Use the input value or default to 0
+                };
+            });
+            console.log(`Processing following lot:\n ${matchCalcul.map((item)=>`${item.cubf.toString()} - ${item.id_reg_stat} - ${item.unite} : ${item.valeur}\n`)}`)
+            
+            const inventaire = await serviceInventaire.calculeInventaireValeursManuelles(matchCalcul)
+            if (inventaire.success){
+                defFaireComparaison(true)
+                defNouvelInventaire(inventaire.data[0])
+            }
+            console.log('recu un inventaire')
+        }
+    const handleInputChange = (cubf: number, unite: number, id_reg_stat: number, id_er:number,value: string) => {
+        const key = `${cubf}-${unite}-${id_reg_stat}-${id_er}`;
+        defEntreesDonneesPourCalcul((prevValues) => ({
+            ...prevValues,
+            [key]: {
+                valeur: Number(value)
+            }
+        }));
+        console.log(entreesDonneesPourCalcul)
+    };
+
+    const gestObtentionReglements=async()=>{
+        defCalculEnCours(true)
+        const donnees = await obtRegManuel(props.lotPert.features[0].properties.g_no_lot)
+        defEntreesInventaireSemiManuel(donnees)
+        defEntreeManuelleRequise(true)
+        defCalculEnCours(false)
+    }
     const renduLandingChangementOptionCalcul = () => {
         switch (methodeCalculSelect) {
             case 1:
@@ -96,7 +145,7 @@ const ModalRecomputeInventaire: React.FC<PropsModalRecomputeInventaire> = (props
             case 3:
                 return (<>
                     <FormControl>
-                        <Button variant="outlined">Obtenir Règlements lot</Button>
+                        <Button variant="outlined" onClick={gestObtentionReglements}>Obtenir Règlements lot</Button>
                     </FormControl>
                 </>)
             default:
@@ -118,6 +167,44 @@ const ModalRecomputeInventaire: React.FC<PropsModalRecomputeInventaire> = (props
                 </>)
             case 3:
                 return (<>
+                    <TableContainer component={Paper} sx={{ maxHeight: '30vh' }}>
+                        <Table sx={{ minWidth: 200 }} aria-label="simple table">
+                            <TableHead sx={{ position: 'sticky', top: 0, background: 'white' }}>
+                                <TableRow>
+                                    <TableCell>Item</TableCell>
+                                    <TableCell align="center">Valeur</TableCell>
+                                    <TableCell align="center">Option</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody sx={{ overflowY: 'auto' }}>
+                                {entreesInventaireSemiManuel.map((entree)=>{
+                                    const key = `${entree.cubf}-${entree.unite}-${entree.id_reg_stat}-${entree.id_er}`; 
+                                    return(
+                                    <TableRow key={key}>
+                                        <TableCell>{entree.description_cubf}</TableCell>
+                                        <TableCell>
+                                            <TextField 
+                                                value={entreesDonneesPourCalcul[key]?.valeur != null ? entreesDonneesPourCalcul[key]?.valeur.toString() : ''}
+                                                onChange={(e) => handleInputChange(
+                                                    entree.cubf,
+                                                    entree.unite,
+                                                    entree.id_reg_stat,
+                                                    entree.id_er, 
+                                                    e.target.value)}
+                                            />
+                                        </TableCell>
+                                        <TableCell>{entree.desc_unite}</TableCell>
+                                    </TableRow>
+                                )})}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                    <Button 
+                        variant="outlined"
+                        onClick={gestLancementCalculRegEntManuelle}
+                    >
+                        Lancer le calcul
+                    </Button>
                 </>)
             default:
                 return (<></>)
@@ -165,8 +252,18 @@ const ModalRecomputeInventaire: React.FC<PropsModalRecomputeInventaire> = (props
                         "& .MuiInput-underline:before": { borderBottomColor: "white" },
                         "& .MuiInput-underline:hover:before": { borderBottomColor: "#ffcc00" },
                     }} value={methodeCalculSelect} onChange={(e) => defMethodeCalculSelect(Number(e.target.value))} labelId='methode-calcul'>
-                        {props.methodesCalculs.map((item) =>
-                            <MenuItem value={item.methode_estime}>{item.description}</MenuItem>
+                        {props.methodesCalculs.map((item) =>{
+                            const methodeProp:methodeCalcul|undefined = methodesCalcul.find((meth)=>meth.methode_estime===item)
+                            if (methodeProp!==undefined){
+                                return <MenuItem value={methodeProp.methode_estime}>{methodeProp.description}</MenuItem>
+                            }else{
+                                return(
+                                    <></>
+                                
+                            )}
+                            
+                        }
+                            
                         )}
                     </Select>
                 </FormControl>

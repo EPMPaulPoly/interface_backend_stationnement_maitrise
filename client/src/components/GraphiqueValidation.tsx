@@ -6,7 +6,7 @@ import { Bar } from "react-chartjs-2";
 import serviceValidation from "../services/serviceValidation";
 
 
-const GraphiqueValidation: React.FC<{ feuilleSelect: FeuilleFinaleStrate, inventairePert: inventaire_stationnement }> = (props: { feuilleSelect: FeuilleFinaleStrate, inventairePert: inventaire_stationnement }) => {
+const GraphiqueValidation: React.FC<{ feuilleSelect: FeuilleFinaleStrate, inventairePert: inventaire_stationnement[] }> = (props: { feuilleSelect: FeuilleFinaleStrate, inventairePert: inventaire_stationnement[] }) => {
     const [editParam, defEditParam] = useState<boolean>(false)
     const [typeGraphique, defTypeGraphique] = useState<string>('stationnement')
     const [data, defData] = useState<data_graphique>({
@@ -22,6 +22,7 @@ const GraphiqueValidation: React.FC<{ feuilleSelect: FeuilleFinaleStrate, invent
         scales: {}
     });
     const color = ['red', 'blue']
+    const inventaireRegAuto = props.inventairePert.find((entree)=>entree.methode_estime===2)
     useEffect(() => {
         const fetchData = async () => {
             if (props.feuilleSelect.id_strate !== -1) {

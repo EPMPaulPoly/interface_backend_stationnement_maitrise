@@ -160,19 +160,7 @@ const ValidationStatistique: React.FC = () => {
             }
         ]
     })
-    const [inventairePert, defInventairePert] = useState<inventaire_stationnement>({
-        id_inv: -1,
-        g_no_lot: '',
-        n_places_min: 0,
-        n_places_max: 0,
-        n_places_estime: 0,
-        n_places_mesure: 0,
-        methode_estime: 2,
-        id_er: '',
-        id_reg_stat: '',
-        cubf: '',
-        commentaire: ''
-    })
+    const [inventairePert, defInventairePert] = useState<inventaire_stationnement[]>([])
     const [resultValid, defResultValid] = useState<EntreeValidation>({
         id_strate: -1,
         g_no_lot: '',

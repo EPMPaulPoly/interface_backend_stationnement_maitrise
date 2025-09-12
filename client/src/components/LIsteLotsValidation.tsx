@@ -32,14 +32,14 @@ const ListeLotsValidation: React.FC<PropsListeLotsValid> = (props: PropsListeLot
     const handleListClick = async (lot: string) => {
         const [inventaire,validation,role] = await Promise.all(
             [
-                serviceInventaire.obtiensInventaireQuery({ g_no_lot: lot, methode_estime: 2 }),
+                serviceInventaire.obtiensInventaireQuery({ g_no_lot: lot}),
                 serviceValidation.obtiensResultatValidation({ g_no_lot: lot, id_strate: props.feuilleSelect.id_strate }),
                 serviceCadastre.chercheRoleAssocieParId(lot)
             ]
         )
     
         if (inventaire.data.length > 0) {
-            props.defInventairePert(inventaire.data[0])
+            props.defInventairePert(inventaire.data)
         } else{
             props.defInventairePert({...inventaireVide,g_no_lot:lot})
         }

@@ -32,6 +32,8 @@ const PanneauValidation:React.FC<PropsPanneauValid>=(props:PropsPanneauValid)=>{
                     defAdresse={props.defAdresse}
                     newValid={props.newValid}
                     defNewValid={props.defNewValid}
+                    lotSelect={props.lotSelect}
+                    defLotSelect={props.defLotSelect}
                 />
                 <GraphiqueValidation 
                     feuilleSelect={props.feuilleSelect}
