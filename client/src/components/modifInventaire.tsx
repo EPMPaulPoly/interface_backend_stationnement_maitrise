@@ -70,7 +70,7 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
             defModifEnMarche(true)
             if (optionCalcul===3){
                 defObtentionEnCoursReg(true)
-                const resultats = await obtRegManuel(props.lots.properties.g_no_lot)
+                const resultats = await obtRegManuel(props.lots.features[0].properties.g_no_lot)
                 defReglementsUnites(resultats)
                 defObtentionEnCoursReg(false)
             }
@@ -117,7 +117,7 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
                 }
             } else{
                 const FeatureASauvegarder: Omit<inventaire_stationnement,'id_inv'>= {
-                    g_no_lot: props.lots.properties.g_no_lot,
+                    g_no_lot: props.lots.features[0].properties.g_no_lot,
                     n_places_min: 0,
                     n_places_max: 0,
                     n_places_mesure: inventaireASauvegarder,
@@ -216,7 +216,7 @@ const CompoModifInventaire: React.FC<TableRevueProps> = (props:TableRevueProps) 
         const matchCalcul: requete_calcul_manuel_reg[] = reglementUnites.map((item) => {
             const key:string = `${item.cubf}-${item.unite}-${item.id_reg_stat}-${item.id_er}`;
             return {
-                g_no_lot:props.lots.properties.g_no_lot,
+                g_no_lot:props.lots.features[0].properties.g_no_lot,
                 cubf: item.cubf,
                 id_reg_stat: item.id_reg_stat,
                 id_er:item.id_er,

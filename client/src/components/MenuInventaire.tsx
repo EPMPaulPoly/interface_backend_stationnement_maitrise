@@ -53,14 +53,17 @@ const MenuInventaire: React.FC<MenuInventaireProps> = (props: MenuInventaireProp
 
             // Return true if no matching item is found or if any of the specified fields have changed
             return !matchingItem ||
-                o.n_places_min !== matchingItem.n_places_min ||
-                o.n_places_max !== matchingItem.n_places_max ||
+                Math.round(o.n_places_min*10)/10 !== Math.round(matchingItem.n_places_min*10)/10 ||
+                Math.round(o.n_places_max*10)/10 !== Math.round(matchingItem.n_places_max*10)/10 ||
                 o.id_er !== matchingItem.id_er ||
                 o.id_reg_stat !== matchingItem.id_reg_stat ||
                 o.cubf !== matchingItem.cubf;
         });
-
-        return filtreStationnementMin;
+        const inventaireAligne = filtreStationnementMin.sort((a, b) => {
+            // b comes before a when its n_places_min is larger
+            return b.n_places_min - a.n_places_min;
+        })
+        return inventaireAligne;
     }
 
     const gestCalculInventaire = async () => {

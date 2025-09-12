@@ -1,16 +1,16 @@
-import {periode,territoire,quartiers_analyse,inventaire_stationnement,territoireGeoJsonProperties,entete_reglement_stationnement, reglement_complet,entete_ensembles_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties, roleFoncierGeoJsonProps, lotCadastralDB, roleFoncierDB, lotCadastralGeomSeulDb, comboERRoleFoncier, lotCadastralBoolInvDB, lotCadastralAvecBoolInvGeoJsonProperties, PAV_quartier, entreePAV, operation_reglement_stationnement, unites_reglement_stationnement, definition_reglement_stationnement, association_territoire_entete_ensemble_reglement, association_util_reglement, utilisation_sol, associaion_territoire_ensemble_reglement, data_graphique, comptes_utilisations_sol} from './DataTypes'
-import { Feature, FeatureCollection,Geometry } from 'geojson';
+import { periode, territoire, quartiers_analyse, inventaire_stationnement, territoireGeoJsonProperties, entete_reglement_stationnement, reglement_complet, entete_ensembles_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties, roleFoncierGeoJsonProps, lotCadastralDB, roleFoncierDB, lotCadastralGeomSeulDb, comboERRoleFoncier, lotCadastralBoolInvDB, lotCadastralAvecBoolInvGeoJsonProperties, PAV_quartier, entreePAV, operation_reglement_stationnement, unites_reglement_stationnement, definition_reglement_stationnement, association_territoire_entete_ensemble_reglement, association_util_reglement, utilisation_sol, associaion_territoire_ensemble_reglement, data_graphique, comptes_utilisations_sol, FeuilleFinaleStrate, EntreeValidation } from './DataTypes'
+import { Feature, FeatureCollection, Geometry } from 'geojson';
 import { GeoJSONPropsAnaQuartierTotal, GeoJSONPropsAnaQuartierTotalParHab, GeoJSONPropsAnaQuartierTotalParSuperf, NhoodXYGraphDatasets, StatTotalDBAnaQuartier, StatTotalParSuperfDBAnaQuartier, VariableCartoDBAnaQuartier } from './AnalysisTypes';
 export interface ApiResponse<T> {
     success?: boolean;
     data: T;
     error?: string;
-  }
+}
 
 // Historique
 export type ReponsePeriode = ApiResponse<periode[]>
 export type ReponseDbTerritoire = ApiResponse<territoire[]>
-export type ReponseTerritoire = ApiResponse<FeatureCollection<Geometry,territoireGeoJsonProperties>>
+export type ReponseTerritoire = ApiResponse<FeatureCollection<Geometry, territoireGeoJsonProperties>>
 // quartier analyse
 export type ReponseQuartiersAnalyse = ApiResponse<quartiers_analyse[]>
 // inventaire
@@ -35,9 +35,9 @@ export type ReponseAssosTerritoireEnteteEnsembleReglement = ApiResponse<associat
 export type ReponseAssoTerritoireEnsembleReglement = ApiResponse<associaion_territoire_ensemble_reglement>
 export type ReponseEnsembleReglementComplet = ApiResponse<ensemble_reglements_stationnement[]>
 // lots cadastraux et role foncier. Utilisé aussi dans inventaire
-export type ReponseCadastre = ApiResponse<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>
-export type ReponseCadastreBoolInv = ApiResponse<FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>
-export type ReponseRole = ApiResponse<FeatureCollection<Geometry,roleFoncierGeoJsonProps>>
+export type ReponseCadastre = ApiResponse<FeatureCollection<Geometry, lotCadastralGeoJsonProperties>>
+export type ReponseCadastreBoolInv = ApiResponse<FeatureCollection<Geometry, lotCadastralAvecBoolInvGeoJsonProperties>>
+export type ReponseRole = ApiResponse<FeatureCollection<Geometry, roleFoncierGeoJsonProps>>
 export type ReponseDBCadastre = ApiResponse<lotCadastralDB[]>
 export type ReponseDBCadastreBoolInv = ApiResponse<lotCadastralBoolInvDB[]>
 export type ReponseDBRole = ApiResponse<roleFoncierDB[]>
@@ -48,11 +48,11 @@ export type ReponseDBInfoInventaireReglementManuel = ApiResponse<informations_re
 // types pour analyse
 export type ReponseDBInventaireAgregQuartTotal = ApiResponse<StatTotalDBAnaQuartier[]>
 export type ReponseDBVariableAgregQuart = ApiResponse<VariableCartoDBAnaQuartier[]>
-export type ReponseInventaireAgregQuartTotal = ApiResponse<FeatureCollection<Geometry,GeoJSONPropsAnaQuartierTotal>>
+export type ReponseInventaireAgregQuartTotal = ApiResponse<FeatureCollection<Geometry, GeoJSONPropsAnaQuartierTotal>>
 export type ReponseDBInventaireAgregQuartParHab = ApiResponse<StatTotalParHabDBAnaQuartier[]>
-export type ReponseInventaireAgregQuartParHab = ApiResponse<FeatureCollection<Geometry,GeoJSONPropsAnaQuartierTotalParHab>>
+export type ReponseInventaireAgregQuartParHab = ApiResponse<FeatureCollection<Geometry, GeoJSONPropsAnaQuartierTotalParHab>>
 export type ReponseDBInventaireAgregQuartParSuperf = ApiResponse<StatTotalParSuperfDBAnaQuartier[]>
-export type ReponseInventaireAgregQuartParSuperf = ApiResponse<FeatureCollection<Geometry,GeoJSONPropsAnaQuartierTotalParSuperf>>
+export type ReponseInventaireAgregQuartParSuperf = ApiResponse<FeatureCollection<Geometry, GeoJSONPropsAnaQuartierTotalParSuperf>>
 export type ReponsePAVQuartier = ApiResponse<PAVQuartier>
 export type ReponsePAVNouveau = ApiResponse<entreePAV>
 export type ReponseHistoAnalyse = ApiResponse<barChartDataSet>
@@ -62,3 +62,43 @@ export type ReponseUnitesGraph = ApiResponse<informations_pour_graph_unite_er_re
 export type ReponseDataGraphique = ApiResponse<data_graphique>
 // types pour analyse de variabilite
 export type ReponseCalculComplete = ApiResponse<boolean>
+
+// types pour la validation state
+export type ReponseStrateValide = ApiResponse<Strate[]>
+export type ReponseStrateUnique = ApiResponse<Strate>
+export type ReponseFeuilles = ApiResponse<FeuilleFinaleStrate[]>
+export type ReponseResultatValidation = ApiResponse<EntreeValidation[]>
+
+// Requetes
+export interface RequeteApiStrate {
+    id_strate?: number | null,
+    n_sample_ge?: number | null,
+    n_sample_se?: number | null,
+    colonne_sample?: string | null
+}
+
+export interface RequeteApiCadastre {
+    id_strate?: number,
+    bbox?: number[],
+    superf_plus_grand?:number,
+    g_no_lot?:string,
+    id_quartier?:number,
+    estime?:number,
+    inv_surf_plus_grand?:number
+    inv_plus_grand?:number
+}
+
+export interface RequeteInventaire{
+    id_inv?:number,
+    g_no_lot?:string,
+    n_places_plus_grand?:number,
+    dens_places_plus_grand?:number,
+    methode_estime?:number,
+    cubf?:number
+}
+
+export interface RequeteResultatValidation{
+    id_strate?:number,
+    g_no_lot?:string,
+    fond_tuile?:string
+}

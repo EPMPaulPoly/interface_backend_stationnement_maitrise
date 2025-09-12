@@ -113,7 +113,7 @@ export interface DbAssociationReglementUtilSol{
     id_er:number
 }
 
-export interface RequeteInventaire{
+export interface CorpsRequeteInventaire{
     g_no_lot:string,
     n_places_min:number,
     n_places_max:number,
@@ -125,10 +125,28 @@ export interface RequeteInventaire{
     methode_estime:number,
     cubf:string,
 }
-export interface RequeteNouvelInventaireGros{
-    data: RequeteInventaire[]
+export interface CorpsRequeteInventaireGros{
+    data: CorpsRequeteInventaire[]
 }
 
+export interface RequeteInventaire{
+    g_no_lot:string,
+    n_places_ge:string,
+    dens_places_ge:string,
+    cubf:string,
+    methode_estime:string,
+    id_inv:string
+}
+
+export interface RequeteResValide{
+    g_no_lot:string,
+    id_strate:string,
+    fond_tuile:string,
+    id_val:number
+}
+export interface CorpsValide extends RequeteResValide{
+    n_places:number
+}
 
 export interface RequeteInventaireGrosItem{
     id_inv:number,
@@ -158,7 +176,7 @@ export interface RequeteAnalyseVariabilite{
 export interface RequeteHistoVariabilite{
     id_er:string,
     cubf_n1:string,
-    voir_inv:boolean,
+    ratio_inv_act:boolean,
     echelle:string
 }
 export interface RequeteAnalyseFacteurEchelle{
@@ -281,4 +299,50 @@ export interface unit_reg_reg_set_land_use_output extends unit_reg_reg_set_land_
     desc_er:string,
     desc_reg_stat:string,
     desc_unite:string[]
+}
+
+export type condition_strate =
+  | { condition_type: "equals"; condition_valeur: string | number}
+  | { condition_type: "range"; condition_min: number|null; condition_max: number|null };
+
+// Recursive Strata definition
+export interface strate extends strate_db{
+    subStrata?: strate[]; // recursion
+    condition?: condition_strate;
+}
+
+export interface strate_db{
+    id_strate:number,
+    nom_strate:string,
+    nom_table: string;
+    nom_colonne: string;
+    ids_enfants:number[]|null,
+    est_racine:boolean|null,
+    index_ordre:number,
+    logements_valides:boolean|null,
+    date_valide:boolean|null,
+    superf_valide:boolean|null,
+    condition_type:"equals"|"range";
+    condition_min:number|null;
+    condition_max:number|null;
+    condition_valeur:number|null;
+    n_sample?:number|null;
+}
+
+export interface RequeteModifStrate extends ParamsDictionary{
+    id_strate:string
+}
+
+export interface condition_echantillonage{
+    condition:string,
+    id_strate:number,
+    colonnes_pertinentes:string[]
+    desc_concat:string,
+    n_sample:number| null | undefined
+}
+
+export interface RequeteGraphiqueValidation{
+    id_strate:string,
+    type:"pred_par_reel"|"reel_par_pred"|"stationnement"
+    x_max:string
 }

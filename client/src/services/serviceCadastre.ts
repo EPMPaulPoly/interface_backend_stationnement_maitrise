@@ -1,6 +1,6 @@
 import axios,{ AxiosResponse } from 'axios';
 import { lotCadastralGeoJsonProperties, quartiers_analyse, roleFoncierGeoJsonProps,lotCadastralAvecBoolInvGeoJsonProperties } from '../types/DataTypes';
-import { ReponseCadastre, ReponseRole,ReponseDBCadastre,ReponseDBRole, ReponseDBCadastreBoolInv,ReponseCadastreBoolInv } from '../types/serviceTypes';
+import { ReponseCadastre, ReponseRole,ReponseDBCadastre,ReponseDBRole, ReponseDBCadastreBoolInv,ReponseCadastreBoolInv, RequeteApiStrate, RequeteApiCadastre } from '../types/serviceTypes';
 import api from './api';
 import {FeatureCollection, Geometry } from 'geojson';
 
@@ -8,9 +8,9 @@ import {FeatureCollection, Geometry } from 'geojson';
 class ServiceCadastre {
     async chercheTousCadastres():Promise<ReponseCadastre> {
         try {
-            const response: AxiosResponse<ReponseDBCadastre> = await api.get(`/cadastre`);
+            const response: AxiosResponse<ReponseDBCadastreBoolInv> = await api.get(`/cadastre`);
             const data_res = response.data.data;
-            const featureCollection: FeatureCollection<Geometry, lotCadastralGeoJsonProperties> = {
+            const featureCollection: FeatureCollection<Geometry, lotCadastralAvecBoolInvGeoJsonProperties> = {
                 type: "FeatureCollection",
                 features: data_res.map((item) => ({
                     type: "Feature",
@@ -20,6 +20,7 @@ class ServiceCadastre {
                         g_va_suprf:item.g_va_suprf,
                         g_nb_coo_1:item.g_nb_coo_1,
                         g_nb_coord:item.g_nb_coord,
+                        bool_inv:item.bool_inv
                     }
                 }))
             };
@@ -35,12 +36,40 @@ class ServiceCadastre {
             throw error; // Re-throw if necessary
         }
     }
-    async obtiensCadastreParId(id:string):Promise<ReponseCadastre> {
+    async chercheCadastreQuery(requete:RequeteApiCadastre):Promise<ReponseCadastreBoolInv>{
         try{
-            const formattedId = id.replace(/ /g, "_");
-            const response: AxiosResponse<ReponseDBCadastre> = await api.get(`/cadastre/lot/${formattedId}`);
+            let queries:string[]=[]
+            if(requete.id_strate!==undefined){
+                queries.push(`id_strate=${requete.id_strate}`)
+            }
+            if (requete.id_quartier!==undefined){
+                queries.push(`id_quartier=${requete.id_quartier}`)
+            }
+            if (requete.bbox!==undefined){
+                queries.push(`bbox=${requete.bbox.join(',')}`)
+            }
+            if (requete.estime!==undefined){
+                queries.push(`estime=${requete.estime}`)
+            }
+            if (requete.inv_surf_plus_grand!==undefined){
+                queries.push(`inv_surf_plus_grand=${requete.inv_surf_plus_grand}`)
+            }
+            if (requete.inv_plus_grand!==undefined){
+                queries.push(`inv_plus_grand=${requete.inv_plus_grand}`)
+            }
+            if (requete.superf_plus_grand!==undefined){
+                queries.push(`superf_plus_grand=${requete.superf_plus_grand}`)
+            }
+            if (requete.g_no_lot!==undefined){
+                queries.push(`g_no_lot=${requete.g_no_lot.replace(" ","_")}`)
+            }
+            let final_query = '/cadastre/lot-query'
+            if (queries.length>0){
+                final_query+='?'+queries.join('&')
+            } 
+            const response: AxiosResponse<ReponseDBCadastreBoolInv> = await api.get(final_query);
             const data_res = response.data.data;
-            const featureCollection: FeatureCollection<Geometry, lotCadastralGeoJsonProperties> = {
+            const featureCollection: FeatureCollection<Geometry, lotCadastralAvecBoolInvGeoJsonProperties> = {
                 type: "FeatureCollection",
                 features: data_res.map((item) => ({
                     type: "Feature",
@@ -50,6 +79,38 @@ class ServiceCadastre {
                         g_va_suprf:item.g_va_suprf,
                         g_nb_coo_1:item.g_nb_coo_1,
                         g_nb_coord:item.g_nb_coord,
+                        bool_inv:item.bool_inv
+                    }
+                }))
+            };
+            return {success:response.data.success,data:featureCollection};
+        }catch(error:any){
+            if (axios.isAxiosError(error)) {
+                console.error('Axios Error:', error.response?.data);
+                console.error('Axios Error Status:', error.response?.status);
+                console.error('Axios Error Data:', error.response?.data);
+            } else {
+                console.error('Unexpected Error:', error);
+            }
+            throw error; // Re-throw if necessary
+        }
+    }
+    async obtiensCadastreParId(id:string):Promise<ReponseCadastre> {
+        try{
+            const formattedId = id.replace(/ /g, "_");
+            const response: AxiosResponse<ReponseDBCadastreBoolInv> = await api.get(`/cadastre/lot/${formattedId}`);
+            const data_res = response.data.data;
+            const featureCollection: FeatureCollection<Geometry, lotCadastralAvecBoolInvGeoJsonProperties> = {
+                type: "FeatureCollection",
+                features: data_res.map((item) => ({
+                    type: "Feature",
+                    geometry: JSON.parse(item.geojson_geometry),
+                    properties: {
+                        g_no_lot:item.g_no_lot,
+                        g_va_suprf:item.g_va_suprf,
+                        g_nb_coo_1:item.g_nb_coo_1,
+                        g_nb_coord:item.g_nb_coord,
+                        bool_inv:item.bool_inv
                     }
                 }))
             };
@@ -84,7 +145,10 @@ class ServiceCadastre {
                         rl0308a:item.rl0308a,
                         rl0311a:item.rl0311a,
                         rl0312a:item.rl0312a,
-                        rl0404a:item.rl0404a
+                        rl0404a:item.rl0404a,
+                        rl0101a:item.rl0101a,
+                        rl0101e:item.rl0101e,
+                        rl0101g:item.rl0101g
                     }
                 }))
             };

@@ -186,7 +186,8 @@ const GraphiqueAnaVar: FC<PropsGraphAnaVar> = (props: PropsGraphAnaVar) => {
                 const [data_in, cubf_rep] = await Promise.all([
                     serviceAnaVariabilite.obtiensDistributionInventaire(
                         ensRegAGraph,
-                        index < 9 ? index + 1 : undefined
+                        index < 9 ? index + 1 : undefined,
+                        voirInv
                     ), serviceUtilisationDuSol.obtientUtilisationDuSol(index + 1, false)
                 ]);
                 defData(data_in.data);
@@ -195,7 +196,65 @@ const GraphiqueAnaVar: FC<PropsGraphAnaVar> = (props: PropsGraphAnaVar) => {
                 } else {
                     defCUBF({ cubf: 0, description: "Tous" })
                 }
-                setOptions({
+                if (voirInv===true){
+                    setOptions({
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white',
+                                font: {
+                                    size: 16,
+                                },
+                            },
+                        },
+                        title: {
+                            display: true,
+                            text: props.index !== 9 ? cubf_rep.data[0].description : 'Tous',
+                            color: 'white',
+                            font: {
+                                size: 25
+                            }
+                        },
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: 'white',
+                                font: {
+                                    size: 16,
+                                },
+                            },
+                            title: {
+                                display: true,
+                                text: '<- Moins Ratio inventaire actuel Plus ->',
+                                color: 'white',
+                                font: {
+                                    size: 18,
+                                },
+                            },
+                            stacked: index === 9
+                        },
+                        y: {
+                            ticks: {
+                                color: 'white',
+                                font: {
+                                    size: 16,
+                                },
+                            },
+                            title: {
+                                display: true,
+                                text: 'Fréquence',
+                                color: 'white',
+                                font: {
+                                    size: 18,
+                                },
+                            }
+                        },
+                    },
+                })
+                }else {
+                    setOptions({
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
@@ -251,7 +310,9 @@ const GraphiqueAnaVar: FC<PropsGraphAnaVar> = (props: PropsGraphAnaVar) => {
                         },
                     },
                 })
-            } else if (methodeVisualisation.idMethodeAnalyse === 2) {
+                }
+                
+            } else if (methodeVisualisation.idMethodeAnalyse === 2) {//Box Plot echelle
                 const [data_in, cubf_rep] = await Promise.all([
                     serviceAnaVariabilite.obtiensBoxPlotFacteurEchelle(
                         ensRegAGraph,
@@ -320,7 +381,7 @@ const GraphiqueAnaVar: FC<PropsGraphAnaVar> = (props: PropsGraphAnaVar) => {
                         },
                     },
                 })
-            } else if (methodeVisualisation.idMethodeAnalyse === 3) {
+            } else if (methodeVisualisation.idMethodeAnalyse === 3) {//box plot central
                 const [data_in, cubf_rep] = await Promise.all([
                     serviceAnaVariabilite.obtiensBoxPlotEstimeCental(
                         ensRegAGraph,

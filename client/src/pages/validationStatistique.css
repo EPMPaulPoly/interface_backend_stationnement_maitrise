@@ -1,0 +1,79 @@
+.page-validation-stat {
+    display: flex;
+    flex-direction: column; /* Stack vertically if necessary */
+    height: 100vh; /* Full height of the page */
+    overflow: hidden; /* Prevent overflow (no scrollbars) */
+    background-color: #1f1f1f;
+}
+.validation-menu{
+    display:flex;
+    flex-direction: row;
+    height: 50px;
+    padding: 8px;
+}
+
+.menu-icon{
+    color:white
+}
+.onglet-definition-strates{
+    display:flex;
+    flex-direction: row;
+}
+/* Strata edit container */
+.modif-strate {
+    padding: 8px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #1f1f1f;
+    color: #ffffff;
+    overflow-y: auto;
+}
+
+.strate-form-data{
+    color:#ffffff
+}
+
+.strate-edit-del{
+    display:flex;
+    flex-direction:'row'
+}
+.strate-save-cancel{
+    display:flex;
+    flex-direction:'row'
+}
+.panneau-valid{
+    display: flex;
+    flex-direction: row;
+    flex-grow:1;
+    overflow: hidden;  
+    padding:8px;
+}
+.panneau-centre{
+    width:40vw;
+    overflow: hidden;
+    display:flex;
+    flex-direction:column
+}
+.panneau-graph{
+    flex: 1 1 0;            /* grandit, rétrécit, base à 0 px */
+    overflow: hidden;       /* empêche le débordement du canvas */
+    padding:8px;
+}
+.graphique{
+    flex: 1 1 0;            /* grandit, rétrécit, base à 0 px */
+    min-height: 0;          /* évite que le conteneur pousse le parent à grandir */
+    max-height: calc(100vh - 30vh - 12rem); /* optionnel : ne jamais dépasser la hauteur restante */
+    overflow: hidden;       /* empêche le débordement du canvas */
+}
+.table-validation{
+    max-width: 100%;
+    padding:8px;
+    height:30vh
+}
+.carte-validation{
+    flex:1;
+}
+.leaflet-container {
+  flex:1
+}

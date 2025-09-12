@@ -5,6 +5,7 @@ from typing import Union,Self
 import classes.parking_reg_sets as PRS
 import classes.parking_regs as PR
 import classes.tax_dataset as TD
+import numpy as np
 class ParkingCalculationInputs(pd.DataFrame):
     """Class that inherits from pandas.DataFrame then customizes it with additonal methods."""
     def __init__(self,*args,**kwargs):
@@ -172,8 +173,7 @@ def generate_calculation_input_from_tax_data(reg_to_calculate:PR.ParkingRegulati
         output_start = lots_w_tax_entries.merge(units_df,on=config_db.db_column_parking_regs_id,how='left')
         output_start = output_start.merge(reg_to_calculate.units_table,left_on=config_db.db_column_parking_unit_id,right_on=config_db.db_column_units_id,how='left')
         # Compute 'valeur' by retrieving the column specified in each row by db_column_tax_data_column_to_multiply
-        output_start['valeur'] = output_start.apply(
-            lambda row: row[row[config_db.db_column_tax_data_column_to_multiply]] * row[config_db.db_column_tax_data_conversion_slope] + row[config_db.db_column_tax_data_conversion_zero],
+        output_start['valeur'] = output_start.apply(compute_valeur,
             axis=1
         )
         output = output_start[[config_db.db_column_lot_id,config_db.db_column_tax_land_use,config_db.db_column_parking_regs_id,config_db.db_column_parking_unit_id,'valeur']].copy().rename(columns={config_db.db_column_tax_land_use:config_db.db_column_land_use_id})
@@ -183,6 +183,39 @@ def generate_calculation_input_from_tax_data(reg_to_calculate:PR.ParkingRegulati
         return output_pii
     else:
         ValueError('Doit contenir seulement un règlement')
+
+
+def compute_valeur(row):
+    # 1️⃣ Pull the three pieces we need
+    zero   = row[config_db.db_column_tax_data_conversion_zero]
+    slope  = row[config_db.db_column_tax_data_conversion_slope]
+    col_to_use = row[config_db.db_column_tax_data_column_to_multiply]   # <-- this is the *name* of the column we want
+
+    # 2️⃣ Does the column actually exist in this DataFrame?
+    if col_to_use not in row.index:
+        # Column name not found → decide what you want to do.
+        # Here we return NaN so you can spot the problem later.
+        return np.nan
+
+    # 3️⃣ Grab the value from the dynamically‑chosen column
+    factor = row[col_to_use]
+
+    # 4️⃣ Coerce everything to numeric, turning bad values into NaN
+    try:
+        zero   = pd.to_numeric(zero,   errors='coerce')
+        slope  = pd.to_numeric(slope,  errors='coerce')
+        factor = pd.to_numeric(factor, errors='coerce')
+    except Exception:
+        return np.nan
+
+    # 5️⃣ If any piece is NaN, decide on a fallback.
+    #    Below we treat missing numbers as 0 (you could also return NaN).
+    zero   = 0 if pd.isna(zero)   else zero
+    slope  = 0 if pd.isna(slope)  else slope
+    factor = 0 if pd.isna(factor) else factor
+
+    # 6️⃣ Final calculation
+    return zero + slope * factor
 
 
 def generate_input_from_PRS_TD(prs: PRS.ParkingRegulationSet,td:TD.TaxDataset, scale:float=None)->ParkingCalculationInputs:
@@ -216,10 +249,7 @@ def generate_input_from_PRS_TD(prs: PRS.ParkingRegulationSet,td:TD.TaxDataset, s
         tax_rule_units_merge= tax_rule_table.merge(rule_units_association,how='inner',on=config_db.db_column_parking_regs_id)
         conversion_factors_merge = tax_rule_units_merge.merge(units_final[[config_db.db_column_units_id,config_db.db_column_tax_data_conversion_slope,config_db.db_column_tax_data_conversion_zero,config_db.db_column_tax_data_column_to_multiply]],how='left',left_on=config_db.db_column_parking_unit_id,right_on=config_db.db_column_units_id)
         
-        conversion_factors_merge['valeur'] = conversion_factors_merge.apply(
-            lambda row: row[config_db.db_column_tax_data_conversion_zero] +
-                        row[config_db.db_column_tax_data_conversion_slope] *
-                        row[row[config_db.db_column_tax_data_column_to_multiply]],
+        conversion_factors_merge['valeur'] = conversion_factors_merge.apply(compute_valeur,
             axis=1
         )
         conversion_factors_merge_out_start = conversion_factors_merge[[config_db.db_column_lot_id,config_db.db_column_parking_regs_id,config_db.db_column_parking_unit_id,config_db.db_column_land_use_id,'valeur']]

@@ -90,7 +90,7 @@ class ParkingInventory():
         lots_to_clean_up = self.parking_frame.loc[self.parking_frame[config_db.db_column_lot_id].duplicated(keep=False)]
         lots_list_to_purge_from_self = lots_to_clean_up[config_db.db_column_lot_id].unique().tolist()
         if len(lots_list_to_purge_from_self)>0:
-            aggregate_parking_data = lots_to_clean_up.groupby([config_db.db_column_lot_id]).apply(inventory_duplicates_agg_function).reset_index()
+            aggregate_parking_data = lots_to_clean_up.groupby([config_db.db_column_lot_id]).apply(inventory_duplicates_agg_function, include_groups=True).reset_index()
             aggregate_parking_data.loc[(aggregate_parking_data['n_places_min']>aggregate_parking_data['n_places_max']) |(aggregate_parking_data['n_places_max']==0.0),'n_places_max'] =None
             new_parking_frame = self.parking_frame.drop(self.parking_frame[self.parking_frame[config_db.db_column_lot_id].isin(lots_list_to_purge_from_self)].index)
             new_parking_frame = pd.concat([new_parking_frame,aggregate_parking_data])
@@ -230,6 +230,7 @@ def subset_operation(inventory_1:ParkingInventory,operator,inventory_2:ParkingIn
                     new_parking_frame.drop(columns=['n_places_min','n_places_max'],inplace=True)
                     #name cleanup
                     new_parking_frame.rename(columns={'n_places_min_final':'n_places_min','n_places_max_final':'n_places_max'},inplace=True)
+                    new_parking_frame['commentaire'] = inventory_1.parking_frame['commentaire']+'/' +inventory_2.parking_frame['commentaire']
                     #create object
                     parking_inventory_object = ParkingInventory(new_parking_frame)
                 logger.info('Complétion du cas de base')
@@ -260,6 +261,7 @@ def subset_operation(inventory_1:ParkingInventory,operator,inventory_2:ParkingIn
                 new_parking_frame = old_parking_frame.merge(parking_frame_out,how='left',on=config_db.db_column_lot_id)
                 new_parking_frame.drop(columns=['n_places_min','n_places_max'],inplace=True)
                 new_parking_frame.rename(columns={'n_places_min_final':'n_places_min','n_places_max_final':'n_places_max'},inplace=True)
+                new_parking_frame['commentaire'] = inventory_1.parking_frame['commentaire']+'/' +inventory_2.parking_frame['commentaire']
                 if config_db.db_column_reg_sets_id not in new_parking_frame.columns:
                     new_parking_frame[config_db.db_column_reg_sets_id]=0
                 parking_inventory_object = ParkingInventory(new_parking_frame)
@@ -724,6 +726,8 @@ def calculate_threshold_based_subset_from_inputs_class(reg_to_calculate:PR.Parki
                         parking_frame_thresh['n_places_max'] = zero_crossing_max
                     else: 
                         parking_frame_thresh['n_places_max'] = None
+
+                    parking_frame_thresh.loc[parking_frame_thresh['n_places_max']<parking_frame_thresh['n_places_min'],'n_places_max']=None
                     parking_frame_thresh['n_places_mesure'] = None
                     parking_frame_thresh['n_places_estime'] = None
                     parking_frame_thresh['methode_estime'] = methode_estime
@@ -808,6 +812,7 @@ def calculate_addition_based_subset_from_inputs_class(reg_to_calculate:PR.Parkin
                     'n_places_max':'sum'                         # Sum the values
                 }
                 inventory_out = inventory.groupby(by=config_db.db_column_lot_id).agg(agg_dict).reset_index()
+                inventory_out.loc[inventory_out['n_places_max']<inventory_out['n_places_min'],'n_places_max']=None
                 inventory_out['methode_estime'] = methode_estime
                 inventory_out['n_places_mesure'] = np.nan
                 inventory_out['n_places_estime'] = np.nan
@@ -831,41 +836,51 @@ def get_lot_data_by_estimation(lot_ids:list[str],estimation_method:int,con:Engin
     return data_PI
 
 def analyse_variabilite(engine:Engine,scales:list[float]=None):
-        # obtenir les lots
-        tax_dataset,lot_list = TD.get_all_lots_with_valid_data(engine=engine)
-        # conversion a une liste d'identifiants
-        lot_list_list = lot_list[config_db.db_column_lot_id].unique().tolist()
-        # obtenir les données actuelles de l'inventaire chacune calculée avec l'ER pertinent
-        inventory_data = PI.get_lot_data_by_estimation(lot_list_list,2) # Obtiens les données calculées
-        # Liste de lots ou un inventaire demeure
-        inventory_data_lot_list = inventory_data.parking_frame[config_db.db_column_lot_id].unique().tolist()
-        # filtrer la liste de données opur que la comparaison soit valide entre l'inventaire calculé et l'analyse de variabilité
-        tax_data_set_final = tax_dataset.filter_by_id(inventory_data_lot_list)
-        lot_list_final = lot_list.loc[lot_list[config_db.db_column_lot_id].isin(inventory_data_lot_list)]
-        # Obtention ensembles de règlements
-        reg_sets = PRS.get_all_reg_sets_from_database(engine=engine)
-        final_aggregate_data = pd.DataFrame()
-        # itération sur les ensembles de règlements
-        if scales is None:
-            scales = [1]
-        for scale in scales:
-            for reg_set in reg_sets:
-                # calcul des inputs pour l'ER sélectionné pour la boucle
-                parking_inventory_indiv_reg_set =  PI.calculate_parking_specific_reg_set(reg_set,tax_data_set_final,scale=scale)
-                # calcul de l'inventaire
-                aggregate_data = parking_inventory_indiv_reg_set.aggregate_statistics_by_land_use(lot_uses=lot_list_final,level=1)
-                aggregate_data['id_er']=reg_set.ruleset_id
-                aggregate_data['facteur_echelle'] = scale
-                # Concaténation dans un dataframe
-                if final_aggregate_data.empty:
-                    final_aggregate_data = aggregate_data
-                else:
-                    final_aggregate_data=pd.concat([final_aggregate_data,aggregate_data])
-        # application d'un ceil pour approximer au nombre de places entier supérieur
-        final_aggregate_data['n_places_min']= final_aggregate_data['n_places_min'].apply(np.ceil)
-        # injection dans la base de données
-        final_aggregate_data.to_sql('variabilite',con=engine.connect(),if_exists='replace')
-        # Agrégation de l'inventaire actuel par utilisation du sol pour l'inventaire actuel
-        actual_inv_aggregate = inventory_data.aggregate_statistics_by_land_use(lot_uses=lot_list_final,level=1)
-        actual_inv_aggregate.to_sql('inv_reg_aggreg_cubf_n1',con=engine.connect(),if_exists='replace')
-        return True
+    # obtenir les données foncières et un dataframe avec le nombre d'usage, la validité des entrées foncières et l'usage principal
+    tax_dataset,lot_land_use_and_validity = TD.get_all_lots_with_valid_data(engine=engine)
+    # conversion a une liste d'identifiants
+    valid_lot_list = lot_land_use_and_validity[config_db.db_column_lot_id].unique().tolist()
+    # obtenir les données actuelles de l'inventaire chacune calculée avec l'ER pertinent
+    inventory_data = PI.get_lot_data_by_estimation(valid_lot_list,2) # Obtiens les données calculées
+    # Liste de lots ou un inventaire demeure
+    inventory_data_lot_list = inventory_data.parking_frame[config_db.db_column_lot_id].unique().tolist()
+    # filtrer la liste de données opur que la comparaison soit valide entre l'inventaire calculé et l'analyse de variabilité
+    tax_data_set_final = tax_dataset.filter_by_id(inventory_data_lot_list)
+    lot_list_final = lot_land_use_and_validity.loc[lot_land_use_and_validity[config_db.db_column_lot_id].isin(inventory_data_lot_list)]
+    # Obtention ensembles de règlements
+    reg_sets = PRS.get_all_reg_sets_from_database(engine=engine)
+    final_aggregate_data = pd.DataFrame()
+    estim_comp = pd.DataFrame()
+    estim_comp = lot_list_final.copy()
+    estim_comp = estim_comp.merge(inventory_data.parking_frame[['g_no_lot','n_places_min']], on='g_no_lot',how='left')
+    estim_comp.rename(columns={'n_places_min':'inv_reg_min'},inplace=True)
+    # itération sur les ensembles de règlements
+    if scales is None:
+        scales = [1]
+    for scale in scales:
+        for reg_set in reg_sets:
+            print(f'calcul en cours: reg_set {reg_set.ruleset_id} echelle:{scale}')
+            # calcul des inputs pour l'ER sélectionné pour la boucle
+            parking_inventory_indiv_reg_set =  PI.calculate_parking_specific_reg_set(reg_set,tax_data_set_final,scale=scale)
+            # calcul de l'inventaire
+            aggregate_data = parking_inventory_indiv_reg_set.aggregate_statistics_by_land_use(lot_uses=lot_list_final,level=1)
+            aggregate_data['id_er']=reg_set.ruleset_id
+            aggregate_data['facteur_echelle'] = scale
+            if scale==1:
+                #print('dude')
+                estim_comp = estim_comp.merge(parking_inventory_indiv_reg_set.parking_frame[['g_no_lot','n_places_min']],on='g_no_lot',how='left')
+                estim_comp.rename(columns={'n_places_min':f'inv_er_{reg_set.ruleset_id}_min'},inplace=True)
+            # Concaténation dans un dataframe
+            if final_aggregate_data.empty:
+                final_aggregate_data = aggregate_data
+            else:
+                final_aggregate_data=pd.concat([final_aggregate_data,aggregate_data])
+    # application d'un ceil pour approximer au nombre de places entier supérieur
+    final_aggregate_data['n_places_min']= final_aggregate_data['n_places_min'].apply(np.ceil)
+    # injection dans la base de données
+    final_aggregate_data.to_sql('variabilite',con=engine.connect(),if_exists='replace')
+    # Agrégation de l'inventaire actuel par utilisation du sol pour l'inventaire actuel
+    actual_inv_aggregate = inventory_data.aggregate_statistics_by_land_use(lot_uses=lot_list_final,level=1)
+    actual_inv_aggregate.to_sql('inv_reg_aggreg_cubf_n1',con=engine.connect(),if_exists='replace')
+    estim_comp.to_sql('donnees_brutes_ana_var',con=engine.connect(),if_exists='replace')
+    return True

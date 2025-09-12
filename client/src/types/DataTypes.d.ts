@@ -195,6 +195,9 @@ export interface roleFoncierGeoJsonProps{
     rl0311a:number,
     rl0312a:number,
     rl0404a:number,
+    rl0101a:string|null,
+    rl0101e:string|null,
+    rl0101g:string|null
 }
 
 export interface roleFoncierDB extends roleFoncierGeoJsonProps{
@@ -243,6 +246,11 @@ export interface informations_reglementaire_manuelle{
     unite:number,
     desc_unite:string
 }
+
+export interface InputValues {
+    [key:string]:{valeur:number}
+}
+
 export interface informations_pour_graph_unite_er_reg{
     id_er:number,
     desc_er:string,
@@ -289,4 +297,45 @@ export interface ProprietesRequetesER{
     dateFinApres?:number|null,
     descriptionLike?:string,
     idER?:number|number[]
+}
+
+export type ConditionStrate =
+  | { condition_type: "equals"; condition_valeur: string | number }
+  | { condition_type: "range"; condition_min: number; condition_max: number };
+
+// Recursive Strata definition
+export interface Strate {
+    id_strate:number,
+    nom_strate:string,
+    nom_table: string;
+    nom_colonne: string;
+    ids_enfants:number[]|null,
+    est_racine:boolean|null,
+    index_ordre:number,
+    condition: ConditionStrate;
+    subStrata?: Strate[]; // recursion
+    n_sample?:number|null;
+    logements_valides:boolean|null;
+    superf_valide: boolean|null;
+    date_valide:boolean|null;
+}
+
+
+export interface FeuilleFinaleStrate{
+    id_strate:number,
+    desc_concat:string,
+    n_sample?:number
+}
+
+export interface EntreeValidation{
+    g_no_lot:string,
+    id_strate:number,
+    n_places:number,
+    fond_tuile:string,
+    id_val:number
+}
+
+export type methodeCalcul = {
+    methode_estime:number,
+    description:string
 }

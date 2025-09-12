@@ -9,6 +9,7 @@ import AnalyseQuartiers from './pages/AnalyseQuartiers';
 import AnalyseReglements from './pages/AnalyseReglements';
 import AnalyseVariabilite from './pages/AnalyseVariabilite';
 import { FournisseurContexte } from './contexte/ContexteImmobilisation';
+import ValidationStatistique from './pages/validationStatistique';
 const app: React.FC = () => {
   return (
     <FournisseurContexte>
@@ -23,6 +24,7 @@ const app: React.FC = () => {
           <Route path="/ana-reg" element={<AnalyseReglements/>}/>
           <Route path="/ana-var" element={<AnalyseVariabilite/>}/>
           <Route path="/ana-quartiers" element={<AnalyseQuartiers/>}/>
+          <Route path="/valid-stat" element ={<ValidationStatistique/>}/>
         </Routes>
       </Router>
     </FournisseurContexte>
