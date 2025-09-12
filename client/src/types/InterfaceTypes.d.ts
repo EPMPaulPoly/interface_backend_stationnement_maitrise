@@ -46,8 +46,8 @@ export interface TableInventaireProps{
     defOptionsQuartiers: React.Dispatch<SetStateAction<quartiers_analyse[]>>;
     inventaire: inventaire_stationnement[];
     defInventaire: React.Dispatch<SetStateAction<inventaire_stationnement[]>>
-    lots:GeoJSON.Feature<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>,
-    defLots: React.Dispatch<SetStateAction<GeoJSON.Feature<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>,
+    lots:GeoJSON.FeatureCollection<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>,
+    defLots: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>,
     donneesRole: GeoJSON.FeatureCollection<GeoJSON.Geometry,roleFoncierGeoJsonProperties>,
     defDonneesRole: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,roleFoncierGeoJsonProperties>>>,
     ensemblesReglements:ensemble_reglements_stationnement[],
@@ -79,8 +79,8 @@ export interface CarteInventaireProps{
     setStartPosition:React.Dispatch<SetStateAction<LatLngExpression>>;
     startZoom: number;
     setStartZoom: React.Dispatch<SetStateAction<number>>;
-    lotSelect:GeoJSON.Feature<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>,
-    defLotSelect: React.Dispatch<SetStateAction<GeoJSON.Feature<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>,
+    lotSelect:GeoJSON.FeatureCollection<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>,
+    defLotSelect: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>,
     donneesRole: GeoJSON.FeatureCollection<GeoJSON.Geometry,roleFoncierGeoJsonProperties>,
     defDonneesRole: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,roleFoncierGeoJsonProperties>>>,
     ensemblesReglements:ensemble_reglements_stationnement[],
@@ -101,8 +101,8 @@ export interface CarteInventaireProps{
 }
 
 export interface TableRevueProps{
-    lots:GeoJSON.Feature<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>,
-    defLots: React.Dispatch<SetStateAction<GeoJSON.Feature<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>,
+    lots:GeoJSON.FeatureCollection<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>,
+    defLots: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>,
     donneesRole: GeoJSON.FeatureCollection<GeoJSON.Geometry,roleFoncierGeoJsonProperties>,
     defDonneesRole: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,roleFoncierGeoJsonProperties>>>,
     ensemblesReglements:ensemble_reglements_stationnement[],
@@ -507,8 +507,8 @@ export interface ControlValStatProps{
     defFeuillesPossibles: React.Dispatch<SetStateAction<FeuilleFinaleStrate[]>>,
     feuilleSelect:FeuilleFinaleStrate,
     defFeuilleSelect:React.Dispatch<SetStateAction<FeuilleFinaleStrate>>
-    lots:FeatureCollection<Geometry,lotCadastralGeoJsonProperties>
-    defLots:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>>
+    lots:FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>
+    defLots:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>
 }
 
 export interface PropsArbreStrates{
@@ -556,8 +556,8 @@ export interface PropsInterfaceStrates{
 export interface PropsPanneauValid{
     feuilleStrate:FeuilleFinaleStrate,
     defFeuilleStrate:React.Dispatch<SetStateAction<FeuilleFinaleStrate>>
-    lots:FeatureCollection<Geometry,lotCadastralGeoJsonProperties>
-    defLots:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>>
+    lots:FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>
+    defLots:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>
     inventairePert:inventaire_stationnement[];
     defInventairePert:React.Dispatch<SetStateAction<inventaire_stationnement[]>>
     entreeValid:EntreeValidation
@@ -567,8 +567,8 @@ export interface PropsPanneauValid{
     defCentre: React.Dispatch<SetStateAction<LatLngExpression>>
     zoom:number,
     defZoom:React.Dispatch<SetStateAction<number>>
-    lotSelect:FeatureCollection<Geometry,lotCadastralGeoJsonProperties>
-    defLotSelect:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>>
+    lotSelect:FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>
+    defLotSelect:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>
     adresse:string
     defAdresse:React.Dispatch<SetStateAction<string>>
     newValid:boolean,
@@ -576,15 +576,15 @@ export interface PropsPanneauValid{
 }
 
 export interface PropsListeLotsValid{
-    lots:FeatureCollection<Geometry,lotCadastralGeoJsonProperties>
-    defLots:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>>
+    lots:FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>
+    defLots:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>
     inventairePert:inventaire_stationnement[];
     defInventairePert:React.Dispatch<SetStateAction<inventaire_stationnement[]>>
     entreeValid:EntreeValidation
     defEntreeValid:React.Dispatch<SetStateAction<EntreeValidation>>
     feuilleSelect:FeuilleFinaleStrate
-    lotSelect:FeatureCollection<Geometry,lotCadastralGeoJsonProperties>
-    defLotSelect:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>>
+    lotSelect:FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>
+    defLotSelect:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>
     adresse:string
     defAdresse:React.Dispatch<SetStateAction<string>>
     newValid:boolean,
@@ -599,13 +599,13 @@ export interface PropsTableRevValid{
     defAdresse:React.Dispatch<SetStateAction<string>>
     newValid:boolean,
     defNewValid:React.Dispatch<SetStateAction<boolean>>
-    lotSelect:FeatureCollection<Geometry,lotCadastralGeoJsonProperties>
-    defLotSelect:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>>
+    lotSelect:FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>
+    defLotSelect:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>
 }
 
 export interface PropsCartoValidation{
-    lotSelect:FeatureCollection<Geometry,lotCadastralGeoJsonProperties>
-    defLotSelect:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>>;
+    lotSelect:FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>
+    defLotSelect:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>;
     startPosition: LatLngExpression;
     setStartPosition:React.Dispatch<SetStateAction<LatLngExpression>>;
     startZoom: number;
@@ -613,8 +613,8 @@ export interface PropsCartoValidation{
 }
 
 export interface PropsModalRecomputeInventaire{
-    lotPert:FeatureCollection<Geometry,lotCadastralGeoJsonProperties>
-    defLotPert:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralGeoJsonProperties>>>
+    lotPert:FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>
+    defLotPert:React.Dispatch<SetStateAction<FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>
     inventairePert:inventaire_stationnement[]; // Peut-être changer ça pour simplement indiquer le lot plutôt que l'ensemble des données de stationnement. Rendrait le modal plus générique.
     defInventairePert:React.Dispatch<SetStateAction<inventaire_stationnement[]>>
     modalOuvert:boolean

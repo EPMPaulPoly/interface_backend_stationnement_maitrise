@@ -127,7 +127,7 @@ const ValidationStatistique: React.FC = () => {
     const [calculEnCours, defCalculEnCours] = useState<boolean>(false);
     const [feuillesPossibles, defFeuillesPossibles] = useState<FeuilleFinaleStrate[]>([])
     const [feuilleSelect, defFeuilleSelect] = useState<FeuilleFinaleStrate>({ id_strate: -1, desc_concat: '' })
-    const [lots, defLots] = useState<FeatureCollection<Geometry, lotCadastralGeoJsonProperties>>({
+    const [lots, defLots] = useState<FeatureCollection<Geometry, lotCadastralAvecBoolInvGeoJsonProperties>>({
         type: 'FeatureCollection',
         features: [
             {
@@ -138,11 +138,12 @@ const ValidationStatistique: React.FC = () => {
                     g_va_suprf: 0,
                     g_nb_coo_1: 0,
                     g_nb_coord: 0,
+                    bool_inv:false
                 }
             }
         ]
     })
-    const [lotSelect, defLotSelect] = useState<FeatureCollection<Geometry, lotCadastralGeoJsonProperties>>({
+    const [lotSelect, defLotSelect] = useState<FeatureCollection<Geometry, lotCadastralAvecBoolInvGeoJsonProperties>>({
         type: 'FeatureCollection',
         features: [
             {
@@ -156,6 +157,7 @@ const ValidationStatistique: React.FC = () => {
                     g_va_suprf: 0,
                     g_nb_coo_1: 0,
                     g_nb_coord: 0,
+                    bool_inv:false
                 }
             }
         ]

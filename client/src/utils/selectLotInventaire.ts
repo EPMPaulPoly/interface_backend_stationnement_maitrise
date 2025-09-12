@@ -2,7 +2,7 @@ import React from 'react';
 import { LeafletEvent } from 'leaflet';
 import {  selectLotProps } from '../types/utilTypes';
 import { Feature, FeatureCollection,Geometry } from 'geojson';
-import { inventaire_stationnement } from '../types/DataTypes';
+import { inventaire_stationnement, lotCadastralAvecBoolInvGeoJsonProperties } from '../types/DataTypes';
 import { serviceReglements,serviceCadastre, serviceEnsemblesReglements } from '../services';
 
 const checkAvailable = (inventaireComplet: inventaire_stationnement[],key:string) : boolean =>{
@@ -52,7 +52,7 @@ const selectLotInventaire = async (props: selectLotProps): Promise<void> => {
     
         // Find the lot from the features array
         const lot2 = props.lotsDuQuartier.features.find((o) => o.properties.g_no_lot === idLot);
-    
+        
         try {
             // Fetch the role associated with the lot ID
             const role = await serviceCadastre.chercheRoleAssocieParId(idLot);
@@ -63,7 +63,15 @@ const selectLotInventaire = async (props: selectLotProps): Promise<void> => {
     
             // Set the lot and role for analysis
             if (lot2) {
-                props.defLotAnalyse(lot2);
+                const lot2FC:FeatureCollection<Geometry,lotCadastralAvecBoolInvGeoJsonProperties> = {
+                    type:'FeatureCollection',
+                    features:[{
+                        type:'Feature',
+                        geometry:lot2.geometry,
+                        properties:{...lot2.properties}
+                    }]
+                }
+                props.defLotAnalyse(lot2FC);
             } else {
                 console.warn('Lot not found for idLot:', idLot);
             }

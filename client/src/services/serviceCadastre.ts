@@ -8,9 +8,9 @@ import {FeatureCollection, Geometry } from 'geojson';
 class ServiceCadastre {
     async chercheTousCadastres():Promise<ReponseCadastre> {
         try {
-            const response: AxiosResponse<ReponseDBCadastre> = await api.get(`/cadastre`);
+            const response: AxiosResponse<ReponseDBCadastreBoolInv> = await api.get(`/cadastre`);
             const data_res = response.data.data;
-            const featureCollection: FeatureCollection<Geometry, lotCadastralGeoJsonProperties> = {
+            const featureCollection: FeatureCollection<Geometry, lotCadastralAvecBoolInvGeoJsonProperties> = {
                 type: "FeatureCollection",
                 features: data_res.map((item) => ({
                     type: "Feature",
@@ -20,6 +20,7 @@ class ServiceCadastre {
                         g_va_suprf:item.g_va_suprf,
                         g_nb_coo_1:item.g_nb_coo_1,
                         g_nb_coord:item.g_nb_coord,
+                        bool_inv:item.bool_inv
                     }
                 }))
             };
@@ -35,7 +36,7 @@ class ServiceCadastre {
             throw error; // Re-throw if necessary
         }
     }
-    async chercheCadastreQuery(requete:RequeteApiCadastre):Promise<ReponseCadastre>{
+    async chercheCadastreQuery(requete:RequeteApiCadastre):Promise<ReponseCadastreBoolInv>{
         try{
             let queries:string[]=[]
             if(requete.id_strate!==undefined){
@@ -66,9 +67,9 @@ class ServiceCadastre {
             if (queries.length>0){
                 final_query+='?'+queries.join('&')
             } 
-            const response: AxiosResponse<ReponseDBCadastre> = await api.get(final_query);
+            const response: AxiosResponse<ReponseDBCadastreBoolInv> = await api.get(final_query);
             const data_res = response.data.data;
-            const featureCollection: FeatureCollection<Geometry, lotCadastralGeoJsonProperties> = {
+            const featureCollection: FeatureCollection<Geometry, lotCadastralAvecBoolInvGeoJsonProperties> = {
                 type: "FeatureCollection",
                 features: data_res.map((item) => ({
                     type: "Feature",
@@ -78,6 +79,7 @@ class ServiceCadastre {
                         g_va_suprf:item.g_va_suprf,
                         g_nb_coo_1:item.g_nb_coo_1,
                         g_nb_coord:item.g_nb_coord,
+                        bool_inv:item.bool_inv
                     }
                 }))
             };
@@ -96,9 +98,9 @@ class ServiceCadastre {
     async obtiensCadastreParId(id:string):Promise<ReponseCadastre> {
         try{
             const formattedId = id.replace(/ /g, "_");
-            const response: AxiosResponse<ReponseDBCadastre> = await api.get(`/cadastre/lot/${formattedId}`);
+            const response: AxiosResponse<ReponseDBCadastreBoolInv> = await api.get(`/cadastre/lot/${formattedId}`);
             const data_res = response.data.data;
-            const featureCollection: FeatureCollection<Geometry, lotCadastralGeoJsonProperties> = {
+            const featureCollection: FeatureCollection<Geometry, lotCadastralAvecBoolInvGeoJsonProperties> = {
                 type: "FeatureCollection",
                 features: data_res.map((item) => ({
                     type: "Feature",
@@ -108,6 +110,7 @@ class ServiceCadastre {
                         g_va_suprf:item.g_va_suprf,
                         g_nb_coo_1:item.g_nb_coo_1,
                         g_nb_coord:item.g_nb_coord,
+                        bool_inv:item.bool_inv
                     }
                 }))
             };

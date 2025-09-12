@@ -26,7 +26,12 @@ export const creationRouteurCadastre = (pool: Pool): Router => {
           g_nb_coord,
           g_nb_coo_1,
           g_va_suprf,
-          ST_AsGeoJSON(geometry) AS geojson_geometry
+          ST_AsGeoJSON(geometry) AS geojson_geometry,
+          EXISTS (
+                SELECT 1
+                FROM inventaire_stationnement AS inv
+                WHERE inv.g_no_lot = cad.g_no_lot
+            ) AS bool_inv,
         FROM public.cadastre
         WHERE g_no_lot = $1
       `;

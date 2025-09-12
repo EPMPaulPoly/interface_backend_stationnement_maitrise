@@ -1,4 +1,4 @@
-import { Box, Button, Dialog, FormControl, InputLabel, MenuItem, Modal, Paper, Select, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, useMediaQuery, useTheme } from "@mui/material"
+import { Box, Button, Dialog, FormControl, InputLabel, MenuItem, Modal, Paper, Select, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, useMediaQuery, useTheme } from "@mui/material"
 import { PropsModalRecomputeInventaire } from "../types/InterfaceTypes"
 import { useEffect, useState } from "react";
 import { Save } from "@mui/icons-material";
@@ -40,11 +40,13 @@ const ModalRecomputeInventaire: React.FC<PropsModalRecomputeInventaire> = (props
     const [calculEnCours, defCalculEnCours] = useState<boolean>(false)
     const [entreesInventaireSemiManuel, defEntreesInventaireSemiManuel] = useState<informations_reglementaire_manuelle[]>([]);
     const [entreesDonneesPourCalcul,defEntreesDonneesPourCalcul] = useState<InputValues>({});
+    const [nombrePlaces, defNombrePlaces] = useState<number>(0);
+    const [commentaire, defCommentaire] = useState<string>("");
     useEffect(() => {
         const fetchData = async () => {
             if (props.modalOuvert == true) {
                 try {
-                    defAncienInventaire(props.inventairePert);
+                    defAncienInventaire(props.inventairePert.find((row)=>row.methode_estime===methodeCalculSelect&&row.g_no_lot===props.lotPert.features[0].properties.g_no_lot)??inventaireVide);
                 } catch (error) {
                     console.error('Error fetching data:', error);
                 } finally {
@@ -67,15 +69,14 @@ const ModalRecomputeInventaire: React.FC<PropsModalRecomputeInventaire> = (props
                 break;
             case 2:
                 defCalculEnCours(true)
-                const nouveauInventaire = await serviceInventaire.recalculeLotSpecifique(props.inventairePert.g_no_lot);
+                const nouveauInventaire = await serviceInventaire.recalculeLotSpecifique(props.lotPert.features[0].properties.g_no_lot);
                 defNouvelInventaire(nouveauInventaire.data[0])
                 defFaireComparaison(true)
                 defCalculEnCours(false)
-                props.defModalOuvert(true)
                 break;
             case 3:
                 defCalculEnCours(true)
-                const donneesARemplir = await obtRegManuel(props.inventairePert.g_no_lot)
+                const donneesARemplir = await obtRegManuel(props.lotPert.features[0].properties.g_no_lot)
                 defEntreesInventaireSemiManuel(donneesARemplir)
                 defCalculEnCours(false)
                 break;
@@ -101,8 +102,8 @@ const ModalRecomputeInventaire: React.FC<PropsModalRecomputeInventaire> = (props
             
             const inventaire = await serviceInventaire.calculeInventaireValeursManuelles(matchCalcul)
             if (inventaire.success){
-                defFaireComparaison(true)
                 defNouvelInventaire(inventaire.data[0])
+                defFaireComparaison(true)
             }
             console.log('recu un inventaire')
         }
@@ -116,7 +117,11 @@ const ModalRecomputeInventaire: React.FC<PropsModalRecomputeInventaire> = (props
         }));
         console.log(entreesDonneesPourCalcul)
     };
-
+    const gestChangementMethodeCalcul = (idMethode:number)=>{
+        defMethodeCalculSelect(Number(idMethode))
+        const ancienInventairePot = props.inventairePert.find((row)=>row.methode_estime===Number(idMethode)&&row.g_no_lot===props.lotPert.features[0].properties.g_no_lot)??{...inventaireVide,g_no_lot:props.lotPert.features[0].properties.g_no_lot,methode_estime:Number(idMethode)}
+        defAncienInventaire(ancienInventairePot)
+    }
     const gestObtentionReglements=async()=>{
         defCalculEnCours(true)
         const donnees = await obtRegManuel(props.lotPert.features[0].properties.g_no_lot)
@@ -124,13 +129,53 @@ const ModalRecomputeInventaire: React.FC<PropsModalRecomputeInventaire> = (props
         defEntreeManuelleRequise(true)
         defCalculEnCours(false)
     }
+    const gestEntreeComptageManuel=()=>{
+        defNouvelInventaire({...ancienInventaire,n_places_mesure:nombrePlaces,commentaire:commentaire})
+        defFaireComparaison(true)
+        defEntreeManuelleRequise(false)
+    }
     const renduLandingChangementOptionCalcul = () => {
         switch (methodeCalculSelect) {
             case 1:
                 return (<>
                     <FormControl>
-                        <TextField label='Nombre de places' />
-                        <Save />
+                        <Stack spacing={2}>
+                            <TextField
+                                value={nombrePlaces}
+                                label='Nombre de places'
+                                onChange={(e) => defNombrePlaces(Number(e.target.value))}
+                                sx={{
+                                    input: { color: "white" },
+                                    label: { color: "white" },
+                                    "& .MuiOutlinedInput-root": {
+                                        "& fieldset": { borderColor: "white" },
+                                        "&:hover fieldset": { borderColor: "lightgray" },
+                                        "&.Mui-focused fieldset": { borderColor: "white" },
+                                    },
+                                }}
+                            />
+                            <TextField
+                                value={commentaire}
+                                label='Commentaire'
+                                onChange={(e) => defCommentaire(e.target.value)}
+                                sx={{
+                                    input: { color: "white" },
+                                    label: { color: "white" },
+                                    "& .MuiOutlinedInput-root": {
+                                        "& fieldset": { borderColor: "white" },
+                                        "&:hover fieldset": { borderColor: "lightgray" },
+                                        "&.Mui-focused fieldset": { borderColor: "white" },
+                                    },
+                                }}
+                            />
+                            <Button
+                                variant="outlined"
+                                onClick={gestEntreeComptageManuel}
+                            >
+                                Comparer à l'ancien estimé
+                            </Button>
+                        </Stack>
+
                     </FormControl>
                 </>)
 
@@ -251,7 +296,7 @@ const ModalRecomputeInventaire: React.FC<PropsModalRecomputeInventaire> = (props
                         },
                         "& .MuiInput-underline:before": { borderBottomColor: "white" },
                         "& .MuiInput-underline:hover:before": { borderBottomColor: "#ffcc00" },
-                    }} value={methodeCalculSelect} onChange={(e) => defMethodeCalculSelect(Number(e.target.value))} labelId='methode-calcul'>
+                    }} value={methodeCalculSelect} onChange={(e) => gestChangementMethodeCalcul(e.target.value)} labelId='methode-calcul'>
                         {props.methodesCalculs.map((item) =>{
                             const methodeProp:methodeCalcul|undefined = methodesCalcul.find((meth)=>meth.methode_estime===item)
                             if (methodeProp!==undefined){

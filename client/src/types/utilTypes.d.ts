@@ -8,15 +8,15 @@ export interface MAJLotsInventaireProps{
 }
 
 export interface calculateRegLotInventoryProps{
-    lots:GeoJSON.Feature<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>,
+    lots:GeoJSON.FeatureCollection<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>,
     modifEnMarche:boolean,
     defInventaireProp:React.Dispatch<SetStateAction<inventaire_stationnement>>
     defNvInvRegATrait:React.Dispatch<SetStateAction<boolean>>
 }
 
 export interface selectLotProps{
-    lotAnalyse: GeoJSON.Feature<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>,
-    defLotAnalyse: React.Dispatch<SetStateAction<GeoJSON.Feature<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>,
+    lotAnalyse: GeoJSON.FeatureCollection<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>,
+    defLotAnalyse: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,lotCadastralAvecBoolInvGeoJsonProperties>>>,
     roleAnalyse:GeoJSON.FeatureCollection<GeoJSON.Geometry,roleFoncierGeoJsonProps>,
     defRoleAnalyse: React.Dispatch<SetStateAction<GeoJSON.FeatureCollection<GeoJSON.Geometry,roleFoncierGeoJsonProps>>>,
     inventaireAnalyse: inventaire_stationnement[],

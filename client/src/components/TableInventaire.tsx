@@ -75,8 +75,9 @@ const TableInventaire:React.FC<TableInventaireProps>=(props:TableInventaireProps
     };
 
     useEffect(() => {
-        if (props.lots.properties.bool_inv) {
-            const lotKey = props.lots.properties.g_no_lot;
+        const lot = props.lots.features[0]
+        if (lot.properties.bool_inv) {
+            const lotKey = lot.properties.g_no_lot;
             const row = rowRefs.current[lotKey];
             if (row) {
                 row.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -116,7 +117,7 @@ const TableInventaire:React.FC<TableInventaireProps>=(props:TableInventaireProps
                                     data-key={item_inventaire.g_no_lot}
                                     ref={el => { rowRefs.current[item_inventaire.g_no_lot] = el; }}
                                     onClick={(e: React.MouseEvent) => handleRowClick(item_inventaire.g_no_lot)}
-                                    className={props.lots.properties.g_no_lot === item_inventaire.g_no_lot ? 'selected-row' : ''}
+                                    className={props.lots.features.map((row)=>row.properties.g_no_lot).includes(item_inventaire.g_no_lot)  ? 'selected-row' : ''}
                                     
                                 >
                                     <td>{item_inventaire?.id_inv}</td>

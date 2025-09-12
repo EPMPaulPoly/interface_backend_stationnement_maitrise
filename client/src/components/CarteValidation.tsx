@@ -26,7 +26,7 @@ const CarteValidation: React.FC<PropsCartoValidation> = (props: PropsCartoValida
                     geoJsonLayerGroupRef.current.clearLayers(); // Clear previous vector layers
                 }
 
-                if (props.lotSelect && props.lotSelect.features.length > 0) {
+                if (props.lotSelect && props.lotSelect.features.length>0) {
                     // Create a new GeoJSON layer from props.geoJsondata
                     const geoJsonLayer = L.geoJSON(props.lotSelect, {
                         style: {
@@ -78,10 +78,6 @@ const CarteValidation: React.FC<PropsCartoValidation> = (props: PropsCartoValida
                 minZoom={1}
             />
             {props.lotSelect && (<>
-                {props.lotSelect.features?.map((feature, index) => {
-                    console.log(`Feature ${index + 1}:`, feature);
-                    return null; // We return null because we're only logging, not rendering anything here.
-                })}
                 <MapComponent />
             </>
             )}

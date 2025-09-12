@@ -8,7 +8,7 @@ const TableauApprobationInventaire: React.FC<{
     ancien: inventaire_stationnement,
     nouveau: inventaire_stationnement,
     defFaireComparaison: React.Dispatch<SetStateAction<boolean>>
-    defInventairePert: React.Dispatch<SetStateAction<inventaire_stationnement>>
+    defInventairePert: React.Dispatch<SetStateAction<inventaire_stationnement[]>>
     defAncienInventaire: React.Dispatch<SetStateAction<inventaire_stationnement>>
     defNouvelInventaire: React.Dispatch<SetStateAction<inventaire_stationnement>>
 }> = (
@@ -16,7 +16,7 @@ const TableauApprobationInventaire: React.FC<{
         ancien: inventaire_stationnement,
         nouveau: inventaire_stationnement,
         defFaireComparaison: React.Dispatch<SetStateAction<boolean>>
-        defInventairePert: React.Dispatch<SetStateAction<inventaire_stationnement>>
+        defInventairePert: React.Dispatch<SetStateAction<inventaire_stationnement[]>>
         defAncienInventaire: React.Dispatch<SetStateAction<inventaire_stationnement>>
         defNouvelInventaire: React.Dispatch<SetStateAction<inventaire_stationnement>>
     }
@@ -41,13 +41,19 @@ const TableauApprobationInventaire: React.FC<{
         const gestSauvegardeOption=async()=>{
             if (props.ancien.id_inv!==-1){
                 const reponse = await serviceInventaire.modifieInventaire(props.ancien.id_inv,props.nouveau)
-                props.defInventairePert(reponse.data)
+                props.defInventairePert(prev =>
+                    prev.map(item =>
+                        item.methode_estime === reponse.data.methode_estime
+                            ? { ...item, ...reponse.data } // overwrite with new values
+                            : item
+                    )
+                )
                 props.defAncienInventaire(inventaireVide)
                 props.defNouvelInventaire(inventaireVide)
                 props.defFaireComparaison(false)
             } else{
                 const reponse = await serviceInventaire.nouvelInventaire(props.nouveau)
-                props.defInventairePert(reponse.data)
+                props.defInventairePert(prev=>[...prev, {...reponse.data}])
                 props.defAncienInventaire(inventaireVide)
                 props.defNouvelInventaire(inventaireVide)
                 props.defFaireComparaison(false)
@@ -72,7 +78,7 @@ const TableauApprobationInventaire: React.FC<{
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {['n_places_min', 'n_places_max', 'n_places_estime', 'n_places_estime', 'cubf', 'id_reg_stat', 'id_er', 'commentaire', 'id_inv'].map((item) =>
+                        {['n_places_min', 'n_places_max', 'n_places_estime', 'n_places_mesure', 'cubf', 'id_reg_stat', 'id_er', 'commentaire', 'id_inv'].map((item) =>
                             <TableRow>
                                 <TableCell>
                                     {item.replace(/_/g, " ").toUpperCase()}
