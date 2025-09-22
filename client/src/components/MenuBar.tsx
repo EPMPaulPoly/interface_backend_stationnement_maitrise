@@ -25,7 +25,8 @@ const MenuBar: React.FC<{}> = () => {
                 label={"Inventaire"}
                 options={[
                     {label:"Manipulation Inventaire", path:"/inventaire"},
-                    {label:"Validation Statistique", path:"/valid-stat"}
+                    {label:"Validation Statistique", path:"/valid-stat"},
+                    {label:"Sommaire Validation", path:"/sommaire-valid"}
                 ]}
             />
             <SubMenuComponent

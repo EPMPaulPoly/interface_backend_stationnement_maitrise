@@ -833,9 +833,8 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             labels:[],
             datasets:[]
         };
-        if (x_max !== undefined && x_max !== null && typeof x_max === 'number') {
-            x_max_final = x_max
-        } else {
+        
+        
             let max_1: number;
             let max_2: number;
             let all_values_1:number[]
@@ -856,7 +855,11 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                     n_values_2 = all_values_2.length
                     max_1 = Math.max(...all_values_1)
                     max_2 = Math.max(...all_values_2)
-                    x_max_final = Math.max(...[max_1, max_2])
+                    if (x_max !== undefined && x_max !== null && typeof x_max === 'number') {
+                        x_max_final = x_max
+                    } else{
+                        x_max_final = Math.max(...[max_1, max_2])
+                    }
                     binner = bin<number,number>().domain([0,x_max_final]).thresholds(10);
                     sample_bins_1 = binner(all_values_1)
                     sample_bins_2 = binner(all_values_2)
@@ -900,7 +903,11 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                     all_values_2 = resultat.flatMap((item)=>item.places_predites)
                     n_values_2 = all_values_2.length
                     max_2 = Math.max(...all_values_2)
-                    x_max_final = max_2
+                    if (x_max !== undefined && x_max !== null && typeof x_max === 'number') {
+                        x_max_final = x_max
+                    }else{
+                        x_max_final = max_2
+                    }
                     binner = bin<number,number>().domain([0,x_max_final]).thresholds(10);
                     sample_bins_2 = binner(all_values_2)
                     bin_labels = sample_bins_2.map((b:Bin<number, number>) => `${b.x0?.toFixed(0)} - ${b.x1?.toFixed(0)}`);
@@ -918,7 +925,11 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                 case "pred_par_reel":
                     all_values_1=resultat.flatMap((item)=>Number(item.valeur))
                     max_1 = Math.max(...all_values_1)
-                    x_max_final = max_1
+                    if (x_max !== undefined && x_max !== null && typeof x_max === 'number') {
+                        x_max_final = x_max
+                    }else{
+                        x_max_final = max_1
+                    }
                     n_values_1 = all_values_1.length
                     binner = bin<number,number>().domain([0,x_max_final]).thresholds(10);
                     sample_bins_1 = binner(all_values_1)
@@ -938,7 +949,11 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                     all_values_1=resultat.flatMap((item)=>Number(item.valeur))
                     n_values_1 = all_values_1.length
                     max_1 = Math.max(...all_values_1)
-                    x_max_final = max_1
+                    if (x_max !== undefined && x_max !== null && typeof x_max === 'number') {
+                        x_max_final = x_max
+                    }else{
+                        x_max_final = max_1
+                    }
                     binner = bin<number,number>().domain([0,x_max_final]).thresholds(10);
                     sample_bins_1 = binner(all_values_1)
                     bin_labels = sample_bins_1.map((b:Bin<number, number>) => `${b.x0?.toFixed(2)} - ${b.x1?.toFixed(2)}`);
@@ -956,7 +971,7 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                 default:
                     throw new Error('unknown type for graph')
             }
-        }
+        
         return (formatted_output)
     }
     const genereGraphiqueComparaison: RequestHandler<any, any, RequeteGraphiqueValidation> = async (req, res): Promise<void> => {
