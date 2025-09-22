@@ -1,7 +1,7 @@
 import { condition_strate, RequeteModifStrate, strate, strate_db, condition_echantillonage, RequeteResValide, CorpsValide, RequeteGraphiqueValidation, donneesHisto, serieHistogrammeVariabilite, dataHistogrammeVariabilite } from 'database';
 import { Router, RequestHandler } from 'express';
 import { Pool } from 'pg';
-import {bin,Bin,HistogramGeneratorNumber} from 'd3-array';
+import { bin, Bin, HistogramGeneratorNumber } from 'd3-array';
 export const creationRouteurValidation = (pool: Pool): Router => {
     const router = Router();
     const creationCondition = (ligne: strate_db): condition_strate | undefined => {
@@ -827,153 +827,125 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             }
         }
     }
-    const genereSortieGraphique = (type: String, resultat: any[], x_max?: number): dataHistogrammeVariabilite => {
+    const genereSortieGraphique = (
+        type: string,
+        resultat: any[],
+        x_max?: number
+    ): dataHistogrammeVariabilite => {
+
         let x_max_final: number;
-        let formatted_output: dataHistogrammeVariabilite={
-            labels:[],
-            datasets:[]
+        let formatted_output: dataHistogrammeVariabilite = {
+            labels: [],
+            datasets: []
         };
-        
-        
-            let max_1: number;
-            let max_2: number;
-            let all_values_1:number[]
-            let all_values_2:number[]
-            let n_values_1:number;
-            let n_values_2:number;
-            let binner: HistogramGeneratorNumber<number,number>;
-            let sample_bins_1:Bin<number,number>[]
-            let sample_bins_2:Bin<number,number>[]
-            let bin_labels:string[]
-            let data_out_1:number[]
-            let data_out_2:number[]
-            switch (type) {
-                case 'stationnement':
-                    all_values_1 = resultat.flatMap((item)=>item.places_reelles)
-                    all_values_2 = resultat.flatMap((item)=>item.places_predites)
-                    n_values_1 = all_values_1.length
-                    n_values_2 = all_values_2.length
-                    max_1 = Math.max(...all_values_1)
-                    max_2 = Math.max(...all_values_2)
-                    if (x_max !== undefined && x_max !== null && typeof x_max === 'number') {
-                        x_max_final = x_max
-                    } else{
-                        x_max_final = Math.max(...[max_1, max_2])
-                    }
-                    binner = bin<number,number>().domain([0,x_max_final]).thresholds(10);
-                    sample_bins_1 = binner(all_values_1)
-                    sample_bins_2 = binner(all_values_2)
-                    bin_labels = sample_bins_1.map((b:Bin<number, number>) => `${b.x0?.toFixed(0)} - ${b.x1?.toFixed(0)}`);
-                    data_out_1 = sample_bins_1.map((b:Bin<number, number>) => b.length/n_values_1)
-                    data_out_2 = sample_bins_2.map((b:Bin<number, number>) => b.length/n_values_2)
-                    formatted_output={
-                        labels:bin_labels,
-                        datasets:[
-                            {
-                                label:'Places Réelles',
-                                data:data_out_1
-                            },
-                            {
-                                label:'Places prédites',
-                                data:data_out_2
-                            }
-                        ]
-                    }
-                    break;
-                case 'stationnement_reel':
-                    all_values_1 = resultat.flatMap((item)=>item.places_reelles)
-                    n_values_1 = all_values_1.length
-                    max_1 = Math.max(...all_values_1)
-                    x_max_final = max_1
-                    binner = bin<number,number>().domain([0,x_max_final]).thresholds(10);
-                    sample_bins_1 = binner(all_values_1)
-                    bin_labels = sample_bins_1.map((b:Bin<number, number>) => `${b.x0?.toFixed(0)} - ${b.x1?.toFixed(0)}`);
-                    data_out_1 = sample_bins_1.map((b:Bin<number, number>) => b.length/n_values_1)
-                    formatted_output={
-                        labels:bin_labels,
-                        datasets:[
-                            {
-                                label:'Places Réelles',
-                                data:data_out_1
-                            }
-                        ]
-                    }
-                    break;
-                case 'stationnement_predit':
-                    all_values_2 = resultat.flatMap((item)=>item.places_predites)
-                    n_values_2 = all_values_2.length
-                    max_2 = Math.max(...all_values_2)
-                    if (x_max !== undefined && x_max !== null && typeof x_max === 'number') {
-                        x_max_final = x_max
-                    }else{
-                        x_max_final = max_2
-                    }
-                    binner = bin<number,number>().domain([0,x_max_final]).thresholds(10);
-                    sample_bins_2 = binner(all_values_2)
-                    bin_labels = sample_bins_2.map((b:Bin<number, number>) => `${b.x0?.toFixed(0)} - ${b.x1?.toFixed(0)}`);
-                    data_out_2 = sample_bins_2.map((b:Bin<number, number>) => b.length/n_values_1)
-                    formatted_output={
-                        labels:bin_labels,
-                        datasets:[
-                            {
-                                label:'Places prédites',
-                                data:data_out_2
-                            }
-                        ]
-                    }
-                    break;
-                case "pred_par_reel":
-                    all_values_1=resultat.flatMap((item)=>Number(item.valeur))
-                    max_1 = Math.max(...all_values_1)
-                    if (x_max !== undefined && x_max !== null && typeof x_max === 'number') {
-                        x_max_final = x_max
-                    }else{
-                        x_max_final = max_1
-                    }
-                    n_values_1 = all_values_1.length
-                    binner = bin<number,number>().domain([0,x_max_final]).thresholds(10);
-                    sample_bins_1 = binner(all_values_1)
-                    bin_labels = sample_bins_1.map((b:Bin<number, number>) => `${b.x0?.toFixed(2)} - ${b.x1?.toFixed(2)}`);
-                    data_out_1 = sample_bins_1.map((b:Bin<number, number>) => b.length/n_values_1)
-                    formatted_output={
-                        labels:bin_labels,
-                        datasets:[
-                            {
-                                label:'Places prédites par places place réelle',
-                                data:data_out_1
-                            }
-                        ]
-                    }
-                    break;
-                case "reel_par_pred":
-                    all_values_1=resultat.flatMap((item)=>Number(item.valeur))
-                    n_values_1 = all_values_1.length
-                    max_1 = Math.max(...all_values_1)
-                    if (x_max !== undefined && x_max !== null && typeof x_max === 'number') {
-                        x_max_final = x_max
-                    }else{
-                        x_max_final = max_1
-                    }
-                    binner = bin<number,number>().domain([0,x_max_final]).thresholds(10);
-                    sample_bins_1 = binner(all_values_1)
-                    bin_labels = sample_bins_1.map((b:Bin<number, number>) => `${b.x0?.toFixed(2)} - ${b.x1?.toFixed(2)}`);
-                    data_out_1 = sample_bins_1.map((b:Bin<number, number>) => b.length/n_values_1)
-                    formatted_output={
-                        labels:bin_labels,
-                        datasets:[
-                            {
-                                label:'Places réelles par places place prédite',
-                                data:data_out_1
-                            }
-                        ]
-                    }
-                    break;
-                default:
-                    throw new Error('unknown type for graph')
+        const nEntrees = resultat.length;
+        // Helper: bin values and add overflow bin
+        const binWithOverflow = (values: number[], x_max_val: number) => {
+            const binner = bin<number, number>()
+                .domain([0, x_max_val])
+                .thresholds(10);
+
+            const bins = binner(values);
+
+            const overflowValues = values.filter(v => v > x_max_val);
+            if (overflowValues.length > 0) {
+                const overflowBin: Bin<number, number> = [] as unknown as Bin<number, number>;
+                overflowBin.push(...overflowValues);
+                overflowBin.x0 = x_max_val;
+                overflowBin.x1 = Math.max(...values);
+                bins.push(overflowBin);
             }
-        
-        return (formatted_output)
-    }
+
+            const labels = bins.map(b =>
+                (b.x1 !== undefined ? (b.x1 <= x_max_val ? `${b.x0?.toFixed(2)} - ${b.x1.toFixed(2)}` : `${b.x0?.toFixed(2)}+`) : `${b.x0?.toFixed(2)}`)
+            );
+
+            const data = bins.map(b => b.length / values.length);
+
+            return { bins, labels, data };
+        };
+
+        switch (type) {
+            case 'stationnement': {
+                const all_values_1 = resultat.flatMap(item => item.places_reelles);
+                const all_values_2 = resultat.flatMap(item => item.places_predites);
+
+                x_max_final = typeof x_max === 'number'
+                    ? x_max
+                    : Math.max(Math.max(...all_values_1), Math.max(...all_values_2));
+
+                const res1 = binWithOverflow(all_values_1, x_max_final);
+                const res2 = binWithOverflow(all_values_2, x_max_final);
+
+                formatted_output = {
+                    labels: res1.labels,
+                    datasets: [
+                        { label: `Places Réelles - N=${nEntrees}`, data: res1.data },
+                        { label: `Places Prédites - N=${nEntrees}`, data: res2.data }
+                    ]
+                };
+                break;
+            }
+
+            case 'stationnement_reel': {
+                const all_values = resultat.flatMap(item => item.places_reelles);
+                x_max_final = typeof x_max === 'number' ? x_max : Math.max(...all_values);
+
+                const { labels, data } = binWithOverflow(all_values, x_max_final);
+
+                formatted_output = {
+                    labels,
+                    datasets: [{ label: `Places Réelles - N=${nEntrees}`, data }]
+                };
+                break;
+            }
+
+            case 'stationnement_predit': {
+                const all_values = resultat.flatMap(item => item.places_predites);
+                x_max_final = typeof x_max === 'number' ? x_max : Math.max(...all_values);
+
+                const { labels, data } = binWithOverflow(all_values, x_max_final);
+
+                formatted_output = {
+                    labels,
+                    datasets: [{ label: `Places Prédites - N=${nEntrees}`, data }]
+                };
+                break;
+            }
+
+            case 'pred_par_reel': {
+                const all_values = resultat.map(item => Number(item.valeur));
+                x_max_final = typeof x_max === 'number' ? x_max : Math.max(...all_values);
+
+                const { labels, data } = binWithOverflow(all_values, x_max_final);
+
+                formatted_output = {
+                    labels,
+                    datasets: [{ label: `Places prédites par places réelles - N = ${nEntrees}`, data }]
+                };
+                break;
+            }
+
+            case 'reel_par_pred': {
+                const all_values = resultat.map(item => Number(item.valeur));
+                x_max_final = typeof x_max === 'number' ? x_max : Math.max(...all_values);
+
+                const { labels, data } = binWithOverflow(all_values, x_max_final);
+
+                formatted_output = {
+                    labels,
+                    datasets: [{ label: `Places réelles par places prédites - N = ${nEntrees}`, data }]
+                };
+                break;
+            }
+
+            default:
+                throw new Error('unknown type for graph');
+        }
+
+        return formatted_output;
+    };
+
     const genereGraphiqueComparaison: RequestHandler<any, any, RequeteGraphiqueValidation> = async (req, res): Promise<void> => {
         console.log('obtention graphique validation')
         let client;
@@ -981,8 +953,8 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             const { id_strate, type, x_max } = req.query
             let type_out: string = ''
             let valeur_extraction: string = ''
-           
-            if (type !== undefined && typeof type ==='string') {
+
+            if (type !== undefined && typeof type === 'string') {
                 type_out = String(type)
             }
             switch (type_out) {
@@ -1040,7 +1012,7 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             } else {
                 out = genereSortieGraphique(type_out, result.rows)
             }
-            if (out.labels.length===0){
+            if (out.labels.length === 0) {
                 throw new Error('Enjeu weird pendant conversion')
             }
             res.json({ success: true, data: out });
