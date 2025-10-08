@@ -121,18 +121,18 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
         'perm': {
             expression: () => `mq.nb_permis::float`,
             aggregateExpression: () => `SUM(mq.nb_permis)`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Nombre de permis de conduire [-]',
             requiresOrdre: false
         },
         'popu-2021': {
             expression: () => `pq.pop_tot_2021::float`,
             aggregateExpression: () => `SUM(pq.pop_tot_2021)`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
-            joins: ['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int',],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            ctes:()=>[],
+            joins: ['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+            groupbys:[],
             description: 'Population [-]',
             requiresOrdre: false
         },
@@ -140,18 +140,18 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
         'popu-2016': {
             expression: () => `pq.pop_tot_2016::float`,
             aggregateExpression: () => `SUM(pq.pop_tot_2016)`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int',],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Population [-]',
             requiresOrdre: false
         },
         'voit-par-pers-2021': {
             expression: () => `(1000*mq.nb_voitures/pq.pop_tot_2021)::float`,
             aggregateExpression: () => `1000*SUM(mq.nb_voitures)/SUM(pq.pop_tot_2021)::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:()=>[],
             joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int', 'population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Nombre de voiture (OD) par 1000 personne(Recensement) [-]',
             requiresOrdre: false
         },
@@ -159,342 +159,357 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
         'voit-par-pers-2016': {
             expression: () => `(1000*mq.nb_voitures/pq.pop_tot_2016)::float`,
             aggregateExpression: () => `1000*SUM(mq.nb_voitures)/SUM(pq.pop_tot_2016)::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int', 'population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Nombre de voiture (OD) par 1000 personne(Recensement) [-]',
             requiresOrdre: false
         },
         'voit-par-perm': {
             expression: () => `(1000*mq.nb_voitures/mq.nb_permis)::float`,
             aggregateExpression: () => `1000 * SUM(mq.nb_voitures)/SUM(mq.nb_permis)::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:()=>[],
             joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Nombre de voiture (OD) par 1000 permis de conduire(OD) [-]',
             requiresOrdre: false
         },
         'dens-pop-2021': {
             expression: () => `(pq.pop_tot_2021 / NULLIF(sa.superf_quartier/1000000, 0))::float`,
             aggregateExpression: () => `(SUM(pq.pop_tot_2021) /SUM( NULLIF(sa.superf_quartier/1000000, 0)))::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:()=>[],
             joins: ['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Densité Population [1/km2]',
             requiresOrdre: false
         },
         'dens-pop-2016': {
             expression: () => `(pq.pop_tot_2016 / NULLIF(sa.superf_quartier/1000000, 0))::float`,
             aggregateExpression: () => `(SUM(pq.pop_tot_2016) /SUM( NULLIF(sa.superf_quartier/1000000, 0)))::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:()=>[],
             joins: ['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Densité Population [1/km2]',
             requiresOrdre: false
         },
         'val-log-moy': {
             expression: () => `dfa.valeur_moyenne_logement::float`,
-            aggregateExpression: () => `SUM(dfa.valeur_moyenne_logement)/count(*)::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            aggregateExpression: () => `SUM(dfa.valeur_moyenne_logement)/SUM(dfa.n_logements)::float`,
+            ctes:()=>[],
             joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Valeur moyenne des logements [$]',
             requiresOrdre: false
         },
         'sup-log-moy': {
             expression: () => `dfa.superf_moyenne_logement::float`,
-            aggregateExpression: () => `SUM(dfa.superf_moyenne_logement)/COUNT(*)::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            aggregateExpression: () => `SUM(dfa.superf_moyenne_logement)/SUM(dfa.n_logements)::float`,
+            ctes:()=>[],
             joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Superficie moyenne des logements [m2]',
             requiresOrdre: false
         },
         'val-tot-quart': {
             expression: () => `dfa.valeur_fonciere_totale::float`,
             aggregateExpression: () => `SUM(dfa.valeur_fonciere_totale)::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:()=>[],
             joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Valeur Foncière totale [$]',
             requiresOrdre: false
         },
         'val-tot-log-quart': {
             expression: () => `dfa.valeur_fonciere_logement_totale::float`,
             aggregateExpression: () => `SUM(dfa.valeur_fonciere_logement_totale)::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:()=>[],
             joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Valeur Foncière logements [$]',
             requiresOrdre: false
         },
         'val-tot-sup': {
             expression: () => `(dfa.valeur_fonciere_totale / NULLIF(sa.superf_quartier/10000, 0))::float`,
             aggregateExpression: () => `(SUM(dfa.valeur_fonciere_totale) / SUM(NULLIF(sa.superf_quartier/10000, 0)))::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:()=>[],
             joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Valeur Foncière [$/Ha]',
             requiresOrdre: false
         },
         'val-tot-log-sup': {
             expression: () => `(dfa.valeur_fonciere_logement_totale::float / NULLIF(sa.superf_quartier/10000, 0))::float`,
             aggregateExpression: () => `(SUM(dfa.valeur_fonciere_logement_totale::float) / SUM(NULLIF(sa.superf_quartier/10000, 0)))::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Valeur Foncière Résidentielle[$/Ha]',
             requiresOrdre: false
         },
         'nb-voit': {
             expression: () => `(mq.nb_voitures)::float`,
             aggregateExpression: () => `SUM(mq.nb_voitures)::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:()=>[],
             joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Nombre de voitures [-]',
             requiresOrdre: false
         },
         'nb-voit-delta': {
             expression: () => `(mq.diff_max_signee)`,
             aggregateExpression: () => `SUM(mq.diff_max_signee)::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:()=>[],
             joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Delta Voitures Max [-]',
             requiresOrdre: false
         },
         'nb-voit-max': {
             expression: () => `(mq.nb_voitures_max_pav)`,
             aggregateExpression: () => `SUM(mq.nb_voitures_max_pav)::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:()=>[],
             joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Voitures Max Journees[-]',
             requiresOrdre: false
         },
         'nb-voit-min': {
             expression: () => `(mq.nb_voitures_min_pav)`,
             aggregateExpression: () => `SUM(mq.nb_voitures_min_pav)::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:()=>[],
             joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Voitures Min Journees[-]',
             requiresOrdre: false
         },
         'stat-voit-max': {
-            expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(mq.nb_voitures_max_pav, 0))::float`,
+            expression: () => `(stpag.val_ag/ NULLIF(mq.nb_voitures_max_pav, 0))::float`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
-            joins: ['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int', 'motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            ctes:(ordre)=>[`stat_pre_agg AS(
+                SELECT 
+                    id_quartier,
+                    SUM(stag.inv_${getValidatedOrdre(ordre)}) as val_ag
+                FROM stat_agrege stag 
+                GROUP BY stag.id_quartier)`],
+            joins: ['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int', 'motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+            groupbys:[],
             description: 'Stationnement par voiture max[-]',
             requiresOrdre: false
         },
         'pm-ac-res': {
             expression: () => `(pm.ac_res)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Auto-conducteur résidents [%]',
             requiresOrdre: false
         },
         'pm-ap-res': {
             expression: () => `(pm.ap_res)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:()=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Auto-passager résidents [%]',
             requiresOrdre: false
         },
         'pm-tc-res': {
             expression: () => `(pm.tc_res)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Transport collectif résidents [%]',
             requiresOrdre: false
         },
         'pm-mv-res': {
             expression: () => `(pm.mv_res)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:()=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Marche Vélo résidents [%]',
             requiresOrdre: false
         },
         'pm-bs-res': {
             expression: () => `(pm.bs_res)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:()=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Marche Vélo résidents [%]',
             requiresOrdre: false
         },
         'pm-ac-int': {
             expression: () => `(pm.ac_int)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:()=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Auto-conducteur Interne [%]',
             requiresOrdre: false
         },
         'pm-ap-int': {
             expression: () => `(pm.ap_int)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Auto-passager Interne [%]',
             requiresOrdre: false
         },
         'pm-tc-int': {
             expression: () => `(pm.tc_res)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:()=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Transport collectif interne [%]',
             requiresOrdre: false
         },
         'pm-mv-int': {
             expression: () => `(pm.mv_int)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Marche Vélo interne [%]',
             requiresOrdre: false
         },
         'pm-bs-int': {
             expression: () => `(pm.bs_int)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Marche Vélo interne [%]',
             requiresOrdre: false
         },
         'pm-ac-ori': {
             expression: () => `(pm.ac_ori)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Auto-conducteur originant du secteur [%]',
             requiresOrdre: false
         },
         'pm-ap-ori': {
             expression: () => `(pm.ap_ori)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Auto-passager originant du secteur [%]',
             requiresOrdre: false
         },
         'pm-tc-ori': {
             expression: () => `(pm.tc_ori)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Transport collectif originant du secteur [%]',
             requiresOrdre: false
         },
         'pm-mv-ori': {
             expression: () => `(pm.mv_ori)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Marche Vélo originant du secteur [%]',
             requiresOrdre: false
         },
         'pm-bs-ori': {
             expression: () => `(pm.bs_ori)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Marche Vélo originant du secteur [%]',
             requiresOrdre: false
         },
         'pm-ac-des': {
             expression: () => `(pm.ac_des)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Auto-conducteur à destination du secteur [%]',
             requiresOrdre: false
         },
         'pm-ap-des': {
             expression: () => `(pm.ap_des)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Auto-passager à destination du secteur [%]',
             requiresOrdre: false
         },
         'pm-tc-des': {
             expression: () => `(pm.tc_des)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Transport collectif à destination du secteur [%]',
             requiresOrdre: false
         },
         'pm-mv-des': {
             expression: () => `(pm.mv_des)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Marche Vélo à destination du secteur [%]',
             requiresOrdre: false
         },
         'pm-bs-des': {
             expression: () => `(pm.bs_des)`,
             aggregateExpression: () => `0::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Part Modale Marche Vélo à destination du secteur [%]',
             requiresOrdre: false
         },
         'stat-inu': {
-            expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)}-mq.nb_voitures_max_pav)`,
-            aggregateExpression: (ordre) => `(SUM(stag.inv_${getValidatedOrdre(ordre)})::float-SUM(mq.nb_voitures_max_pav)::float)`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
-            joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int', 'stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            expression: (ordre) => `(stpag.val_ag-mq.nb_voitures_max_pav)`,
+            aggregateExpression: (ordre) => `(SUM(stpag.val_ag)::float-SUM(mq.nb_voitures_max_pav)::float)`,
+            ctes:(ordre)=>[`stat_pre_agg AS(
+                SELECT 
+                    id_quartier,
+                    SUM(stag.inv_${getValidatedOrdre(ordre)}) as val_ag
+                FROM stat_agrege stag 
+                GROUP BY stag.id_quartier)`],
+            joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int', 'stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            groupbys:[],
             description: 'Places inutilisées en tout temps[-]',
             requiresOrdre: false
         },
         'stat-inu-sup': {
-            expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)}-mq.nb_voitures_max_pav)*14.3`,
+            expression: (ordre) => `(stpag.val_ag-mq.nb_voitures_max_pav)*14.3`,
             aggregateExpression: (ordre) => `(SUM(stag.inv_${getValidatedOrdre(ordre)})-SUM(mq.nb_voitures_max_pav))*14.3::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
-            joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int', 'stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            ctes:(ordre)=>[`stat_pre_agg AS(
+                SELECT 
+                    id_quartier,
+                    SUM(stag.inv_${getValidatedOrdre(ordre)}) as val_ag
+                FROM stat_agrege stag 
+                GROUP BY stag.id_quartier)`],
+            joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int', 'stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            groupbys:[],
             description: 'Superficie inutilisées en tout temps[-]',
             requiresOrdre: false
         },
         'n-logements': {
             expression: () => `(dfa.n_logements )::float`,
             aggregateExpression: () => `(SUM(dfa.n_logements))::float`,
-            ctes:(ordre)=>[`stat_pre_agg AS(SELECT id_quartier,SUM(stag.inv_${getValidatedOrdre(ordre)}) FROM stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int GROUP BY stag.id_quertier`],
+            ctes:(ordre)=>[],
             joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
-            groupbys:['sa.id_quartier','sa.geometry','sa.superf_quartier'],
+            groupbys:[],
             description: 'Nombre de logements au rôle[-]',
             requiresOrdre: false
         },
