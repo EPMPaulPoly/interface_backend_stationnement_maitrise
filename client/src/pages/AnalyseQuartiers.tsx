@@ -327,7 +327,79 @@ const AnalyseQuartiers:React.FC = () =>{
                 descriptionVariable:'Nombre de Logements',
                 requiertOrdrePriorite:false,
                 queryKey:'n-logements'
-            }
+            },
+            {
+                idVariable:49,
+                descriptionVariable:'Nombre de voitures résidents par stationnement résidentiel',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-res-voit'
+            },
+            {
+                idVariable:50,
+                descriptionVariable:'Stationnement résidentiel',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-res'
+            },
+            {
+                idVariable:51,
+                descriptionVariable:'Stationnement industriel',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-ind'
+            },
+            {
+                idVariable:52,
+                descriptionVariable:'Stationnement infrastructure',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-inf'
+            },
+            {
+                idVariable:53,
+                descriptionVariable:'Stationnement commercial',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-com'
+            },
+            {
+                idVariable:54,
+                descriptionVariable:'Stationnement services',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-ser'
+            },
+            {
+                idVariable:55,
+                descriptionVariable:'Stationnement Récréation',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-rec'
+            },
+            {
+                idVariable:56,
+                descriptionVariable:'Stationnement agricole',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-agr'
+            },
+            {
+                idVariable:57,
+                descriptionVariable:'Stationnement immeubles non-exploités',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-inex'
+            },
+            {
+                idVariable:58,
+                descriptionVariable:'Stationnement résidentiel par voiture',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-res-voit'
+            },
+            {
+                idVariable:59,
+                descriptionVariable:'Stationnement résidentiel par logement',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-res-log'
+            },
+            {
+                idVariable:60,
+                descriptionVariable:'Stationnement résidentiel par permis',
+                requiertOrdrePriorite:true,
+                queryKey:'stat-res-perm'
+            },
         ];
     const prioritesPossibles:PrioriteEstimeInventaire[]=[
         {
@@ -359,6 +431,21 @@ const AnalyseQuartiers:React.FC = () =>{
             idPriorite:5,
             descriptionPriorite:"Reg. Manuel -> Manuel -> Reg. Rôle",
             listeMethodesOrdonnees:[3,1,2]
+        },
+        {
+            idPriorite:6,
+            descriptionPriorite:"Manuel",
+            listeMethodesOrdonnees:[1]
+        },
+        {
+            idPriorite:7,
+            descriptionPriorite:"Reg. Rôle",
+            listeMethodesOrdonnees:[2]
+        },
+        {
+            idPriorite:8,
+            descriptionPriorite:"Reg. Manuel",
+            listeMethodesOrdonnees:[3]
         },
     ];
 

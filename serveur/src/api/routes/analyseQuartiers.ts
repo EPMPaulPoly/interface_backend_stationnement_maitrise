@@ -13,7 +13,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
     const variableMap: Record<string, XYVariableInfo> = {
         'stat-tot': {
             expression: () => `stpag.val_ag::float`,
-            aggregateExpression: (ordre) => `SUM(stag.inv_${getValidatedOrdre(ordre)})`,
+            aggregateExpression: (ordre) => `SUM(stpag.val_ag::float)`,
             ctes:(ordre)=>[`stat_pre_agg AS(
                 SELECT 
                     id_quartier,
@@ -25,9 +25,121 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
             groupbys:[],
             requiresOrdre: true
         },
+        'stat-res':{
+            ctes:(ordre)=>[`stat_pre_agg AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 1)`],
+            expression:()=>`stpag.val_ag::int`,
+            aggregateExpression:()=>`SUM(stpag.val_ag)`,
+            joins:['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            description: 'Stationnement Résidentiel [-]',
+            groupbys:[],
+            requiresOrdre:true
+        }, 
+        'stat-ind':{
+            ctes:(ordre)=>[`stat_pre_agg AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 2)`],
+            expression:()=>`stpag.val_ag::int`,
+            aggregateExpression:()=>`SUM(stpag.val_ag)`,
+            joins:['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            description: 'Stationnement Industriel [-]',
+            groupbys:[],
+            requiresOrdre:true
+        }, 
+        'stat-inf':{
+            ctes:(ordre)=>[`stat_pre_agg AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 4)`],
+            expression:()=>`stpag.val_ag::int`,
+            aggregateExpression:()=>`SUM(stpag.val_ag)`,
+            joins:['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            description: 'Stationnement Infrastructure [-]',
+            groupbys:[],
+            requiresOrdre:true
+        }, 
+        'stat-com':{
+            ctes:(ordre)=>[`stat_pre_agg AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 5)`],
+            expression:()=>`stpag.val_ag::int`,
+            aggregateExpression:()=>`SUM(stpag.val_ag)`,
+            joins:['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            description: 'Stationnement Commercial [-]',
+            groupbys:[],
+            requiresOrdre:true
+        }, 
+        'stat-ser':{
+            ctes:(ordre)=>[`stat_pre_agg AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 6)`],
+            expression:()=>`stpag.val_ag::int`,
+            aggregateExpression:()=>`SUM(stpag.val_ag)`,
+            joins:['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            description: 'Stationnement Services [-]',
+            groupbys:[],
+            requiresOrdre:true
+        }, 
+        'stat-rec':{
+            ctes:(ordre)=>[`stat_pre_agg AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 7)`],
+            expression:()=>`stpag.val_ag::int`,
+            aggregateExpression:()=>`SUM(stpag.val_ag)`,
+            joins:['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            description: 'Stationnement Récréatif [-]',
+            groupbys:[],
+            requiresOrdre:true
+        }, 
+        'stat-agr':{
+            ctes:(ordre)=>[`stat_pre_agg AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 8)`],
+            expression:()=>`stpag.val_ag::int`,
+            aggregateExpression:()=>`SUM(stpag.val_ag)`,
+            joins:['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            description: 'Stationnement Agricole [-]',
+            groupbys:[],
+            requiresOrdre:true
+        }, 
+        'stat-inex':{
+            ctes:(ordre)=>[`stat_pre_agg AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 5)`],
+            expression:()=>`stpag.val_ag::int`,
+            aggregateExpression:()=>`SUM(stpag.val_ag)`,
+            joins:['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            description: 'Stationnement Non-exploité [-]',
+            groupbys:[],
+            requiresOrdre:true
+        }, 
         'stat-sup': {
             expression: () => `(stpag.val_ag::float/ NULLIF(sa.superf_quartier/10000, 0))::float`,
-            aggregateExpression: (ordre) => `(SUM(stag.inv_${getValidatedOrdre(ordre)} )/ SUM(NULLIF(sa.superf_quartier/10000, 0)))::float`,
+            aggregateExpression: (ordre) => `((SUM(stpag.val_ag::float))/ SUM(NULLIF(sa.superf_quartier/10000, 0)))`,
             ctes:(ordre)=>[`stat_pre_agg AS(
                 SELECT 
                     id_quartier,
@@ -41,7 +153,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
         },
         'stat-popu-2021': {
             expression: () => `(stpag.val_ag::float / NULLIF(pq.pop_tot_2021, 0))::float`,
-            aggregateExpression: (ordre) => `(SUM(stag.inv_${getValidatedOrdre(ordre)}) / SUM(NULLIF(pq.pop_tot_2021, 0)))::float`,
+            aggregateExpression: () => `(SUM(stpag.val_ag::float) / SUM(NULLIF(pq.pop_tot_2021, 0)))`,
             ctes:(ordre)=>[`stat_pre_agg AS(
                 SELECT 
                     id_quartier,
@@ -83,7 +195,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
         },
         'stat-voit': {
             expression: () => `(stpag.val_ag::float  / NULLIF(mq.nb_voitures, 0))::float`,
-            aggregateExpression: (ordre) => `(SUM(stag.inv_${getValidatedOrdre(ordre)}) / SUM(NULLIF(mq.nb_voitures, 0)))::float`,
+            aggregateExpression: (ordre) => `(SUM(stpag.val_ag::float) / SUM(NULLIF(mq.nb_voitures, 0)))`,
             ctes:(ordre)=>[`stat_pre_agg AS(
                 SELECT 
                     id_quartier,
@@ -91,6 +203,20 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
                 FROM stat_agrege stag 
                 GROUP BY stag.id_quartier)`],
             joins: ['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int', 'motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+            groupbys:[],
+            description: 'Stationnement par voiture résident [-]',
+            requiresOrdre: true
+        },
+        'stat-res-voit':{
+            expression: () => `(stpagr.val_ag::float  / NULLIF(mq.nb_voitures, 0))::float`,
+            aggregateExpression: (ordre) => `(SUM(stpagr.val_ag::float) / SUM(NULLIF(mq.nb_voitures, 0)))`,
+            ctes:(ordre)=>[`stat_pre_agg_res AS(
+                SELECT 
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag 
+                where cubf_principal_n1=1)`],
+            joins: ['stat_pre_agg_res stpagr ON sa.id_quartier::int=stpagr.id_quartier::int', 'motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
             groupbys:[],
             description: 'Stationnement par voiture résident [-]',
             requiresOrdre: true
@@ -103,7 +229,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
                     SUM(stag.inv_${getValidatedOrdre(ordre)}) as val_ag
                 FROM stat_agrege stag 
                 GROUP BY stag.id_quartier)`],
-            aggregateExpression: (ordre) => `(SUM(stag.inv_${getValidatedOrdre(ordre)})*14.3 / SUM(NULLIF(sa.superf_quartier, 0)))::float`,
+            aggregateExpression: (ordre) => `(SUM(stpag.val_ag::float)*14.3 / SUM(NULLIF(sa.superf_quartier, 0)))`,
             joins: ['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
             groupbys:[],
             description: 'Territoire dédié au stationnement [%]',
@@ -492,7 +618,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
         },
         'stat-inu-sup': {
             expression: (ordre) => `(stpag.val_ag-mq.nb_voitures_max_pav)*14.3`,
-            aggregateExpression: (ordre) => `(SUM(stag.inv_${getValidatedOrdre(ordre)})-SUM(mq.nb_voitures_max_pav))*14.3::float`,
+            aggregateExpression: (ordre) => `(SUM(stpag.val_ag)-SUM(mq.nb_voitures_max_pav))*14.3::float`,
             ctes:(ordre)=>[`stat_pre_agg AS(
                 SELECT 
                     id_quartier,
@@ -513,10 +639,37 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
             description: 'Nombre de logements au rôle[-]',
             requiresOrdre: false
         },
-
+        'stat-res-log': {
+            expression: () => `(stpagr.val_ag::float / dfa.n_logements::float)::float`,
+            aggregateExpression: () => `(SUM(stpagr.val_ag) / SUM(dfa.n_logements))::float`,
+            ctes:(ordre)=>[`stat_pre_agg_res AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 1)`],
+            joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int', 'stat_pre_agg_res stpagr ON sa.id_quartier::int=stpagr.id_quartier::int'],
+            groupbys:[],
+            description: 'Stationnement résidentiel par logement[-]',
+            requiresOrdre: true
+        },
+        'stat-res-perm': {
+            expression: () => `(stpagr.val_ag::float / mq.nb_permis::float)::float`,
+            aggregateExpression: () => `(SUM(stpagr.val_ag) / SUM(nq.nb_permis))::float`,
+            ctes:(ordre)=>[`stat_pre_agg_res AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 1)`],
+            joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int', 'stat_pre_agg_res stpagr ON sa.id_quartier::int=stpagr.id_quartier::int'],
+            groupbys:[],
+            description: 'Stationnement résidentiel par permis[-]',
+            requiresOrdre: true
+        },
     };
 
-    const validOrdres = ['123', '132', '213', '231', '312', '321'];
+    const validOrdres = ['123', '132', '213', '231', '312', '321','1','2','3'];
 
     const getValidatedOrdre = (ordre: string | undefined): string => {
         const ordreValue = ordre ?? '132';
@@ -588,6 +741,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
                 }
                 // Query for detailed data, including the necessary joins for both X and Y
                 const query = `
+            ${varQueryFragment.ctes.length>0?'WITH '+ varQueryFragment.ctes.join(',\n '):''}
             SELECT 
               sa.id_quartier::int,
               sa.nom_quartier,
@@ -597,6 +751,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
             ORDER BY sa.id_quartier;
           `;
                 const query2 = `
+            ${varQueryFragment.ctes.length>0?'WITH '+ varQueryFragment.ctes.join(',\n '):''}
             SELECT 
               ${varQueryFragment.aggregateExpression}::float as valeurVille
             FROM
@@ -869,10 +1024,21 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
 
                 const allJoins = Xjoins.concat(Yjoins)
                 const uniqueJoins = [...new Set(allJoins)];
+                
+                const Xctes = xQueryFragment.ctes
+                const Yctes = yQueryFragment.ctes
 
+                const allctes = Xctes.concat(Yctes)
+                const uniquectes = [...new Set(allctes)]
 
+                const Xgbs = xQueryFragment.groupbys
+                const Ygbs = yQueryFragment.groupbys
+
+                const allGBs = Xgbs.concat(Ygbs)
+                const uniqueGBs = [...new Set(allGBs)]
                 // Query for detailed data, including the necessary joins for both X and Y
                 const query = `
+            ${uniquectes.length>0?'WITH '+ uniquectes.join(',\n '):''}
             SELECT 
               sa.id_quartier::int,
               sa.nom_quartier,
@@ -880,6 +1046,7 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
               ${yQueryFragment.expression}::float AS Y
             FROM public.sec_analyse sa
             ${uniqueJoins.map((join) => `LEFT JOIN  ${join}`).join('\n')}
+            ${uniqueGBs.length>0?'GROUP BY ' + uniqueGBs.join(','):''}
             ORDER BY sa.id_quartier;
           `;
 
