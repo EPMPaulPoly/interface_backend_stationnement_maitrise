@@ -326,7 +326,7 @@ def calculate_internal_trips_transfer_pub_to_res(car_trips_in_hour:gpd.GeoDataFr
         test.set_geometry(col='geom_logis', crs=4326).to_crs(3857).geometry.buffer(50),
         crs=3857
     ).to_crs(4326)  
-    test['trip_to_home'] = test.set_geometry(col='geom_des',crs=4326).within(test.set_geometry(col='buffer_geom',crs=4326))
+    test['trip_to_home'] = (test.set_geometry(col='geom_des',crs=4326).within(test.set_geometry(col='buffer_geom',crs=4326))) | (test['motif']==12)
     test['move_from_residence_out'] = test['ori_in_sector'] & test['des_in_sector'] & test['trip_to_home'] 
     outgoing_trips = test.loc[test['move_from_residence_out']]
     internal_trips_to_residence = math.ceil(outgoing_trips['facdep'].agg('sum'))
@@ -370,7 +370,7 @@ def calculate_incoming_trips_to_residence(car_trips_in_hour:gpd.GeoDataFrame,sec
         test.set_geometry(col='geom_logis', crs=4326).to_crs(3857).geometry.buffer(50),
         crs=3857
     ).to_crs(4326)
-    test['des_is_residence'] = test.set_geometry(col='geom_des',crs=4326).within(test.set_geometry(col='buffer_geom',crs=4326))
+    test['des_is_residence'] = (test.set_geometry(col='geom_des',crs=4326).within(test.set_geometry(col='buffer_geom',crs=4326)))| (test['motif']==12)
     test['motif_ret_hom'] = test['motif']==12
     test['is_incoming_trip'] = test['ori_out_sector'] & test['des_in_sector'] & test['des_is_residence']
 

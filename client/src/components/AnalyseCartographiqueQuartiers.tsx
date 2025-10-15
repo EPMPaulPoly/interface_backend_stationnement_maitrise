@@ -20,31 +20,7 @@ const AnalyseCartographiqueQuartiers:React.FC<AnalyseCartoQuartierProps>=(props:
     const [chargement,defChargement] = useState<boolean>(false);
     const[positionDepart,defPositionDepart] = useState<LatLngExpression>([46.85,-71]);
     const[zoomDepart,defZoomDepart] = useState<number>(10);
-    const gestSelectMethodeAnalyse=(idTypeAnalyse:number)=>{
-        defTypeCarto(idTypeAnalyse)
-    }
-    const options:TypesAnalysesCartographiqueQuartier[]=[
-        {
-            idAnalyseCarto: 0,
-            descriptionAnalyseCarto: "Stationnement total",
-        },
-        {
-            idAnalyseCarto: 1,
-            descriptionAnalyseCarto: "Stationnement par superficie",
-        },
-        {
-            idAnalyseCarto:2,
-            descriptionAnalyseCarto: "Stationnement par voiture"
-        },
-        {
-            idAnalyseCarto:3,
-            descriptionAnalyseCarto: "Stationnement par habitant"
-        },
-        {
-            idAnalyseCarto:4,
-            descriptionAnalyseCarto: "Pourcentage Territoire"
-        }
-    ];
+
 
     const contexte = utiliserContexte();
     const optionCartoChoisie = contexte?.optionCartoChoisie ?? "";

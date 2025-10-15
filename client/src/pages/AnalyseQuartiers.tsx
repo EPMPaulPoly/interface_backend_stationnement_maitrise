@@ -9,6 +9,7 @@ import AnalyseCartographiqueQuartiers from '../components/AnalyseCartographiqueQ
 import AnalyseProfilAccumulationVehiculeQuartiers from '../components/AnalyseProfilAccumulationVehicule';
 import AnalyseHistogrammeQuartier from '../components/AnalyseHistogrammeQuartier';
 import AnalyseXYQuartiers from '../components/AnalyseXYQuartiers';
+import { ClimbingBoxLoader } from 'react-spinners';
 
 
 const AnalyseQuartiers:React.FC = () =>{
@@ -506,7 +507,7 @@ const AnalyseQuartiers:React.FC = () =>{
     return(
         <div className="page-comp-quart">
             <MenuBar/>
-            {agregEnCours?<p>Calcul en cours</p>:renduNormal()}
+            {agregEnCours?<ClimbingBoxLoader loading={agregEnCours} size={50}/>:renduNormal()}
         </div>
     )
 }
