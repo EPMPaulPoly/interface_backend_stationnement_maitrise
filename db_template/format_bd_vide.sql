@@ -806,7 +806,23 @@ CREATE TABLE public.profile_accumulation_vehicule (
     id_ent_pav integer NOT NULL,
     id_quartier bigint,
     heure integer,
-    voitures integer
+    voitures integer,
+    personnes integer,
+    permis integer,
+    voitures_res integer,
+    voitures_pub integer,
+    voit_entrantes_tot integer,
+    voit_entrantes_res integer,
+    voit_entrantes_pub integer,
+    voit_sortantes_tot integer,
+    voit_sortantes_res integer,
+    voit_sortantes_pub integer,
+    voit_transfer_res_a_pub integer,
+    voit_transfer_pub_a_res integer,
+    pers_entrantes_tot integer,
+    pers_sortantes_tot integer,
+    perm_entrants_tot integer,
+    perm_sortants_tot integer
 );
 
 
@@ -986,8 +1002,6 @@ ALTER TABLE public.sec_analyse OWNER TO postgres;
 --
 
 CREATE TABLE public.stat_agrege (
-    geom public.geometry,
-    superf_quartier double precision,
     inv_123 integer,
     inv_132 integer,
     inv_213 integer,
@@ -995,7 +1009,11 @@ CREATE TABLE public.stat_agrege (
     inv_312 integer,
     inv_321 integer,
     id_quartier bigint NOT NULL,
-    nom_quartier character varying(255)
+    inv_1 integer,
+    inv_2 integer,
+    inv_3 integer,
+    cubf_principal_n1 integer,
+    n_lots integer
 );
 
 
@@ -1327,14 +1345,6 @@ ALTER TABLE ONLY public.role_foncier
 
 ALTER TABLE ONLY public.sec_analyse
     ADD CONSTRAINT sec_analyse_pkey PRIMARY KEY (id_quartier);
-
-
---
--- Name: stat_agrege stat_agrege_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.stat_agrege
-    ADD CONSTRAINT stat_agrege_pkey PRIMARY KEY (id_quartier);
 
 
 --

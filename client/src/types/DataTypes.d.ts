@@ -146,7 +146,31 @@ export interface PAVQuartier{
 export interface entreePAV{
     id_entree:number,
     heure:number,
-    voitures:number
+    valeur?:number,
+    voitures:number,
+    voitures_res:number,
+    voiture_pub:number,
+    permis:number,
+    personnes:number,
+    voit_entrantes_tot:number,
+    voit_entrantes_pub:number,
+    voit_entrantes_res:number,
+    voit_sortantes_tot:number,
+    voit_sortantes_pub:number,
+    voit_sortantes_res:number,
+    voit_transfer_res_a_pub:number,
+    voit_transfer_pub_a_res:number,
+    pers_entrantes_tot:number,
+    pers_sortantes_tot:number,
+    perm_entrants_tot:number,
+    perm_sortants_tot:number
+}
+
+export interface PAVDataVisOptions{
+    id_data_vis:number,
+    label: string,
+    api_id: string,
+    stat_comp:string
 }
 
 export interface lotCadastralGeomSeulDb {

@@ -1,765 +1,1087 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { Pool } from 'pg';
 // Types pour les requêtes
-import { Polygon,MultiPolygon } from 'geojson';
+import { Polygon, MultiPolygon } from 'geojson';
 import { ParamsTerritoire } from '../../types/database';
-import {variableInfo, XYVariableInfo} from '../../types/maps'
+import { variableInfo, XYVariableInfo } from '../../types/maps'
 interface GeometryBody {
-  geometry: Polygon|MultiPolygon;  
+    geometry: Polygon | MultiPolygon;
 }
 
 export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
-  const router = Router();
-  const variableMap: Record<string, XYVariableInfo> = {
-    'stat-tot': {
-      expression: (ordre) => `stag.inv_${getValidatedOrdre(ordre)}::float`,
-      aggregateExpression:(ordre) =>`SUM(stag.inv_${getValidatedOrdre(ordre)})`,
-      joins:['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int'],
-      description: 'Stationnement Total [-]',
-      requiresOrdre: true
-    },
-    'stat-sup': {
-      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(sa.superf_quartier/10000, 0))::float`,
-      aggregateExpression: (ordre)=> `(SUM(stag.inv_${getValidatedOrdre(ordre)} )/ SUM(NULLIF(sa.superf_quartier/10000, 0)))::float`,
-      joins:['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int'],
-      description: 'Densité Stationnement [1/Ha]',
-      requiresOrdre: true
-    },
-    'stat-popu-2021': {
-      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(pq.pop_tot_2021, 0))::float`,
-      aggregateExpression:(ordre)=>`(SUM(stag.inv_${getValidatedOrdre(ordre)}) / SUM(NULLIF(pq.pop_tot_2021, 0)))::float`,
-      joins:['stat_agrege stag ON sa.id_quartier=stag.id_quartier','population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
-      description: 'Stationnement par personne [-]',
-      requiresOrdre: true
-    },
-    'stat-popu-2016': {
-      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(pq.pop_tot_2016, 0))::float`,
-      aggregateExpression:(ordre)=>`(SUM(stag.inv_${getValidatedOrdre(ordre)}) / SUM(NULLIF(pq.pop_tot_2016, 0)))::float`,
-      joins:['stat_agrege stag ON sa.id_quartier=stag.id_quartier','population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
-      description: 'Stationnement par personne [-]',
-      requiresOrdre: true
-    },
-    'stat-perm': {
-      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(mq.nb_permis, 0))::float`,
-      aggregateExpression:(ordre)=>`(SUM(stag.inv_${getValidatedOrdre(ordre)}) / SUM(NULLIF(mq.nb_permis, 0)))::float`,
-      joins:['stat_agrege stag ON sa.id_quartier=stag.id_quartier','motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
-      description: 'Stationnement par permis [-]',
-      requiresOrdre: true
-    },
-    'stat-voit': {
-      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(mq.nb_voitures, 0))::float`,
-      aggregateExpression:(ordre)=>`(SUM(stag.inv_${getValidatedOrdre(ordre)}) / SUM(NULLIF(mq.nb_voitures, 0)))::float`,
-      joins:['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int','motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
-      description: 'Stationnement par voiture résident [-]',
-      requiresOrdre: true
-    },
-    'stat-perc': {
-      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)}*14.3*100 / NULLIF(sa.superf_quartier, 0))::float`,
-      aggregateExpression: (ordre)=> `(SUM(stag.inv_${getValidatedOrdre(ordre)})*14.3 / SUM(NULLIF(sa.superf_quartier, 0)))::float`,
-      joins:['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int'],
-      description: 'Territoire dédié au stationnement [%]',
-      requiresOrdre: true
-    },
-    'superf': {
-      expression: () => `sa.superf_quartier/10000::float`,
-      aggregateExpression:() =>`SUM(sa.superf_quartier)/10000`,
-      joins:[],
-      description: 'Superficie Quartier [Ha]',
-      requiresOrdre: false
-    },
-    'perm':{
-      expression: ()=>`mq.nb_permis::float`,
-      aggregateExpression:()=>`SUM(mq.nb_permis)`,
-      joins:['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
-      description:'Nombre de permis de conduire [-]',
-      requiresOrdre: false
-    },
-    'popu-2021': {
-      expression: () => `pq.pop_tot_2021::float`,
-      aggregateExpression:() =>`SUM(pq.pop_tot_2021)`,
-      joins:['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int',],
-      description: 'Population [-]',
-      requiresOrdre: false
-    },
-    
-    'popu-2016': {
-      expression: () => `pq.pop_tot_2016::float`,
-      aggregateExpression:() =>`SUM(pq.pop_tot_2016)`,
-      joins:['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int',],
-      description: 'Population [-]',
-      requiresOrdre: false
-    },
-    'voit-par-pers-2021':{
-      expression: () => `(1000*mq.nb_voitures/pq.pop_tot_2021)::float`,
-      aggregateExpression:()=>`1000*SUM(mq.nb_voitures)/SUM(pq.pop_tot_2021)::float`,
-      joins:['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int','population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
-      description: 'Nombre de voiture (OD) par 1000 personne(Recensement) [-]',
-      requiresOrdre: false
-    },
-    
-    'voit-par-pers-2016':{
-      expression: () => `(1000*mq.nb_voitures/pq.pop_tot_2016)::float`,
-      aggregateExpression:()=>`1000*SUM(mq.nb_voitures)/SUM(pq.pop_tot_2016)::float`,
-      joins:['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int','population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
-      description: 'Nombre de voiture (OD) par 1000 personne(Recensement) [-]',
-      requiresOrdre: false
-    },
-    'voit-par-perm':{
-      expression:()=>`(1000*mq.nb_voitures/mq.nb_permis)::float`,
-      aggregateExpression:()=>`1000 * SUM(mq.nb_voitures)/SUM(mq.nb_permis)::float`,
-      joins:['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
-      description: 'Nombre de voiture (OD) par 1000 permis de conduire(OD) [-]',
-      requiresOrdre: false
-    },
-    'dens-pop-2021': {
-      expression: () => `(pq.pop_tot_2021 / NULLIF(sa.superf_quartier/1000000, 0))::float`,
-      aggregateExpression:() =>`(SUM(pq.pop_tot_2021) /SUM( NULLIF(sa.superf_quartier/1000000, 0)))::float`,
-      joins: ['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
-      description: 'Densité Population [1/km2]',
-      requiresOrdre: false
-    },
-    'dens-pop-2016': {
-      expression: () => `(pq.pop_tot_2016 / NULLIF(sa.superf_quartier/1000000, 0))::float`,
-      aggregateExpression:() =>`(SUM(pq.pop_tot_2016) /SUM( NULLIF(sa.superf_quartier/1000000, 0)))::float`,
-      joins: ['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
-      description: 'Densité Population [1/km2]',
-      requiresOrdre: false
-    },
-    'val-log-moy': {
-      expression: () => `dfa.valeur_moyenne_logement::float`,
-      aggregateExpression: ()=>`SUM(dfa.valeur_moyenne_logement)/count(*)::float`,
-      joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
-      description: 'Valeur moyenne des logements [$]',
-      requiresOrdre: false
-    },
-    'sup-log-moy': {
-      expression: () => `dfa.superf_moyenne_logement::float`,
-      aggregateExpression:()=>`SUM(dfa.superf_moyenne_logement)/COUNT(*)::float`,
-      joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
-      description: 'Superficie moyenne des logements [m2]',
-      requiresOrdre: false
-    },
-    'val-tot-quart': {
-      expression: () => `dfa.valeur_fonciere_totale::float`,
-      aggregateExpression:()=>`SUM(dfa.valeur_fonciere_totale)::float`,
-      joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
-      description: 'Valeur Foncière totale [$]',
-      requiresOrdre: false
-    },
-    'val-tot-log-quart':{
-      expression: () => `dfa.valeur_fonciere_logement_totale::float`,
-      aggregateExpression:()=>`SUM(dfa.valeur_fonciere_logement_totale)::float`,
-      joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
-      description: 'Valeur Foncière logements [$]',
-      requiresOrdre: false
-    },
-    'val-tot-sup': {
-      expression: () => `(dfa.valeur_fonciere_totale / NULLIF(sa.superf_quartier/10000, 0))::float`,
-      aggregateExpression:()=>`(SUM(dfa.valeur_fonciere_totale) / SUM(NULLIF(sa.superf_quartier/10000, 0)))::float`,
-      joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
-      description: 'Valeur Foncière [$/Ha]',
-      requiresOrdre: false
-    },
-    'val-tot-log-sup':{
-      expression: () => `(dfa.valeur_fonciere_logement_totale::float / NULLIF(sa.superf_quartier/10000, 0))::float`,
-      aggregateExpression:()=>`(SUM(dfa.valeur_fonciere_logement_totale::float) / SUM(NULLIF(sa.superf_quartier/10000, 0)))::float`,
-      joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
-      description: 'Valeur Foncière Résidentielle[$/Ha]',
-      requiresOrdre: false
-    },
-    'nb-voit':{
-      expression: () => `(mq.nb_voitures)::float`,
-      aggregateExpression:()=>`SUM(mq.nb_voitures)::float`,
-      joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
-      description: 'Nombre de voitures [-]',
-      requiresOrdre: false
-    },
-    'nb-voit-delta':{
-      expression:()=>`(mq.diff_max_signee)`,
-      aggregateExpression:()=>`SUM(mq.diff_max_signee)::float`,
-      joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
-      description: 'Delta Voitures Max [-]',
-      requiresOrdre: false
-    },
-    'nb-voit-max':{
-      expression:()=>`(mq.nb_voitures_max_pav)`,
-      aggregateExpression:()=>`SUM(mq.nb_voitures_max_pav)::float`,
-      joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
-      description: 'Voitures Max Journees[-]',
-      requiresOrdre: false
-    },
-    'nb-voit-min':{
-      expression:()=>`(mq.nb_voitures_min_pav)`,
-      aggregateExpression:()=>`SUM(mq.nb_voitures_min_pav)::float`,
-      joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
-      description: 'Voitures Min Journees[-]',
-      requiresOrdre: false
-    },
-    'stat-voit-max':{
-      expression: (ordre) => `(stag.inv_${getValidatedOrdre(ordre)} / NULLIF(mq.nb_voitures_max_pav, 0))::float`,
-      aggregateExpression:()=>`0::float`,
-      joins: ['stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int','motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
-      description: 'Stationnement par voiture max[-]',
-      requiresOrdre: false
-    },
-    'pm-ac-res':{
-      expression:()=>`(pm.ac_res)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Auto-conducteur résidents [%]',
-      requiresOrdre:false
-    },
-    'pm-ap-res':{
-      expression:()=>`(pm.ap_res)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Auto-passager résidents [%]',
-      requiresOrdre:false
-    },
-    'pm-tc-res':{
-      expression:()=>`(pm.tc_res)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Transport collectif résidents [%]',
-      requiresOrdre:false
-    },
-    'pm-mv-res':{
-      expression:()=>`(pm.mv_res)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Marche Vélo résidents [%]',
-      requiresOrdre:false
-    },
-    'pm-bs-res':{
-      expression:()=>`(pm.bs_res)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Marche Vélo résidents [%]',
-      requiresOrdre:false
-    },
-    'pm-ac-int':{
-      expression:()=>`(pm.ac_int)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Auto-conducteur Interne [%]',
-      requiresOrdre:false
-    },
-    'pm-ap-int':{
-      expression:()=>`(pm.ap_int)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Auto-passager Interne [%]',
-      requiresOrdre:false
-    },
-    'pm-tc-int':{
-      expression:()=>`(pm.tc_res)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Transport collectif interne [%]',
-      requiresOrdre:false
-    },
-    'pm-mv-int':{
-      expression:()=>`(pm.mv_int)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Marche Vélo interne [%]',
-      requiresOrdre:false
-    },
-    'pm-bs-int':{
-      expression:()=>`(pm.bs_int)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Marche Vélo interne [%]',
-      requiresOrdre:false
-    },
-    'pm-ac-ori':{
-      expression:()=>`(pm.ac_ori)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Auto-conducteur originant du secteur [%]',
-      requiresOrdre:false
-    },
-    'pm-ap-ori':{
-      expression:()=>`(pm.ap_ori)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Auto-passager originant du secteur [%]',
-      requiresOrdre:false
-    },
-    'pm-tc-ori':{
-      expression:()=>`(pm.tc_ori)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Transport collectif originant du secteur [%]',
-      requiresOrdre:false
-    },
-    'pm-mv-ori':{
-      expression:()=>`(pm.mv_ori)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Marche Vélo originant du secteur [%]',
-      requiresOrdre:false
-    },
-    'pm-bs-ori':{
-      expression:()=>`(pm.bs_ori)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Marche Vélo originant du secteur [%]',
-      requiresOrdre:false
-    },
-    'pm-ac-des':{
-      expression:()=>`(pm.ac_des)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Auto-conducteur à destination du secteur [%]',
-      requiresOrdre:false
-    },
-    'pm-ap-des':{
-      expression:()=>`(pm.ap_des)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Auto-passager à destination du secteur [%]',
-      requiresOrdre:false
-    },
-    'pm-tc-des':{
-      expression:()=>`(pm.tc_des)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Transport collectif à destination du secteur [%]',
-      requiresOrdre:false
-    },
-    'pm-mv-des':{
-      expression:()=>`(pm.mv_des)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Marche Vélo à destination du secteur [%]',
-      requiresOrdre:false
-    },
-    'pm-bs-des':{
-      expression:()=>`(pm.bs_des)`,
-      aggregateExpression:()=> `0::float`,
-      joins:['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
-      description:'Part Modale Marche Vélo à destination du secteur [%]',
-      requiresOrdre:false
-    },
-    'stat-inu':{
-      expression:(ordre) => `(stag.inv_${getValidatedOrdre(ordre)}-mq.nb_voitures_max_pav)`,
-      aggregateExpression:(ordre)=>`(SUM(stag.inv_${getValidatedOrdre(ordre)})::float-SUM(mq.nb_voitures_max_pav)::float)`,
-      joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int','stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int'],
-      description: 'Places inutilisées en tout temps[-]',
-      requiresOrdre: false
-    },
-    'stat-inu-sup':{
-      expression:(ordre) => `(stag.inv_${getValidatedOrdre(ordre)}-mq.nb_voitures_max_pav)*14.3`,
-      aggregateExpression:(ordre)=>`(SUM(stag.inv_${getValidatedOrdre(ordre)})-SUM(mq.nb_voitures_max_pav))*14.3::float`,
-      joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int','stat_agrege stag ON sa.id_quartier::int=stag.id_quartier::int'],
-      description: 'Superficie inutilisées en tout temps[-]',
-      requiresOrdre: false
-    },
-    'n-logements': {
-      expression: () => `(dfa.n_logements )::float`,
-      aggregateExpression:()=>`(SUM(dfa.n_logements))::float`,
-      joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
-      description: 'Nombre de logements au rôle[-]',
-      requiresOrdre: false
-    },
+    const router = Router();
+    const variableMap: Record<string, XYVariableInfo> = {
+        'stat-tot': {
+            expression: () => `stpag.val_ag::float`,
+            aggregateExpression: (ordre) => `SUM(stpag.val_ag::float)`,
+            ctes:(ordre)=>[`stat_pre_agg AS(
+                SELECT 
+                    id_quartier,
+                    SUM(stag.inv_${getValidatedOrdre(ordre)}) as val_ag
+                FROM stat_agrege stag 
+                GROUP BY stag.id_quartier)`],
+            joins: ['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            description: 'Stationnement Total [-]',
+            groupbys:[],
+            requiresOrdre: true
+        },
+        'stat-res':{
+            ctes:(ordre)=>[`stat_pre_agg AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 1)`],
+            expression:()=>`stpag.val_ag::int`,
+            aggregateExpression:()=>`SUM(stpag.val_ag)`,
+            joins:['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            description: 'Stationnement Résidentiel [-]',
+            groupbys:[],
+            requiresOrdre:true
+        }, 
+        'stat-ind':{
+            ctes:(ordre)=>[`stat_pre_agg AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 2)`],
+            expression:()=>`stpag.val_ag::int`,
+            aggregateExpression:()=>`SUM(stpag.val_ag)`,
+            joins:['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            description: 'Stationnement Industriel [-]',
+            groupbys:[],
+            requiresOrdre:true
+        }, 
+        'stat-inf':{
+            ctes:(ordre)=>[`stat_pre_agg AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 4)`],
+            expression:()=>`stpag.val_ag::int`,
+            aggregateExpression:()=>`SUM(stpag.val_ag)`,
+            joins:['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            description: 'Stationnement Infrastructure [-]',
+            groupbys:[],
+            requiresOrdre:true
+        }, 
+        'stat-com':{
+            ctes:(ordre)=>[`stat_pre_agg AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 5)`],
+            expression:()=>`stpag.val_ag::int`,
+            aggregateExpression:()=>`SUM(stpag.val_ag)`,
+            joins:['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            description: 'Stationnement Commercial [-]',
+            groupbys:[],
+            requiresOrdre:true
+        }, 
+        'stat-ser':{
+            ctes:(ordre)=>[`stat_pre_agg AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 6)`],
+            expression:()=>`stpag.val_ag::int`,
+            aggregateExpression:()=>`SUM(stpag.val_ag)`,
+            joins:['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            description: 'Stationnement Services [-]',
+            groupbys:[],
+            requiresOrdre:true
+        }, 
+        'stat-rec':{
+            ctes:(ordre)=>[`stat_pre_agg AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 7)`],
+            expression:()=>`stpag.val_ag::int`,
+            aggregateExpression:()=>`SUM(stpag.val_ag)`,
+            joins:['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            description: 'Stationnement Récréatif [-]',
+            groupbys:[],
+            requiresOrdre:true
+        }, 
+        'stat-agr':{
+            ctes:(ordre)=>[`stat_pre_agg AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 8)`],
+            expression:()=>`stpag.val_ag::int`,
+            aggregateExpression:()=>`SUM(stpag.val_ag)`,
+            joins:['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            description: 'Stationnement Agricole [-]',
+            groupbys:[],
+            requiresOrdre:true
+        }, 
+        'stat-inex':{
+            ctes:(ordre)=>[`stat_pre_agg AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 5)`],
+            expression:()=>`stpag.val_ag::int`,
+            aggregateExpression:()=>`SUM(stpag.val_ag)`,
+            joins:['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            description: 'Stationnement Non-exploité [-]',
+            groupbys:[],
+            requiresOrdre:true
+        }, 
+        'stat-sup': {
+            expression: () => `(stpag.val_ag::float/ NULLIF(sa.superf_quartier/10000, 0))::float`,
+            aggregateExpression: (ordre) => `((SUM(stpag.val_ag::float))/ SUM(NULLIF(sa.superf_quartier/10000, 0)))`,
+            ctes:(ordre)=>[`stat_pre_agg AS(
+                SELECT 
+                    id_quartier,
+                    SUM(stag.inv_${getValidatedOrdre(ordre)}) as val_ag
+                FROM stat_agrege stag 
+                GROUP BY stag.id_quartier)`],
+            joins: ['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            groupbys:[],
+            description: 'Densité Stationnement [1/Ha]',
+            requiresOrdre: true
+        },
+        'stat-popu-2021': {
+            expression: () => `(stpag.val_ag::float / NULLIF(pq.pop_tot_2021, 0))::float`,
+            aggregateExpression: () => `(SUM(stpag.val_ag::float) / SUM(NULLIF(pq.pop_tot_2021, 0)))`,
+            ctes:(ordre)=>[`stat_pre_agg AS(
+                SELECT 
+                    id_quartier,
+                    SUM(stag.inv_${getValidatedOrdre(ordre)}) as val_ag
+                FROM stat_agrege stag 
+                GROUP BY stag.id_quartier)`],
+            joins: ['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int', 'population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+            groupbys:[],
+            description: 'Stationnement par personne [-]',
+            requiresOrdre: true
+        },
+        'stat-popu-2016': {
+            expression: () => `(stpag.val_ag::float / NULLIF(pq.pop_tot_2016, 0))::float`,
+            aggregateExpression: (ordre) => `(SUM(stag.inv_${getValidatedOrdre(ordre)}) / SUM(NULLIF(pq.pop_tot_2016, 0)))::float`,
+            ctes:(ordre)=>[`stat_pre_agg AS(
+                SELECT 
+                    id_quartier,
+                    SUM(stag.inv_${getValidatedOrdre(ordre)}) as val_ag
+                FROM stat_agrege stag 
+                GROUP BY stag.id_quartier)`],
+            joins: ['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int', 'population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+            groupbys:[],
+            description: 'Stationnement par personne [-]',
+            requiresOrdre: true
+        },
+        'stat-perm': {
+            expression: () => `(stpag.val_ag::float  / NULLIF(mq.nb_permis, 0))::float`,
+            aggregateExpression: (ordre) => `(SUM(stag.inv_${getValidatedOrdre(ordre)}) / SUM(NULLIF(mq.nb_permis, 0)))::float`,
+            ctes:(ordre)=>[`stat_pre_agg AS(
+                SELECT 
+                    id_quartier,
+                    SUM(stag.inv_${getValidatedOrdre(ordre)}) as val_ag
+                FROM stat_agrege stag 
+                GROUP BY stag.id_quartier)`],
+            joins: ['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int', 'motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+            groupbys:[],
+            description: 'Stationnement par permis [-]',
+            requiresOrdre: true
+        },
+        'stat-voit': {
+            expression: () => `(stpag.val_ag::float  / NULLIF(mq.nb_voitures, 0))::float`,
+            aggregateExpression: (ordre) => `(SUM(stpag.val_ag::float) / SUM(NULLIF(mq.nb_voitures, 0)))`,
+            ctes:(ordre)=>[`stat_pre_agg AS(
+                SELECT 
+                    id_quartier,
+                    SUM(stag.inv_${getValidatedOrdre(ordre)}) as val_ag
+                FROM stat_agrege stag 
+                GROUP BY stag.id_quartier)`],
+            joins: ['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int', 'motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+            groupbys:[],
+            description: 'Stationnement par voiture résident [-]',
+            requiresOrdre: true
+        },
+        'stat-res-voit':{
+            expression: () => `(stpagr.val_ag::float  / NULLIF(mq.nb_voitures, 0))::float`,
+            aggregateExpression: (ordre) => `(SUM(stpagr.val_ag::float) / SUM(NULLIF(mq.nb_voitures, 0)))`,
+            ctes:(ordre)=>[`stat_pre_agg_res AS(
+                SELECT 
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag 
+                where cubf_principal_n1=1)`],
+            joins: ['stat_pre_agg_res stpagr ON sa.id_quartier::int=stpagr.id_quartier::int', 'motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+            groupbys:[],
+            description: 'Stationnement par voiture résident [-]',
+            requiresOrdre: true
+        },
+        'stat-perc': {
+            expression: (ordre) => `(stpag.val_ag::float*14.3*100 / NULLIF(sa.superf_quartier, 0))::float`,
+            ctes:(ordre)=>[`stat_pre_agg AS(
+                SELECT 
+                    id_quartier,
+                    SUM(stag.inv_${getValidatedOrdre(ordre)}) as val_ag
+                FROM stat_agrege stag 
+                GROUP BY stag.id_quartier)`],
+            aggregateExpression: (ordre) => `(SUM(stpag.val_ag::float)*14.3 / SUM(NULLIF(sa.superf_quartier, 0)))`,
+            joins: ['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            groupbys:[],
+            description: 'Territoire dédié au stationnement [%]',
+            requiresOrdre: true
+        },
+        'superf': {
+            expression: () => `sa.superf_quartier/10000::float`,
+            aggregateExpression: () => `SUM(sa.superf_quartier)/10000`,
+            ctes:(ordre)=>[],
+            joins: [],
+            groupbys:[],
+            description: 'Superficie Quartier [Ha]',
+            requiresOrdre: false
+        },
+        'perm': {
+            expression: () => `mq.nb_permis::float`,
+            aggregateExpression: () => `SUM(mq.nb_permis)`,
+            ctes:(ordre)=>[],
+            joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+            groupbys:[],
+            description: 'Nombre de permis de conduire [-]',
+            requiresOrdre: false
+        },
+        'popu-2021': {
+            expression: () => `pq.pop_tot_2021::float`,
+            aggregateExpression: () => `SUM(pq.pop_tot_2021)`,
+            ctes:()=>[],
+            joins: ['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+            groupbys:[],
+            description: 'Population [-]',
+            requiresOrdre: false
+        },
 
-  };
+        'popu-2016': {
+            expression: () => `pq.pop_tot_2016::float`,
+            aggregateExpression: () => `SUM(pq.pop_tot_2016)`,
+            ctes:(ordre)=>[],
+            joins: ['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int',],
+            groupbys:[],
+            description: 'Population [-]',
+            requiresOrdre: false
+        },
+        'voit-par-pers-2021': {
+            expression: () => `(1000*mq.nb_voitures/pq.pop_tot_2021)::float`,
+            aggregateExpression: () => `1000*SUM(mq.nb_voitures)/SUM(pq.pop_tot_2021)::float`,
+            ctes:()=>[],
+            joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int', 'population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+            groupbys:[],
+            description: 'Nombre de voiture (OD) par 1000 personne(Recensement) [-]',
+            requiresOrdre: false
+        },
 
-  const validOrdres = ['123', '132', '213', '231', '312', '321'];
+        'voit-par-pers-2016': {
+            expression: () => `(1000*mq.nb_voitures/pq.pop_tot_2016)::float`,
+            aggregateExpression: () => `1000*SUM(mq.nb_voitures)/SUM(pq.pop_tot_2016)::float`,
+            ctes:(ordre)=>[],
+            joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int', 'population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+            groupbys:[],
+            description: 'Nombre de voiture (OD) par 1000 personne(Recensement) [-]',
+            requiresOrdre: false
+        },
+        'voit-par-perm': {
+            expression: () => `(1000*mq.nb_voitures/mq.nb_permis)::float`,
+            aggregateExpression: () => `1000 * SUM(mq.nb_voitures)/SUM(mq.nb_permis)::float`,
+            ctes:()=>[],
+            joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+            groupbys:[],
+            description: 'Nombre de voiture (OD) par 1000 permis de conduire(OD) [-]',
+            requiresOrdre: false
+        },
+        'dens-pop-2021': {
+            expression: () => `(pq.pop_tot_2021 / NULLIF(sa.superf_quartier/1000000, 0))::float`,
+            aggregateExpression: () => `(SUM(pq.pop_tot_2021) /SUM( NULLIF(sa.superf_quartier/1000000, 0)))::float`,
+            ctes:()=>[],
+            joins: ['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+            groupbys:[],
+            description: 'Densité Population [1/km2]',
+            requiresOrdre: false
+        },
+        'dens-pop-2016': {
+            expression: () => `(pq.pop_tot_2016 / NULLIF(sa.superf_quartier/1000000, 0))::float`,
+            aggregateExpression: () => `(SUM(pq.pop_tot_2016) /SUM( NULLIF(sa.superf_quartier/1000000, 0)))::float`,
+            ctes:()=>[],
+            joins: ['population_par_quartier pq on sa.id_quartier::int=pq.id_quartier::int'],
+            groupbys:[],
+            description: 'Densité Population [1/km2]',
+            requiresOrdre: false
+        },
+        'val-log-moy': {
+            expression: () => `dfa.valeur_moyenne_logement::float`,
+            aggregateExpression: () => `SUM(dfa.valeur_moyenne_logement)/SUM(dfa.n_logements)::float`,
+            ctes:()=>[],
+            joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
+            groupbys:[],
+            description: 'Valeur moyenne des logements [$]',
+            requiresOrdre: false
+        },
+        'sup-log-moy': {
+            expression: () => `dfa.superf_moyenne_logement::float`,
+            aggregateExpression: () => `SUM(dfa.superf_moyenne_logement)/SUM(dfa.n_logements)::float`,
+            ctes:()=>[],
+            joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
+            groupbys:[],
+            description: 'Superficie moyenne des logements [m2]',
+            requiresOrdre: false
+        },
+        'val-tot-quart': {
+            expression: () => `dfa.valeur_fonciere_totale::float`,
+            aggregateExpression: () => `SUM(dfa.valeur_fonciere_totale)::float`,
+            ctes:()=>[],
+            joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
+            groupbys:[],
+            description: 'Valeur Foncière totale [$]',
+            requiresOrdre: false
+        },
+        'val-tot-log-quart': {
+            expression: () => `dfa.valeur_fonciere_logement_totale::float`,
+            aggregateExpression: () => `SUM(dfa.valeur_fonciere_logement_totale)::float`,
+            ctes:()=>[],
+            joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
+            groupbys:[],
+            description: 'Valeur Foncière logements [$]',
+            requiresOrdre: false
+        },
+        'val-tot-sup': {
+            expression: () => `(dfa.valeur_fonciere_totale / NULLIF(sa.superf_quartier/10000, 0))::float`,
+            aggregateExpression: () => `(SUM(dfa.valeur_fonciere_totale) / SUM(NULLIF(sa.superf_quartier/10000, 0)))::float`,
+            ctes:()=>[],
+            joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
+            groupbys:[],
+            description: 'Valeur Foncière [$/Ha]',
+            requiresOrdre: false
+        },
+        'val-tot-log-sup': {
+            expression: () => `(dfa.valeur_fonciere_logement_totale::float / NULLIF(sa.superf_quartier/10000, 0))::float`,
+            aggregateExpression: () => `(SUM(dfa.valeur_fonciere_logement_totale::float) / SUM(NULLIF(sa.superf_quartier/10000, 0)))::float`,
+            ctes:(ordre)=>[],
+            joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
+            groupbys:[],
+            description: 'Valeur Foncière Résidentielle[$/Ha]',
+            requiresOrdre: false
+        },
+        'nb-voit': {
+            expression: () => `(mq.nb_voitures)::float`,
+            aggregateExpression: () => `SUM(mq.nb_voitures)::float`,
+            ctes:()=>[],
+            joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+            groupbys:[],
+            description: 'Nombre de voitures [-]',
+            requiresOrdre: false
+        },
+        'nb-voit-delta': {
+            expression: () => `(mq.diff_max_signee)`,
+            aggregateExpression: () => `SUM(mq.diff_max_signee)::float`,
+            ctes:()=>[],
+            joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+            groupbys:[],
+            description: 'Delta Voitures Max [-]',
+            requiresOrdre: false
+        },
+        'nb-voit-max': {
+            expression: () => `(mq.nb_voitures_max_pav)`,
+            aggregateExpression: () => `SUM(mq.nb_voitures_max_pav)::float`,
+            ctes:()=>[],
+            joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+            groupbys:[],
+            description: 'Voitures Max Journees[-]',
+            requiresOrdre: false
+        },
+        'nb-voit-min': {
+            expression: () => `(mq.nb_voitures_min_pav)`,
+            aggregateExpression: () => `SUM(mq.nb_voitures_min_pav)::float`,
+            ctes:()=>[],
+            joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+            groupbys:[],
+            description: 'Voitures Min Journees[-]',
+            requiresOrdre: false
+        },
+        'stat-voit-max': {
+            expression: () => `(stpag.val_ag/ NULLIF(mq.nb_voitures_max_pav, 0))::float`,
+            aggregateExpression: () => `0::float`,
+            ctes:(ordre)=>[`stat_pre_agg AS(
+                SELECT 
+                    id_quartier,
+                    SUM(stag.inv_${getValidatedOrdre(ordre)}) as val_ag
+                FROM stat_agrege stag 
+                GROUP BY stag.id_quartier)`],
+            joins: ['stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int', 'motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int'],
+            groupbys:[],
+            description: 'Stationnement par voiture max[-]',
+            requiresOrdre: false
+        },
+        'pm-ac-res': {
+            expression: () => `(pm.ac_res)`,
+            aggregateExpression: () => `0::float`,
+            ctes:(ordre)=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Auto-conducteur résidents [%]',
+            requiresOrdre: false
+        },
+        'pm-ap-res': {
+            expression: () => `(pm.ap_res)`,
+            aggregateExpression: () => `0::float`,
+            ctes:()=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Auto-passager résidents [%]',
+            requiresOrdre: false
+        },
+        'pm-tc-res': {
+            expression: () => `(pm.tc_res)`,
+            aggregateExpression: () => `0::float`,
+            ctes:(ordre)=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Transport collectif résidents [%]',
+            requiresOrdre: false
+        },
+        'pm-mv-res': {
+            expression: () => `(pm.mv_res)`,
+            aggregateExpression: () => `0::float`,
+            ctes:()=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Marche Vélo résidents [%]',
+            requiresOrdre: false
+        },
+        'pm-bs-res': {
+            expression: () => `(pm.bs_res)`,
+            aggregateExpression: () => `0::float`,
+            ctes:()=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Marche Vélo résidents [%]',
+            requiresOrdre: false
+        },
+        'pm-ac-int': {
+            expression: () => `(pm.ac_int)`,
+            aggregateExpression: () => `0::float`,
+            ctes:()=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Auto-conducteur Interne [%]',
+            requiresOrdre: false
+        },
+        'pm-ap-int': {
+            expression: () => `(pm.ap_int)`,
+            aggregateExpression: () => `0::float`,
+            ctes:(ordre)=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Auto-passager Interne [%]',
+            requiresOrdre: false
+        },
+        'pm-tc-int': {
+            expression: () => `(pm.tc_res)`,
+            aggregateExpression: () => `0::float`,
+            ctes:()=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Transport collectif interne [%]',
+            requiresOrdre: false
+        },
+        'pm-mv-int': {
+            expression: () => `(pm.mv_int)`,
+            aggregateExpression: () => `0::float`,
+            ctes:(ordre)=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Marche Vélo interne [%]',
+            requiresOrdre: false
+        },
+        'pm-bs-int': {
+            expression: () => `(pm.bs_int)`,
+            aggregateExpression: () => `0::float`,
+            ctes:(ordre)=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Marche Vélo interne [%]',
+            requiresOrdre: false
+        },
+        'pm-ac-ori': {
+            expression: () => `(pm.ac_ori)`,
+            aggregateExpression: () => `0::float`,
+            ctes:(ordre)=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Auto-conducteur originant du secteur [%]',
+            requiresOrdre: false
+        },
+        'pm-ap-ori': {
+            expression: () => `(pm.ap_ori)`,
+            aggregateExpression: () => `0::float`,
+            ctes:(ordre)=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Auto-passager originant du secteur [%]',
+            requiresOrdre: false
+        },
+        'pm-tc-ori': {
+            expression: () => `(pm.tc_ori)`,
+            aggregateExpression: () => `0::float`,
+            ctes:(ordre)=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Transport collectif originant du secteur [%]',
+            requiresOrdre: false
+        },
+        'pm-mv-ori': {
+            expression: () => `(pm.mv_ori)`,
+            aggregateExpression: () => `0::float`,
+            ctes:(ordre)=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Marche Vélo originant du secteur [%]',
+            requiresOrdre: false
+        },
+        'pm-bs-ori': {
+            expression: () => `(pm.bs_ori)`,
+            aggregateExpression: () => `0::float`,
+            ctes:(ordre)=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Marche Vélo originant du secteur [%]',
+            requiresOrdre: false
+        },
+        'pm-ac-des': {
+            expression: () => `(pm.ac_des)`,
+            aggregateExpression: () => `0::float`,
+            ctes:(ordre)=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Auto-conducteur à destination du secteur [%]',
+            requiresOrdre: false
+        },
+        'pm-ap-des': {
+            expression: () => `(pm.ap_des)`,
+            aggregateExpression: () => `0::float`,
+            ctes:(ordre)=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Auto-passager à destination du secteur [%]',
+            requiresOrdre: false
+        },
+        'pm-tc-des': {
+            expression: () => `(pm.tc_des)`,
+            aggregateExpression: () => `0::float`,
+            ctes:(ordre)=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Transport collectif à destination du secteur [%]',
+            requiresOrdre: false
+        },
+        'pm-mv-des': {
+            expression: () => `(pm.mv_des)`,
+            aggregateExpression: () => `0::float`,
+            ctes:(ordre)=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Marche Vélo à destination du secteur [%]',
+            requiresOrdre: false
+        },
+        'pm-bs-des': {
+            expression: () => `(pm.bs_des)`,
+            aggregateExpression: () => `0::float`,
+            ctes:(ordre)=>[],
+            joins: ['parts_modales pm on pm.id_quartier::int=sa.id_quartier::int'],
+            groupbys:[],
+            description: 'Part Modale Marche Vélo à destination du secteur [%]',
+            requiresOrdre: false
+        },
+        'stat-inu': {
+            expression: (ordre) => `(stpag.val_ag-mq.nb_voitures_max_pav)`,
+            aggregateExpression: (ordre) => `(SUM(stpag.val_ag)::float-SUM(mq.nb_voitures_max_pav)::float)`,
+            ctes:(ordre)=>[`stat_pre_agg AS(
+                SELECT 
+                    id_quartier,
+                    SUM(stag.inv_${getValidatedOrdre(ordre)}) as val_ag
+                FROM stat_agrege stag 
+                GROUP BY stag.id_quartier)`],
+            joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int', 'stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            groupbys:[],
+            description: 'Places inutilisées en tout temps[-]',
+            requiresOrdre: false
+        },
+        'stat-inu-sup': {
+            expression: (ordre) => `(stpag.val_ag-mq.nb_voitures_max_pav)*14.3`,
+            aggregateExpression: (ordre) => `(SUM(stpag.val_ag)-SUM(mq.nb_voitures_max_pav))*14.3::float`,
+            ctes:(ordre)=>[`stat_pre_agg AS(
+                SELECT 
+                    id_quartier,
+                    SUM(stag.inv_${getValidatedOrdre(ordre)}) as val_ag
+                FROM stat_agrege stag 
+                GROUP BY stag.id_quartier)`],
+            joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int', 'stat_pre_agg stpag ON sa.id_quartier::int=stpag.id_quartier::int'],
+            groupbys:[],
+            description: 'Superficie inutilisées en tout temps[-]',
+            requiresOrdre: false
+        },
+        'n-logements': {
+            expression: () => `(dfa.n_logements )::float`,
+            aggregateExpression: () => `(SUM(dfa.n_logements))::float`,
+            ctes:(ordre)=>[],
+            joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int'],
+            groupbys:[],
+            description: 'Nombre de logements au rôle[-]',
+            requiresOrdre: false
+        },
+        'stat-res-log': {
+            expression: () => `(stpagr.val_ag::float / dfa.n_logements::float)::float`,
+            aggregateExpression: () => `(SUM(stpagr.val_ag) / SUM(dfa.n_logements))::float`,
+            ctes:(ordre)=>[`stat_pre_agg_res AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 1)`],
+            joins: ['donnees_foncieres_agregees dfa on sa.id_quartier::int=dfa.id_quartier::int', 'stat_pre_agg_res stpagr ON sa.id_quartier::int=stpagr.id_quartier::int'],
+            groupbys:[],
+            description: 'Stationnement résidentiel par logement[-]',
+            requiresOrdre: true
+        },
+        'stat-res-perm': {
+            expression: () => `(stpagr.val_ag::float / mq.nb_permis::float)::float`,
+            aggregateExpression: () => `(SUM(stpagr.val_ag) / SUM(nq.nb_permis))::float`,
+            ctes:(ordre)=>[`stat_pre_agg_res AS (
+                SELECT
+                    id_quartier,
+                    stag.inv_${getValidatedOrdre(ordre)} as val_ag
+                FROM stat_agrege stag
+                WHERE cubf_principal_n1 = 1)`],
+            joins: ['motorisation_par_quartier mq on sa.id_quartier::int=mq.id_quartier::int', 'stat_pre_agg_res stpagr ON sa.id_quartier::int=stpagr.id_quartier::int'],
+            groupbys:[],
+            description: 'Stationnement résidentiel par permis[-]',
+            requiresOrdre: true
+        },
+    };
 
-  const getValidatedOrdre = (ordre: string|undefined): string  => {
-    const ordreValue = ordre ?? '132';
-    const cleaned = ordreValue.replace(/[^0-9]/g, ''); // remove anything sketchy
+    const validOrdres = ['123', '132', '213', '231', '312', '321','1','2','3'];
 
-    if (validOrdres.includes(cleaned)) {
-      return cleaned;
-    }
-    return ordreValue;
-  };
+    const getValidatedOrdre = (ordre: string | undefined): string => {
+        const ordreValue = ordre ?? '132';
+        const cleaned = ordreValue.replace(/[^0-9]/g, ''); // remove anything sketchy
 
-  const obtientInfoParQuartierCarto:RequestHandler<ParamsTerritoire>=async(req,res):Promise<void>=>{
-    let client;
-    try {
-      const { ordre, variable} = req.query;
-      if (typeof variable === 'string') {
-        // Get the query fragments based on X and Y
-        let varQueryFragment ;
-        if (typeof ordre ==='string'){
-          varQueryFragment = getQueryForXY(variable, ordre)
-        } else{
-          varQueryFragment = getQueryForXY(variable)
+        if (validOrdres.includes(cleaned)) {
+            return cleaned;
         }
-          // Query for detailed data, including the necessary joins for both X and Y
-          const query = `
+        return ordreValue;
+    };
+
+    const obtientInfoParQuartierCarto: RequestHandler<ParamsTerritoire> = async (req, res): Promise<void> => {
+        let client;
+        try {
+            const { ordre, variable } = req.query;
+            if (typeof variable === 'string') {
+                // Get the query fragments based on X and Y
+                let varQueryFragment;
+                if (typeof ordre === 'string') {
+                    varQueryFragment = getQueryForXY(variable, ordre)
+                } else {
+                    varQueryFragment = getQueryForXY(variable)
+                }
+                // Query for detailed data, including the necessary joins for both X and Y
+                const query = `
+            ${varQueryFragment.ctes.length>0?'WITH '+ varQueryFragment.ctes.join(',\n '):''}
             SELECT 
               sa.id_quartier::int,
               sa.nom_quartier,
               '${varQueryFragment.description}' as description,
               ${varQueryFragment.expression} AS valeur,
               sa.superf_quartier,
-              ST_AsGeoJSON(sa.geom) AS geojson_geometry
-            FROM public.stat_agrege sa
-            ${varQueryFragment.joins.map((join:string)=> `LEFT JOIN  ${join}`).join('\n')}
+              ST_AsGeoJSON(sa.geometry) AS geojson_geometry
+            FROM public.sec_analyse sa
+            ${varQueryFragment.joins.map((join: string) => `LEFT JOIN  ${join}`).join('\n')}
+            ${varQueryFragment.groupbys.length>0?'GROUP BY ' + varQueryFragment.groupbys.join(','):''}
             ORDER BY sa.id_quartier;
           `;
-          console.log('Executing query for', variable);
-          // Database connection
-          client = await pool.connect();
-          // Execute queries
-          const result = await client.query(query);
-          res.json({ success: true, data: result.rows });
+                console.log('Executing query for', variable);
+                // Database connection
+                client = await pool.connect();
+                // Execute queries
+                const result = await client.query(query);
+                res.json({ success: true, data: result.rows });
+            }
+        } catch (err) {
+            // Error handling
+            res.status(500).json({ success: false, error: 'Database error' });
+            console.log('Error in data retrieval for percentage calculation:', err);
+        } finally {
+            // Ensure client release in case of error or success
+            if (client) {
+                client.release();
+            }
         }
-    } catch (err) {
-      // Error handling
-      res.status(500).json({ success: false, error: 'Database error' });
-      console.log('Error in data retrieval for percentage calculation:', err);
-    } finally {
-      // Ensure client release in case of error or success
-      if (client) {
-        client.release();
-      }
-    }
-  };
+    };
 
-  const obtientInfoParQuartierHisto:RequestHandler<ParamsTerritoire>=async(req,res):Promise<void>=>{
-    let client;
-    try {
-      const { ordre, variable} = req.query;
-      if (typeof variable === 'string') {
-        // Get the query fragments based on X and Y
-        let varQueryFragment ;
-        if (typeof ordre ==='string'){
-          varQueryFragment = getQueryForXY(variable, ordre)
-        } else{
-          varQueryFragment = getQueryForXY(variable)
-        }
-          // Query for detailed data, including the necessary joins for both X and Y
-          const query = `
+    const obtientInfoParQuartierHisto: RequestHandler<ParamsTerritoire> = async (req, res): Promise<void> => {
+        let client;
+        try {
+            const { ordre, variable } = req.query;
+            if (typeof variable === 'string') {
+                // Get the query fragments based on X and Y
+                let varQueryFragment;
+                if (typeof ordre === 'string') {
+                    varQueryFragment = getQueryForXY(variable, ordre)
+                } else {
+                    varQueryFragment = getQueryForXY(variable)
+                }
+                // Query for detailed data, including the necessary joins for both X and Y
+                const query = `
+            ${varQueryFragment.ctes.length>0?'WITH '+ varQueryFragment.ctes.join(',\n '):''}
             SELECT 
               sa.id_quartier::int,
               sa.nom_quartier,
               ${varQueryFragment.expression}::float AS valeurs
             FROM public.sec_analyse sa
-            ${varQueryFragment.joins.map((join:string)=> `LEFT JOIN  ${join}`).join('\n')}
+            ${varQueryFragment.joins.map((join: string) => `LEFT JOIN  ${join}`).join('\n')}
             ORDER BY sa.id_quartier;
           `;
-          const query2 = `
+                const query2 = `
+            ${varQueryFragment.ctes.length>0?'WITH '+ varQueryFragment.ctes.join(',\n '):''}
             SELECT 
               ${varQueryFragment.aggregateExpression}::float as valeurVille
             FROM
               public.sec_analyse sa
-            ${varQueryFragment.joins.map((join)=> `LEFT JOIN  ${join}`).join('\n')}  
+            ${varQueryFragment.joins.map((join) => `LEFT JOIN  ${join}`).join('\n')}  
           `
-          console.log('Executing query for', variable);
-          // Database connection
-          client = await pool.connect();
-          // Execute queries
-          const result = await client.query(query);
-          const result2 = await client.query(query2);
-          const output = {valeurVille:result2.rows[0].valeurville,description:varQueryFragment.description,donnees:result.rows}
-          res.json({ success: true, data: output });
+                console.log('Executing query for', variable);
+                // Database connection
+                client = await pool.connect();
+                // Execute queries
+                const result = await client.query(query);
+                const result2 = await client.query(query2);
+                const output = { valeurVille: result2.rows[0].valeurville, description: varQueryFragment.description, donnees: result.rows }
+                res.json({ success: true, data: output });
+            }
+        } catch (err) {
+            // Error handling
+            res.status(500).json({ success: false, error: 'Database error' });
+            console.log('Error in data retrieval for percentage calculation:', err);
+        } finally {
+            // Ensure client release in case of error or success
+            if (client) {
+                client.release();
+            }
         }
-    } catch (err) {
-      // Error handling
-      res.status(500).json({ success: false, error: 'Database error' });
-      console.log('Error in data retrieval for percentage calculation:', err);
-    } finally {
-      // Ensure client release in case of error or success
-      if (client) {
-        client.release();
-      }
-    }
-  };
-  
-  const recalculeStationnementAgrege: RequestHandler<void> = async(_req,res): Promise<void>=>{
-    
-    let client
-    try {
-      console.log('Recalcul du stationnement en cours');
-      client = await pool.connect();
-      const query = `
-        DELETE FROM stat_agrege;
-        WITH LotNeighborhood AS (
-          SELECT 
-            c.g_no_lot, 
-            s.id_quartier,
-            s.superf_quartier,
-            s.geometry,
-            s.nom_quartier
-          FROM public.cadastre c
-          JOIN public.sec_analyse s 
-            ON ST_Area(ST_Intersection(s.geometry, c.geometry)) / ST_Area(c.geometry) > 0.9
-        ),
+    };
 
-        inv_123 AS (
-          SELECT ln.id_quartier, ln.geometry, ln.superf_quartier, ln.nom_quartier,
-                CEIL(SUM(COALESCE(sub.parking_estimate, 0))) AS inv_123
-          FROM LotNeighborhood ln
-          LEFT JOIN LATERAL (
+    const recalculeStationnementAgrege: RequestHandler<void> = async (_req, res): Promise<void> => {
+
+        let client
+        try {
+            console.log('Recalcul du stationnement en cours');
+            client = await pool.connect();
+            const query = `
+            DELETE FROM stat_agrege;
+            WITH LotNeighborhood AS (
+                SELECT 
+                    c.g_no_lot, 
+                    s.id_quartier,
+                    s.superf_quartier,
+                    s.geometry,
+                    s.nom_quartier
+                FROM public.cadastre c
+                JOIN public.sec_analyse s 
+                    ON ST_Area(ST_Intersection(s.geometry, c.geometry)) / ST_Area(c.geometry) > 0.9
+            ),
+
+            role_augmente AS (
+                SELECT
+                    id_provinc,
+                    rl0105a::int AS cubf,
+                    rl0404a AS valeur_au_role
+                FROM role_foncier
+            ),
+
+            joined AS (
+                SELECT
+                    acr.g_no_lot,
+                    ra.cubf,
+                    ra.valeur_au_role,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY acr.g_no_lot
+                        ORDER BY ra.valeur_au_role DESC NULLS LAST, ra.cubf
+                    ) AS rn
+                FROM public.association_cadastre_role acr
+                LEFT JOIN role_augmente ra
+                    ON ra.id_provinc = acr.id_provinc
+                WHERE acr.g_no_lot IS NOT NULL
+            ),
+
+            aggregated AS (
+                SELECT
+                    g_no_lot,
+                    MAX(CASE WHEN rn = 1 THEN cubf END) AS cubf_principal,
+                    CASE 
+                        WHEN CARDINALITY(ARRAY_AGG(DISTINCT LEFT(cubf::text,1)::int)) = 1 
+                        THEN case WHEN LEFT(MAX(CASE WHEN rn = 1 THEN cubf END)::text,1)::int!=3 then LEFT(MAX(CASE WHEN rn = 1 THEN cubf END)::text,1)::int ELSE 2 END -- mettre toutes les propriétés industrielles dans un bucket CUBF galore
+                        ELSE -1
+                    END AS cubf_principal_first_digit
+                FROM joined
+                GROUP BY g_no_lot
+            ),
+
+            rpd AS (
+                SELECT
+                    g_no_lot,
+                    COALESCE(
+                        CASE 
+                            WHEN methode_estime = 1 THEN n_places_mesure
+                            ELSE n_places_min
+                        END, 0
+                    ) AS n_places,
+                    methode_estime,
+                    id_inv
+                FROM inventaire_stationnement
+            ),
+            invent_count AS(
+                SELECT 
+                    g_no_lot,
+                    COUNT(g_no_lot) as n_inv
+                from
+                    inventaire_stationnement
+                group by g_no_lot
+            ),
+
+            lot_park_data AS (
+                SELECT
+                    ln.g_no_lot,
+                    ln.id_quartier,
+                    ln.superf_quartier,
+                    ln.nom_quartier,
+                    ic.n_inv,
+                    ag.cubf_principal,
+                    ag.cubf_principal_first_digit,
+                    ln.geometry
+                FROM LotNeighborhood ln
+                LEFT JOIN aggregated ag
+                    ON ag.g_no_lot = ln.g_no_lot
+                left join invent_count ic
+                    on ag.g_no_lot=ic.g_no_lot
+            ),
+            inv_123_per_lot AS (
+                SELECT DISTINCT ON (g_no_lot) g_no_lot, n_places
+                FROM rpd
+                ORDER BY g_no_lot,
+                    CASE methode_estime WHEN 1 THEN 1 WHEN 2 THEN 2 WHEN 3 THEN 3 ELSE 4 END
+            ),
+
+            inv_132_per_lot AS (
+                SELECT DISTINCT ON (g_no_lot) g_no_lot, n_places
+                FROM rpd
+                ORDER BY g_no_lot,
+                    CASE methode_estime WHEN 1 THEN 1 WHEN 3 THEN 2 WHEN 2 THEN 3 ELSE 4 END
+            ),
+
+            inv_213_per_lot AS (
+                SELECT DISTINCT ON (g_no_lot) g_no_lot, n_places
+                FROM rpd
+                ORDER BY g_no_lot,
+                    CASE methode_estime WHEN 2 THEN 1 WHEN 1 THEN 2 WHEN 3 THEN 3 ELSE 4 END
+            ),
+
+            inv_231_per_lot AS (
+                SELECT DISTINCT ON (g_no_lot) g_no_lot, n_places
+                FROM rpd
+                ORDER BY g_no_lot,
+                    CASE methode_estime WHEN 2 THEN 1 WHEN 3 THEN 2 WHEN 1 THEN 3 ELSE 4 END
+            ),
+
+            inv_312_per_lot AS (
+                SELECT DISTINCT ON (g_no_lot) g_no_lot, n_places
+                FROM rpd
+                ORDER BY g_no_lot,
+                    CASE methode_estime WHEN 3 THEN 1 WHEN 1 THEN 2 WHEN 2 THEN 3 ELSE 4 END
+            ),
+
+            inv_321_per_lot AS (
+                SELECT DISTINCT ON (g_no_lot) g_no_lot, n_places
+                FROM rpd
+                ORDER BY g_no_lot,
+                    CASE methode_estime WHEN 3 THEN 1 WHEN 2 THEN 2 WHEN 1 THEN 3 ELSE 4 END
+            ),
+            inv_1_per_lot as (
+                SELECT g_no_lot, n_places,id_inv
+                FROM rpd
+                WHERE methode_estime = 1
+            ),
+            inv_2_per_lot AS (
+                SELECT g_no_lot, n_places,id_inv
+                FROM rpd
+                WHERE methode_estime = 2
+            ),
+            inv_3_per_lot AS (
+                SELECT g_no_lot, n_places,id_inv
+                FROM rpd
+                WHERE methode_estime = 3
+            ),
+            desc_cubf AS (
+                SELECT *
+                from (values (-1,'Usage mixte'),(1,'Résidentielle'),(2,'Industrielle'),(4,'Infrastructure'),(5,'Commerciale'),(6,'Services'),(7,'Récréation'),(8,'Ressources naturelles'),(9,'Inexploité'),(NULL,'Sans Rôle'))as sub(cubf_principal_first_digit,desc_usage)
+            )
+
+            INSERT INTO stat_agrege (id_quartier,cubf_principal_n1,inv_123,inv_132,inv_213,inv_231,inv_312,inv_321,inv_1,inv_2,inv_3,n_lots)
             SELECT 
-              COALESCE(
-                CASE WHEN i.methode_estime = 1 THEN i.n_places_mesure
-                    ELSE i.n_places_min
-                END, 0
-              ) AS parking_estimate
-            FROM inventaire_stationnement i
-            WHERE i.g_no_lot = ln.g_no_lot
-            ORDER BY CASE i.methode_estime
-                      WHEN 1 THEN 1
-                      WHEN 2 THEN 2
-                      WHEN 3 THEN 3
-                      ELSE 4
-                    END
-            LIMIT 1
-          ) sub ON true
-          GROUP BY ln.id_quartier, ln.geometry, ln.superf_quartier,ln.nom_quartier
-        ),
-
-        inv_132 AS (
-          SELECT ln.id_quartier, ln.geometry, ln.superf_quartier, 
-                CEIL(SUM(COALESCE(sub.parking_estimate, 0))) AS inv_132
-          FROM LotNeighborhood ln
-          LEFT JOIN LATERAL (
-            SELECT 
-              COALESCE(
-                CASE WHEN i.methode_estime = 1 THEN i.n_places_mesure
-                    ELSE i.n_places_min
-                END, 0
-              ) AS parking_estimate
-            FROM inventaire_stationnement i
-            WHERE i.g_no_lot = ln.g_no_lot
-            ORDER BY CASE i.methode_estime
-                      WHEN 1 THEN 1
-                      WHEN 3 THEN 2
-                      WHEN 2 THEN 3
-                      ELSE 4
-                    END
-            LIMIT 1
-          ) sub ON true
-          GROUP BY ln.id_quartier, ln.geometry, ln.superf_quartier
-        ),
-
-        inv_213 AS (
-          SELECT ln.id_quartier, ln.geometry, ln.superf_quartier, 
-                CEIL(SUM(COALESCE(sub.parking_estimate, 0))) AS inv_213
-          FROM LotNeighborhood ln
-          LEFT JOIN LATERAL (
-            SELECT 
-              COALESCE(
-                CASE WHEN i.methode_estime = 2 THEN i.n_places_min
-                    WHEN i.methode_estime = 1 THEN i.n_places_mesure
-                    ELSE i.n_places_min
-                END, 0
-              ) AS parking_estimate
-            FROM inventaire_stationnement i
-            WHERE i.g_no_lot = ln.g_no_lot
-            ORDER BY CASE i.methode_estime
-                      WHEN 2 THEN 1
-                      WHEN 1 THEN 2
-                      WHEN 3 THEN 3
-                      ELSE 4
-                    END
-            LIMIT 1
-          ) sub ON true
-          GROUP BY ln.id_quartier, ln.geometry, ln.superf_quartier
-        ),
-
-        inv_231 AS (
-          SELECT ln.id_quartier, ln.geometry, ln.superf_quartier, 
-                CEIL(SUM(COALESCE(sub.parking_estimate, 0))) AS inv_231
-          FROM LotNeighborhood ln
-          LEFT JOIN LATERAL (
-            SELECT 
-              COALESCE(
-                CASE WHEN i.methode_estime = 2 THEN i.n_places_min
-                    WHEN i.methode_estime = 1 THEN i.n_places_mesure
-                    ELSE i.n_places_min
-                END, 0
-              ) AS parking_estimate
-            FROM inventaire_stationnement i
-            WHERE i.g_no_lot = ln.g_no_lot
-            ORDER BY CASE i.methode_estime
-                      WHEN 2 THEN 1
-                      WHEN 3 THEN 2
-                      WHEN 1 THEN 3
-                      ELSE 4
-                    END
-            LIMIT 1
-          ) sub ON true
-          GROUP BY ln.id_quartier, ln.geometry, ln.superf_quartier
-        ),
-
-        inv_312 AS (
-          SELECT ln.id_quartier, ln.geometry, ln.superf_quartier, 
-                CEIL(SUM(COALESCE(sub.parking_estimate, 0))) AS inv_312
-          FROM LotNeighborhood ln
-          LEFT JOIN LATERAL (
-            SELECT 
-              COALESCE(
-                CASE WHEN i.methode_estime = 3 THEN i.n_places_min
-                    WHEN i.methode_estime = 1 THEN i.n_places_mesure
-                    ELSE i.n_places_min
-                END, 0
-              ) AS parking_estimate
-            FROM inventaire_stationnement i
-            WHERE i.g_no_lot = ln.g_no_lot
-            ORDER BY CASE i.methode_estime
-                      WHEN 3 THEN 1
-                      WHEN 1 THEN 2
-                      WHEN 2 THEN 3
-                      ELSE 4
-                    END
-            LIMIT 1
-          ) sub ON true
-          GROUP BY ln.id_quartier, ln.geometry, ln.superf_quartier
-        ),
-
-        inv_321 AS (
-          SELECT ln.id_quartier, ln.geometry, ln.superf_quartier, 
-                CEIL(SUM(COALESCE(sub.parking_estimate, 0))) AS inv_321
-          FROM LotNeighborhood ln
-          LEFT JOIN LATERAL (
-            SELECT 
-              COALESCE(
-                CASE WHEN i.methode_estime = 3 THEN i.n_places_min
-                    WHEN i.methode_estime = 2 THEN i.n_places_min
-                    ELSE i.n_places_mesure
-                END, 0
-              ) AS parking_estimate
-            FROM inventaire_stationnement i
-            WHERE i.g_no_lot = ln.g_no_lot
-            ORDER BY CASE i.methode_estime
-                      WHEN 3 THEN 1
-                      WHEN 2 THEN 2
-                      WHEN 1 THEN 3
-                      ELSE 4
-                    END
-            LIMIT 1
-          ) sub ON true
-          GROUP BY ln.id_quartier, ln.geometry, ln.superf_quartier
-        )
-
-
-        -- Final merge + insert
-        INSERT INTO stat_agrege (
-          id_quartier, geom, superf_quartier,nom_quartier,
-          inv_123, inv_132, inv_213, inv_231, inv_312, inv_321
-        )
-        SELECT 
-          i123.id_quartier,
-          i123.geometry,
-          i123.superf_quartier,
-          i123.nom_quartier,
-          i123.inv_123,
-          i132.inv_132,
-          i213.inv_213,
-          i231.inv_231,
-          i312.inv_312,
-          i321.inv_321
-        FROM inv_123 i123
-        LEFT JOIN inv_132 i132 ON i123.id_quartier = i132.id_quartier
-        LEFT JOIN inv_213 i213 ON i123.id_quartier = i213.id_quartier
-        LEFT JOIN inv_231 i231 ON i123.id_quartier = i231.id_quartier
-        LEFT JOIN inv_312 i312 ON i123.id_quartier = i312.id_quartier
-        LEFT JOIN inv_321 i321 ON i123.id_quartier = i321.id_quartier;
-      `;
-      const result = await client.query(query);
-      res.json({ success: true});
-    } catch (err) {
-      res.status(500).json({ success: false, error: 'Database error' });
-      console.log('Enjeux dans l agregation du stationnement')
-    } finally{
-      if (client){
-        client.release()
-      }
-    }
-  };
-
-  const getQueryForXY = (
-    variableKey: string,
-    ordre?: string
-  ): { expression: string,aggregateExpression:string, joins: string[], description: string,requiresOrdre:boolean } => {
-    const config = variableMap[variableKey];
-    if (!config) throw new Error(`Variable ${variableKey} not found`);
-  
-    const ordreValue = ordre ?? ''; // Provide a fallback if ordre is undefined
-    if (config.requiresOrdre && !ordreValue) {
-      throw new Error(`Variable ${variableKey} requires ordre`);
-    }
-  
-    const expr = config.expression(ordreValue);
-    const agexpr = config.aggregateExpression(ordreValue)
-    return { expression: expr,aggregateExpression:agexpr, joins: config.joins, description: config.description,requiresOrdre:config.requiresOrdre };
-  };
-
-  const obtiensDonneesGraphiqueXY: RequestHandler<ParamsTerritoire> = async (req, res): Promise<void> => {
-    let client;
-    try {
-      const { ordre, X, Y } = req.query;
-      if (typeof X === 'string' && typeof Y === 'string') {
-        // Get the query fragments based on X and Y
-        let xQueryFragment ;
-        let yQueryFragment ;
-        if (typeof ordre ==='string'){
-          xQueryFragment = getQueryForXY(X, ordre);
-          yQueryFragment = getQueryForXY(Y, ordre);
-        } else{
-          xQueryFragment = getQueryForXY(X);
-          yQueryFragment = getQueryForXY(Y);
+                lpd.id_quartier,
+                lpd.cubf_principal_first_digit as cubf_principal_n1,
+                sum(CEIL(i123.n_places)) as inv_123,
+                sum(CEIL(i132.n_places)) as inv_132,
+                sum(CEIL(i213.n_places)) as inv_213,
+                sum(CEIL(i231.n_places)) as inv_231,
+                sum(CEIL(i312.n_places)) as inv_312,
+                sum(CEIL(i321.n_places)) as inv_321,
+                sum(CEIL(i1.n_places)) as inv_1,
+                sum(CEIL(i2.n_places)) as inv_2,
+                sum(CEIL(i3.n_places)) as inv_3,
+                count(*) as n_lots--
+            from lot_park_data lpd
+            left join 
+                inv_123_per_lot i123 on i123.g_no_lot = lpd.g_no_lot
+            left join
+                inv_132_per_lot i132 on i132.g_no_lot=lpd.g_no_lot
+            left join
+                inv_213_per_lot i213 on i213.g_no_lot=lpd.g_no_lot
+            left join 
+                inv_231_per_lot i231 on i231.g_no_lot=lpd.g_no_lot
+            left join 
+                inv_312_per_lot i312 on i312.g_no_lot=lpd.g_no_lot
+            left join
+                inv_321_per_lot i321 on i321.g_no_lot=lpd.g_no_lot
+            left join
+                inv_1_per_lot i1 on i1.g_no_lot=lpd.g_no_lot
+            left join
+                inv_2_per_lot i2 on i2.g_no_lot=lpd.g_no_lot
+            left join
+                inv_3_per_lot i3 on i3.g_no_lot=lpd.g_no_lot
+            left join 
+                desc_cubf dc on dc.cubf_principal_first_digit=lpd.cubf_principal_first_digit or (dc.cubf_principal_first_digit IS NULL AND lpd.cubf_principal_first_digit IS NULL)
+            group by lpd.id_quartier,lpd.cubf_principal_first_digit
+            order by lpd.id_quartier,lpd.cubf_principal_first_digit
+            `;
+            const result = await client.query(query);
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ success: false, error: 'Database error' });
+            console.log('Enjeux dans l agregation du stationnement')
+        } finally {
+            if (client) {
+                client.release()
+            }
         }
-        // Get the join fragments for X and Y
-        const Xjoins = xQueryFragment.joins
-        const Yjoins = yQueryFragment.joins
+    };
 
-        const allJoins =Xjoins.concat(Yjoins)
-        const uniqueJoins = [...new Set(allJoins)];
+    const getQueryForXY = (
+        variableKey: string,
+        ordre?: string
+    ): { expression: string, ctes:string[],aggregateExpression: string, joins: string[], groupbys:string[],description: string, requiresOrdre: boolean } => {
+        const config = variableMap[variableKey];
+        if (!config) throw new Error(`Variable ${variableKey} not found`);
 
+        const ordreValue = ordre ?? ''; // Provide a fallback if ordre is undefined
+        if (config.requiresOrdre && !ordreValue) {
+            throw new Error(`Variable ${variableKey} requires ordre`);
+        }
 
-          // Query for detailed data, including the necessary joins for both X and Y
-          const query = `
+        const expr = config.expression(ordreValue);
+        const agexpr = config.aggregateExpression(ordreValue)
+        const gbexpr = config.groupbys
+        const cteexpr = config.ctes(ordreValue)
+        return { expression: expr, ctes:cteexpr,aggregateExpression: agexpr, joins: config.joins, groupbys:gbexpr, description: config.description, requiresOrdre: config.requiresOrdre };
+    };
+
+    const obtiensDonneesGraphiqueXY: RequestHandler<ParamsTerritoire> = async (req, res): Promise<void> => {
+        let client;
+        try {
+            const { ordre, X, Y } = req.query;
+            if (typeof X === 'string' && typeof Y === 'string') {
+                // Get the query fragments based on X and Y
+                let xQueryFragment;
+                let yQueryFragment;
+                if (typeof ordre === 'string') {
+                    xQueryFragment = getQueryForXY(X, ordre);
+                    yQueryFragment = getQueryForXY(Y, ordre);
+                } else {
+                    xQueryFragment = getQueryForXY(X);
+                    yQueryFragment = getQueryForXY(Y);
+                }
+                // Get the join fragments for X and Y
+                const Xjoins = xQueryFragment.joins
+                const Yjoins = yQueryFragment.joins
+
+                const allJoins = Xjoins.concat(Yjoins)
+                const uniqueJoins = [...new Set(allJoins)];
+                
+                const Xctes = xQueryFragment.ctes
+                const Yctes = yQueryFragment.ctes
+
+                const allctes = Xctes.concat(Yctes)
+                const uniquectes = [...new Set(allctes)]
+
+                const Xgbs = xQueryFragment.groupbys
+                const Ygbs = yQueryFragment.groupbys
+
+                const allGBs = Xgbs.concat(Ygbs)
+                const uniqueGBs = [...new Set(allGBs)]
+                // Query for detailed data, including the necessary joins for both X and Y
+                const query = `
+            ${uniquectes.length>0?'WITH '+ uniquectes.join(',\n '):''}
             SELECT 
               sa.id_quartier::int,
               sa.nom_quartier,
               ${xQueryFragment.expression}::float AS X,
               ${yQueryFragment.expression}::float AS Y
             FROM public.sec_analyse sa
-            ${uniqueJoins.map((join)=> `LEFT JOIN  ${join}`).join('\n')}
+            ${uniqueJoins.map((join) => `LEFT JOIN  ${join}`).join('\n')}
+            ${uniqueGBs.length>0?'GROUP BY ' + uniqueGBs.join(','):''}
             ORDER BY sa.id_quartier;
           `;
 
-          console.log('Executing query for', X, Y);
+                console.log('Executing query for', X, Y);
 
-          
-          // Database connection
-          client = await pool.connect();
-  
-          // Queries
 
-          // Execute queries
-          const result = await client.query(query);
-          const output = {descriptionX:`${xQueryFragment.description}`,descriptionY: `${yQueryFragment.description}`, donnees:result.rows}
-  
-          res.json({ success: true, data: output });
+                // Database connection
+                client = await pool.connect();
+
+                // Queries
+
+                // Execute queries
+                const result = await client.query(query);
+                const output = { descriptionX: `${xQueryFragment.description}`, descriptionY: `${yQueryFragment.description}`, donnees: result.rows }
+
+                res.json({ success: true, data: output });
+            }
+        } catch (err) {
+            // Error handling
+            res.status(500).json({ success: false, error: 'Database error' });
+            console.log('Error in data retrieval for percentage calculation:', err);
+        } finally {
+            // Ensure client release in case of error or success
+            if (client) {
+                client.release();
+            }
         }
-    } catch (err) {
-      // Error handling
-      res.status(500).json({ success: false, error: 'Database error' });
-      console.log('Error in data retrieval for percentage calculation:', err);
-    } finally {
-      // Ensure client release in case of error or success
-      if (client) {
-        client.release();
-      }
-    }
-  };
+    };
 
-  const recalculeVariablesAncilaires:RequestHandler<void>= async(_req,res):Promise<void>=>{
-    let client;
-    try {
-      console.log('Recalcul de variables anciliaires ');
-      client = await pool.connect();
-      const query = `
+    const recalculeVariablesAncilaires: RequestHandler<void> = async (_req, res): Promise<void> => {
+        let client;
+        try {
+            console.log('Recalcul de variables anciliaires ');
+            client = await pool.connect();
+            const query = `
         BEGIN;
         DELETE FROM motorisation_par_quartier;
         -- calcul du nombre de voitures min max et nombres de permis
@@ -970,22 +1292,22 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
         GROUP BY sa.id_quartier, sa.geometry;
         COMMIT;
       `;
-      const result = await client.query(query);
-      res.json({ success: true});
-    } catch (err) {
-      res.status(500).json({ success: false, error: 'Database error' });
-      console.log('Enjeux dans l agregation du stationnement')
-    } finally{
-      if (client){
-        client.release()
-      }
+            const result = await client.query(query);
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ success: false, error: 'Database error' });
+            console.log('Enjeux dans l agregation du stationnement')
+        } finally {
+            if (client) {
+                client.release()
+            }
+        }
     }
-  }
-  // Routes
-  router.get('/carto',obtientInfoParQuartierCarto)
-  router.get('/histo',obtientInfoParQuartierHisto)
-  router.get('/XY',obtiensDonneesGraphiqueXY)
-  router.get('/recalcule-stat-agreg',recalculeStationnementAgrege)
-  router.get('/recalcule-val-autres',recalculeVariablesAncilaires)
-  return router;
+    // Routes
+    router.get('/carto', obtientInfoParQuartierCarto)
+    router.get('/histo', obtientInfoParQuartierHisto)
+    router.get('/XY', obtiensDonneesGraphiqueXY)
+    router.get('/recalcule-stat-agreg', recalculeStationnementAgrege)
+    router.get('/recalcule-val-autres', recalculeVariablesAncilaires)
+    return router;
 };

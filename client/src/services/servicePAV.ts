@@ -8,9 +8,9 @@ import { GeoJSONPropsAnaQuartier,  } from '../types/AnalysisTypes';
 import { entreePAV } from '../types/DataTypes';
 
 export const servicePAV = {
-    obtientPAVQuartier: async(ordre:number[],quartier:number) : Promise<ReponsePAVQuartier> => {
+    obtientPAVQuartier: async(ordre:number[],quartier:number,type_pav:string,stat_comp:string) : Promise<ReponsePAVQuartier> => {
         try {
-            const response: AxiosResponse<ReponsePAVQuartier> = await api.get(`/PAV?order=${ordre.join(",")}&id_quartier=${quartier}`);
+            const response: AxiosResponse<ReponsePAVQuartier> = await api.get(`/PAV?order=${ordre.join(",")}&id_quartier=${quartier}&type=${type_pav}&stat_type=${stat_comp}`);
             const data_res = response.data.data;
             console.log('Recu profile accumulation vehicule')
             return {success:response.data.success,data:data_res};
