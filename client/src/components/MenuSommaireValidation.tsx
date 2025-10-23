@@ -1,12 +1,12 @@
 import { Label } from "@mui/icons-material"
-import { FormControl, InputLabel, MenuItem, Select, TextField } from "@mui/material"
+import { Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, Select, TextField } from "@mui/material"
 import { SetStateAction } from "react"
 
 
 
 const MenuSommaireValidation: React.FC<{
-    xMax: number,
-    defXMax: React.Dispatch<SetStateAction<number>>,
+    xMax: number|null,
+    defXMax: React.Dispatch<SetStateAction<number|null>>,
     nPlots: number,
     defNPlots: React.Dispatch<SetStateAction<number>>,
     variable: 'pred_par_reel'|'reel_par_pred';
@@ -14,8 +14,8 @@ const MenuSommaireValidation: React.FC<{
 }>
     = (
         props: {
-            xMax: number,
-            defXMax: React.Dispatch<SetStateAction<number>>,
+            xMax: number|null,
+            defXMax: React.Dispatch<SetStateAction<number|null>>,
             nPlots: number,
             defNPlots: React.Dispatch<SetStateAction<number>>,
             variable: 'pred_par_reel'|'reel_par_pred';
@@ -56,7 +56,19 @@ const MenuSommaireValidation: React.FC<{
                         <MenuItem value={10}>10</MenuItem>
                     </Select>
                 </FormControl>
-                <FormControl>
+                {/* Use FormControlLabel to add a label to the Checkbox */}
+                <FormControlLabel
+                    control={
+                        <Checkbox 
+                            checked={props.xMax === null}
+                            onChange={()=>props.xMax=== null ?props.defXMax(4):props.defXMax(null)}
+                        />
+                    }
+                    label="X max actif"
+                    sx={{ color: "white" }}
+                />
+                {props.xMax!==null?<FormControl>
+                    
                     <TextField
                         type='number'
                         label='X max graphiques'
@@ -78,7 +90,8 @@ const MenuSommaireValidation: React.FC<{
                         }}
                         onChange={(e) => props.defXMax(Number(e.target.value))}
                     />
-                </FormControl>
+                </FormControl>:<></>}
+                
                 <FormControl>
                     <InputLabel id='variable' sx={{
                         color: "#cccccc",
@@ -106,6 +119,7 @@ const MenuSommaireValidation: React.FC<{
                     >
                         <MenuItem value={'pred_par_reel'}>Prédit sur Réel</MenuItem>
                         <MenuItem value={'reel_par_pred'}>Réel sur prédit</MenuItem>
+                        <MenuItem value={'bland_altman'}>Différence vs moyenne</MenuItem>
                     </Select>
                 </FormControl>
             </div>

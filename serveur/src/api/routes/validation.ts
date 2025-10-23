@@ -939,6 +939,14 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                 break;
             }
 
+            case 'bland_altman':{
+                formatted_output = {
+                    labels: resultat.map((row)=> row.x),
+                    datasets:[{label:`Différence vs moyenne - N= ${nEntrees}`,
+                            data: resultat.map((row)=>row.y)}]
+                }
+                break;
+            };
             default:
                 throw new Error('unknown type for graph');
         }
@@ -972,6 +980,9 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                     break;
                 case "reel_par_pred":
                     valeur_extraction = 'COALESCE(places_reelles/NULLIF(places_predites, 0),0) as valeur,places_predites,places_reelles'
+                    break;
+                case "bland_altman":
+                    valeur_extraction = '(places_reelles - CEIL(places_predites))::int as y, ((places_reelles + CEIL(places_predites)) /2)::int as x'
                     break;
                 default:
                     valeur_extraction = 'places_reelles,places_predites'

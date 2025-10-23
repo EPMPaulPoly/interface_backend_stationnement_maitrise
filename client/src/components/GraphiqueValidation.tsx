@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { data_graphique, FeuilleFinaleStrate, inventaire_stationnement } from "../types/DataTypes";
 import { ArrowBack, Settings } from "@mui/icons-material";
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
-import { Bar } from "react-chartjs-2";
+import { Bar, Scatter } from "react-chartjs-2";
 import serviceValidation from "../services/serviceValidation";
 
 
@@ -197,6 +197,62 @@ const GraphiqueValidation: React.FC<{ feuilleSelect: FeuilleFinaleStrate, invent
                                 },
                             },
                         })
+                    } else if (typeGraphique ==='bland_altman'){
+                        setOptions({
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        color: 'white',
+                                        font: {
+                                            size: 16,
+                                        },
+                                    },
+                                },
+                                title: {
+                                    display: true,
+                                    text: `Strate ${props.feuilleSelect.id_strate}`,
+                                    color: 'white',
+                                    font: {
+                                        size: 25
+                                    }
+                                },
+                            },
+                            scales: {
+                                x: {
+                                    ticks: {
+                                        color: 'white',
+                                        font: {
+                                            size: 16,
+                                        },
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: '(Réel + prédit) /2',
+                                        color: 'white',
+                                        font: {
+                                            size: 18,
+                                        },
+                                    }
+                                },
+                                y: {
+                                    ticks: {
+                                        color: 'white',
+                                        font: {
+                                            size: 16,
+                                        },
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Réel - prédit',
+                                        color: 'white',
+                                        font: {
+                                            size: 18,
+                                        },
+                                    }
+                                },
+                            },
+                        })
                     }
                 } catch (error) {
                     console.error('Error fetching data:', error);
@@ -240,6 +296,7 @@ const GraphiqueValidation: React.FC<{ feuilleSelect: FeuilleFinaleStrate, invent
                         <MenuItem value='stationnement_predit'>Stat Prédit </MenuItem>
                         <MenuItem value='pred_par_reel'>Ratio prédit sur réel</MenuItem>
                         <MenuItem value='reel_par_pred'>Ratio réel sur prédit</MenuItem>
+                        <MenuItem value='bland_altman'>Bland Altman</MenuItem>
                     </Select>
                 </FormControl>
             </>
@@ -247,7 +304,7 @@ const GraphiqueValidation: React.FC<{ feuilleSelect: FeuilleFinaleStrate, invent
             <>
                 <Settings onClick={() => defEditParam(true)} />
                 <div className='graphique'>
-                    <Bar
+                    {typeGraphique !== 'bland_altman'?<Bar
                         data={{
                             ...data,
                             datasets: data.datasets.map((ds, i) => {
@@ -275,7 +332,34 @@ const GraphiqueValidation: React.FC<{ feuilleSelect: FeuilleFinaleStrate, invent
                                 }
                             }
                         }}
-                    />
+                    />:<Scatter data={{
+                            ...data,
+                            datasets: data.datasets.map((ds, i) => {
+                                return {
+                                    ...ds,
+                                    color: color[i],
+                                    backgroundColor: color[i]
+                                };
+                            }),
+                        }}
+                        options={{
+                            ...options,
+                            plugins: {
+                                ...options.plugins,
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context: any) {
+                                            // Try to get desc_er and desc_reg_stat if available
+                                            const value = context.parsed.y;
+                                            let label = '';
+                                            label = `Différence ${value.toFixed(2)}`
+                                            return label;
+                                        }
+                                    }
+                                }
+                            }
+                        }}/>}
+                    
                 </div>
             </>
         )}

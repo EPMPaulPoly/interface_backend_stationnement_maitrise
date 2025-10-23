@@ -8,7 +8,7 @@ import GraphiqueSommaireValidation from "../components/GraphiqueSommaireValidati
 
 const SommaireValidation:React.FC=()=>{
     const [nGraphs,defNGraphs] = useState<number>(2);
-    const [xMax,defXMax] = useState<number>(3);
+    const [xMax,defXMax] = useState<number|null>(3);
     const [variable,defVariable] = useState<"pred_par_reel"|"reel_par_pred">("pred_par_reel")
     return(
     <div className='page-sommaire-valid'>

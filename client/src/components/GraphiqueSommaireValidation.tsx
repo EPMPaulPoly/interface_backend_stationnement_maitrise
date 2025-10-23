@@ -3,10 +3,10 @@ import serviceValidation from "../services/serviceValidation";
 import { data_graphique, FeuilleFinaleStrate } from "../types/DataTypes";
 import { ArrowBack, Settings } from "@mui/icons-material";
 import { FormControl, MenuItem, Select } from "@mui/material";
-import { Bar } from "react-chartjs-2";
+import { Bar, Scatter } from "react-chartjs-2";
 
 
-const GraphiqueSommaireValidation: React.FC<{xMax:number,variable:'pred_par_reel'|'reel_par_pred'}>=(props:{xMax:number,variable:'pred_par_reel'|'reel_par_pred'})=>{
+const GraphiqueSommaireValidation: React.FC<{xMax:number|null,variable:'pred_par_reel'|'reel_par_pred'|'bland_altman'}>=(props:{xMax:number|null,variable:'pred_par_reel'|'reel_par_pred'|'bland_altman'})=>{
     const [idStrate,defIdStrate] = useState<number>(-1)
     const [menuVis,defMenuVis] = useState<boolean>(false);
     const [feuillesDispo,defFeuillesDispo] = useState<FeuilleFinaleStrate[]>([]);
@@ -155,7 +155,13 @@ const GraphiqueSommaireValidation: React.FC<{xMax:number,variable:'pred_par_reel
         if (idStrateSelect!== -1) {
             try {
                 defIdStrate(idStrateSelect)
-                const out = await serviceValidation.obtiensGraphique({ id_strate: idStrateSelect, variable: props.variable as string,x_max:props.xMax })
+                let out:any;
+                if (props.xMax!==null){
+                     out = await serviceValidation.obtiensGraphique({ id_strate: idStrateSelect, variable: props.variable as string,x_max:props.xMax })
+                } else{
+                    out = await serviceValidation.obtiensGraphique({ id_strate: idStrateSelect, variable: props.variable as string})
+                }
+                
                 defData(out.data)
                 if (props.variable === 'pred_par_reel') {
                     setOptions({
@@ -314,8 +320,8 @@ const GraphiqueSommaireValidation: React.FC<{xMax:number,variable:'pred_par_reel
                 <Settings
                     onClick={()=>defMenuVis(true)}
                 />
-            
-                <Bar
+                {props.variable!=='bland_altman'?<>
+                    <Bar
                     data={{
                         ...data,
                         datasets: data.datasets.map((ds, i) => {
@@ -343,7 +349,39 @@ const GraphiqueSommaireValidation: React.FC<{xMax:number,variable:'pred_par_reel
                         }
                     }}
                     style={{ flex: 1, minHeight: 0 }}
+                /></>:<>
+                <Scatter
+                    data={{
+                        ...data,
+                        datasets: data.datasets.map((ds, i) => {
+                            return {
+                                ...ds,
+                                backgroundColor:'red'
+                            };
+                        }),
+                    }}
+                    options={{
+                        ...options,
+                        plugins: {
+                            ...options.plugins,
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context: any) {
+                                        // Try to get desc_er and desc_reg_stat if available
+                                        const value = context.parsed.y;
+                                        let label = '';
+                                        label = `Différence ${value.toFixed(2)}`
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }}
+                    style={{ flex: 1, minHeight: 0 }}
                 />
+                </>
+                }
+                
             
             </>)
         }
