@@ -9,8 +9,8 @@ const MenuSommaireValidation: React.FC<{
     defXMax: React.Dispatch<SetStateAction<number|null>>,
     nPlots: number,
     defNPlots: React.Dispatch<SetStateAction<number>>,
-    variable: 'pred_par_reel'|'reel_par_pred';
-    defVariable: React.Dispatch<SetStateAction<'pred_par_reel'|'reel_par_pred'>>
+    variable: 'pred_par_reel'|'reel_par_pred'|'bland_altman'|'reel_vs_pred';
+    defVariable: React.Dispatch<SetStateAction<'pred_par_reel'|'reel_par_pred'|'bland_altman'|'reel_vs_pred'>>
 }>
     = (
         props: {
@@ -18,10 +18,18 @@ const MenuSommaireValidation: React.FC<{
             defXMax: React.Dispatch<SetStateAction<number|null>>,
             nPlots: number,
             defNPlots: React.Dispatch<SetStateAction<number>>,
-            variable: 'pred_par_reel'|'reel_par_pred';
-            defVariable: React.Dispatch<SetStateAction<'pred_par_reel'|'reel_par_pred'>>
+            variable: 'pred_par_reel'|'reel_par_pred'|'bland_altman'|'reel_vs_pred';
+            defVariable: React.Dispatch<SetStateAction<'pred_par_reel'|'reel_par_pred'|'bland_altman'|'reel_vs_pred'>>
         }
     ) => {
+        const handleMethodChange =(new_val:string)=>{
+            if (new_val === 'pred_par_reel' || new_val === 'reel_par_pred'){
+                props.defVariable(new_val as 'pred_par_reel'|'reel_par_pred'|'bland_altman'|'reel_vs_pred')
+            } else{
+                props.defVariable(new_val as 'pred_par_reel'|'reel_par_pred'|'bland_altman'|'reel_vs_pred')
+                props.defXMax(null)
+            }
+        }
         return (
             <div className='menu-sommaire-validation'>
                 <FormControl>
@@ -115,11 +123,12 @@ const MenuSommaireValidation: React.FC<{
                             "& .MuiInput-underline:hover:before": { borderBottomColor: "#ffcc00" },
                         }}
                         labelId='variable'
-                        onChange={(e) => props.defVariable(e.target.value as 'pred_par_reel' | 'reel_par_pred')}
+                        onChange={(e) => handleMethodChange(e.target.value)}
                     >
-                        <MenuItem value={'pred_par_reel'}>Prédit sur Réel</MenuItem>
-                        <MenuItem value={'reel_par_pred'}>Réel sur prédit</MenuItem>
+                        <MenuItem value={'pred_par_reel'}>Distr. Prédit sur Réel</MenuItem>
+                        <MenuItem value={'reel_par_pred'}>Distr. Réel sur prédit</MenuItem>
                         <MenuItem value={'bland_altman'}>Différence vs moyenne</MenuItem>
+                        <MenuItem value={'reel_vs_pred'}>Y:reel X:predit</MenuItem>
                     </Select>
                 </FormControl>
             </div>

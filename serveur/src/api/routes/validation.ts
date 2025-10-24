@@ -947,6 +947,14 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                 }
                 break;
             };
+            case 'reel_vs_pred':{
+                formatted_output = {
+                    labels: resultat.map((row)=> row.places_predites),
+                    datasets:[{label:`Réel vs prédit - N= ${nEntrees}`,
+                            data: resultat.map((row)=>row.places_reelles)}]
+                }
+                break;
+            }
             default:
                 throw new Error('unknown type for graph');
         }
@@ -976,13 +984,16 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                     valeur_extraction = 'places_predites'
                     break;
                 case "pred_par_reel":
-                    valeur_extraction = 'COALESCE(places_predites/NULLIF(places_reelles, 0),0) as valeur,places_predites,places_reelles'
+                    valeur_extraction = 'COALESCE(places_predites/NULLIF(places_reelles, 0),0)::float as valeur,places_predites,places_reelles'
                     break;
                 case "reel_par_pred":
-                    valeur_extraction = 'COALESCE(places_reelles/NULLIF(places_predites, 0),0) as valeur,places_predites,places_reelles'
+                    valeur_extraction = 'COALESCE(places_reelles/NULLIF(places_predites, 0),0)::float as valeur,places_predites,places_reelles'
                     break;
                 case "bland_altman":
-                    valeur_extraction = '(places_reelles - CEIL(places_predites))::int as y, ((places_reelles + CEIL(places_predites)) /2)::int as x'
+                    valeur_extraction = '(places_reelles - CEIL(places_predites))::int as y, ((places_reelles + CEIL(places_predites)) /2)::float as x'
+                    break;
+                case "reel_vs_pred":
+                    valeur_extraction = 'places_reelles::int,CEIL(places_predites)::int as places_predites'
                     break;
                 default:
                     valeur_extraction = 'places_reelles,places_predites'

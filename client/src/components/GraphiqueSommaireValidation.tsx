@@ -6,7 +6,7 @@ import { FormControl, MenuItem, Select } from "@mui/material";
 import { Bar, Scatter } from "react-chartjs-2";
 
 
-const GraphiqueSommaireValidation: React.FC<{xMax:number|null,variable:'pred_par_reel'|'reel_par_pred'|'bland_altman'}>=(props:{xMax:number|null,variable:'pred_par_reel'|'reel_par_pred'|'bland_altman'})=>{
+const GraphiqueSommaireValidation: React.FC<{xMax:number|null,variable:'pred_par_reel'|'reel_par_pred'|'bland_altman'|'reel_vs_pred'}>=(props:{xMax:number|null,variable:'pred_par_reel'|'reel_par_pred'|'bland_altman'|'reel_vs_pred'})=>{
     const [idStrate,defIdStrate] = useState<number>(-1)
     const [menuVis,defMenuVis] = useState<boolean>(false);
     const [feuillesDispo,defFeuillesDispo] = useState<FeuilleFinaleStrate[]>([]);
@@ -275,6 +275,118 @@ const GraphiqueSommaireValidation: React.FC<{xMax:number|null,variable:'pred_par
                             },
                         },
                     })
+                } else if (props.variable === 'bland_altman'){
+                     setOptions({
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'white',
+                                    font: {
+                                        size: 16,
+                                    },
+                                },
+                            },
+                            title: {
+                                display: true,
+                                text: `${feuillesDispo.find((row)=>row.id_strate===idStrateSelect)?.desc_concat??'N/A'}`,
+                                color: 'white',
+                                font: {
+                                    size: 25
+                                }
+                            },
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: 'white',
+                                    font: {
+                                        size: 16,
+                                    },
+                                },
+                                title: {
+                                    display: true,
+                                    text: '(Réel + prédit) /2',
+                                    color: 'white',
+                                    font: {
+                                        size: 18,
+                                    },
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: 'white',
+                                    font: {
+                                        size: 16,
+                                    },
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Réel - prédit',
+                                    color: 'white',
+                                    font: {
+                                        size: 18,
+                                    },
+                                }
+                            },
+                        },
+                    })
+                } else{
+                    setOptions({
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'white',
+                                    font: {
+                                        size: 16,
+                                    },
+                                },
+                            },
+                            title: {
+                                display: true,
+                                text: `${feuillesDispo.find((row)=>row.id_strate===idStrateSelect)?.desc_concat??'N/A'}`,
+                                color: 'white',
+                                font: {
+                                    size: 25
+                                }
+                            },
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: 'white',
+                                    font: {
+                                        size: 16,
+                                    },
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Prédit',
+                                    color: 'white',
+                                    font: {
+                                        size: 18,
+                                    },
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: 'white',
+                                    font: {
+                                        size: 16,
+                                    },
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Réel',
+                                    color: 'white',
+                                    font: {
+                                        size: 18,
+                                    },
+                                }
+                            },
+                        },
+                    })
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -300,6 +412,9 @@ const GraphiqueSommaireValidation: React.FC<{xMax:number|null,variable:'pred_par
         }
         fetchData();
     }, [menuVis]);
+    useEffect(()=>{
+        obtiensDonneesGraphe(idStrate)
+    },[props.variable])
     return(<>
         {
             menuVis?(<>
@@ -320,7 +435,7 @@ const GraphiqueSommaireValidation: React.FC<{xMax:number|null,variable:'pred_par
                 <Settings
                     onClick={()=>defMenuVis(true)}
                 />
-                {props.variable!=='bland_altman'?<>
+                {(props.variable!=='bland_altman' && props.variable!=='reel_vs_pred')?<>
                     <Bar
                     data={{
                         ...data,
@@ -341,7 +456,7 @@ const GraphiqueSommaireValidation: React.FC<{xMax:number|null,variable:'pred_par
                                         // Try to get desc_er and desc_reg_stat if available
                                         const value = context.parsed.y;
                                         let label = '';
-                                        label = `Fréquence ${value.toFixed(2)}`
+                                        label = `Différence ${value.toFixed(2)}`
                                         return label;
                                     }
                                 }
