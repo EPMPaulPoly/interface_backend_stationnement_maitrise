@@ -348,7 +348,8 @@ export interface Strate {
 export interface FeuilleFinaleStrate{
     id_strate:number,
     desc_concat:string,
-    n_sample?:number
+    n_sample?:number,
+    popu_strate?:number
 }
 
 export interface EntreeValidation{

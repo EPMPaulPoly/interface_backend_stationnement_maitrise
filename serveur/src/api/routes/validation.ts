@@ -350,7 +350,25 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             );\n
             ${final_insert_query}    
             `
-            await Promise.all([client.query(query_save_conditions), client.query(query_strate_assignation)])
+            const all_assign_query = conditions.map(rangee => `
+                INSERT INTO association_strates(g_no_lot, id_strate)
+                SELECT g_no_lot, id_strate
+                FROM (
+                    SELECT iv.g_no_lot,
+                        ${rangee.id_strate} AS id_strate
+                    FROM inputs_validation iv
+                    WHERE ${rangee.condition}
+                ) sub;
+            `).join('\n');
+            const query_strate_assignation_all = `
+            DROP TABLE association_strates;
+            CREATE TABLE association_strates (
+                g_no_lot character varying(255),
+                id_strate bigint
+            );\n
+            ${all_assign_query}    
+            `
+            await Promise.all([client.query(query_save_conditions), client.query(query_strate_assignation),client.query(query_strate_assignation_all)])
             return true
         } catch (err: any) {
             return false
@@ -679,13 +697,24 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             client = await pool.connect();
             let query: string
             let result: any;
-            query = `SELECT 
+            query = `
+                WITH pop_strate as(
+                SELECT 
+                        ass.id_strate,
+                        count(*) as popu_strate
+                    from inputs_validation iv
+                    left join association_strates ass on ass.g_no_lot = iv.g_no_lot
+                    group by ass.id_strate
+                )
+                SELECT 
                     cse.id_strate::int,
                     cse.desc_concat,
-                    se.n_sample
+                    se.n_sample,
+                    ps.popu_strate::int
                 FROM
                     public.conditions_strates_a_echant cse
                 LEFT JOIN public.strates_echantillonage se ON se.id_strate=cse.id_strate
+                left join pop_strate ps on ps.id_strate = cse.id_strate
             `;
             result = await client.query(query)
 
@@ -1046,6 +1075,41 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             }
         }
     }
+
+    const obtiensComptesStrates:RequestHandler<void>= async(req,res)=>{
+        console.log('obtention comptes par strate')
+        let client;
+        try {
+            const { id_strate} = req.query;
+            client = await pool.connect();
+            let query: string
+            let result: any;
+            let conditions: string[] = [];
+            if (typeof id_strate !== 'undefined' && id_strate !== 'null') {
+                conditions.push(`id_strate=${id_strate}`)
+            }
+            
+            query = `
+                    SELECT 
+                        ass.id_strate::int,
+                        csae.desc_concat,
+                        count(*)::int as popu_strate
+                    from inputs_validation iv
+                    left join association_strates ass on ass.g_no_lot = iv.g_no_lot
+                        left join conditions_strates_a_echant csae on csae.id_strate = ass.id_strate
+                    group by ass.id_strate,csae.desc_concat
+                    `
+            result = await client.query(query)
+            res.json({ success: true, data: result.rows });
+        } catch (err: any) {
+            res.status(500).json({ success: false, error: 'Database error' });
+        } finally {
+            if (client) {
+                client.release()
+            }
+        }
+    };
+
     // Routes
     router.get('/strate', obtiensStrates)
     router.post('/strate', nouvelleStrate)
@@ -1059,5 +1123,6 @@ export const creationRouteurValidation = (pool: Pool): Router => {
     router.put('/resultats/:id', modifieResultat)
     router.delete('resultats/:id', supprimeResultat)
     router.get('/graphiques', genereGraphiqueComparaison)
+    router.get('/popu-strate',obtiensComptesStrates)
     return router;
 };

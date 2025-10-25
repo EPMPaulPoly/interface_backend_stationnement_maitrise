@@ -59,7 +59,7 @@ const ControlValStat : React.FC<ControlValStatProps>=(props:ControlValStatProps)
                         }}
                     >
                         {props.feuillesPossibles.map((rangee)=>
-                            <MenuItem value={String(rangee.id_strate)}>{rangee.desc_concat}</MenuItem>
+                            <MenuItem value={String(rangee.id_strate)}>{rangee.desc_concat} - n = {rangee.n_sample?? 'N/A'} - N = {rangee.popu_strate??'N/A'}</MenuItem>
                         )}
                     </Select>
                 </FormControl>
