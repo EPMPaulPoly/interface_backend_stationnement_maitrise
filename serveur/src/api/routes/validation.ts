@@ -909,8 +909,8 @@ export const creationRouteurValidation = (pool: Pool): Router => {
                 formatted_output = {
                     labels: res1.labels,
                     datasets: [
-                        { label: `Places Réelles - N=${nEntrees}`, data: res1.data },
-                        { label: `Places Prédites - N=${nEntrees}`, data: res2.data }
+                        { label: `Places Réelles - n=${nEntrees}`, data: res1.data },
+                        { label: `Places Prédites - n=${nEntrees}`, data: res2.data }
                     ]
                 };
                 break;
@@ -924,7 +924,7 @@ export const creationRouteurValidation = (pool: Pool): Router => {
 
                 formatted_output = {
                     labels,
-                    datasets: [{ label: `Places Réelles - N=${nEntrees}`, data }]
+                    datasets: [{ label: `Places Réelles - n=${nEntrees}`, data }]
                 };
                 break;
             }
@@ -937,7 +937,7 @@ export const creationRouteurValidation = (pool: Pool): Router => {
 
                 formatted_output = {
                     labels,
-                    datasets: [{ label: `Places Prédites - N=${nEntrees}`, data }]
+                    datasets: [{ label: `Places Prédites - n=${nEntrees}`, data }]
                 };
                 break;
             }
@@ -950,7 +950,7 @@ export const creationRouteurValidation = (pool: Pool): Router => {
 
                 formatted_output = {
                     labels,
-                    datasets: [{ label: `Places prédites par places réelles - N = ${nEntrees}`, data }]
+                    datasets: [{ label: `Places prédites par places réelles - n = ${nEntrees}`, data }]
                 };
                 break;
             }
@@ -963,7 +963,7 @@ export const creationRouteurValidation = (pool: Pool): Router => {
 
                 formatted_output = {
                     labels,
-                    datasets: [{ label: `Places réelles par places prédites - N = ${nEntrees}`, data }]
+                    datasets: [{ label: `Places réelles par places prédites - n = ${nEntrees}`, data }]
                 };
                 break;
             }
@@ -971,7 +971,7 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             case 'bland_altman':{
                 formatted_output = {
                     labels: resultat.map((row)=> row.x),
-                    datasets:[{label:`Différence vs moyenne - N= ${nEntrees}`,
+                    datasets:[{label:`Différence vs moyenne - n= ${nEntrees}`,
                             data: resultat.map((row)=>row.y)}]
                 }
                 break;
@@ -979,7 +979,7 @@ export const creationRouteurValidation = (pool: Pool): Router => {
             case 'reel_vs_pred':{
                 formatted_output = {
                     labels: resultat.map((row)=> row.places_predites),
-                    datasets:[{label:`Réel vs prédit - N= ${nEntrees}`,
+                    datasets:[{label:`Réel vs prédit - n= ${nEntrees}`,
                             data: resultat.map((row)=>row.places_reelles)}]
                 }
                 break;
