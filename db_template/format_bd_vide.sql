@@ -200,6 +200,18 @@ ALTER SEQUENCE public.association_er_territoire_id_association_seq OWNED BY publ
 
 
 --
+-- Name: association_strates; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.association_strates (
+    g_no_lot character varying(255),
+    id_strate bigint
+);
+
+
+ALTER TABLE public.association_strates OWNER TO postgres;
+
+--
 -- Name: cadastre; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -362,6 +374,60 @@ CREATE TABLE public.cubf (
 
 
 ALTER TABLE public.cubf OWNER TO postgres;
+
+--
+-- Name: population_par_quartier; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.population_par_quartier (
+    id_quartier bigint,
+    pop_tot_2021 numeric,
+    pop_tot_2016 numeric
+);
+
+
+ALTER TABLE public.population_par_quartier OWNER TO postgres;
+
+--
+-- Name: sec_analyse; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.sec_analyse (
+    id_quartier bigint NOT NULL,
+    nom_quartier text,
+    superf_quartier double precision,
+    peri_quartier double precision,
+    geometry public.geometry(Geometry,4326),
+    acro text
+);
+
+
+ALTER TABLE public.sec_analyse OWNER TO postgres;
+
+--
+-- Name: dens_pop_quartier; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.dens_pop_quartier AS
+ SELECT sa.id_quartier,
+    (((pq.pop_tot_2021)::double precision / sa.superf_quartier) * (1000000)::double precision) AS dens_pop_2021
+   FROM (public.sec_analyse sa
+     LEFT JOIN public.population_par_quartier pq ON ((pq.id_quartier = sa.id_quartier)));
+
+
+ALTER VIEW public.dens_pop_quartier OWNER TO postgres;
+
+--
+-- Name: dens_stat_reg_quartier; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.dens_stat_reg_quartier AS
+SELECT
+    NULL::bigint AS id_quartier,
+    NULL::double precision AS dens_stat;
+
+
+ALTER VIEW public.dens_stat_reg_quartier OWNER TO postgres;
 
 --
 -- Name: donnees_brutes_ana_var; Type: TABLE; Schema: public; Owner: postgres
@@ -663,6 +729,53 @@ CREATE TABLE public.liste_operations (
 ALTER TABLE public.liste_operations OWNER TO postgres;
 
 --
+-- Name: profile_accumulation_vehicule; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.profile_accumulation_vehicule (
+    id_ent_pav integer NOT NULL,
+    id_quartier bigint,
+    heure integer,
+    voitures integer,
+    personnes integer,
+    permis integer,
+    voitures_res integer,
+    voitures_pub integer,
+    voit_entrantes_tot integer,
+    voit_entrantes_res integer,
+    voit_entrantes_pub integer,
+    voit_sortantes_tot integer,
+    voit_sortantes_res integer,
+    voit_sortantes_pub integer,
+    voit_transfer_res_a_pub integer,
+    voit_transfer_pub_a_res integer,
+    pers_entrantes_tot integer,
+    pers_sortantes_tot integer,
+    perm_entrants_tot integer,
+    perm_sortants_tot integer
+);
+
+
+ALTER TABLE public.profile_accumulation_vehicule OWNER TO postgres;
+
+--
+-- Name: max_pav_all_data; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.max_pav_all_data AS
+ SELECT id_quartier,
+    max(voitures) AS max_voit_tot,
+    max(voitures_pub) AS max_voit_pub,
+    max(voitures_res) AS max_voit_res,
+    max(personnes) AS max_pers,
+    max(permis) AS max_permies
+   FROM public.profile_accumulation_vehicule
+  GROUP BY id_quartier;
+
+
+ALTER VIEW public.max_pav_all_data OWNER TO postgres;
+
+--
 -- Name: motorisation_par_quartier; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -786,47 +899,41 @@ CREATE TABLE public.parts_modales (
 ALTER TABLE public.parts_modales OWNER TO postgres;
 
 --
--- Name: population_par_quartier; Type: TABLE; Schema: public; Owner: postgres
+-- Name: stat_agrege; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.population_par_quartier (
-    id_quartier bigint,
-    pop_tot_2021 numeric,
-    pop_tot_2016 numeric
+CREATE TABLE public.stat_agrege (
+    inv_123 integer,
+    inv_132 integer,
+    inv_213 integer,
+    inv_231 integer,
+    inv_312 integer,
+    inv_321 integer,
+    id_quartier bigint NOT NULL,
+    inv_1 integer,
+    inv_2 integer,
+    inv_3 integer,
+    cubf_principal_n1 integer,
+    n_lots integer
 );
 
 
-ALTER TABLE public.population_par_quartier OWNER TO postgres;
+ALTER TABLE public.stat_agrege OWNER TO postgres;
 
 --
--- Name: profile_accumulation_vehicule; Type: TABLE; Schema: public; Owner: postgres
+-- Name: pourcent_territoire; Type: VIEW; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.profile_accumulation_vehicule (
-    id_ent_pav integer NOT NULL,
-    id_quartier bigint,
-    heure integer,
-    voitures integer,
-    personnes integer,
-    permis integer,
-    voitures_res integer,
-    voitures_pub integer,
-    voit_entrantes_tot integer,
-    voit_entrantes_res integer,
-    voit_entrantes_pub integer,
-    voit_sortantes_tot integer,
-    voit_sortantes_res integer,
-    voit_sortantes_pub integer,
-    voit_transfer_res_a_pub integer,
-    voit_transfer_pub_a_res integer,
-    pers_entrantes_tot integer,
-    pers_sortantes_tot integer,
-    perm_entrants_tot integer,
-    perm_sortants_tot integer
-);
+CREATE VIEW public.pourcent_territoire AS
+ SELECT sa.id_quartier,
+    ((((14.3 * (sum(stag.inv_132))::numeric))::double precision / sa.superf_quartier) * (100)::double precision) AS pourcent_territoire
+   FROM (public.sec_analyse sa
+     LEFT JOIN public.stat_agrege stag ON ((stag.id_quartier = sa.id_quartier)))
+  GROUP BY sa.id_quartier, sa.superf_quartier
+  ORDER BY sa.id_quartier;
 
 
-ALTER TABLE public.profile_accumulation_vehicule OWNER TO postgres;
+ALTER VIEW public.pourcent_territoire OWNER TO postgres;
 
 --
 -- Name: profile_accumulation_vehicule_id_ent_PAV_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -983,41 +1090,48 @@ CREATE TABLE public.role_foncier (
 ALTER TABLE public.role_foncier OWNER TO postgres;
 
 --
--- Name: sec_analyse; Type: TABLE; Schema: public; Owner: postgres
+-- Name: stat_corr_pub_res; Type: VIEW; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.sec_analyse (
-    id_quartier bigint NOT NULL,
-    nom_quartier text,
-    superf_quartier double precision,
-    peri_quartier double precision,
-    geometry public.geometry(Geometry,4326)
-);
+CREATE VIEW public.stat_corr_pub_res AS
+ WITH stat_pub AS (
+         SELECT stag.id_quartier,
+            sum(stag.inv_132) AS stat_pub_132
+           FROM public.stat_agrege stag
+          WHERE (stag.cubf_principal_n1 <> 1)
+          GROUP BY stag.id_quartier
+        ), stat_res AS (
+         SELECT stag.id_quartier,
+            sum(stag.inv_132) AS stat_res_132
+           FROM public.stat_agrege stag
+          WHERE (stag.cubf_principal_n1 = 1)
+          GROUP BY stag.id_quartier
+        )
+ SELECT sr.id_quartier,
+    sp.stat_pub_132,
+    sr.stat_res_132,
+    sa.nom_quartier,
+    sa.acro,
+    sa.geometry
+   FROM ((public.sec_analyse sa
+     LEFT JOIN stat_res sr ON ((sa.id_quartier = sr.id_quartier)))
+     LEFT JOIN stat_pub sp ON ((sp.id_quartier = sa.id_quartier)));
 
 
-ALTER TABLE public.sec_analyse OWNER TO postgres;
+ALTER VIEW public.stat_corr_pub_res OWNER TO postgres;
 
 --
--- Name: stat_agrege; Type: TABLE; Schema: public; Owner: postgres
+-- Name: stat_reg_tot_par_quartier; Type: VIEW; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.stat_agrege (
-    inv_123 integer,
-    inv_132 integer,
-    inv_213 integer,
-    inv_231 integer,
-    inv_312 integer,
-    inv_321 integer,
-    id_quartier bigint NOT NULL,
-    inv_1 integer,
-    inv_2 integer,
-    inv_3 integer,
-    cubf_principal_n1 integer,
-    n_lots integer
-);
+CREATE VIEW public.stat_reg_tot_par_quartier AS
+ SELECT id_quartier,
+    sum(inv_2) AS stat_reg_tot
+   FROM public.stat_agrege
+  GROUP BY id_quartier;
 
 
-ALTER TABLE public.stat_agrege OWNER TO postgres;
+ALTER VIEW public.stat_reg_tot_par_quartier OWNER TO postgres;
 
 --
 -- Name: strates_echantillonage; Type: TABLE; Schema: public; Owner: postgres
@@ -1065,6 +1179,80 @@ ALTER SEQUENCE public.strates_echantillonage_id_strate_seq OWNER TO postgres;
 
 ALTER SEQUENCE public.strates_echantillonage_id_strate_seq OWNED BY public.strates_echantillonage.id_strate;
 
+
+--
+-- Name: taux_occupation_max; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.taux_occupation_max AS
+ SELECT sa.id_quartier,
+    sa.acro,
+    ((mq.nb_voitures_max_pav / (sum(stag.inv_132))::double precision) * (100)::double precision) AS taux_occupation_max
+   FROM ((public.sec_analyse sa
+     LEFT JOIN public.motorisation_par_quartier mq ON ((mq.id_quartier = sa.id_quartier)))
+     LEFT JOIN public.stat_agrege stag ON ((stag.id_quartier = sa.id_quartier)))
+  GROUP BY sa.id_quartier, sa.acro, mq.nb_voitures_max_pav;
+
+
+ALTER VIEW public.taux_occupation_max OWNER TO postgres;
+
+--
+-- Name: taux_occupation_public; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.taux_occupation_public AS
+ WITH max_pav_pub AS (
+         SELECT pav.id_quartier,
+            (max(pav.voitures_pub))::numeric AS voit_max_pub
+           FROM public.profile_accumulation_vehicule pav
+          GROUP BY pav.id_quartier
+        ), stationnement_public AS (
+         SELECT stag.id_quartier,
+            (sum(stag.inv_132))::numeric AS stat_pub
+           FROM public.stat_agrege stag
+          WHERE (stag.cubf_principal_n1 <> 1)
+          GROUP BY stag.id_quartier
+        )
+ SELECT sa.id_quartier,
+    sa.acro,
+    ((100)::numeric * (mpp.voit_max_pub / stpu.stat_pub)) AS taux_occupation_pub,
+    mpp.voit_max_pub,
+    stpu.stat_pub
+   FROM ((public.sec_analyse sa
+     LEFT JOIN max_pav_pub mpp ON ((mpp.id_quartier = sa.id_quartier)))
+     LEFT JOIN stationnement_public stpu ON ((stpu.id_quartier = sa.id_quartier)));
+
+
+ALTER VIEW public.taux_occupation_public OWNER TO postgres;
+
+--
+-- Name: taux_occupation_res_max; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.taux_occupation_res_max AS
+ WITH max_pav_res AS (
+         SELECT pav.id_quartier,
+            (max(pav.voitures_res))::numeric AS voit_max_res
+           FROM public.profile_accumulation_vehicule pav
+          GROUP BY pav.id_quartier
+        ), stationnement_public AS (
+         SELECT stag.id_quartier,
+            (sum(stag.inv_132))::numeric AS stat_res
+           FROM public.stat_agrege stag
+          WHERE (stag.cubf_principal_n1 = 1)
+          GROUP BY stag.id_quartier
+        )
+ SELECT sa.id_quartier,
+    sa.acro,
+    ((100)::numeric * (mpr.voit_max_res / stpu.stat_res)) AS taux_occupation_res,
+    mpr.voit_max_res,
+    stpu.stat_res
+   FROM ((public.sec_analyse sa
+     LEFT JOIN max_pav_res mpr ON ((mpr.id_quartier = sa.id_quartier)))
+     LEFT JOIN stationnement_public stpu ON ((stpu.id_quartier = sa.id_quartier)));
+
+
+ALTER VIEW public.taux_occupation_res_max OWNER TO postgres;
 
 --
 -- Name: variabilite; Type: TABLE; Schema: public; Owner: postgres
@@ -1430,6 +1618,18 @@ CREATE INDEX ix_inv_reg_aggreg_cubf_n1_index ON public.inv_reg_aggreg_cubf_n1 US
 --
 
 CREATE INDEX ix_variabilite_index ON public.variabilite USING btree (index);
+
+
+--
+-- Name: dens_stat_reg_quartier _RETURN; Type: RULE; Schema: public; Owner: postgres
+--
+
+CREATE OR REPLACE VIEW public.dens_stat_reg_quartier AS
+ SELECT sa.id_quartier,
+    (((sum(stag.inv_2))::double precision / sa.superf_quartier) * (1000000)::double precision) AS dens_stat
+   FROM (public.sec_analyse sa
+     LEFT JOIN public.stat_agrege stag ON ((stag.id_quartier = sa.id_quartier)))
+  GROUP BY sa.id_quartier;
 
 
 --
