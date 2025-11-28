@@ -63,12 +63,9 @@ nouvel_entete_reglement:
       article_loi: 'Annexe D'
       paragraphe_loi: '10.a'
       ville: 'Québec'
-definition_reglement:
+nouvelle_definition_reglement:
   type: object
   properties:
-    id_reg_stat_emp:
-      type: integer
-      description: Identifiant de ligne de definition
     id_reg_stat:
       type: integer
       description: Identifiant de règlement parent
@@ -106,7 +103,6 @@ definition_reglement:
       type: integer
       description: Unité de formulation de la ligne
   required:
-    - id_reg_stat_emp
     - id_reg_stat
     - oper
     - seuil
@@ -118,7 +114,25 @@ definition_reglement:
     - ss_ensemble
   examples:
     OneSpotPerTwentySquareMeter:
-      id_reg_stat_emp: 177
+      id_reg_stat: 176
+      ss_ensemble: 1
+      oper: null
+      seuil: 0
+      pente_min: 0.05
+      pente_max: null
+      cases_fix_min: 0
+      cases_fix_max: null
+      unite: 4 
+definition_reglement:
+  allOf:
+    - $ref: '#/nouvelle_definition_reglement'
+    - type: object
+      properties:
+        id_reg_stat_emp:
+          type: integer
+          description: identifiant unique de la ligne de définition de règlement
+  examples:
+    OneSpotPerTwentySquareMeter:
       id_reg_stat: 176
       ss_ensemble: 1
       oper: null
@@ -642,3 +656,14 @@ reponse_ens_reg_assoc:
       properties: 
         data:
           $ref: '#/association_cubf_er'
+reponse_reglement_ligne_def:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data: 
+          allOf:
+            - $ref: '#/definition_reglement'
+            - type: array
+              items:
+                $ref: '#/definition_reglement'

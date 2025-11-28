@@ -4,7 +4,7 @@ get:
   description: >-
     Obtiens l'ensemble des unités utilisées dans les règlements de
     stationnement
-  tags: ['Reglement']
+  tags: ['Règlement']
   parameters: []
   responses:
     '200':

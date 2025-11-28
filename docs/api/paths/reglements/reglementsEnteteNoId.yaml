@@ -2,7 +2,7 @@ get:
   summary: Obtiens les entêtes de règlement
   deprecated: false
   description: Renvoie les entetes de règlements en fonction des paramètres spécifiés
-  tags: ['Reglement']
+  tags: ['Règlement']
   parameters:
     - name: annee_debut_avant
       in: query
@@ -131,7 +131,7 @@ post:
   summary: Nouvel entête de stationnement
   deprecated: false
   description: 'Création d''un nouvel entête de stationnement '
-  tags: ['Reglement']
+  tags: ['Règlement']
   parameters: []
   requestBody:
     content:

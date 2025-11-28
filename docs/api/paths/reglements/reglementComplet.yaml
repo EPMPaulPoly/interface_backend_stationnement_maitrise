@@ -2,7 +2,7 @@ get:
   summary: Obtient règlements complets
   deprecated: false
   description: Obtiens un ou plusieurs règlements complets
-  tags: ['Reglement']
+  tags: ['Règlement']
   parameters:
     - name: id_reg_stat
       in: path

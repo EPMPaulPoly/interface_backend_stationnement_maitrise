@@ -2,7 +2,7 @@ delete:
   summary: Supprime règlement
   deprecated: false
   description: Suppression d'un règlement à partir de l'identifiant
-  tags: ['Reglement']
+  tags: ['Règlement']
   parameters:
     - name: id_reg_stat
       in: path

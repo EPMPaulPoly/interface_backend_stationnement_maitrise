@@ -1,0 +1,89 @@
+put:
+  summary: Mise à jour d'un règlement
+  deprecated: false
+  tags: ['Règlement']
+  description: "Met à jour la définition mathématique d'un règlement dont l'identifiant est spécifié"
+  parameters:
+    - name: id_reg_stat_emp
+      in: path
+      description: identifiant de la ligne de définition dont on modifie la valeur
+      required: true
+      example: '2'
+      schema:
+        type: string
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas.yaml#/nouvelle_definition_reglement'
+        example:
+          id_reg_stat: 1
+          ss_ensemble: 1
+          oper: 4
+          seuil: 4
+          pente_min: 0.05
+          pente_max: 0.075
+          cases_fix_min: 0
+          cases_fix_max: 0
+          unite: 4
+    required: true
+  responses:
+    '200':
+      description: 'Succès'
+      content:
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/reponse_reglement_ligne_def'
+          example:
+            success: true
+            data: 
+              - id_reg_stat_emp: 2
+                id_reg_stat: 1
+                ss_ensemble: 1
+                oper: 4
+                seuil: 4
+                pente_min: 0.05
+                pente_max: 0.075
+                cases_fix_min: 0
+                cases_fix_max: 0
+                unite: 4
+delete:
+  summary: suppression d'une ligne de définition de règlement
+  tags: ['Règlement']
+  description: 'Endpoint pour supprimer une entrée de la définition du règlement'
+  deprecated: false
+  parameters:
+    - name: id_reg_stat_emp
+      in: path
+      description: identifiant du règlement dont on supprime la définition
+      required: true
+      example: '2'
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Succès
+      content:
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: true
+    '404':
+      description: Identifiant Item Introuvable
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            succes: false
+            message: 'Erreur de suppression, identifiant introuvable'
+    '500':
+      description: Erreur serveur
+      content: 
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: 'Erreur interne de serveur'

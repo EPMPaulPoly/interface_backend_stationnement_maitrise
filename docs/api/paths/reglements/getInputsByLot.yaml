@@ -6,7 +6,7 @@ get:
   description: >-
     Obtiens le règlement, le cubf, et les unités à spécifier pour lancer un
     calcul semi automatique (calcul/reg-val-man). Enjeu
-  tags: ['Reglement']
+  tags: ['Règlement']
   parameters:
     - name: g_no_lot
       in: path

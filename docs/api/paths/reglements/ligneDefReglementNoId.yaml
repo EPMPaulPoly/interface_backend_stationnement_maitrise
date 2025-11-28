@@ -1,0 +1,44 @@
+ post:
+  summary: Nouvelle ligne de définition mathématique de règlement
+  deprecated: false
+  description: 'Crée une nouvelle ligne de définition dans un règlement'
+  tags: ['Règlement']
+  parameters: []
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas.yaml#/nouvelle_definition_reglement'
+        example:
+          id_reg_stat: 1
+          ss_ensemble: 1
+          oper: 4
+          seuil: 4
+          pente_min: 0.05
+          pente_max: 0.075
+          cases_fix_min: 0
+          cases_fix_max: 0
+          unite: 4
+    required: true
+  responses:
+    '200':
+      description: 'Succès'
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_reglement_ligne_def'
+          example:
+            success: true
+            data:
+              - id_reg_stat_emp: 1
+                id_reg_stat: 1
+                ss_ensemble: 1
+                oper: 4
+                seuil: 4
+                pente_min: 0.05
+                pente_max: 0.075
+                cases_fix_min: 0
+                cases_fix_max: 0
+                unite: 4
+      headers: {}
+  security: []
