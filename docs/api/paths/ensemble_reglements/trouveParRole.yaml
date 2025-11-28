@@ -1,0 +1,36 @@
+get:
+  summary: Obtiens les entêtes des ensembles de règlements pour les entrées spécifiées
+  description: Obtiens les associations entre les entrées du rôle et les ensembles de règlements pertinents . n'est pas utilisé dans l'interface. Au final a été implémenté après la remise.
+  x-not-implemented: true
+  tags: ['Ensembles de Règlements']
+  parameters:
+    - name: ids_provinciaux
+      in: path
+      required: true
+      examples:
+        exempleSimple:
+          summary: Un seul ID
+          value: '23027299184846110000000'
+        valeursMultiples:
+          summary: Plusieurs entrées du rôle
+          value: '23027299184846110000000,23027308496570110000000,23027268908557510000000,23027279079820480000000,23027289174210110000000'
+      schema:
+        type: string
+  responses:
+    '200':
+      description: 'Succès'
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_ens_reg_entete'
+          example: 
+            success: true
+            data: 
+              - id_er: 1
+                description_er: Post harmonisation urbain description_er
+                date_debut_er: 2010
+                date_fin_er: 2015
+              - id_er: 2
+                description_er: Refonte hotellerie 2016 - urbain dense
+                date_debut_er: 2016
+                date_fin_er: 2019

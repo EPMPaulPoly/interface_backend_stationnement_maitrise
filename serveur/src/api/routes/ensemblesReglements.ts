@@ -239,23 +239,60 @@ export const creationRouteurEnsemblesReglements = (pool: Pool): Router => {
     let client;
     try {
       client = await pool.connect();
-      const { id_role } = req.params;
+      const { ids } = req.params;
+      const listeIds = ids.split(',')
+      const stringToTransmit = "'" + listeIds.join("','") + "'"
       const query = `
         WITH role AS (
           SELECT 
-            * 
+          rf.id_provinc,
+          rf.geometry,
+          COALESCE(rf.rl0307a::int, 0) as annee_constr,
+          hg.id_periode
           FROM
-            public.role_foncier
-          WHERE
-            id_provinc 
-          IN
-           ( $1)
-        ) SELECT
-            role.id_provinc
-          FROM 
-            role
+          public.role_foncier rf
+          left join historique_geopol hg on (hg.date_debut_periode <= COALESCE(rf.rl0307a::int, 0) OR hg.date_debut_periode is null) AND (hg.date_fin_periode >= COALESCE(rf.rl0307a::int, 0) OR hg.date_fin_periode is null)
+          WHERE id_provinc = ANY($1::text[])
+        ), territoire_avec_annee as(
+          SELECT
+            cs.id_periode_geo,
+            cs.geometry,
+            cs.id_periode,
+            hg.date_debut_periode,
+            hg.date_fin_periode,
+            ers.id_er,
+            ers.description_er,
+            ers.date_debut_er,
+            ers.date_fin_er
+          FROM
+            cartographie_secteurs cs
+          LEFT JOIN historique_geopol hg on hg.id_periode = cs.id_periode 
+          left join association_er_territoire aet on aet.id_periode_geo = cs.id_periode_geo
+          left join ensembles_reglements_stat ers on ers.id_er = aet.id_er
+        )
+        SELECT
+          role.id_provinc,
+          --role.annee_constr,
+          --role.id_periode,
+          --taa.id_periode_geo,
+          --taa.date_debut_periode,
+          --taa.date_fin_periode,
+          --
+          --role.geometry as geometry_role,
+          --taa.geometry as geometry_sector,
+          taa.id_er,
+          taa.description_er,
+          taa.date_debut_er,
+          taa.date_fin_er
+        FROM 
+          role
+        left join territoire_avec_annee taa 
+          on taa.id_periode = role.id_periode 
+          AND ST_Intersects(role.geometry,taa.geometry) 
+          AND (role.annee_constr >= taa.date_debut_er or taa.date_debut_er is null) 
+          AND (role.annee_constr <= taa.date_fin_er or taa.date_fin_er is null)
       `;
-      const result = await client.query<DbReglementComplet>(query, [id_role]);
+      const result = await client.query<DbReglementComplet>(query, [listeIds]);
       res.json({ success: true, data: result.rows });
     } catch (err) {
       res.status(500).json({ success: false, error: 'Database error test' });

@@ -1,0 +1,30 @@
+get:  
+  summary: Obtiens les ensembles de règlements associés à un territoire
+  deprecated: false
+  tags: ['Ensembles de Règlements']
+  parameters:
+    - name: id_periode_geo
+      in: path
+      required: true
+      example: 2
+      description: Identifiant du territoire dont on veut trouver la réglementation
+      schema:
+        type: integer 
+  responses:
+    '200':
+      description: 'Succès'
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_ens_reg_entete'
+          example: 
+            success: true
+            data: 
+              - id_er: 1
+                description_er: Post harmonisation urbain description_er
+                date_debut_er: 2010
+                date_fin_er: 2015
+              - id_er: 2
+                description_er: Refonte hotellerie 2016 - urbain dense
+                date_debut_er: 2016
+                date_fin_er: 2019

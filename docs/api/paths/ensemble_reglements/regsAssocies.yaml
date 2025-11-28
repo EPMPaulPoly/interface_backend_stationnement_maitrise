@@ -1,0 +1,48 @@
+get:
+  summary: Obtiens les entêtes de règlements associés à l'ensemble de règlements spécifié
+  deprecated: false
+  tags: ['Ensembles de Règlements']
+  parameters:
+    - name: id_er
+      in: path
+      description: Identifiant de l'ensemble de règlements dont on veut obtenir les règlements associés
+      required: true
+      schema:
+        type: integer
+      example: 2
+  responses:
+    '200':
+      description: 'Succès'
+      content:
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/reponse_entete_array'
+          example:
+            succes: true
+            data: 
+              - id_reg_stat: 1
+                description: Logement
+                annee_debut_reg: 1988
+                anne_fin_reg: 2009
+                ville: Beauport
+                texte_loi: 87-806
+                article_loi: 11.1.7.1
+                paragraphe_loi: 1-2-3
+              - id_reg_stat: 2
+                description: Commercial - Général
+                annee_debut_reg: 1988
+                annee_fin_reg: 2009
+                ville: Beauport
+                texte_loi: 87-806
+                article_loi: '11.1.7.2'
+                paragraphe_loi: 1.a
+    '500':
+      description: 'Erreur interne'
+      content: 
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/api_response'
+        example:
+          success: false
+          message: 'Erreur interne serveur'
+          

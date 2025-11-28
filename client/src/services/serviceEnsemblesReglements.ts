@@ -128,9 +128,9 @@ class ServiceEnsemblesReglements {
 
     async chercheEnsRegPourRole(ids:string[]):Promise<ReponseComboERsRoleFoncier>{
         try{
-            const response: AxiosResponse<ReponseEntetesEnsemblesReglement>= await api.get(`/ens-reg/par-role/${ids.join(',')}`)
+            const response: AxiosResponse<ReponseComboERsRoleFoncier>= await api.get(`/ens-reg/par-role/${ids.join(',')}`)
             const data_res = response.data.data
-            return{success:response.data.success,data:[]}
+            return{success:response.data.success,data:data_res}
         }catch(error){
             if (axios.isAxiosError(error)) {
                 console.error('Axios Error:', error.response?.data);

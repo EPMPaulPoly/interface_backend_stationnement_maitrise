@@ -63,6 +63,12 @@ paths:
     $ref: './paths/ensemble_reglements/assocEnsRegNoId.yaml'
   /api/ens-reg/assoc/{id_assoc_er_reg}:
     $ref: './paths/ensemble_reglements/assocEnsRegWId.yaml'
+  /api/ens-reg/regs-associes/{id_er}:
+    $ref: './paths/ensemble_reglements/regsAssocies.yaml'
+  /api/ens-reg/entete-par-territoire/{id_periode_geo}:
+    $ref: './paths/ensemble_reglements/trouveParTerritoire.yaml'
+  /api/ens-reg/par-role/{ids_provinciaux}:
+    $ref: './paths/ensemble_reglements/trouveParRole.yaml'
 components:
   schemas:
     $ref: './components/schemas.yaml'
