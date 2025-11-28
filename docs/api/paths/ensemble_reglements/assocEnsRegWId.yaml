@@ -1,0 +1,89 @@
+put:
+  summary: Modification d'une association d'ensemble de règlements
+  deprecated: false
+  tags: ['Ensembles de Règlements']
+  parameters:
+    - name: id_assoc_er_reg
+      in: path
+      description: Identifiant de l'association à modifier
+      required: true
+      example: 75
+      schema:
+        type: integer
+  requestBody:
+    content:  
+      application/json:
+        schema:
+          $ref: '../../components/schemas.yaml#/nouvelle_association_cubf_er'
+        example:  
+          id_er: 2
+          cubf: 1
+          id_reg_stat: 25
+    required: true
+  responses:
+    '200':
+      description: Succès
+      content: 
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_ens_reg_assoc'
+          example:
+            success: true
+            data: 
+              id_assoc_er_reg: 75
+              id_er: 2
+              cubf: 1
+              id_reg_stat: 25
+    '404':
+      description: Identifiant fourni Item Introuvable
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: Identifiant spécifié n'existe pas
+    '500':
+      description: Erreur interne serveur
+      contete:
+        application/json: 
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: Erreur interne du serveur
+delete:
+  summary: Suppression d'une association dans la base de données
+  tags: ['Ensembles de Règlements']
+  parameters:
+    - name: id_assoc_er_reg
+      in: path
+      description: Identifiant de l'association à supprimer
+      required: true
+      example: 75
+      schema: 
+        type: integer
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: true
+    '404':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: Identifiant spécifié Introuvable
+    '500':
+      content:
+        application/json: 
+          schema: 
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: Erreur interne serveur

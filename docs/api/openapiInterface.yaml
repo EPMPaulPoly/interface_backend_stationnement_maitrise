@@ -254,6 +254,10 @@ paths:
     $ref: './paths/ensemble_reglements/enteteEnsRegNoId.yaml'
   /api/ens-reg/entete/{id_er}:
     $ref: './paths/ensemble_reglements/enteteEnsRegWId.yaml'
+  /api/ens-reg/assoc:
+    $ref: './paths/ensemble_reglements/assocEnsRegNoId.yaml'
+  /api/ens-reg/assoc/{id_assoc_er_reg}:
+    $ref: './paths/ensemble_reglements/assocEnsRegWId.yaml'
 components:
   schemas:
     $ref: './components/schemas.yaml'

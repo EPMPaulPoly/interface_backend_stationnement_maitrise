@@ -1,0 +1,40 @@
+post:
+  summary: Création d'une association d'ensemble de règlements
+  deprecated: false
+  tags: ['Ensembles de Règlements']
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas.yaml#/nouvelle_association_cubf_er'
+        examples:
+          example1:
+            value:
+              id_er: 58
+              cubf: 5
+              id_reg_stat: 176
+  responses:
+    '200':
+      description: 'Succès'
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_ens_reg_assoc'
+          examples:
+            example1:
+              success: true
+              data:
+                - id_assoc_er_reg: 1
+                  id_er: 58
+                  cubf: 5 
+                  id_reg_stat: 176
+    '500':
+      description: 'Erreur Interne'
+      content: 
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          examples:
+            example1:
+              success: false
+              message: 'Erreur Interne du serveur. Échec de la requête SQL'

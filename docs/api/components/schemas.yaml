@@ -635,3 +635,10 @@ reponse_ens_reg_complet:
       properties:
         data: 
           $ref: '#/ensemble_reglement_complet'
+reponse_ens_reg_assoc:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties: 
+        data:
+          $ref: '#/association_cubf_er'
