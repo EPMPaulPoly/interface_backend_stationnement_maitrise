@@ -1,0 +1,88 @@
+post:
+  summary: Obtiens les informations sur les unités et règlements pour une CUBF
+  tags: ['Ensembles de Règlements']
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              cubf: 
+                type: number
+                description: Identifiant de 
+              id_er: 
+                type: array
+                description: liste des identifiants d'ensembles de règlements
+                items:  
+                  type: number 
+        example:
+          - cubf: 1
+            id_er: [1,2]
+  responses:
+    '200':
+      description: 'Succès'
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/schemas.yaml#/api_response'
+              - type: object
+                properties: 
+                  data:
+                    type: array
+                    items: 
+                      type: object
+                      properties:
+                        id_er: 
+                          type: integer
+                          description: Identifiant de l'ensemble de règlements
+                        desc_er:
+                          type: string
+                          description: description de l'ensemble de règlements
+                        id_reg_stat: 
+                          type: integer
+                          description: Identifiant du règlement associé 
+                        desc_reg_stat:
+                          type: string
+                          description: Description du règlement de stationnement
+                        unite:  
+                          description: Liste des unités utilisées dans le règlement
+                          type: array
+                          items:  
+                            type: number
+                        desc_unite: 
+                          description: Liste des descriptions d'unités utilisées dans le règlement
+                          type: array
+                          items: 
+                            type: string
+          example:
+            success: true
+            data:
+              - id_er: 1
+                desc_er: 'Québec - post harm - urbain dense'
+                id_reg_stat: 466
+                desc_reg_stat: 'H1 - Logement - Urbain Dense'
+                unite: 
+                  - 2
+                desc_unite: 
+                  - 'logement'
+              - id_er: 2
+                desc_er: 'Québec - post harm - structurant A'
+                id_reg_stat: 467
+                desc_reg_stat: 'H1 - Logement - Axe Structurant A'
+                unite: 
+                  - 2
+                desc_unite: 
+                  - 'logement'
+    '500':
+      description: 'Erreur Interne serveur'
+      content: 
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: 'Internal Server Error'
+      

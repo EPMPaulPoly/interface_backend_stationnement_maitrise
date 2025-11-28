@@ -69,6 +69,8 @@ paths:
     $ref: './paths/ensemble_reglements/trouveParTerritoire.yaml'
   /api/ens-reg/par-role/{ids_provinciaux}:
     $ref: './paths/ensemble_reglements/trouveParRole.yaml'
+  /api/ens-reg/informations-pour-graphique:
+    $ref: './paths/ensemble_reglements/informationsPourGraph.yaml'
 components:
   schemas:
     $ref: './components/schemas.yaml'
