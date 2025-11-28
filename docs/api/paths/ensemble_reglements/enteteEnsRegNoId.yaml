@@ -1,0 +1,118 @@
+get:
+  summary: Obtiens les ensembles de règlements
+  deprecated: false
+  tags: ['Ensembles de Règlements']
+  parameters:
+    - name: date_debut_er_avant
+      in: query
+      description: Trouver les ER dont la date de debut est avant la valeur specifiée
+      required: false
+      example: 1995
+      schema: 
+        type: integer
+        nullable: true
+    - name: date_debut_er_apres
+      in: query
+      description: Trouver les ER dont la date de debut est après la valeur specifiée
+      required: false
+      example: 1995
+      schema: 
+        type: integer
+    - name: date_fin_er_avant
+      in: query
+      description: Trouver les ER dont la date de fin est avant la valeur specifiée
+      required: false
+      example: 1997
+      schema: 
+        type: integer
+    - name: date_fin_er_apres
+      in: query
+      description: Trouver les ER dont la date de fin est après la valeur specifiée
+      required: false
+      example: 1997
+      schema: 
+        type: integer
+        nullable: true
+    - name: description_like
+      in: query
+      description: Trouver les ER dont la description ressemble à la valeur spécifiée
+      required: false
+      example: 'logement'
+      schema: 
+        type: string
+    - name: id_er
+      in: query
+      description: Trouver les identifiants appartiennent à la liste séparée de virgules spéficiée
+      required: false
+      examples: 
+        unique:
+          value: '8'
+        multiple:
+          value: '8,7'
+      schema: 
+        type: string
+  responses:
+    '200':
+      description: 'Succès'
+      content:
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/reponse_ens_reg_entete'
+          examples:
+            exemple1:
+              value:
+                success: true
+                data: 
+                  - id_er: 1
+                    description_er: Quebec
+                    date_debut_er: 1995
+                    date_fin_er: 2009
+                  - id_er: 2
+                    description_er: Charlesbourg
+                    date_debut_er: 1995
+                    date_fin_er: 2009
+                  - id_er: 3
+                    description_er: Post Harmonisation
+                    date_debut_er: 2010
+                    date_fin_er: null
+post:
+  summary: Création d'une nouvelle entête d'ensemble de règlements
+  deprecated: false
+  tags: ['Ensembles de Règlements']
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas.yaml#/nouvel_entete_ensemble_reglement'
+        examples:
+          example1:
+            value:
+              description_er: Remplissage pré-1995
+              date_debut_er: null
+              data_fin_er: 1994
+    required: true
+  responses:
+    '200':
+      description: 'Succès'
+      content:
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/reponse_ens_reg_entete'
+          examples:
+            exemple1:
+              value:
+                success: true
+                data: 
+                  id_er: 4
+                  description_er: Remplissage pré-1995
+                  date_debut_er: null
+                  date_fin_er: 1994
+    '500':
+      description: 'Erreur Interne'
+      content:
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: 'Erreur interne'

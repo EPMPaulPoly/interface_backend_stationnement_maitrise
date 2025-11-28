@@ -1,0 +1,80 @@
+put:
+  summary: Modification entête règlement
+  deprecated: false
+  description: ''
+  tags: ['Reglement']
+  parameters:
+    - name: id_reg_stat
+      in: path
+      description: identifiant du règlement dont on modifie l'entête
+      required: true
+      example: '2'
+      schema:
+        type: string
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas.yaml#/nouvel_entete_reglement'
+    required: true
+  responses:
+    '200':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Succès ou échec de la requête
+              data:
+                type: array
+                items:
+                  $ref: '../../components/schemas.yaml#/entete_reglement'
+            required:
+              - success
+      headers: {}
+    '404':
+      description: ''
+      content:
+        application/json:
+          schema:
+            title: ''
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Succès ou echéc de la requête
+              message:
+                type: string
+                description: Description sommaire de l'erreur
+            required:
+              - success
+              - message
+          example:
+            success: false
+            message: Identifiant n'existe pas
+      headers: {}
+    '500':
+      description: ''
+      content:
+        application/json:
+          schema:
+            title: ''
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Échec ou succès de la requête
+              message:
+                type: string
+                description: Description de l'erreur
+            required:
+              - success
+              - message
+          example:
+            success: false
+            message: Erreur interne serveur
+      headers: {}
+  security: []

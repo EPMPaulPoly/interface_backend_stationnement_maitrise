@@ -1,0 +1,30 @@
+delete:
+  summary: Supprime règlement
+  deprecated: false
+  description: Suppression d'un règlement à partir de l'identifiant
+  tags: ['Reglement']
+  parameters:
+    - name: id_reg_stat
+      in: path
+      description: Identifiant  du règlement à supprimer
+      required: true
+      example: '1'
+      schema:
+        type: string
+  responses:
+    '200':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Succès ou échec de la requête
+            required:
+              - success
+          example:
+            success: true
+      headers: {}
+  security: []

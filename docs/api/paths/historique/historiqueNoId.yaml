@@ -1,0 +1,64 @@
+get:
+  summary: Obtiens l'historique
+  deprecated: false
+  description: Obtiens l'historique complet de la ville
+  tags: ['Historique']
+  parameters: []
+  responses:
+    "200":
+      description: ""
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "../../components/schemas.yaml#/periode"
+      headers: {}
+  security: []
+post:
+  summary: Crée nouvelle période historique
+  deprecated: false
+  description: Création d'une nouvelle période dans l'historique
+  tags: ['Historique']
+  parameters: []
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            nom_periode:
+              type: string
+              description: Nom de visualisation de la période
+            date_debut_periode:
+              type: integer
+              description: >-
+                Date de début de la période. Null: capture toutes les dates
+                avant la date de fin
+              nullable: true
+            date_fin_periode:
+              type: integer
+              description: "Date de fin de la période. Null: encore en vigueur"
+              nullable: true
+          required:
+            - nom_periode
+            - date_debut_periode
+            - date_fin_periode
+        example:
+          nom_periode: VQZ3
+          date_debut_periode: 1995
+          date_fin_periode: 1997
+  responses:
+    "200":
+      description: ""
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/schemas.yaml#/periode"
+          example:
+            id_periode: 4
+            nom_periode: VQZ3
+            date_debut_periode: 1995
+            date_fin_periode: 1997
+      headers: {}
+  security: []

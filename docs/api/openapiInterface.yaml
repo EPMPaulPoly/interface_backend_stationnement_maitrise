@@ -1,0 +1,263 @@
+openapi: 3.0.1
+info:
+  title: Description de l'API pour l'outil d'estimation du stationnement
+  description: ''
+  version: 1.0.0
+tags: []
+paths:
+  /api/quartiers-analyse:
+    $ref: './paths/quartier/quartierNoId.yaml'
+  /api/historique:
+    $ref: './paths/historique/historiqueNoId.yaml'
+  /api/historique/{id_periode}:
+    $ref: './paths/historique/historiqueWId.yaml'
+  /api/inventaire/quartier/{id_quartier}:
+    $ref: './paths/inventaire/inventaireQuartier.yaml'
+  /api/inventaire/maj-en-gros:
+    $ref: './paths/inventaire/inventaireMajEnGros.yaml'
+  /api/inventaire/{id_inv}:
+    $ref: './paths/inventaire/inventaireWId.yaml'
+  /api/inventaire/:
+    $ref: './paths/inventaire/inventaireNoId.yaml'
+  /api/inventaire/nouv-en-gros:
+    $ref: './paths/inventaire/inventaireNouvEnGros.yaml'
+  /api/inventaire/calcul/quartier/{id_quartier}:
+    $ref: './paths/inventaire/inventaireCalculQuartier.yaml'
+  /api/inventaire/calcul/lot/{id_lot}:
+    $ref: './paths/inventaire/inventaireCalculLot.yaml'
+  /api/inventaire/calcul/reg-val-man:
+    $ref: './paths/inventaire/inventaireCalculSemiAuto.yaml'
+  /api/inventaire/query:
+    $ref: './paths/inventaire/inventaireQuery.yaml'
+  /api/territoire/periode/{id_periode}:
+    $ref: './paths/territoire/getTerritoirePeriode.yaml'
+  /api/territoire/periode-geo/{id_periode_geo}:
+    $ref: './paths/territoire/getTerritoireId.yaml'
+  /api/reglements/operations:
+    $ref: './paths/reglements/getOperations.yaml'
+  /api/reglements/unites:
+    $ref: './paths/reglements/getUnitesReg.yaml'
+  /api/reglements/unites/{g_no_lot}:
+    $ref: './paths/reglements/getInputsByLot.yaml'
+  /api/reglements/complet/{id_reg_stat}:
+    $ref: './paths/reglements/reglementComplet.yaml'
+  /api/reglements/entete:
+    $ref: './paths/reglements/reglementsEnteteNoId.yaml'
+  /api/reglements/entete/{id_reg_stat}:
+    $ref: './paths/reglements/reglementsEnteteWId.yaml'
+  /api/reglements/{id_reg_stat}:
+    $ref: './paths/reglements/deleteReglements.yaml'
+  /api/reglements/ligne-def/{id_reg_stat_emp}:
+    put:
+      summary: Mise à jour d'un règlement
+      deprecated: false
+      tags: ['Reglement']
+      description: "Met à jour la définition mathématique d'un règlement dont l'identifiant est spécifié"
+      parameters:
+        - name: id_reg_stat_emp
+          in: path
+          description: identifiant du règlement dont on modifie l'entête
+          required: true
+          example: '2'
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_reg_stat:
+                  type: integer
+                  description: Identifiant de règlement parent
+                ss_ensemble:
+                  type: integer
+                  description: Identifiant de sous-ensemble
+                oper:
+                  type: integer
+                  description: Identiant d,opération
+                  nullable: true
+                seuil:
+                  type: number
+                  description: seuil
+                pente_min:
+                  type: number
+                  description: >-
+                    Pente de la courbe linéaire du nombre de places minimums par
+                    unite
+                  nullable: true
+                pente_max:
+                  type: number
+                  description: >-
+                    Pente de la courbe lineaire du nombre de places maximum en
+                    fonctionde l'unité donnée
+                  nullable: true
+                cases_fix_min:
+                  type: number
+                  description: >-
+                    Ordonnée à l'origine de la courbe linéaire du nombre de
+                    places minimum en fonction de l'unité
+                cases_fix_max:
+                  type: number
+                  description: >-
+                    Ordonnée à l'origine de la courbe linéaire du nombre de
+                    places maximum en fonction de l'unité
+                unite:
+                  type: integer
+                  description: Unité de formulation de la ligne
+              required:
+                - id_reg_stat
+                - ss_ensemble
+                - oper
+                - seuil
+                - pente_min
+                - pente_max
+                - cases_fix_min
+                - cases_fix_max
+                - unite
+            example:
+              id_reg_stat: 1
+              ss_ensemble: 1
+              oper: 4
+              seuil: 4
+              pente_min: 0.05
+              pente_max: 0.075
+              cases_fix_min: 0
+              cases_fix_max: 0
+              unite: 4
+        required: true
+      responses:
+        '200':
+          description: 'Succès'
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  success:  
+                    type: boolean
+                    description: Succès ou échec de la requêtes
+                  data:
+                    type: array
+                    items: 
+                      $ref: '#/components/schemas/definition_reglement'
+  /api/reglements/ligne-def:
+    post:
+      summary: Nouvelle ligne de définition mathématique de règlement
+      deprecated: false
+      description: 'Crée une nouvelle ligne de définition dans un règlement'
+      tags: ['Reglement']
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_reg_stat:
+                  type: integer
+                  description: Identifiant de règlement parent
+                ss_ensemble:
+                  type: integer
+                  description: Identifiant de sous-ensemble
+                oper:
+                  type: integer
+                  description: Identiant d,opération
+                  nullable: true
+                seuil:
+                  type: number
+                  description: seuil
+                pente_min:
+                  type: number
+                  description: >-
+                    Pente de la courbe linéaire du nombre de places minimums par
+                    unite
+                  nullable: true
+                pente_max:
+                  type: number
+                  description: >-
+                    Pente de la courbe lineaire du nombre de places maximum en
+                    fonctionde l'unité donnée
+                  nullable: true
+                cases_fix_min:
+                  type: number
+                  description: >-
+                    Ordonnée à l'origine de la courbe linéaire du nombre de
+                    places minimum en fonction de l'unité
+                cases_fix_max:
+                  type: number
+                  description: >-
+                    Ordonnée à l'origine de la courbe linéaire du nombre de
+                    places maximum en fonction de l'unité
+                unite:
+                  type: integer
+                  description: Unité de formulation de la ligne
+              required:
+                - id_reg_stat
+                - ss_ensemble
+                - oper
+                - seuil
+                - pente_min
+                - pente_max
+                - cases_fix_min
+                - cases_fix_max
+                - unite
+            example:
+              id_reg_stat: 1
+              ss_ensemble: 1
+              oper: 4
+              seuil: 4
+              pente_min: 0.05
+              pente_max: 0.075
+              cases_fix_min: 0
+              cases_fix_max: 0
+              unite: 4
+        required: true
+      responses:
+        '200':
+          description: 'Succès'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Succès ou échec de la requête
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/definition_reglement'
+                required:
+                  - success
+                  - data
+              example:
+                success: true
+                data:
+                  - id_reg_stat_emp: 1
+                    id_reg_stat: 1
+                    ss_ensemble: 1
+                    oper: 4
+                    seuil: 4
+                    pente_min: 0.05
+                    pente_max: 0.075
+                    cases_fix_min: 0
+                    cases_fix_max: 0
+                    unite: 4
+          headers: {}
+      security: []
+  /api/ens-reg/{id_er}:
+    $ref: './paths/ensemble_reglements/ensRegWId.yaml'
+  /api/ens-reg/complet/{id_er}:
+    $ref: './paths/ensemble_reglements/ensRegCompletWId.yaml'
+  /api/ens-reg/entete:
+    $ref: './paths/ensemble_reglements/enteteEnsRegNoId.yaml'
+  /api/ens-reg/entete/{id_er}:
+    $ref: './paths/ensemble_reglements/enteteEnsRegWId.yaml'
+components:
+  schemas:
+    $ref: './components/schemas.yaml'
+servers:
+  - url: http://localhost:5000/
+    description: Memoire
+security: []

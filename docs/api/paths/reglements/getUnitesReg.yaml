@@ -1,0 +1,62 @@
+get:
+  summary: Obtiens la liste des unites
+  deprecated: false
+  description: >-
+    Obtiens l'ensemble des unités utilisées dans les règlements de
+    stationnement
+  tags: ['Reglement']
+  parameters: []
+  responses:
+    '200':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Succès ou échec de la requête
+              data:
+                type: array
+                items:
+                  $ref: '../../components/schemas.yaml#/unite'
+            required:
+              - success
+              - data
+          example:
+            success: true
+            data:
+              - id_unite: 4
+                colonne_role_foncier: rl0308a
+                facteur_correction: 1
+                abscisse_correction: 0
+                desc_unite: mètres carrés d'étage
+              - id_unite: 8
+                colonne_role_foncier: rl0308a
+                facteur_correction: 0.5
+                abscisse_correction: 0
+                desc_unite: sièges
+      headers: {}
+    '500':
+      description: ''
+      content:
+        application/json:
+          schema:
+            title: ''
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Échec ou succès de la requête
+              message:
+                type: string
+                description: Description de l'erreur
+            required:
+              - success
+              - message
+          example:
+            success: false
+            message: Erreur interne serveur
+      headers: {}
+  security: []

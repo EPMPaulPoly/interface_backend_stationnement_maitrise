@@ -1,0 +1,88 @@
+put:
+  summary: Met à jour l'inventaire en gros
+  deprecated: false
+  description: 'Mise à jour en gros '
+  tags: ['Inventaire']
+  parameters: []
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: array
+          items:
+            $ref: '../../components/schemas.yaml#/inventaire'
+        example:
+          - id_inv: 8
+            g_no_lot: 1 905 308
+            n_places_min: 8
+            n_places_max: 15
+            n_places_estime: null
+            n_places_mesure: null
+            methode_estime: 1
+            cubf: 1000/5211
+            id_reg_stat: 7/15
+            id_er: 55/60
+            commentaire: 'Unite: 2 Val: 1,Unite: 4 Val:50'
+          - id_inv: 9
+            g_no_lot: 1 905 309
+            n_places_min: 0.5
+            n_places_max: 2
+            n_places_estime: null
+            n_places_mesure: null
+            methode_estime: 2
+            cubf: '1000'
+            id_reg_stat: '8'
+            id_er: '56'
+            commentaire: 'Unite: 2 Val: 1'
+  responses:
+    '200':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+              data:
+                type: array
+                items:
+                  $ref: '../../components/schemas.yaml#/inventaire'
+            required:
+              - success
+              - data
+          example:
+            success: true
+            data:
+              - id_inv: 8
+                g_no_lot: 1 905 308
+                n_places_min: 8
+                n_places_max: 15
+                n_places_estime: null
+                n_places_mesure: null
+                methode_estime: 1
+                cubf: 1000/5211
+                id_reg_stat: 7/15
+                id_er: 55/60
+                commentaire: 'Unite: 2 Val: 1,Unite: 4 Val:50'
+              - id_inv: 9
+                g_no_lot: 1 905 309
+                n_places_min: 0.5
+                n_places_max: 2
+                n_places_estime: null
+                n_places_mesure: null
+                methode_estime: 2
+                cubf: '1000'
+                id_reg_stat: '8'
+                id_er: '56'
+                commentaire: 'Unite: 2 Val: 1'
+      headers: {}
+    '500':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: {}
+      headers: {}
+  security: []

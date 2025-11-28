@@ -1,0 +1,98 @@
+put:
+  summary: Met à jour période historique
+  deprecated: false
+  description: Création d'une nouvelle période dans l'historique
+  tags: ['Historique']
+  parameters:
+    - name: id_periode
+      in: path
+      description: ''
+      required: true
+      example: '4'
+      schema:
+        type: string
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            nom_periode:
+              type: string
+              description: Nom de visualisation de la période
+            date_debut_periode:
+              type: integer
+              description: >-
+                Date de début de la période. Null: capture toutes les dates
+                avant la date de fin
+              nullable: true
+            date_fin_periode:
+              type: integer
+              description: 'Date de fin de la période. Null: encore en vigueur'
+              nullable: true
+          required:
+            - nom_periode
+            - date_debut_periode
+            - date_fin_periode
+        example:
+          nom_periode: VQZ3
+          date_debut_periode: 1995
+          date_fin_periode: 1998
+  responses:
+    '200':
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/periode'
+          example:
+            id_periode: 4
+            nom_periode: VQZ3
+            date_debut_periode: 1995
+            date_fin_periode: 1998
+      headers: {}
+  security: []
+delete:
+  summary: Supprime période
+  deprecated: false
+  description: Suppression d'une période dans l'historique
+  tags: ['Historique']
+  parameters:
+    - name: id_periode
+      in: path
+      description: ''
+      required: true
+      example: '4'
+      schema:
+        type: string
+  responses:
+    '200':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+            required:
+              - success
+          example:
+            success: true
+      headers: {}
+    '404':
+      description: ''
+      content:
+        application/json:
+          schema:
+            title: ''
+            type: object
+            properties:
+              success:
+                type: boolean
+            required:
+              - success
+          example:
+            success: false
+      headers: {}
+  security: []

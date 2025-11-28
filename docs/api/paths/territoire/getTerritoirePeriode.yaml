@@ -1,0 +1,33 @@
+get:
+  summary: Obtenir territoire par periode
+  deprecated: false
+  description: Obtient les territoire en fonction de la période de validité
+  tags: ['Territoire']
+  parameters:
+    - name: id_periode
+      in: path
+      description: ''
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Booléen indiquant le succès ou l'échec
+              data:
+                type: array
+                items:
+                  $ref: '../../components/schemas.yaml#/territoire'
+            required:
+              - success
+              - data
+      headers: {}
+  security: []
+  

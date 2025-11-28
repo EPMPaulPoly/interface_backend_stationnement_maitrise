@@ -1,0 +1,103 @@
+post:
+  summary: Nouvel item inventaire
+  deprecated: false
+  description: Nouvel invenatire
+  tags: ['Inventaire']
+  parameters: []
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            g_no_lot:
+              type: string
+              description: Identifiant du lot cadastral
+            n_places_min:
+              type: number
+              description: Nombre de places minimum selon le code d'urbanisme
+            n_places_max:
+              type: number
+              description: Nombre de places maxium selon le code d'urbanisme
+            n_places_estime:
+              type: number
+              description: >-
+                Nombre de places estimées selon une méthode d'estimation
+                donnée autre que par la méthode règlementaire
+            n_places_mesure:
+              type: integer
+              description: Nombre de places recensées manuellement
+            methode_estime:
+              type: integer
+              description: >-
+                Méthode estimation: 1 manuel, 2: méthode réglementaire 3:
+                méthode réglementaire avec entrées manuelles
+            cubf:
+              type: string
+              description: List des cubf inclus dans le rôle de ce lot
+            id_reg_stat:
+              type: string
+              description: Liste des règlements utilisés pour le calcul
+            id_er:
+              type: string
+              description: Liste des ensembles de règlements utilisés pour le calcul
+            commentaire:
+              type: string
+              description: Commentaire quelconque, souvent auto généré
+          required:
+            - g_no_lot
+            - n_places_min
+            - n_places_max
+            - n_places_estime
+            - n_places_mesure
+            - methode_estime
+            - cubf
+            - id_reg_stat
+            - id_er
+            - commentaire
+        example:
+          g_no_lot: 1 905 807
+          n_places_min: 1
+          n_places_max: 2
+          n_places_estime: null
+          n_places_mesure: null
+          methode_estime: 2
+          cubf: '1000'
+          id_reg_stat: '100'
+          id_er: '2'
+          commentaire: 'Unite: 2 Val:1'
+    required: true
+  responses:
+    '200':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: >-
+                  Variable booléene décrivant le succès ou l'échec de la
+                  requête
+              data:
+                $ref: '../../components/schemas.yaml#/inventaire'
+            required:
+              - success
+              - data
+          example:
+            success: true
+            data:
+              id_inv: 1
+              g_no_lot: 1 905 807
+              n_places_min: 1
+              n_places_max: 2
+              n_places_estime: null
+              n_places_mesure: null
+              methode_estime: 2
+              cubf: '1000'
+              id_reg_stat: '100'
+              id_er: '2'
+              commentaire: 'Unite: 2 Val:1'
+      headers: {}
+  security: []

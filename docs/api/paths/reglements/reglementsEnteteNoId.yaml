@@ -1,0 +1,173 @@
+get:
+  summary: Obtiens les entêtes de règlement
+  deprecated: false
+  description: Renvoie les entetes de règlements en fonction des paramètres spécifiés
+  tags: ['Reglement']
+  parameters:
+    - name: annee_debut_avant
+      in: query
+      description: >-
+        Trouver les entêtes dont les dates de début sont avant l'entier
+        fixé. Si la valeur null est fixé, on cherche des règlements
+        applicables à perpétuité
+      required: false
+      example: 1995
+      schema:
+        type: integer
+        nullable: true
+    - name: annee_debut_apres
+      in: query
+      description: >-
+        Trouver les entêtes dont les dates de début sont apres l'entier
+        fixé.
+      required: false
+      example: 1993
+      schema:
+        type: integer
+    - name: annee_fin_avant
+      in: query
+      description: Trouver les entêtes dont les dates de fin sont avant la date donnée
+      required: false
+      example: 1996
+      schema:
+        type: integer
+    - name: annee_fin_apres
+      in: query
+      description: >-
+        Trouver les entêtes dont les dates de fin sont après l'entier fixé.
+        Si la valeur null est fixé, on cherche des règlements encore en
+        vigueur
+      required: false
+      example: 2005
+      schema:
+        type: integer
+    - name: description
+      in: query
+      description: >-
+        Trouver les entêtes dont la description contient les caractères
+        fournis
+      required: false
+      example: logement
+      schema:
+        type: string
+    - name: villle
+      in: query
+      description: >-
+        Trouver les entêtes de règlement dont la ville contient les
+        caractères fournis
+      required: false
+      example: CUQ
+      schema:
+        type: string
+    - name: texte
+      in: query
+      description: >-
+        Trouver les entêtes de règlement dont le texte de loi contient les
+        caractères fournis
+      required: false
+      example: VQZ 3
+      schema:
+        type: string
+    - name: article
+      in: query
+      description: >-
+        Trouver les entêtes de règlement dont l'article de loi contient les
+        caractères fournis
+      required: false
+      example: annexe d
+      schema:
+        type: string
+    - name: paragraphe
+      in: query
+      description: >-
+        Trouver les entêtes de règlement dont le paragraphe de loi contient
+        les caractères fournis
+      required: false
+      example: '10.3'
+      schema:
+        type: string
+  responses:
+    '200':
+      description: 'Succès'
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_entete_array'
+          examples:
+            example1:
+              value:
+                success: true
+                data: 
+                  - id_reg_stat: 176
+                    description: "Logement"
+                    annee_debut_reg: 1995
+                    annee_fin_reg: 1997
+                    texte_loi: "VQZ 3"
+                    article_loi: "Annexe D"
+                    paragraphe_loi: "10.a"
+                    ville: "Québec"
+                  - id_reg_stat: 177
+                    description: "Industriel"
+                    annee_debut_reg: 1995
+                    annee_fin_reg: 2000
+                    texte_loi: "VQZ 3"
+                    article_loi: "Annexe D"
+                    paragraphe_loi: "5.b"
+                    ville: "Québec" 
+      headers: {}
+    '500':
+      description: 'Erreur interne'
+      content:  
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          examples:
+            example1:
+              value:
+                success: false
+                message: 'Erreur Interne'
+  security: []
+post:
+  summary: Nouvel entête de stationnement
+  deprecated: false
+  description: 'Création d''un nouvel entête de stationnement '
+  tags: ['Reglement']
+  parameters: []
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas.yaml#/nouvel_entete_reglement'
+        examples:
+          example1:
+            value:
+              description: "Logement"
+              annee_debut_reg: 1995
+              annee_fin_reg: 1997
+              texte_loi: "VQZ 3"
+              article_loi: "Annexe D"
+              paragraphe_loi: "10.a"
+              ville: "Québec"
+    required: true
+  responses:
+    '200':
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_entete_array'
+          examples:
+            example1:
+              value:
+                success: true
+                data: 
+                  id_reg_stat: 176
+                  description: "Logement"
+                  annee_debut_reg: 1995
+                  annee_fin_reg: 1997
+                  texte_loi: "VQZ 3"
+                  article_loi: "Annexe D"
+                  paragraphe_loi: "10.a"
+                  ville: "Québec"
+      headers: {}
+  security: []

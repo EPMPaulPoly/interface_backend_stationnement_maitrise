@@ -1,0 +1,83 @@
+get:
+  summary: >-
+    Initiation de l'estimation du nombre de places par les règlements pour
+    un quartier
+  deprecated: false
+  description: Permet d'initier le calcul du nombre de places minimum pour un quartier
+  tags: ['Inventaire']
+  parameters:
+    - name: id_quartier
+      in: path
+      description: ''
+      required: true
+      example: '1'
+      schema:
+        type: string
+  responses:
+    '200':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Booléen succès échec
+              data:
+                type: array
+                items:
+                  $ref: '../../components/schemas.yaml#/inventaire'
+            required:
+              - success
+              - data
+          example:
+            success: true
+            data:
+              - g_no_lot: 1 905 608
+                n_places_min: 2
+                n_places_max: 4
+                n_places_estime: null
+                n_places_mesure: null
+                methode_estime: 2
+                cubf: '1000'
+                id_reg_stat: '765'
+                id_er: '45'
+                commentaire: 'Unite: 2 Val:2'
+              - g_no_lot: PC-02140
+                n_places_min: 35.2325
+                n_places_max: null
+                n_places_estime: null
+                n_places_mesure: null
+                methode_estime: 2
+                cubf: 7113/5680/5995/5999/6231/6991/9490/1000
+                id_reg_stat: 1214/1214/1214/1212/1204/1204/1215/1215
+                id_er: 43/43/43/43/43/43/43
+                commentaire: >-
+                  Unite: 4 Val: 1105.8 /Unite: 4 Val: 134.1 /Unite: 4 Val:
+                  225.4 , Unite: 4 Val: 119.3 , Unite: 4 Val: 268.6 , Unite:
+                  4 Val: 216.4 , Unite: 4 Val: 0.0 
+      headers: {}
+    '500':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Booléen succès échec
+              message:
+                type: string
+                description: Message décrivant l'erreur
+            title: ''
+            required:
+              - success
+              - message
+          example:
+            success: false
+            message: 'Erreur: translation JSON échoué'
+      headers: {}
+  security: []
+  

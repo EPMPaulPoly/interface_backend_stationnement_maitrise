@@ -1,0 +1,68 @@
+ get:
+  summary: Recherche d'item d'inventaire
+  deprecated: false
+  description: Recherche d'items de l'inventaire. Paramètres envoyés dans la requête
+  tags: ['Inventaire']
+  parameters:
+    - name: g_no_lot
+      in: query
+      description: Identifiant de lot avec espaces remplacés par _
+      required: false
+      example: '1_905_608'
+      schema:
+        type: string
+    - name: id_inv
+      in: query
+      description: Identifiant d'inventaire
+      required: false
+      example: 105
+      schema:
+        type: integer
+    - name: n_places_ge
+      in: query
+      description: Seuil inférieur de nombre de places à renvoyer
+      required: false
+      example: 11
+      schema:
+        type: number
+    - name: dens_places_ge
+      in: query
+      description: Seuil inférieur de densité de places à renvoyer
+      required: false
+      example: 0.5
+      schema:
+        type: number
+    - name: methode_estime
+      in: query
+      description: Type d'inventaire à rechercher
+      required: false
+      example: 2
+      schema:
+        type: integer
+    - name: cubf
+      in: query
+      description: 'Code d''utilisation du bien fonds utilisé dans '
+      required: false
+      example: '1000'
+      schema:
+        type: string
+  responses:
+    '200':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Booléen indiquant le succès ou l'échec de la requête
+              data:
+                type: array
+                items:
+                  $ref: '../../components/schemas.yaml#/inventaire'
+            required:
+              - success
+              - data
+      headers: {}
+  security: []

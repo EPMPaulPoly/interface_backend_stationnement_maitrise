@@ -1,0 +1,637 @@
+entete_reglement:
+  allOf:
+    - $ref: '#/nouvel_entete_reglement'
+    - type: object
+      properties:
+        id_reg_stat:
+          type: integer
+          description: identifiant unique du règlement
+      required:
+        - id_reg_stat
+  examples:
+    full:
+      id_reg_stat: 176
+      description: 'Logement'
+      annee_debut_reg: 1995
+      annee_fin_reg: 1997
+      texte_loi: 'VQZ 3'
+      article_loi: 'Annexe D'
+      paragraphe_loi: '10.a'
+      ville: 'Québec'
+nouvel_entete_reglement:
+  type: object
+  properties:
+    description:
+      type: string
+      description: Description sommaire du règlement
+    annee_debut_reg:
+      type: string
+      description: Année d'entrée en vigueur du règlement
+      nullable: true
+    annee_fin_reg:
+      type: string
+      description: Année d'abrogation du règlement
+      nullable: true
+    texte_loi:
+      type: string
+      description: Texte de loi dont provient le règlement
+    article_loi:
+      type: string
+      description: Article de loi dont provient le règlement
+      nullable: true
+    paragraphe_loi:
+      type: string
+      description: Paragraphe de la loi dont provient le règlement
+      nullable: true
+    ville:
+      type: string
+      description: Ville dans laquelle le règlement s'applique
+  required:
+    - description
+    - annee_debut_reg
+    - annee_fin_reg
+    - texte_loi
+    - article_loi
+    - paragraphe_loi
+    - ville
+  examples:
+    full:
+      description: 'Logement'
+      annee_debut_reg: 1995
+      annee_fin_reg: 1997
+      texte_loi: 'VQZ 3'
+      article_loi: 'Annexe D'
+      paragraphe_loi: '10.a'
+      ville: 'Québec'
+definition_reglement:
+  type: object
+  properties:
+    id_reg_stat_emp:
+      type: integer
+      description: Identifiant de ligne de definition
+    id_reg_stat:
+      type: integer
+      description: Identifiant de règlement parent
+    ss_ensemble:
+      type: integer
+      description: Identifiant de sous-ensemble
+    oper:
+      type: integer
+      description: Identiant d,opération
+      nullable: true
+    seuil:
+      type: number
+      description: seuil
+    pente_min:
+      type: number
+      description: Pente de la courbe linéaire du nombre de places minimums par unite
+      nullable: true
+    pente_max:
+      type: number
+      description: >-
+        Pente de la courbe lineaire du nombre de places maximum en
+        fonctionde l'unité donnée
+      nullable: true
+    cases_fix_min:
+      type: number
+      description: >-
+        Ordonnée à l'origine de la courbe linéaire du nombre de places
+        minimum en fonction de l'unité
+    cases_fix_max:
+      type: number
+      description: >-
+        Ordonnée à l'origine de la courbe linéaire du nombre de places
+        maximum en fonction de l'unité
+    unite:
+      type: integer
+      description: Unité de formulation de la ligne
+  required:
+    - id_reg_stat_emp
+    - id_reg_stat
+    - oper
+    - seuil
+    - pente_min
+    - pente_max
+    - cases_fix_min
+    - cases_fix_max
+    - unite
+    - ss_ensemble
+  examples:
+    OneSpotPerTwentySquareMeter:
+      id_reg_stat_emp: 177
+      id_reg_stat: 176
+      ss_ensemble: 1
+      oper: null
+      seuil: 0
+      pente_min: 0.05
+      pente_max: null
+      cases_fix_min: 0
+      cases_fix_max: null
+      unite: 4
+reglement:
+  type: object
+  properties:
+    entete:
+      $ref: '#/entete_reglement'
+    definition:
+      type: array
+      items:
+        $ref: '#/definition_reglement'
+  required:
+    - entete
+    - definition
+  examples:
+    fullExample:
+      entete:
+        $ref: '#/entete_reglement/examples/full'
+      definition:
+        $ref: '#/definition_reglement/examples/OneSpotPerTwentySquareMeter'
+nouvelle_periode:
+  type: object
+  properties:
+    nom_periode:
+      type: string
+      description: Nom de visualisation de la période
+    date_debut_periode:
+      type: integer
+      description: >-
+        Date de début de la période. Null: capture toutes les dates avant la
+        date de fin
+      nullable: true
+    date_fin_periode:
+      type: integer
+      description: 'Date de fin de la période. Null: encore en vigueur'
+      nullable: true
+  required:
+    - nom_periode
+    - date_debut_periode
+    - date_fin_periode
+periode:
+  allOf:
+    - $ref: '#/nouvelle_periode'
+    - properties:
+        id_periode:
+          type: integer
+          description: Identifiant unique de la période
+inventaire:
+  type: object
+  properties:
+    id_inv:
+      type: integer
+      description: Identifiant unique
+      readOnly: true
+    g_no_lot:
+      type: string
+      description: Identifiant du lot cadastral
+    n_places_min:
+      type: number
+      description: Nombre de places minimum selon le code d'urbanisme
+    n_places_max:
+      type: number
+      description: Nombre de places maxium selon le code d'urbanisme
+    n_places_estime:
+      type: number
+      description: >-
+        Nombre de places estimées selon une méthode d'estimation donnée
+        autre que par la méthode règlementaire
+    n_places_mesure:
+      type: integer
+      description: Nombre de places recensées manuellement
+    methode_estime:
+      type: integer
+      description: >-
+        Méthode estimation: 1 manuel, 2: méthode réglementaire 3: méthode
+        réglementaire avec entrées manuelles
+    cubf:
+      type: string
+      description: List des cubf inclus dans le rôle de ce lot
+    id_reg_stat:
+      type: string
+      description: Liste des règlements utilisés pour le calcul
+    id_er:
+      type: string
+      description: Liste des ensembles de règlements utilisés pour le calcul
+    commentaire:
+      type: string
+      description: Commentaire quelconque, souvent auto généré
+  required:
+    - g_no_lot
+    - n_places_min
+    - n_places_max
+    - n_places_estime
+    - n_places_mesure
+    - methode_estime
+    - cubf
+    - id_reg_stat
+    - id_er
+    - commentaire
+  examples: 
+    fullExempleLogement:
+      id_inv: 1
+      n_places_min: 1
+      n_places_max: 2
+      n_places_estime: null
+      n_places_mesure: null
+      methode_estime: 2
+      cubf: '1000'
+      id_reg_stat: '50'
+      id_er: '70'
+      commentaire: 'Unite: 2 Val: 1'
+lot_cadastral:
+  type: object
+  properties:
+    g_no_lot:
+      type: string
+      description: Identifiant cadastral
+    g_va_suprf:
+      type: number
+      description: Superficie du lot cadastral
+    g_nb_coord:
+      type: number
+      description: Longitude du centroide du lot
+    g_nb_coo_1:
+      type: number
+      description: Latitude du centroide du lot
+    geometry:
+      $ref: '#/Polygon'
+      description: Polygone représentant le lot
+  required:
+    - g_no_lot
+    - g_va_suprf
+    - g_nb_coord
+    - g_nb_coo_1
+    - geometry
+quartier_analyse:
+  type: object
+  properties:
+    id_quartier:
+      type: integer
+      description: Idenifant de quartier
+    nom_quartier:
+      type: string
+      description: Nom complet de quartier
+    acro:
+      type: string
+      description: Acronyme de quartier
+    superf_quartier:
+      type: number
+      description: Superficie du quartier en mètres carrés
+    geometry:
+      $ref: '#/Polygon'
+      description: Géométrie du quartier
+  required:
+    - id_quartier
+    - nom_quartier
+    - acro
+    - superf_quartier
+    - geometry
+territoire:
+  type: object
+  properties:
+    id_periode_geo:
+      type: integer
+      description: Identifiant unique du territoire
+    ville:
+      type: string
+      description: Nom de la ville
+    secteur:
+      type: string
+      description: Description de secteur
+    ville_sec:
+      type: string
+      description: Concaténation de ville et secteur pour visualisation
+    id_periode:
+      type: integer
+      description: Référence à la période où ce territoire est valide
+    geometry:
+      $ref: '#/Polygon'
+      description: Polygone représentant le territoire
+  required:
+    - id_periode_geo
+    - ville
+    - secteur
+    - ville_sec
+    - id_periode
+    - geometry
+role_foncier:
+  type: object
+  properties:
+    id_provinc:
+      type: string
+      description: Identifiant unique pour chaque entrée du rôle foncier
+    code_mun:
+      type: string
+      description: Code de 5 chiffres affecté à chaque municipalité du québec
+    arrond:
+      type: string
+      description: Arrondissement dans lequel se trouve l'entrée du rôle
+    anrole:
+      type: string
+      description: Année du rôle foncier
+    rl0105a:
+      type: integer
+      description: Code d'Utilisation du Bien Fonds pour la propriété
+      minimum: 1000
+      maximum: 9999
+    rl0302a:
+      type: number
+      description: Superficie terrain en mètres carrés
+    rl0308a:
+      type: number
+      description: Superficie d'étages en mètres carré
+    rl0306a:
+      type: integer
+      description: Nombre d'étages du bâtiment principal
+    rl0311a:
+      type: integer
+      description: Nombre de logements dans l'unité d'évaluation
+    rl0312a:
+      type: integer
+      description: Nombre de chambres locatives dans l'unité d'évaluation
+    rl0313a:
+      type: integer
+      description: Nombre de locaux non résidentiels de l'unité d'évaluation
+    rl0402a:
+      type: integer
+      description: Valeur attribuable au terrain
+    rl0403a:
+      type: integer
+      description: Valeur attribuable au bâtiments
+    rl0404a:
+      type: integer
+      description: Valeur du terrain et des bâtiments
+    rl0405a:
+      type: integer
+      description: Valeur du terrain et du bâtiment au rôle précédent
+  required:
+    - id_provinc
+    - code_mun
+    - arrond
+    - anrole
+    - rl0105a
+    - rl0302a
+    - rl0308a
+    - rl0306a
+    - rl0311a
+    - rl0312a
+    - rl0313a
+    - rl0402a
+    - rl0403a
+    - rl0404a
+    - rl0405a
+unite:
+  type: object
+  properties:
+    id_unite:
+      type: integer
+      description: Identifiant de l'unité
+    colonne_role_foncier:
+      type: string
+      description: |
+        Colonne du rôle foncier à utilise en intrant de la conversion
+    facteur_correction:
+      type: number
+      description: Pente de la droite liant l'unité id_unite à la colonne_role_foncier
+    abscisse_correction:
+      type: number
+      description: >-
+        Ordonnée à l'origine de la droite liant l'unité id_unite à la
+        colonne_role_foncier
+    desc_unite:
+      type: string
+      description: Description de l'unité
+  required:
+    - id_unite
+    - colonne_role_foncier
+    - facteur_correction
+    - abscisse_correction
+    - desc_unite
+Polygon:
+  type: object
+  required:
+    - type
+    - coordinates
+  properties:
+    type:
+      type: string
+      enum:
+        - Polygon
+    coordinates:
+      type: array
+      description: An array of linear rings. Each ring is an array of positions.
+      items:
+        type: array
+        items:
+          type: array
+          items:
+            type: number
+          minItems: 2
+  example:
+    type: Polygon
+    coordinates:
+      - - - -73.6
+          - 45.5
+        - - -73.7
+          - 45.5
+        - - -73.7
+          - 45.6
+        - - -73.6
+          - 45.6
+        - - -73.6
+          - 45.5
+entree_calcul_inventaire:
+  type: object
+  properties:
+    g_no_lot:
+      type: string
+      description: Identifant de lot cadastral
+    cubf:
+      type: integer
+      description: Code d'utilisation du bien fonds
+    id_reg_stat:
+      type: integer
+      description: Identifiant du règlement de stationnement à utiliser pour le calcul
+    id_er:
+      type: integer
+      description: Identifiant de l'ensemble de règlements
+    unite:
+      type: integer
+      description: Identifiant de l'unité
+    valeur:
+      type: number
+      description: >-
+        Valeur de l'unité spécifié pour le calcul des  minimums du lot
+        spécifié avec le règleement spécifié
+  required:
+    - g_no_lot
+    - cubf
+    - id_reg_stat
+    - valeur
+    - id_er
+    - unite
+operation_reglement:
+  type: object
+  properties:
+    id_operation:
+      type: integer
+      description: Identifiant de l'opération
+    desc_operation:
+      type: string
+      description: Description de l'opération
+  required:
+    - id_operation
+    - desc_operation
+nouvel_entete_ensemble_reglement:
+  type: object
+  properties: 
+    date_debut_er:
+      type: integer
+      description: Année d'entrée en vigueur de l'ensemble de règlements
+    date_fin_er:
+      type: integer
+      description: Année d'abrogation de l'ensemble de règlements
+    description_er:
+      type: string
+      description: Description sommaire de l'ensemble de règlements
+  required:
+    - date_debut_er
+    - date_fin_er
+    - description_er
+entete_ensemble_reglement:
+  allOf:
+    - $ref: '#/nouvel_entete_ensemble_reglement'
+    - properties: 
+        id_er: 
+          type: integer
+          description: Identifiant de l'ensemble de règlements
+      required:
+        - id_er
+nouvelle_association_cubf_er:
+  type: object
+  properties:
+    id_reg_stat:
+      type: integer
+      description: Identifiant de règlement 
+    cubf: 
+      type: integer
+      description: code d'utitilisation du bien fonds auquel on veut associer les règlements
+    id_er: 
+      type: integer
+      description: Identifiant de l'ensemble de règlements auquel appartient l'association
+  required:
+      - id_er
+      - cubf
+      - id_reg_stat
+association_cubf_er:
+  allOf:
+    - $ref: '#/nouvelle_association_cubf_er'
+    - type: object
+      properties: 
+        id_assoc_er_reg:
+          type: integer
+          description: identifiant de l'association
+  required:
+    - id_assoc_er_reg
+utilisation_sol:
+  type: object
+  properties:
+    cubf: 
+      type: integer
+      description: identifiant de l'utilisation du sol
+    description:
+      type: string
+      description: description de l'utilsation du sol
+  required:
+    - cubf
+    - description
+ensemble_reglement_complet:
+  type: object
+  properties:
+    entete: 
+      $ref: '#/entete_ensemble_reglement'
+    assoc_util_reg:
+      type: array
+      description: Affectation des règlements aux codes d'utilisation du bien fonds
+      items: 
+        $ref: '#/association_cubf_er'
+    table_util_sol:
+      type: array
+      items: 
+        $ref: '#/utilisation_sol'
+api_response:
+  type: object
+  properties:
+    success:
+      type: boolean
+      description: Succès ou échec de la requête
+    data:
+      type: object
+      description: Item renvoyé
+    message:
+      type: string
+      description: Message décrivant l'erreur
+  required:
+    - success
+  examples:
+    ErreurInterne:
+      success: false
+      message: Erreur interne de serveur
+    ItemIntrouvable:
+      success: false
+      message: Item non trouvé
+reponse_entete_array:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/entete_reglement'
+            - type: array
+              items:
+                $ref: '#/entete_reglement'
+      examples: 
+        multiElement:
+          success: true
+          data: 
+            - id_reg_stat: 176
+              description: "Logement"
+              annee_debut_reg: 1995
+              annee_fin_reg: 1997
+              texte_loi: "VQZ 3"
+              article_loi: "Annexe D"
+              paragraphe_loi: "10.a"
+              ville: "Québec"
+            - id_reg_stat: 177
+              description: "Industriel"
+              annee_debut_reg: 1995
+              annee_fin_reg: 2000
+              texte_loi: "VQZ 3"
+              article_loi: "Annexe D"
+              paragraphe_loi: "5.b"
+              ville: "Québec" 
+reponse_periode:
+  allOf:  
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data:
+          $ref: '#/periode'
+reponse_ens_reg_entete:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data:
+          oneOf:
+            - $ref: '#/entete_ensemble_reglement'
+            - type: array
+              items:
+                $ref: '#/entete_ensemble_reglement'
+reponse_ens_reg_complet:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data: 
+          $ref: '#/ensemble_reglement_complet'

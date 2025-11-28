@@ -1,0 +1,61 @@
+get:
+  summary: Obtiens toutes opérations mathématiques disponibles
+  deprecated: false
+  description: >-
+    Obtiens l'ensemble des opérations disponibles. Aucun filtre n'est
+    implémenté à l'heure actuelle
+  tags: ['Reglement']
+  parameters: []
+  responses:
+    '200':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Succès ou échec de la requête
+              data:
+                type: array
+                items:
+                  $ref: '../../components/schemas.yaml#/operation_reglement'
+                  description: Opérations applicable dans les règleements
+                description: Liste des opération
+            required:
+              - success
+          example:
+            success: true
+            data:
+              - id_operation: 1
+                desc_operation: Addition
+              - id_operation: 3
+                desc_operation: ou (plus contraignant)
+              - id_operation: 3
+                desc_operation: changement critère au-delà seuil (>=)
+              - id_operation: 6
+                desc_operation: ou (simple)
+      headers: {}
+    '500':
+      description: ''
+      content:
+        application/json:
+          schema:
+            title: ''
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Échec ou succès de la requête
+              message:
+                type: string
+                description: Description de l'erreur
+            required:
+              - success
+              - message
+          example:
+            success: false
+            message: Erreur interne serveur
+      headers: {}
+  security: []

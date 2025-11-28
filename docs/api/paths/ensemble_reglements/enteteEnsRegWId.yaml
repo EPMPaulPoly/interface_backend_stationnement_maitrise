@@ -1,0 +1,49 @@
+put:
+  summary: Modification d'un entête d'ensemble de règlement existant
+  deprecated: false
+  tags: ['Ensembles de Règlements']
+  parameters:
+    - name: id_er
+      in: path
+      description: identifiant de l'ensemble de règlements dont on modifie l'entête
+      required: true
+      example: 75
+      schema:
+        type: number
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas.yaml#/nouvel_entete_ensemble_reglement'
+        examples:
+          example1:
+            value:
+              description_er: Exemple test
+              date_debut_er: 2024
+              data_fin_er: null
+    required: true
+  responses:
+    '200':
+      description: 'Succès'
+      content:
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/reponse_ens_reg_entete'
+          examples:
+            exemple1:
+              value:
+                success: true
+                data: 
+                  id_er: 75
+                  description_er: Exemple test
+                  date_debut_er: 2024
+                  date_fin_er: null
+    '500':
+      description: 'Erreur Serveur'
+      content:
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: 'Erreur interne serveur'

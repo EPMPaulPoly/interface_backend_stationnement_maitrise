@@ -1,0 +1,72 @@
+get:
+  summary: Obtiens l'inventaire pour un quartier
+  deprecated: false
+  description: Obtiens l'inventaire pour un quartier
+  tags: ['Inventaire']
+  parameters:
+    - name: id_quartier
+      in: path
+      description: ''
+      required: true
+      example: '1'
+      schema:
+        type: string
+  responses:
+    '200':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+              data:
+                type: array
+                items:
+                  $ref: '../../components/schemas.yaml#/inventaire'
+            required:
+              - success
+              - data
+          example:
+            success: true
+            data:
+              - id_inv: 8
+                g_no_lot: 1 905 205
+                n_places_min: 8.254
+                n_places_max: 16.508
+                n_places_estime: null
+                n_places_mesure: null
+                methode_estime: 2
+                cubf: 1000/5211
+                id_reg_stat: 15/25
+                id_er: 5/5
+                commentaire: 'Unite: 4 Val: 140.3 , Unite: 2 Val: 2 '
+              - id_inv: 9
+                g_no_lot: 1 905 206
+                n_places_min: 0.5
+                n_places_max: 2
+                n_places_estime: null
+                n_places_mesure: null
+                methode_estime: 2
+                cubf: '1000'
+                id_reg_stat: '7'
+                id_er: '3'
+                commentaire: ' Unite: 2 Val: 1'
+      headers: {}
+    '500':
+      description: ''
+      content:
+        application/json:
+          schema:
+            title: ''
+            type: object
+            properties:
+              success:
+                type: boolean
+            required:
+              - success
+          example:
+            success: false
+      headers: {}
+  security: []

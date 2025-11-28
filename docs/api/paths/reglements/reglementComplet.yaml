@@ -1,0 +1,87 @@
+get:
+  summary: Obtient règlements complets
+  deprecated: false
+  description: Obtiens un ou plusieurs règlements complets
+  tags: ['Reglement']
+  parameters:
+    - name: id_reg_stat
+      in: path
+      description: ''
+      required: true
+      schema:
+        type: string
+        example: '8,7'
+  responses:
+    '200':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: 'Échec ou succès '
+              data:
+                type: array
+                items:
+                  $ref: '../../components/schemas.yaml#/reglement'
+            required:
+              - success
+              - data
+          example:
+            success: true
+            data:
+              - entete:
+                  id_reg_stat: 1
+                  description: Logement - CUQ
+                  annee_debut_reg: '1995'
+                  annee_fin_reg: '2005'
+                  texte_loi: VQZ 3
+                  article_loi: Annexe D
+                  paragraphe_loi: 10.a
+                  ville: Québec - CUQ
+                definition:
+                  - id_reg_stat_emp: 1
+                    id_reg_stat: 1
+                    ss_ensemble: 1
+                    oper: null
+                    seuil: 0
+                    pente_min: 0.5
+                    pente_max: 2
+                    cases_fix_min: 0
+                    cases_fix_max: 0
+                    unite: 2
+                  - id_reg_stat_emp: 2
+                    id_reg_stat: 1
+                    ss_ensemble: 1
+                    oper: 4
+                    seuil: 4
+                    pente_min: 0.6
+                    pente_max: 2
+                    cases_fix_min: 0
+                    cases_fix_max: 0
+                    unite: 2
+      headers: {}
+    '500':
+      description: ''
+      content:
+        application/json:
+          schema:
+            title: ''
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Succès ou échec de la requête
+              message:
+                type: string
+                description: Message donnant des détails sur le type d'erreur
+            required:
+              - success
+              - message
+          example:
+            success: false
+            message: Erreur serveur
+      headers: {}
+  security: []

@@ -1,0 +1,62 @@
+get:
+  summary: >-
+    Initiation de l'estimation du nombre de places par les règlements pour
+    un lot
+  deprecated: false
+  description: Permet d'initier le calcul du nombre de places minimum pour un quartier
+  tags: ['Inventaire']
+  parameters:
+    - name: id_lot
+      in: path
+      description: >-
+        Identifiant du lot. Les espaces doivent être remplacés par des
+        tirets bas
+      required: true
+      example: '1_905_608'
+      schema:
+        type: string
+  responses:
+    '200':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Booléen succès échec
+              data:
+                description: Données
+                type: array
+                items: 
+                  $ref: '../../components/schemas.yaml#/inventaire'
+          example:
+            success: true
+            data:
+              [
+                $ref: '../../components/schemas.yaml#/inventaire/examples/fullExempleLogement'
+              ]
+      headers: {}
+    '500':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Booléen succès échec
+              message:
+                type: string
+                description: Message décrivant l'erreur
+            title: ''
+            required:
+              - success
+              - message
+          example:
+            success: false
+            message: 'Erreur: translation JSON échoué'
+      headers: {}
+  security: []

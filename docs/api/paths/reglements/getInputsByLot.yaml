@@ -1,0 +1,100 @@
+get:
+  summary: >-
+    Obtiens la structure des intrants de calcul pour un calcul semi
+    automatique
+  deprecated: false
+  description: >-
+    Obtiens le règlement, le cubf, et les unités à spécifier pour lancer un
+    calcul semi automatique (calcul/reg-val-man). Enjeu
+  tags: ['Reglement']
+  parameters:
+    - name: g_no_lot
+      in: path
+      description: Identifiiant de lot avec les espaces remplacés par des tirets bas
+      required: true
+      example: '1_905_608'
+      schema:
+        type: string
+  responses:
+    '200':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Succès ou échec de la requête
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    g_no_lot:
+                      type: string
+                      description: Identifant de lot cadastral
+                    cubf:
+                      type: integer
+                      description: Code d'utilisation du bien fonds
+                    id_reg_stat:
+                      type: integer
+                      description: >-
+                        Identifiant du règlement de stationnement à utiliser
+                        pour le calcul
+                    id_er:
+                      type: integer
+                      description: Identifiant de l'ensemble de règlements
+                    unite:
+                      type: integer
+                      description: Identifiant de l'unité
+                  required:
+                    - g_no_lot
+                    - cubf
+                    - id_reg_stat
+                    - id_er
+                    - unite
+            required:
+              - success
+          example:
+            success: true
+            data:
+              - g_no_lot: 1 905 608
+                cubf: 1000
+                id_reg_stat: 15
+                id_er: 1
+                unite: 2
+              - g_no_lot: 1 905 608
+                cubf: 7211
+                id_reg_stat: 16
+                id_er: 1
+                unite: 8
+              - g_no_lot: 1 905 608
+                cubf: 1000
+                id_reg_stat: 16
+                id_er: 1
+                unite: 4
+      headers: {}
+    '500':
+      description: ''
+      content:
+        application/json:
+          schema:
+            title: ''
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Échec ou succès de la requête
+              message:
+                type: string
+                description: Description de l'erreur
+            required:
+              - success
+              - message
+          example:
+            success: false
+            message: Erreur interne serveur
+      headers: {}
+  security: []
+  

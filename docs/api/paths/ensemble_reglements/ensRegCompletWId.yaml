@@ -1,0 +1,94 @@
+get:
+  summary: Modification d'un entête d'ensemble de règlement existant
+  deprecated: false
+  tags: ['Ensembles de Règlements']
+  parameters:
+    - name: id_er
+      in: path
+      description: identifiant de l'ensemble de règlements dont on veut voir l'ensemble des associations
+      required: true
+      example: 75
+      schema:
+        type: number
+  responses:
+    '200':
+      description: 'Succès'
+      content:
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/reponse_ens_reg_complet'
+          examples:
+            exemple1:
+              value:
+                success: true
+                data: 
+                  entete:
+                    id_er: 75
+                    description_er: Exemple test
+                    date_debut_er: 2024
+                    date_fin_er: null
+                  assoc_util_reg:
+                    - id_assoc_er_reg: 1
+                      cubf: 1
+                      id_er: 75
+                      id_reg_stat: 177
+                    - id_assoc_er_reg: 2
+                      cubf: 2
+                      id_er: 75
+                      id_reg_stat: 178
+                    - id_assoc_er_reg: 30
+                      cubf: 3
+                      id_er: 75
+                      id_reg_stat: 185
+                    - id_assoc_er_reg: 31
+                      cubf: 4
+                      id_er: 75
+                      id_reg_stat: 190
+                    - id_assoc_er_reg: 32
+                      cubf: 5
+                      id_er: 75
+                      id_reg_stat: 191
+                    - id_assoc_er_reg: 33
+                      cubf: 6
+                      id_er: 75
+                      id_reg_stat: 192
+                    - id_assoc_er_reg: 34
+                      cubf: 7
+                      id_er: 75
+                      id_reg_stat: 193
+                    - id_assoc_er_reg: 35
+                      cubf: 8
+                      id_er: 75
+                      id_reg_stat: 194
+                    - id_assoc_er_reg: 35
+                      cubf: 9
+                      id_er: 75
+                      id_reg_stat: 195
+                  table_util_sol:
+                    - cubf: 1
+                      description: 'RÉSIDENTIELLE'
+                    - cubf: 2
+                      description: 'INDUSTRIE'
+                    - cubf: 3
+                      description: 'INDUSTRIE'
+                    - cubf: 4
+                      description: 'INDUSTRIE'
+                    - cubf: 5
+                      description: 'COMMERCIAL'
+                    - cubf: 6
+                      description: 'SERVICE'
+                    - cubf: 7
+                      description: 'RÉCRÉATION, CULTURE'
+                    - cubf: 8
+                      description: 'RESSOURCES NATURELLES'
+                    - cubf: 9
+                      description: 'INEXPLOITÉ'
+    '500':
+      description: 'Erreur Serveur'
+      content:
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: 'Erreur interne serveur'

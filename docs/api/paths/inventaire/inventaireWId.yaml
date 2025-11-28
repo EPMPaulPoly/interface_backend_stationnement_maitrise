@@ -1,0 +1,125 @@
+put:
+  summary: Mise à jour d'une entrée d'inventaire
+  deprecated: false
+  description: 'Mise à jour en gros '
+  tags: ['Inventaire']
+  parameters:
+    - name: id_inv
+      in: path
+      description: ''
+      required: true
+      example: '8'
+      schema:
+        type: string
+  requestBody:
+    content:
+      application/json:
+        schema: 
+          $ref: '../../components/schemas.yaml#/inventaire'
+        example:
+          id_inv: 8
+          g_no_lot: 1 905 308
+          n_places_min: 8
+          n_places_max: 15
+          n_places_estime: null
+          n_places_mesure: null
+          methode_estime: 1
+          cubf: 1000/5211
+          id_reg_stat: 7/15
+          id_er: 55/60
+          commentaire: 'Unite: 2 Val: 1,Unite: 4 Val:50'
+  responses:
+    '200':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+              data:
+                type: array
+                items:
+                  $ref: '../../components/schemas.yaml#/inventaire'
+            required:
+              - success
+              - data
+          example:
+            success: true
+            data:
+              id_inv: 8
+              g_no_lot: 1 905 308
+              n_places_min: 8
+              n_places_max: 15
+              n_places_estime: null
+              n_places_mesure: null
+              methode_estime: 1
+              cubf: 1000/5211
+              id_reg_stat: 7/15
+              id_er: 55/60
+              commentaire: 'Unite: 2 Val: 1,Unite: 4 Val:50'
+      headers: {}
+    '500':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: {}
+          example:
+            success: false
+            message: Erreur lors de la requête
+      headers: {}
+  security: []
+delete:
+  summary: Suppression inventaire
+  deprecated: false
+  description: Suppression inventaire
+  tags: ['Inventaire']
+  parameters:
+    - name: id_inv
+      in: path
+      description: Identifiant de l'entrée d'inventaire à supprimer
+      required: true
+      example: '1'
+      schema:
+        type: string
+  responses:
+    '200':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+            required:
+              - success
+          example:
+            success: true
+      headers: {}
+    '404':
+      description: ''
+      content:
+        application/json:
+          schema:
+            title: ''
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Booléen dénotant succès ou échec
+              message:
+                type: string
+                description: Message d'erreur
+            required:
+              - success
+              - message
+          example:
+            success: false
+            message: Entrée introuvable
+      headers: {}
+  security: []
+  

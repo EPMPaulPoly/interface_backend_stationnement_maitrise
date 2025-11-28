@@ -1,0 +1,31 @@
+get:
+  summary: Obtenir territoire par identifiant
+  deprecated: false
+  description: Obtient les territoire en fonction de l'identifiant
+  tags: ['Territoire']
+  parameters:
+    - name: id_periode_geo
+      in: path
+      description: ''
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Booléen indiquant le succès ou l'échec
+              data:
+                $ref: '../../components/schemas.yaml#/territoire'
+            required:
+              - success
+              - data
+      headers: {}
+  security: []
+  
