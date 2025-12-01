@@ -1,0 +1,43 @@
+get:
+  summary: Obtiens le cadastre pour un quartier
+  deprecated: false
+  tags: ['Cadastre']
+  parameters:
+    - name: id_quartier
+      in: path
+      nullable: false
+      description: Identifiant unique du quartier pour lequel on veut obtenir les données cadastrales
+      example: 1
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_lot_cadastral'
+          examples:
+            example1:
+              value:
+                success: true
+                data:
+                  - g_no_lot: 1 477 406
+                    g_nb_coo_1: 46.811233
+                    g_nb_coord: -71.22298
+                    g_va_suprf: 159.7
+                    geometry:
+                      type: MultiPolygon
+                      coordinates: 
+                        - - - - -71.222944548
+                              - 46.811124886
+                            - - -71.223002916
+                              - 46.811205351
+                            - - -71.223061442
+                              - 46.81128123
+                            - - -71.222969314
+                              - 46.811321533
+                            - - -71.222854567
+                              - 46.811164449
+                            - - -71.222853689
+                              - 46.81116324
+                            - - -71.222944548
+                              - 46.811124886
+              

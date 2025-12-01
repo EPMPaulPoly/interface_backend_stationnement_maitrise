@@ -1,3 +1,7 @@
+# ----------------------------------------------------------------------
+# ---------------------------- Règlements ------------------------------
+# ----------------------------------------------------------------------
+
 entete_reglement:
   allOf:
     - $ref: '#/nouvel_entete_reglement'
@@ -160,6 +164,51 @@ reglement:
         $ref: '#/entete_reglement/examples/full'
       definition:
         $ref: '#/definition_reglement/examples/OneSpotPerTwentySquareMeter'
+unite:
+  type: object
+  properties:
+    id_unite:
+      type: integer
+      description: Identifiant de l'unité
+    colonne_role_foncier:
+      type: string
+      description: |
+        Colonne du rôle foncier à utilise en intrant de la conversion
+    facteur_correction:
+      type: number
+      description: Pente de la droite liant l'unité id_unite à la colonne_role_foncier
+    abscisse_correction:
+      type: number
+      description: >-
+        Ordonnée à l'origine de la droite liant l'unité id_unite à la
+        colonne_role_foncier
+    desc_unite:
+      type: string
+      description: Description de l'unité
+  required:
+    - id_unite
+    - colonne_role_foncier
+    - facteur_correction
+    - abscisse_correction
+    - desc_unite
+operation_reglement:
+  type: object
+  properties:
+    id_operation:
+      type: integer
+      description: Identifiant de l'opération
+    desc_operation:
+      type: string
+      description: Description de l'opération
+  required:
+    - id_operation
+    - desc_operation
+
+
+# -----------------------------------------------------------------------
+# ------------------------------ Période --------------------------------
+# -----------------------------------------------------------------------
+
 nouvelle_periode:
   type: object
   properties:
@@ -187,6 +236,11 @@ periode:
         id_periode:
           type: integer
           description: Identifiant unique de la période
+
+# ------------------------------------------------------------------------
+# ------------------------------- Inventaire -----------------------------
+# ------------------------------------------------------------------------
+
 inventaire:
   type: object
   properties:
@@ -251,6 +305,11 @@ inventaire:
       id_reg_stat: '50'
       id_er: '70'
       commentaire: 'Unite: 2 Val: 1'
+
+# ------------------------------------------------------------------------
+# -------------------------------- Lot cadastral -------------------------
+# ------------------------------------------------------------------------
+
 lot_cadastral:
   type: object
   properties:
@@ -267,7 +326,7 @@ lot_cadastral:
       type: number
       description: Latitude du centroide du lot
     geometry:
-      $ref: '#/Polygon'
+      $ref: '#/Geometry'
       description: Polygone représentant le lot
   required:
     - g_no_lot
@@ -275,6 +334,10 @@ lot_cadastral:
     - g_nb_coord
     - g_nb_coo_1
     - geometry
+# ------------------------------------------------------------------------
+# -------------------------------- Quartiers analyse ---------------------
+# ------------------------------------------------------------------------
+
 quartier_analyse:
   type: object
   properties:
@@ -291,7 +354,7 @@ quartier_analyse:
       type: number
       description: Superficie du quartier en mètres carrés
     geometry:
-      $ref: '#/Polygon'
+      $ref: '#/Geometry'
       description: Géométrie du quartier
   required:
     - id_quartier
@@ -299,6 +362,10 @@ quartier_analyse:
     - acro
     - superf_quartier
     - geometry
+# -------------------------------------------------------------------------
+# ------------------------ Territoire géopolitique ------------------------
+# -------------------------------------------------------------------------
+
 territoire:
   type: object
   properties:
@@ -318,7 +385,7 @@ territoire:
       type: integer
       description: Référence à la période où ce territoire est valide
     geometry:
-      $ref: '#/Polygon'
+      $ref: '#/Geometry'
       description: Polygone représentant le territoire
   required:
     - id_periode_geo
@@ -327,6 +394,10 @@ territoire:
     - ville_sec
     - id_periode
     - geometry
+# -------------------------------------------------------------------------
+# ------------------------ Données foncières ------------------------------
+# -------------------------------------------------------------------------
+
 role_foncier:
   type: object
   properties:
@@ -393,66 +464,9 @@ role_foncier:
     - rl0403a
     - rl0404a
     - rl0405a
-unite:
-  type: object
-  properties:
-    id_unite:
-      type: integer
-      description: Identifiant de l'unité
-    colonne_role_foncier:
-      type: string
-      description: |
-        Colonne du rôle foncier à utilise en intrant de la conversion
-    facteur_correction:
-      type: number
-      description: Pente de la droite liant l'unité id_unite à la colonne_role_foncier
-    abscisse_correction:
-      type: number
-      description: >-
-        Ordonnée à l'origine de la droite liant l'unité id_unite à la
-        colonne_role_foncier
-    desc_unite:
-      type: string
-      description: Description de l'unité
-  required:
-    - id_unite
-    - colonne_role_foncier
-    - facteur_correction
-    - abscisse_correction
-    - desc_unite
-Polygon:
-  type: object
-  required:
-    - type
-    - coordinates
-  properties:
-    type:
-      type: string
-      enum:
-        - Polygon
-    coordinates:
-      type: array
-      description: An array of linear rings. Each ring is an array of positions.
-      items:
-        type: array
-        items:
-          type: array
-          items:
-            type: number
-          minItems: 2
-  example:
-    type: Polygon
-    coordinates:
-      - - - -73.6
-          - 45.5
-        - - -73.7
-          - 45.5
-        - - -73.7
-          - 45.6
-        - - -73.6
-          - 45.6
-        - - -73.6
-          - 45.5
+# -------------------------------------------------------------------------
+# ----------------------- Intrants calcul semi-automatique ----------------
+# -------------------------------------------------------------------------
 entree_calcul_inventaire:
   type: object
   properties:
@@ -483,18 +497,25 @@ entree_calcul_inventaire:
     - valeur
     - id_er
     - unite
-operation_reglement:
+# -------------------------------------------------------------------------
+# ----------------------- Code d'utilisation du sol -----------------------
+# -------------------------------------------------------------------------
+utilisation_sol:
   type: object
   properties:
-    id_operation:
+    cubf: 
       type: integer
-      description: Identifiant de l'opération
-    desc_operation:
+      description: identifiant de l'utilisation du sol
+    description:
       type: string
-      description: Description de l'opération
+      description: description de l'utilsation du sol
   required:
-    - id_operation
-    - desc_operation
+    - cubf
+    - description
+# -------------------------------------------------------------------------
+# ----------------------- Ensembles de règlements -------------------------
+# -------------------------------------------------------------------------
+
 nouvel_entete_ensemble_reglement:
   type: object
   properties: 
@@ -546,18 +567,7 @@ association_cubf_er:
           description: identifiant de l'association
   required:
     - id_assoc_er_reg
-utilisation_sol:
-  type: object
-  properties:
-    cubf: 
-      type: integer
-      description: identifiant de l'utilisation du sol
-    description:
-      type: string
-      description: description de l'utilsation du sol
-  required:
-    - cubf
-    - description
+
 ensemble_reglement_complet:
   type: object
   properties:
@@ -572,6 +582,70 @@ ensemble_reglement_complet:
       type: array
       items: 
         $ref: '#/utilisation_sol'
+# -------------------------------------------------------------------------
+# ------------------------------ GeoJSON ----------------------------------
+# -------------------------------------------------------------------------
+
+Geometry:
+  type: object
+  required:
+    - type
+    - coordinates
+  properties:
+    type:
+      type: string
+      enum:
+        - Polygon
+        - LineString
+        - Point
+        - MultiPolygon
+    coordinates:
+      allOf:
+        - type: array # Polygon & LineString
+          description: An array of linear rings. Each ring is an array of positions.
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: number
+              minItems: 2
+        - type: array # Point 
+          description: A single
+          items:
+            type: number
+          minItems: 2
+        - type: array # MultiPolygon
+          description: An array of arrays of linear rings. Each ring is an array of positions.
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: array
+                items:
+                  type: number
+                minItems: 2
+  example:
+    type: Polygon
+    coordinates:
+      - - - -73.6
+          - 45.5
+        - - -73.7
+          - 45.5
+        - - -73.7
+          - 45.6
+        - - -73.6
+          - 45.6
+        - - -73.6
+          - 45.5
+
+
+
+# -------------------------------------------------------------------
+# --------------------------- Formats réponse -----------------------
+# ------------------------------------------------------------------- 
+
 api_response:
   type: object
   properties:
@@ -667,3 +741,13 @@ reponse_reglement_ligne_def:
             - type: array
               items:
                 $ref: '#/definition_reglement'
+reponse_lot_cadastral:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data: 
+          allOf:
+            - type: array
+              items:
+                $ref: '#/lot_cadastral'

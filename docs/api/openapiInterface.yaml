@@ -71,6 +71,10 @@ paths:
     $ref: './paths/ensemble_reglements/trouveParRole.yaml'
   /api/ens-reg/informations-pour-graphique:
     $ref: './paths/ensemble_reglements/informationsPourGraph.yaml'
+  /api/cadastre/lot/quartier-ana/{id_quartier}:
+    $ref: './paths/cadastre/cadastreParQuartier.yaml'
+  /api/cadastre/lot-query:
+    $ref: './paths/cadastre/cadastreParQuery.yaml'
 components:
   schemas:
     $ref: './components/schemas.yaml'

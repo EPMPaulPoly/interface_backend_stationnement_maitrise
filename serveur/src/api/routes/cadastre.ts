@@ -151,7 +151,7 @@ export const creationRouteurCadastre = (pool: Pool): Router => {
             }
             if (typeof g_no_lot === 'string') {
                 const decodedId = g_no_lot.replace(/_/g, " ");
-                conditions.push(`g_no_lot = ${replaceCount}`)
+                conditions.push(`cad.g_no_lot = $${replaceCount} `)
                 values.push(decodedId)
                 replaceCount++
             }
@@ -161,28 +161,46 @@ export const creationRouteurCadastre = (pool: Pool): Router => {
                 replaceCount++
             }
             if (typeof estime === 'string') {
-                ctePot.push(`inventory AS (
-                  SELECT
-                    g_no_lot,
-                    n_places_min as inv
-                  FROM
-                    public.inventaire_stationnement
-                  WHERE methode_estime = $${replaceCount}
-                )`)
-                replaceCount++
+                if ([2,3].includes(Number(estime))){
+                    ctePot.push(`inventory AS (
+                    SELECT
+                        g_no_lot,
+                        n_places_min as inv,
+                        methode_estime as estime
+                    FROM
+                        public.inventaire_stationnement
+                    )`)
+                    }else {
+                        ctePot.push(`inventory AS (
+                            SELECT
+                                g_no_lot,
+                                n_places_mesure::int as inv,
+                                methode_estime as estime
+                            FROM
+                                public.inventaire_stationnement
+                            )`)
+                    }
                 values.push(estime)
+                extraVariables.push('inventory.inv')
+                extraVariables.push('inventory.estime')
+                conditions.push(`inventory.estime = $${replaceCount}`)
                 joins.push('LEFT JOIN inventory ON inventory.g_no_lot=cad.g_no_lot')
+                replaceCount++
             } else {
                 ctePot.push(`inventory AS (
                   SELECT
                     g_no_lot,
-                    n_places_min as inv
+                    n_places_min as inv,
+                    methode_estime as estime
                   FROM
                     public.inventaire_stationnement
-                  WHERE methode_estime = 2
                 )`)
-                joins.push('LEFT JOIN inventory ON inventory.g_no_lot=cad.g_no_lot')
+                values.push(2)
                 extraVariables.push('inventory.inv')
+                extraVariables.push('inventory.estime')
+                conditions.push(`inventory.estime = $${replaceCount}`)
+                joins.push('LEFT JOIN inventory ON inventory.g_no_lot=cad.g_no_lot')
+                replaceCount++
             }
             if (typeof inv_plus_grand === 'string') {
                 conditions.push(`inventory.inv>$${replaceCount}`)
@@ -196,6 +214,7 @@ export const creationRouteurCadastre = (pool: Pool): Router => {
                     ON ST_Intersects(cad.geometry, polygons.geometry)
                     AND polygons.id_quartier = $${replaceCount}`)
                 values.push(id_quartier)
+                conditions.push(`polygons.id_quartier = $${replaceCount}`)
                 replaceCount++
             }
             if (typeof inv_surf_plus_grand === 'string') {
