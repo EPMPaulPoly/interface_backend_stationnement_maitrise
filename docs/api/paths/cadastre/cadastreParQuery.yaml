@@ -39,6 +39,11 @@ get:
       description: Renvoie seulement les lots dont le nombre de places estimées divisé par la superficie excède la valeur spécifiée
       example: 0.05
       type: number
+    - name: id_strate
+      in: query
+      description: Renvoie uniquement les lots sélectionnés pour échantillonnage appartenant à la strate décrite
+      type: number
+      example: 43
   responses:
     '200':
       description: Succès

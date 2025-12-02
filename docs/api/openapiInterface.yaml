@@ -75,6 +75,12 @@ paths:
     $ref: './paths/cadastre/cadastreParQuartier.yaml'
   /api/cadastre/lot-query:
     $ref: './paths/cadastre/cadastreParQuery.yaml'
+  /api/cadastre/lot/{g_no_lot}:
+    $ref: './paths/cadastre/cadastreParId.yaml'
+  /api/cadastre/role-associe/{g_no_lot}:
+    $ref: './paths/cadastre/roleParIdCadastre.yaml'
+  /api/ana-par-quartier/carto:
+    $ref: './paths/ana-par-quartier/anaCarto.yaml'
 components:
   schemas:
     $ref: './components/schemas.yaml'

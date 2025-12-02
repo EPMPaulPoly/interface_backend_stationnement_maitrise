@@ -1,0 +1,49 @@
+get:
+  summary: obtiens des entrées cadastrales par identifiant de lot
+  deprecated: false
+  tags: ['Cadastre']
+  parameters:
+    - name: g_no_lot
+      in: path
+      description: Identifiant de lot associé aux entrées du rôle foncier
+      example: 5 340 492
+      required: true
+  responses:
+    '200':
+      description: Succès
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_role_foncier'
+          examples:
+            exemple 1:
+              value:
+                success: true
+                data:
+                  - id_provinc: '23027478567553610000000'
+                    code_mun: 23027
+                    arrond: REQ01
+                    date_entree: 2005
+                    rl0105a: 1000
+                    rl0307a: 1900
+                    rl0308a: 188.9
+                    rl0311a: 2
+                    rl0312a: null
+                    rl0313a: null
+                    rl0403a: 216000
+                    rl0404a: 350000
+                    rl0405a: 334000
+                    geometry: 
+                      type: 'Point'
+                      coordinates:
+                        - -71.24876267556914
+                        - 46.80871775691474
+    '500':
+      description: Erreur Interne serveur
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: Erreur interne du serveur

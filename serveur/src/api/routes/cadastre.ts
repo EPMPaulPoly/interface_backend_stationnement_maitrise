@@ -22,17 +22,17 @@ export const creationRouteurCadastre = (pool: Pool): Router => {
             client = await pool.connect();
             const query = `
         SELECT 
-          g_no_lot,
-          g_nb_coord,
-          g_nb_coo_1,
-          g_va_suprf,
-          ST_AsGeoJSON(geometry) AS geojson_geometry,
+          cad.g_no_lot,
+          cad.g_nb_coord,
+          cad.g_nb_coo_1,
+          cad.g_va_suprf,
+          ST_AsGeoJSON(cad.geometry) AS geojson_geometry,
           EXISTS (
                 SELECT 1
                 FROM inventaire_stationnement AS inv
                 WHERE inv.g_no_lot = cad.g_no_lot
-            ) AS bool_inv,
-        FROM public.cadastre
+            ) AS bool_inv
+        FROM public.cadastre cad
         WHERE g_no_lot = $1
       `;
 

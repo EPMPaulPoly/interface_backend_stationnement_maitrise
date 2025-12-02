@@ -1,0 +1,10 @@
+get:
+  summary: Obtiens la distribution spatiale d'une variable d'intérêt
+  deprecated: false
+  tags: ['Analyse agrégée par quartier']
+  parameters: 
+    - name: variable
+      required: true
+      example: 
+      enum: 
+        - 

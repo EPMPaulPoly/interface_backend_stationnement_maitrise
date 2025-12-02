@@ -448,6 +448,19 @@ role_foncier:
     rl0405a:
       type: integer
       description: Valeur du terrain et du bâtiment au rôle précédent
+    geometry:
+      allOf:
+        - $ref: '#/Geometry'
+        - description: Point associé à l'entrée du rôle foncier
+        - properties:
+            type: 
+              enum: Point
+            coordinates:
+              type: array
+              items:
+                type: number
+              minItems: 2
+
   required:
     - id_provinc
     - code_mun
@@ -667,6 +680,21 @@ api_response:
     ItemIntrouvable:
       success: false
       message: Item non trouvé
+# -------------------------------------------------------------------
+# ----------------------------- Reponse Règlements ------------------
+# -------------------------------------------------------------------
+reponse_reglement_ligne_def:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data: 
+          allOf:
+            - $ref: '#/definition_reglement'
+            - type: array
+              items:
+                $ref: '#/definition_reglement'
+
 reponse_entete_array:
   allOf:
     - $ref: '#/api_response'
@@ -698,6 +726,10 @@ reponse_entete_array:
               article_loi: "Annexe D"
               paragraphe_loi: "5.b"
               ville: "Québec" 
+
+# -------------------------------------------------------------------
+# ----------------------------- Reponse Période ---------------------
+# -------------------------------------------------------------------
 reponse_periode:
   allOf:  
     - $ref: '#/api_response'
@@ -705,6 +737,9 @@ reponse_periode:
       properties:
         data:
           $ref: '#/periode'
+# -------------------------------------------------------------------
+# ----------------------------- Reponse Ens Règ ---------------------
+# -------------------------------------------------------------------
 reponse_ens_reg_entete:
   allOf:
     - $ref: '#/api_response'
@@ -730,17 +765,10 @@ reponse_ens_reg_assoc:
       properties: 
         data:
           $ref: '#/association_cubf_er'
-reponse_reglement_ligne_def:
-  allOf:
-    - $ref: '#/api_response'
-    - type: object
-      properties:
-        data: 
-          allOf:
-            - $ref: '#/definition_reglement'
-            - type: array
-              items:
-                $ref: '#/definition_reglement'
+# -------------------------------------------------------------------
+# -------------------- Reponse données foncières --------------------
+# -------------------------------------------------------------------
+
 reponse_lot_cadastral:
   allOf:
     - $ref: '#/api_response'
@@ -751,3 +779,13 @@ reponse_lot_cadastral:
             - type: array
               items:
                 $ref: '#/lot_cadastral'
+reponse_role_foncier:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data:
+          allOf:  
+            - type: array
+              items: 
+                $ref: '#/role_foncier'
