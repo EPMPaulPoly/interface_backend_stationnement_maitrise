@@ -1,5 +1,5 @@
 get:
-  summary: Obtiens la distribution spatiale d'une variable d'intérêt
+  summary: Obtiens la variable pour les quartier sous forme d'histogramme
   deprecated: false
   tags: ['Analyse agrégée par quartier']
   parameters: 
@@ -20,26 +20,22 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/schemas.yaml#/reponse_ana_carto'
+            $ref: '../../components/schemas.yaml#/reponse_ana_histo'
           example:
             success: true
             data: 
-              - id_quartier: 1
-                nom_quartier: 'Saint-Jean-Baptiste'
-                description: 'Stationnement Total [-]'
-                valeur: 10575
-                superf_quartier: 679518.44
-                geometry: 
-                  type: 'Polygon'
-                  coordinates:
-                    - - - -71.222725172
-                        - 46.80273829
-                      - - -71.228768317
-                        - 46.80812332
-                      - - -71.227503043
-                        - 46.809180375
-                      - - -71.222725172
-                        - 46.80273829
+              valeurVille: 1.57
+              description: Stationnements par voiture
+              donnees:
+                - id_quartier: 1
+                  nom_quartier: 'Saint-Jean-Baptiste'
+                  valeurs: 3.3431
+                - id_quartier: 2
+                  nom_quartier: Cap-Rouge
+                  valeurs: 1.00000
+                - id_quartier: 3
+                  nom_quartier: Cité-Universitaire
+                  valeurs: 3.27
     '500':
       content:
         application/json:

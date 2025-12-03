@@ -1,0 +1,20 @@
+get:
+  summary: Ré agrège les prédictions de stationnement par quartier
+  tags: ['Analyse agrégée par quartier']
+  deprecated: false
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: true
+    '500':
+      content:
+        application/json: 
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: 'Erreur interne serveur'

@@ -652,8 +652,164 @@ Geometry:
           - 45.6
         - - -73.6
           - 45.5
+# -------------------------------------------------------------------------
+# -------------------------- Variable Analyse -----------------------------
+# -------------------------------------------------------------------------
 
+var_ana:
+  type: string
+  enum:
+    - stat-tot
+    - stat-res
+    - stat-ind
+    - stat-inf
+    - stat-com
+    - stat-ser
+    - stat-rec
+    - stat-agr
+    - stat-inex
+    - stat-sup
+    - stat-popu-2021
+    - stat-popu-2016
+    - stat-perm
+    - stat-voit
+    - stat-res-voit
+    - stat-perc
+    - stat-res-log
+    - stat-res-perm
+    - stat-inu
+    - stat-inu-sup
+    - stat-voit-max
+    - superf_quartier
+    - perm
+    - popu-2021
+    - popu-2016
+    - voit-par-pers-2016
+    - voit-par-pers-2021
+    - voit-par-perm
+    - dens-pop-2021
+    - dens-pop-2016
+    - val-log-moy
+    - sup-log-moy
+    - val-tot-quart
+    - val-tot-log-quart
+    - val-tot-sup
+    - val-tot-log-sup
+    - nb-voit
+    - nb-voit-delta
+    - nb-voit-max
+    - nb-voit-min
+    - pm-ac-res
+    - pm-ap-res
+    - pm-tc-res
+    - pm-mv-res
+    - pm-bs-res
+    - pm-ac-int
+    - pm-ap-int
+    - pm-tc-int
+    - pm-mv-int
+    - pm-bs-int
+    - pm-ac-ori
+    - pm-ap-ori
+    - pm-tc-ori
+    - pm-mv-ori
+    - pm-bs-ori
+    - pm-ac-des
+    - pm-ap-des
+    - pm-tc-des
+    - pm-mv-des
+    - pm-bs-des
+    - n-logements
 
+ordres_stat_valid:
+  type: string
+  enum:
+    - 1,2,3
+    - 1,3,2
+    - 2,1,3
+    - 2,3,1
+    - 3,1,2
+    - 3,2,1
+    - '1'
+    - '2'
+    - '3'
+
+ana_carto:
+  type: object
+  properties:
+    id_quartier:
+      type: integer
+      description: Identifiant quartier
+    nom_quartier:
+      type: string
+      description: Nom du quartier
+    superf_quartier:
+      type: number
+      description: Superficie du quartier en mètres carrés
+    description:
+      type: string
+      description: Description de la Variable
+    valeur:
+      type: number
+      description: Valeur d'intérêt présenté
+    geometry:
+      description: Géométrie du quartier
+      schema: 
+        allOf:
+          - schema:
+            $ref: '#/Geometry'
+          - type: 
+              type: string
+              enum:
+                - MultiPolygon
+                
+
+ana_histo:
+  type: object
+  properties: 
+    valeurVille:
+      description: Valeurs de la variable pour la ville
+      type: number
+    description:
+      description: Description de la variable
+      type: string
+    donnees:
+      type: array
+      items:
+        type: object
+        properties: 
+          id_quartier:
+            type: string
+            description: identifiant de quartier
+          nom_quartier:
+            type: string
+            description: Nom du quartier
+          valeurs:
+            type: number
+            description: valeur de la variable d'intérêt
+
+ana_XY:
+  type: object
+  properties:
+    descriptionX: Description de la variable X
+    descriptionY : Description de la variable Y
+    donnees:
+      type: array
+      items:
+        type: object
+        properties:
+          id_quartier: 
+            type: integer
+            description: Identifiant de quartier
+          nom_quartier: 
+            type: string
+            description: Nom du quartier
+          x:
+            type: number
+            description: valeur de l'abscisse
+          y:
+            type: number
+            description:
 
 # -------------------------------------------------------------------
 # --------------------------- Formats réponse -----------------------
@@ -789,3 +945,33 @@ reponse_role_foncier:
             - type: array
               items: 
                 $ref: '#/role_foncier'
+
+# -------------------------------------------------------------------
+# -------------------- Reponse analyse ------------------------------
+# -------------------------------------------------------------------
+reponse_ana_carto:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data:
+          allOf:  
+            - type: array
+              items: 
+                $ref: '#/ana_carto'
+reponse_ana_histo:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data: 
+          schema:
+            $ref: '#/ana_histo'
+reponse_ana_xy:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties: 
+        data: 
+          schema:
+            $ref: '#/ana_XY'

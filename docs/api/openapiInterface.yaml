@@ -81,6 +81,14 @@ paths:
     $ref: './paths/cadastre/roleParIdCadastre.yaml'
   /api/ana-par-quartier/carto:
     $ref: './paths/ana-par-quartier/anaCarto.yaml'
+  /api/ana-par-quartier/histo:
+    $ref: './paths/ana-par-quartier/anaHisto.yaml'
+  /api/ana-par-quartier/XY:
+    $ref: './paths/ana-par-quartier/anaXY.yaml'
+  /api/ana-par-quartier/recalcule-stat-agreg:
+    $ref: './paths/ana-par-quartier/recalcStatAg.yaml'
+  /api/ana-par-quartier/recalcule-val-autres:
+    $ref: './paths/ana-par-quartier/recalcValAut.yaml'
 components:
   schemas:
     $ref: './components/schemas.yaml'

@@ -715,9 +715,9 @@ export const creationRouteurAnalyseParQuartiers = (pool: Pool): Router => {
                 const result = await client.query(query);
                 res.json({ success: true, data: result.rows });
             }
-        } catch (err) {
+        } catch (err:any) {
             // Error handling
-            res.status(500).json({ success: false, error: 'Database error' });
+            res.status(500).json({ success: false, error: 'Database error',message: err.message });
             console.log('Error in data retrieval for percentage calculation:', err);
         } finally {
             // Ensure client release in case of error or success
