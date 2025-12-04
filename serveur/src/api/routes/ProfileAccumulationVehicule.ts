@@ -106,7 +106,7 @@ export const creationRouteurProfileAccumVehiculeQuartier = (pool: Pool): Router 
                     SELECT 
                         stag.id_quartier,
                         sa.nom_quartier,
-                        SUM(inv_${stringForReq}) AS valeur
+                        SUM(inv_${stringForReq})::int AS valeur
                     FROM public.stat_agrege stag
                     LEFT JOIN public.sec_analyse sa ON sa.id_quartier = stag.id_quartier
                     WHERE stag.id_quartier = $1${condition_stat.length > 0 ?  ' AND '+ condition_stat.join(' AND ') : ''}
@@ -127,7 +127,7 @@ export const creationRouteurProfileAccumVehiculeQuartier = (pool: Pool): Router 
                     SELECT 
                         0 as id_quartier,
                         'Ville Complète' as nom_quartier,
-                        SUM(COALESCE(inv_${stringForReq},0)) AS valeur
+                        SUM(COALESCE(inv_${stringForReq},0))::int AS valeur
                     FROM public.stat_agrege
                     ${condition_stat.length > 0 ? 'WHERE ' + condition_stat.join(' AND ') : ''};
                 `;

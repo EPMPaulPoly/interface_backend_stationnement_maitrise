@@ -1,0 +1,147 @@
+post:
+  summary: Sauvegarde du PAV du quartier sur la BD
+  tags: ["Profil d'accumulation de Véhicules"]
+  parameters:
+    - name: id_quartier
+      in: path
+      type: integer
+      description: identifiant du quartier dont on veut sauvergarder les profils d'accumulation
+      required: true
+      example: 1
+  requestBody:
+    content:
+      application/json:
+        schema: 
+          $ref: '../../components/schemas.yaml#/corps_requete_sauve_pav'
+        example: 
+          - heure: 4
+            voitures: 3223
+            personnes: 9904
+            permis: 6765
+            voitures_res: 3197
+            voitures_pub: 26
+            voitures_entrantes_tot: 26
+            voitures_entrantes_pub: 26
+            voitures_entrantes_res: 0
+            voitures_sortantes_tot: 0
+            voitures_sortantes_pub: 0
+            voitures_sortantes_res: 0
+            voit_transfer_res_a_pub: 0
+            voit_transfer_pub_a_res: 0
+            pers_entrantes_tot: 82
+            pers_sortantes_tot: 0
+            perm_entrants_tot: 82
+            perm_sortants_tot: 0
+          - heure: 5
+            voitures: 3291
+            personnes: 9994
+            permis: 6850
+            voitures_res: 3153
+            voitures_pub: 138
+            voitures_entrantes_tot: 129
+            voitures_entrantes_pub: 112
+            voitures_entrantes_res: 17
+            voitures_sortantes_tot: 61
+            voit_sortantes_pub: 0
+            voit_sortantes_res: 61
+            voit_transfer_res_a_pub: 0
+            voit_transfer_pub_a_re: 0
+            pers_entrantes_tot: 211
+            pers_sortantes_tot: 121
+            perm_entrants_tot: 206
+            perm_sortants_tot: 121
+          - heure: 6
+            voitures: 4063
+            personnes: 11284
+            permis: 7989
+            voitures_res: 3060
+            voitures_pub: 1002
+            voit_entrantes_tot: 911
+            voit_entrantes_pub: 903
+            voit_entrantes_res: 8
+            voit_sortantes_tot: 139
+            voit_sortantes_pub: 39
+            voit_sortantes_res: 101
+            voit_transfer_res_a_pub: 0
+            voit_transfer_pub_a_res: 0
+            pers_entrantes_tot: 1743
+            pers_sortantes_tot: 453
+            perm_entrants_tot: 1577
+            perm_sortants_tot: 438
+  responses:
+    '200':
+      description: Succès
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_PAV_recalcul'
+          example: 
+            example:
+            success: true
+            data: 
+              - heure: 4
+                voitures: 3223
+                personnes: 9904
+                permis: 6765
+                voitures_res: 3197
+                voitures_pub: 26
+                voitures_entrantes_tot: 26
+                voitures_entrantes_pub: 26
+                voitures_entrantes_res: 0
+                voitures_sortantes_tot: 0
+                voitures_sortantes_pub: 0
+                voitures_sortantes_res: 0
+                voit_transfer_res_a_pub: 0
+                voit_transfer_pub_a_res: 0
+                pers_entrantes_tot: 82
+                pers_sortantes_tot: 0
+                perm_entrants_tot: 82
+                perm_sortants_tot: 0
+                id_quartier: 1
+              - heure: 5
+                voitures: 3291
+                personnes: 9994
+                permis: 6850
+                voitures_res: 3153
+                voitures_pub: 138
+                voitures_entrantes_tot: 129
+                voitures_entrantes_pub: 112
+                voitures_entrantes_res: 17
+                voitures_sortantes_tot: 61
+                voit_sortantes_pub: 0
+                voit_sortantes_res: 61
+                voit_transfer_res_a_pub: 0
+                voit_transfer_pub_a_re: 0
+                pers_entrantes_tot: 211
+                pers_sortantes_tot: 121
+                perm_entrants_tot: 206
+                perm_sortants_tot: 121
+                id_quartier: 1
+              - heure: 6
+                voitures: 4063
+                personnes: 11284
+                permis: 7989
+                voitures_res: 3060
+                voitures_pub: 1002
+                voit_entrantes_tot: 911
+                voit_entrantes_pub: 903
+                voit_entrantes_res: 8
+                voit_sortantes_tot: 139
+                voit_sortantes_pub: 39
+                voit_sortantes_res: 101
+                voit_transfer_res_a_pub: 0
+                voit_transfer_pub_a_res: 0
+                pers_entrantes_tot: 1743
+                pers_sortantes_tot: 453
+                perm_entrants_tot: 1577
+                perm_sortants_tot: 438
+                id_quartier: 1
+    '500':
+      description: Erreur serveur
+      content: 
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: Erreur interne

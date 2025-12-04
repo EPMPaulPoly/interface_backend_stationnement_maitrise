@@ -89,6 +89,12 @@ paths:
     $ref: './paths/ana-par-quartier/recalcStatAg.yaml'
   /api/ana-par-quartier/recalcule-val-autres:
     $ref: './paths/ana-par-quartier/recalcValAut.yaml'
+  /api/PAV:
+    $ref: './paths/PAV/getpav.yaml'
+  /api/PAV/recalcule/{id_quartier}:
+    $ref: './paths/PAV/getPAVRecalcul.yaml'
+  /api/PAV/{id_quartier}:
+    $ref: './paths/PAV/sauvePAV.yaml'
 components:
   schemas:
     $ref: './components/schemas.yaml'

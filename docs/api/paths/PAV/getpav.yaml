@@ -1,0 +1,79 @@
+get: 
+  summary: Obtiens le profile d'accumulation pertinent
+  deprecated: false
+  tags: ["Profil d'accumulation de Véhicules"]
+  parameters:
+    - name: id_quartier
+      description: Identifiant du quartier dont on veut obtenir le PAV
+      in: query
+      required: true
+      type: integer
+      example: 1
+    - name: type
+      description: Objet ou lieu dont on fait le profil d'accumulation
+      in: query
+      required: true
+      schema: 
+        $ref: '../../components/schemas.yaml#/var_pav'
+      example: voitures
+    - name: stat_type
+      description: Type de stationnement dont on agrège la capacité de stationnement
+      in: query
+      required: true
+      schema:
+        $ref: '../../components/schemas.yaml#/var_cap_stat'
+      example: tot
+    - name: order
+      description: Ordre de priorité des méthodes d'estimation si plusieurs estimations existent pour un même lot
+      in: query
+      required: true
+      schema: 
+        $ref: '../../components/schemas.yaml#/ordres_stat_valid'
+      example: '1,3,2'
+  responses:
+    '200':
+      description: Succès
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_PAV'
+          example:
+            success: true
+            data:
+              id_quartier: 1
+              nom_quartier: Saint-Jean-Baptiste
+              capacite_stat_quartier: 10688
+              PAV:
+                - id_ent_pav: 3195
+                  heure: 4
+                  valeur: 3223
+                  voitures: 3223
+                  personnes: 9904
+                  permis: 6765
+                  voitures_res: 3197
+                  voitures_pub: 26
+                - id_ent_pav: 3196
+                  heure: 5
+                  valeur: 3291
+                  voitures: 3291
+                  personnes: 9994
+                  permis: 6850
+                  voitures_res: 3153
+                  voitures_pub: 138
+                - id_ent_pav: 3197
+                  heure: 6
+                  valeur: 4063
+                  voitures: 4063
+                  personnes: 11284
+                  permis: 7989
+                  voitures_res: 3060
+                  voitures_pub: 1002
+    '500':
+      description: Erreur serveur
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_PAV'
+          example:
+            success: false
+            message: 'Erreur serveur interne' 

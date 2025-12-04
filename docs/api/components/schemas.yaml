@@ -763,7 +763,6 @@ ana_carto:
               enum:
                 - MultiPolygon
                 
-
 ana_histo:
   type: object
   properties: 
@@ -811,6 +810,164 @@ ana_XY:
             type: number
             description:
 
+# -------------------------------------------------------------------------
+# --------------- Profile Accumulation Véhicules --------------------------
+# -------------------------------------------------------------------------
+
+var_pav:
+  type: string
+  enum: 
+    - voitures
+    - personnes
+    - permis
+    - voitures_res
+    - voitures_pub
+    - voit_entrantes_tot
+    - voit_entrantes_pub
+    - voit_entrantes_res
+    - voit_sortantes_tot
+    - voit_sortantes_pub
+    - voit_sortantes_res
+    - pers_entrantes_tot
+    - pers_sortantes_tot
+    - perm_entrants_tot
+    - perm_sortants_tot
+
+var_cap_stat:
+  type: string
+  enum: 
+    - res
+    - pub
+    - tot
+    - none
+
+order_stat_enum:
+
+PAV_recalcul_sans_id_quartier: 
+  type: object
+  properties:
+    heure:
+      type: integer
+      description: Heure pour laquelle l'inventairede voiture est dressé
+    voitures:
+      type: integer
+      description: Nombre de voitures stationnées dans le quartier
+    personnes: 
+      type: integer
+      description: Nombre de personnes dans le quartier
+    permis:
+      type: integer
+      description: Nombre de détenteurs de permis dans le quartier
+    voitures_res:
+      type: integer
+      description: Nombre de voitures stationnées dans des terrains à vocation résidentielle
+    voitures_pub:
+      type: integer
+      description: Nombre de voitures stationnées dans les résidences
+    voit_transfer_pub_a_res:
+          type: integer
+          description: Voitures qui sont transférées de manière interne du public au résidentiel
+    voit_transfer_res_a_pub:
+      type: integer
+      description: Voitures qui sont transférées de manière interne du résidentiel au public
+    voit_entrantes_tot:
+      type: integer
+      description: nombre total de voitures entrant dans le quartier
+    voit_entrantes_pub:
+      type: integer
+      description: Nombre de voitures entrant dans le secteur se stationnant dans un lieu public
+    voit_entrantes_res:
+      type: integer
+      description: Nombre de voitures entrant dans le secteur se stationnant dans une résidence
+    voit_sortantes_tot:
+      type: integer
+      description: Nombre total de voitures sortant du secteur
+    voit_sortantes_pub:
+      type: integer
+      description: Nombre de voitures sortant du secteur en provenance d'un lieu public
+    voit_sortantes_res:
+      type: integer
+      description: NOmbre de voiture sortant du secteur en provenance d'un stationnement résidentiel
+    pers_entrantes_tot:
+      type: integer
+      description: Nombre de personnes entrant dans le secteur
+    pers_sortantes_tot:
+      type: integer
+      description: Nombre de personnes sortant du secteur
+    perm_entrants_tot:
+      type: integer
+      description: Nombre de permis entrant dans le secteur
+    perm_sortants_tot:
+      type: integer
+      description: Nombre de permis sortant du secteur
+  
+
+retour_PAV_recalcule:
+  allOf:
+    - schema:
+        $ref: '#/PAV_recalcul_sans_id_quartier'
+    - type: object
+      properties: 
+        id_quartier: 
+          type: integer
+          description: identifiant du quartier
+
+
+retour_profile_accumulation_vehicule:
+  type: object
+  properties:
+    id_quartier: 
+      type: integer
+      description: Identifiant du quartier
+    nom_quartier: 
+      type: string
+      description: Nom du quartier
+    capacite_stat_quartier:
+      type: integer
+      description: capacité de stationnement
+    PAV:
+      type: array
+      items: 
+        type: object
+        properties: 
+          id_ent_pav:
+            type: integer
+            description: Identifiant unique
+          heure:
+            type: integer
+            description: Heure pour laquelle l'inventairede voiture est dressé
+          valeur: 
+            type: integer
+            description: Valeur qui a été requise par le paramètre type
+          voitures:
+            type: integer
+            description: Nombre de voitures stationnées dans le quartier
+          personnes: 
+            type: integer
+            description: Nombre de personnes dans le quartier
+          permis:
+            type: integer
+            description: Nombre de détenteurs de permis dans le quartier
+          voitures_res:
+            type: integer
+            description: Nombre de voitures stationnées dans des terrains à vocation résidentielle
+          voitures_pub:
+            type: integer
+            description: Nombre de voitures stationnées dans les résidences
+
+
+retour_PAV_etendu:
+  allOf:
+    - $ref: '#/retour_profile_accumulation_vehicule'
+    - type: object
+      properties:
+        voit_transfer_pub_a_res:
+          type: integer
+          description: Voitures qui sont transférées de manière interne du public au résidentiel
+        voit_transfer_res_a_pub:
+          type: integer
+          description: Voitures qui sont transférées de manière interne du résidentiel au public
+        
 # -------------------------------------------------------------------
 # --------------------------- Formats réponse -----------------------
 # ------------------------------------------------------------------- 
@@ -975,3 +1132,28 @@ reponse_ana_xy:
         data: 
           schema:
             $ref: '#/ana_XY'
+
+corps_requete_sauve_pav:
+  type: array
+  items: 
+    schema:
+      $ref: '#/PAV_recalcul_sans_id_quartier'
+
+reponse_PAV:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data:
+          schema:
+            $ref: '#/retour_profile_accumulation_vehicule'
+reponse_PAV_recalcul:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data:
+          type: array
+          items: 
+            schema:
+              $ref: '#/retour_PAV_etendu'
