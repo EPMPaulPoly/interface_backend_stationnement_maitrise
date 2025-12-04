@@ -596,6 +596,47 @@ ensemble_reglement_complet:
       items: 
         $ref: '#/utilisation_sol'
 # -------------------------------------------------------------------------
+# ----------------- Ensembles de règlements territoires -------------------
+# -------------------------------------------------------------------------
+
+association_territoire_ensemble_sans_id:
+  type: object
+  properties:
+    id_er:
+      type: integer
+      description: Identifiant de l'ensemble de règlements
+    id_periode_geo:
+      type: integer
+      description: Identifiant du territoire
+
+association_territoire_ensemble_avec_id:
+  allOf:
+    - $ref: '#/association_territoire_ensemble_sans_id'
+    - type: object
+      properties:
+        id_asso_er_ter: 
+          type: integer
+          description: identifiant unique de l'association
+
+association_territoire_ensemble_avec_infos:
+  allOf:
+    - $ref: '#/association_territoire_ensemble_avec_id'
+    - type: object
+      properties:
+        description_er:
+          type: string
+          description: description de l'ensemble de règlements
+        date_debut_er:
+          type: integer
+          nullable: true
+          description: date de d'entrée en vigueur de l'ensemble de règlements inclusif
+        date_fin_er:
+          type: integer
+          nullable: true
+          description: Date d'abrogation de l'ensemble de règlements
+
+
+# -------------------------------------------------------------------------
 # ------------------------------ GeoJSON ----------------------------------
 # -------------------------------------------------------------------------
 
@@ -1078,6 +1119,29 @@ reponse_ens_reg_assoc:
       properties: 
         data:
           $ref: '#/association_cubf_er'
+
+# -------------------------------------------------------------------
+# -------------------- Reponse Ens Règ Terr -------------------------
+# -------------------------------------------------------------------
+reponse_ens_reg_terr_sans_desc:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties: 
+        data: 
+          type: array
+          items: 
+            $ref: '#/association_territoire_ensemble_avec_id'
+reponse_ens_reg_terr_avec_desc:
+   allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties: 
+        data:
+          type: array
+          items:
+            $ref: '#/association_territoire_ensemble_avec_infos'
+
 # -------------------------------------------------------------------
 # -------------------- Reponse données foncières --------------------
 # -------------------------------------------------------------------

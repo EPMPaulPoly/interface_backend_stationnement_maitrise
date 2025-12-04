@@ -117,7 +117,7 @@ export const creationRouteurEnsRegTerr = (pool: Pool): Router => {
       if (conditionsGeom.length>=1){
         cteTerritoriesQuery += 'WHERE '+ conditionsGeom.join(' AND ') + ')'
       } else{
-        cteTerritoriesQuery +-')'
+        cteTerritoriesQuery +=')'
       }
 
       let cteAssociations = `associations_possibles AS (

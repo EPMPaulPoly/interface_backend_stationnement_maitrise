@@ -1,0 +1,66 @@
+get:
+  summary: Obtiens les associations de territoires aux ensembles de règlements en fonction de l'identifiant de territoire
+  tags: ['Ensembles de Règlements Territoires']
+  parameters:
+    - name: id_periode_geo
+      required: true
+      in: path
+      example: 28
+      description: identifiant de territoire
+  responses: 
+    '200':
+      description: Succès
+      content:
+        application/json: 
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_ens_reg_terr_avec_desc'
+          example:
+            success: true
+            data:
+              - id_asso_er_ter: 37
+                id_periode_geo: 28
+                id_er: 1
+                description_er: Québec - post harm - urbain dense
+                date_debut_er: 2010
+                date_fin_er: 2015
+              - id_asso_er_ter: 41
+                id_periode_geo: 28
+                id_er: 5
+                description_er:  Québec - Refonte hotellerie - urbain dense 2016
+                date_debut_er: 2016
+                date_fin_er: 2017
+              - id_asso_er_ter: 45
+                id_periode_geo: 28
+                id_er: 13
+                description_er: Québec - modification alimentaire - urbain dense
+                date_debut_er: 2018
+                date_fin_er: 2018
+              - id_asso_er_ter: 46
+                id_periode_geo: 28
+                id_er: 14
+                description_er: Québec - modification poste de carburant et minigolf - urbain dense
+                date_debut_er: 2019
+                date_fin_er: 2019
+              - id_asso_er_ter: 50
+                id_periode_geo: 28
+                id_er: 18
+                description_er: Québec - refonte hotelliere 2 - urbain dense
+                date_debut_er: 2020
+                date_fin_er: 2023
+              - id_asso_er_ter: 55
+                id_periode_geo: 28
+                id_er: 26
+                description_er: Québec - abrogation minmums résidentiels - max_industriel - urbain dense
+                date_debut_er: 2024
+                date_fin_er: null
+    '500':  
+      description: Erreur serveur
+      content: 
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: Erreur interne serveur
+
+

@@ -1,0 +1,33 @@
+post:
+  summary: Création d'une nouvelle association entre ensemble de règlement et territoire
+  tags: ['Ensembles de Règlements Territoires']
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas.yaml#/association_territoire_ensemble_sans_id'
+        example: 
+          id_er: 1
+          id_periode_geo: 28
+  responses:
+    '200':
+      description: Succès
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_ens_reg_terr_sans_desc'
+          example:
+            success: true
+            data:
+              id_asso_er_terr: 156 
+              id_er: 1
+              id_periode_geo: 28
+    '500':
+      description: Erreur serveur
+      content: 
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: Erreur interne serveur

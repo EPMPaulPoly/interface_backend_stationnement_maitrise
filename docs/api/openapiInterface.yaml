@@ -95,6 +95,14 @@ paths:
     $ref: './paths/PAV/getPAVRecalcul.yaml'
   /api/PAV/{id_quartier}:
     $ref: './paths/PAV/sauvePAV.yaml'
+  /api/ens-reg-terr/par-territoire/{id_periode_geo}:
+    $ref: './paths/ens-reg-terr/getByTerritoryId.yaml'
+  /api/ens-reg-terr/associations:
+    $ref: './paths/ens-reg-terr/getByQuery.yaml'
+  /api/ens-reg-terr/association:
+    $ref: './paths/ens-reg-terr/ensRegTerrNoId.yaml'
+  /api/ens-reg-terr/association/{id_asso_er_ter}:
+    $ref: './paths/ens-reg-terr/ensRegTerrWId.yaml'
 components:
   schemas:
     $ref: './components/schemas.yaml'

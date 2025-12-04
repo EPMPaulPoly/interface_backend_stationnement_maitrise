@@ -1,0 +1,115 @@
+get:
+  summary: Obtiens les associations annotées par requête
+  tags: ["Ensembles de Règlements Territoires"]
+  parameters:
+    - name: lat
+      in: query
+      type: number
+      description: Latitude du lieu dont on veut connaitre la règlementation. Doit être utilisé en combinaison avec long
+      example: 46.803670
+      required: false
+    - name: long
+      in: query
+      type: number
+      description: Longitude du lieu dont on veut connaitre la règlementation. Doit être utilisé en combinaison avec lat
+      example: -71.227749
+      required: false
+    - name: id_periode
+      in: query
+      type: number
+      example: 4
+      description: Identifiant de période dont on veut obternir les ensembles de règlements de territoire
+      required: false
+    - name: annee_debut_avant
+      in: query
+      type: number
+      nullable: true
+      example: 2005
+      description: Condition sur la date de début
+      required: false
+    - name: annee_debut_apres
+      in: query
+      type: number
+      nullable: false
+      example: 1997
+      required: false
+      description: Condition sur la date de début 
+    - name: annee_fin_avant
+      in: query
+      type: number
+      nullable: false
+      example: 2007
+      description: Condition sur la date de fin
+    - name: annee_fin_apres
+      in: query
+      type: number
+      nullable: true
+      example: 2010
+      description: condition sur la date de fin
+    - name: ville_comme
+      in: query
+      type: string
+      nullable: false
+      example: Québec
+      description: Nom de ville du territoire
+    - name: secteur_comme
+      in: query
+      nullable: false
+      example: Urbain Dense
+      description: Nom du secteur
+      type: string
+  responses:
+    '200':
+      description: Succès
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_ens_reg_terr_avec_desc'
+          example:
+            success: true
+            data:
+              - id_asso_er_ter: 37
+                id_periode_geo: 28
+                id_er: 1
+                description_er: Québec - post harm - urbain dense
+                date_debut_er: 2010
+                date_fin_er: 2015
+              - id_asso_er_ter: 41
+                id_periode_geo: 28
+                id_er: 5
+                description_er:  Québec - Refonte hotellerie - urbain dense 2016
+                date_debut_er: 2016
+                date_fin_er: 2017
+              - id_asso_er_ter: 45
+                id_periode_geo: 28
+                id_er: 13
+                description_er: Québec - modification alimentaire - urbain dense
+                date_debut_er: 2018
+                date_fin_er: 2018
+              - id_asso_er_ter: 46
+                id_periode_geo: 28
+                id_er: 14
+                description_er: Québec - modification poste de carburant et minigolf - urbain dense
+                date_debut_er: 2019
+                date_fin_er: 2019
+              - id_asso_er_ter: 50
+                id_periode_geo: 28
+                id_er: 18
+                description_er: Québec - refonte hotelliere 2 - urbain dense
+                date_debut_er: 2020
+                date_fin_er: 2023
+              - id_asso_er_ter: 55
+                id_periode_geo: 28
+                id_er: 26
+                description_er: Québec - abrogation minmums résidentiels - max_industriel - urbain dense
+                date_debut_er: 2024
+                date_fin_er: null
+    '500':
+      description: Erreur serveur
+      content: 
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/api_response'
+          example: 
+            success: false
+            message: Erreur interne serveur
