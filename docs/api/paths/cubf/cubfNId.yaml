@@ -1,0 +1,108 @@
+get:
+  summary: Obtiens la description des codes d'utilisation du bien fonds
+  description: Deux options possible. Si seulement le CUBF est spécifié, on retourne seulement le cubf. Si on spécifie le cubf et le niveau, on obtient les enfants
+  tags: ['Code Utilisation du Bien Fonds']
+  parameters: 
+    - name: cubf
+      in: query
+      required: true
+      type: integer
+      example: 6
+    - name: niveau
+      in: query
+      required: false
+      type: integer
+      example: 2
+  responses:
+    '200':
+      description: Succès
+      content:  
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_cubf'
+          examples:
+            exampleNiveau2:
+              description: cubf = 6 et niveau = 2
+              value:
+                success: true
+                data: 
+                  - cubf: 61
+                    description: FINANCE, ASSURANCE ET SERVICE IMMOBILIER
+                  - cubf: 62
+                    description: SERVICE PERSONNEL
+                  - cubf: 63
+                    description: SEVICE D'AFFAIRES
+                  - cubf: 64
+                    description: SERVICE DE RÉPARATION
+                  - cubf: 65
+                    description: SERVICE PROFESSIONNEL
+                  - cubf: 66
+                    description: SERVICE DE CONSTRUCTION
+                  - cubf: 67
+                    description: SERVICE GOUVERNEMENTAL
+                  - cubf: 68
+                    description: SERVICE ÉDUCATIONNEL
+                  - cubf: 69
+                    description: SERVICES DIVERS
+            exampleNiveau3:
+              description: cubf = 65 et niveau = 3
+              value:
+                success: true
+                data: 
+                  - cubf: 651
+                    description: Service médical et de santé
+                  - cubf: 652
+                    description: Service juridique
+                  - cubf: 653
+                    description: Service social
+                  - cubf: 654
+                    description: Service social hors institution
+                  - cubf: 655
+                    description: Service informatique
+                  - cubf: 656
+                    description: Service de soins paramédicaux
+                  - cubf: 657
+                    description: Service de soins thérapeutiques
+                  - cubf: 659
+                    description: Autres services professionnels
+            exampleNiveau4:
+              description: cubf = 651 et niveau = 4
+              value:
+                success: true
+                data: 
+                  - cubf: 6511
+                    description: Service médical (cabinet de médecins et chirurgiens spécialisés)
+                  - cubf: 6512
+                    description: Service dentaire (incluant chirurgie et hygiène)
+                  - cubf: 6513
+                    description: Service d’hôpital
+                  - cubf: 6514
+                    description: Service de laboratoire médical
+                  - cubf: 6515
+                    description: Service de laboratoire dentaire
+                  - cubf: 6516
+                    description: Sanatorium, maison de convalescence et maison de repos
+                  - cubf: 6517
+                    description: Clinique médicale (cabinet de médecins généralistes)
+                  - cubf: 6518
+                    description: Service d’optométrie
+                  - cubf: 6519
+                    description: Autres services médicaux et de santé
+    '400':
+      description: Combinaison Invalide
+      content:  
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: Combinaison invalide de niveau et de cubf
+    '500':
+      description: Erreur Serveur interne
+      content:  
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: true
+            message: Erreur interne serveur

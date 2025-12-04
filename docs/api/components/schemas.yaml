@@ -525,6 +525,19 @@ utilisation_sol:
   required:
     - cubf
     - description
+
+liste_n_cubf:
+  type: object
+  properties: 
+    niveau:
+      type: integer
+      description: Chiffre de 1 à 4
+    description: 
+      type: string
+      description: Description des cubf
+    n_entrees:
+      type: integer
+      description: Nombre d'entrées à ce niveau
 # -------------------------------------------------------------------------
 # ----------------------- Ensembles de règlements -------------------------
 # -------------------------------------------------------------------------
@@ -1166,6 +1179,29 @@ reponse_role_foncier:
             - type: array
               items: 
                 $ref: '#/role_foncier'
+# -------------------------------------------------------------------
+# -------------------- Reponse utilisation du sol -------------------
+# -------------------------------------------------------------------
+
+reponse_cubf:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/utilisation_sol'
+
+reponse_n_cubf:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data: 
+          type: array
+          items:
+            $ref: '#/liste_n_cubf'
 
 # -------------------------------------------------------------------
 # -------------------- Reponse analyse ------------------------------

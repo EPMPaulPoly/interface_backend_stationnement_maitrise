@@ -103,6 +103,10 @@ paths:
     $ref: './paths/ens-reg-terr/ensRegTerrNoId.yaml'
   /api/ens-reg-terr/association/{id_asso_er_ter}:
     $ref: './paths/ens-reg-terr/ensRegTerrWId.yaml'
+  /api/cubf:
+    $ref: './paths/cubf/cubfNId.yaml'
+  /api/cubf/n_entrees:
+    $ref: './paths/cubf/cubfNEntries.yaml'
 components:
   schemas:
     $ref: './components/schemas.yaml'
