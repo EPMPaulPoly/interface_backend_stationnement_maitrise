@@ -1066,7 +1066,21 @@ retour_ana_var:
       type: number
       description: "Valeur d'intérêt qu'on essaie de grapher. Peut être un nombre de places brutes ou un ratio"
     
-  
+retour_histo_ana_var:
+  type: object
+  properties:
+    cubf: 
+      type: integer
+      description: Code d'utilisation du bien fonds simplifié pour l'agrégation
+    desc_cubf:
+      type: string
+      description: description du code d'utilisation du bien fonds
+    interval_pred: 
+      type: string
+      description: Intervalles de l'histogramme
+    frequence: 
+      type: number
+      description: Fréquence à laquelle les prédictions dans l'intervalle ont lieu
 
 # -------------------------------------------------------------------
 # --------------------------- Formats réponse -----------------------
@@ -1289,9 +1303,19 @@ reponse_ana_var:
     - type: object
       properties:
         data: 
-          schema:
+          type: array
+          items:
             $ref: '#/retour_ana_var'
 
+reponse_ana_var_histo:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data: 
+          type: array
+          items:
+            $ref: '#/retour_histo_ana_var'  
 # -------------------------------------------------------------------
 # -------------------- Reponse PAV ----------------------------------
 # -------------------------------------------------------------------

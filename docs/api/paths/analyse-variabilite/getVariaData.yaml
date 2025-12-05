@@ -12,7 +12,8 @@ get:
       in: query
       required: false
       example: 1
-      type: integer
+      schema:
+        $ref: '../../components/schemas.yaml#/cubf_n1_enum'
       description: Entier entre 1 et 9 décrivant l'utilisation du sol dont on veut constater la valeur. Si elle n,est pas spcéfiée l'ensemble des cubf sont fournis
     - name: voir_inv
       in: query
@@ -34,23 +35,25 @@ get:
         application/json:
           schema:
             $ref: '../../components/schemas.yaml#/reponse_ana_var'
-      example:
-        success: true
-        data: 
-          - cubf: 1 
-            desc_cubf: RÉSIDENTIELLE
-            id_er: 1
-            description_er: 'Québec - post harm - urbain dense'
-            n_lots: 125225
-            facteur_echelle: 1
-            valeur: 138435
-          - cubf: 1
-            desc_cubf: RÉSIDENTIELLE
-            id_er: 2
-            description_er: Québec - post harm - structurant A
-            n_lots: 125225
-            facteur_echelle: 1
-            valeur: 206263
+          examples:
+            exemple1:
+              value:
+                success: true
+                data: 
+                  - cubf: 1 
+                    desc_cubf: RÉSIDENTIELLE
+                    id_er: 1
+                    description_er: 'Québec - post harm - urbain dense'
+                    n_lots: 125225
+                    facteur_echelle: 1
+                    valeur: 138435
+                  - cubf: 1
+                    desc_cubf: RÉSIDENTIELLE
+                    id_er: 2
+                    description_er: Québec - post harm - structurant A
+                    n_lots: 125225
+                    facteur_echelle: 1
+                    valeur: 206263
     '500':
       description: Erreur interne serveur
       content:

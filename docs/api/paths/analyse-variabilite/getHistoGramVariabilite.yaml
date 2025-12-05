@@ -24,10 +24,26 @@ get:
       content:  
         application/json:
           schema:
-            $ref: '../../components/schemas.yaml#/api_response'
+            $ref: '../../components/schemas.yaml#/reponse_ana_var_histo'
+          examples: 
+            exemple1:
+              value:
+                success: true
+                data: 
+                  - cubf: -1
+                    desc_cubf: Tous
+                    interval_pred: '0.09 - 0.20'
+                    frequence: 0.051724
+                  - cubf: -1
+                    desc_cubf: Tous
+                    interval_pred: '0.20 - 0.40'
+                    frequence: 0.189655
     '500':
       description: Erreur interne serveur
       content:  
         application/json:
           schema:
             $ref: '../../components/schemas.yaml#/api_response'
+          example: 
+            success: false
+            message: Erreur interne serveur
