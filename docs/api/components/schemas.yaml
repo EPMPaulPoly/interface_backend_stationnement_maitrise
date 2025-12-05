@@ -1030,7 +1030,19 @@ boolean_enum:
   enum:
     - true
     - false
-    - ''
+
+cubf_n1_enum:
+  type: integer
+  enum:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7 
+    - 8
+    - 9
 
 retour_ana_var:
   type: object

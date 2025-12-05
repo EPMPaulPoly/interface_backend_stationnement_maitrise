@@ -1,4 +1,4 @@
-import { ReponseCalculComplete, ReponseDataGraphique, ReponseDataGraphiqueText, ReponseResultatAnaVarBarre } from '../types/serviceTypes';
+import { ReponseCalculComplete, ReponseDataGraphique, ReponseDataGraphiqueText, ReponseResultatAnaVarBarre, ReponseResultatAnaVarHisto } from '../types/serviceTypes';
 import api from './api';
 import axios, { AxiosResponse } from 'axios';
 import { data_graphique, data_graphique_text_labels, resultatAnalyseVariabilite } from '../types/DataTypes';
@@ -89,7 +89,7 @@ export const serviceAnaVariabilite = {
             throw error; // Re-throw if necessary
         }
     },
-    obtiensDistributionInventaire: async(ids:number[],cubf_n1?:number,ratioInvAct?:boolean):Promise<ReponseDataGraphique> =>{
+    obtiensDistributionInventaire: async(ids:number[],cubf_n1?:number,ratioInvAct?:boolean):Promise<ReponseDataGraphiqueText> =>{
         try {
             let query_add: string[] = [];
             
@@ -104,10 +104,22 @@ export const serviceAnaVariabilite = {
                 base_query += '&' + query_add.join('&')
             }
             
-            const response: AxiosResponse<ReponseDataGraphique> = await api.get(base_query);
+            const response: AxiosResponse<ReponseResultatAnaVarHisto> = await api.get(base_query);
+            let formatted_out: data_graphique_text_labels;
+            formatted_out = {
+                labels: response.data.data.map((row)=>row.interval_pred),
+                datasets: 
+                    [
+                        {
+                            label: response.data.data[0].desc_cubf,
+                            data: response.data.data.map((row)=> row.frequence)
+                        }
+                    ]
+                
+            }
             return ({
                 success: response.data.success,
-                data: response.data.data
+                data: formatted_out
             });
         } catch (error: any) {
             if (axios.isAxiosError(error)) {

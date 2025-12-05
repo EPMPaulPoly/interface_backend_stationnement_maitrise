@@ -318,6 +318,13 @@ export interface resultatAnalyseVariabilite{
     n_lots: number
 }
 
+export interface resultatHistoVariabilite{
+    cubf: number,
+    desc_cubf: string,
+    interval_pred: string,
+    frequence: number
+}
+
 export interface requete_calcul_manuel_reg{
     g_no_lot:string,
     cubf:number,

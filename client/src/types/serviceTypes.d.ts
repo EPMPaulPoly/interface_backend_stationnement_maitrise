@@ -1,4 +1,4 @@
-import { periode, territoire, quartiers_analyse, inventaire_stationnement, territoireGeoJsonProperties, entete_reglement_stationnement, reglement_complet, entete_ensembles_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties, roleFoncierGeoJsonProps, lotCadastralDB, roleFoncierDB, lotCadastralGeomSeulDb, comboERRoleFoncier, lotCadastralBoolInvDB, lotCadastralAvecBoolInvGeoJsonProperties, PAV_quartier, entreePAV, operation_reglement_stationnement, unites_reglement_stationnement, definition_reglement_stationnement, association_territoire_entete_ensemble_reglement, association_util_reglement, utilisation_sol, associaion_territoire_ensemble_reglement, data_graphique, comptes_utilisations_sol, FeuilleFinaleStrate, EntreeValidation, data_graphique_text_labels } from './DataTypes'
+import { periode, territoire, quartiers_analyse, inventaire_stationnement, territoireGeoJsonProperties, entete_reglement_stationnement, reglement_complet, entete_ensembles_reglement_stationnement, ensemble_reglements_stationnement, inventaireGeoJSONProps, lotCadastralGeoJsonProperties, roleFoncierGeoJsonProps, lotCadastralDB, roleFoncierDB, lotCadastralGeomSeulDb, comboERRoleFoncier, lotCadastralBoolInvDB, lotCadastralAvecBoolInvGeoJsonProperties, PAV_quartier, entreePAV, operation_reglement_stationnement, unites_reglement_stationnement, definition_reglement_stationnement, association_territoire_entete_ensemble_reglement, association_util_reglement, utilisation_sol, associaion_territoire_ensemble_reglement, data_graphique, comptes_utilisations_sol, FeuilleFinaleStrate, EntreeValidation, data_graphique_text_labels,resultatAnalyseVariabilite, resultatHistoVariabilite } from './DataTypes'
 import { Feature, FeatureCollection, Geometry } from 'geojson';
 import { GeoJSONPropsAnaQuartierTotal, GeoJSONPropsAnaQuartierTotalParHab, GeoJSONPropsAnaQuartierTotalParSuperf, NhoodXYGraphDatasets, StatTotalDBAnaQuartier, StatTotalParSuperfDBAnaQuartier, VariableCartoDBAnaQuartier } from './AnalysisTypes';
 export interface ApiResponse<T> {
@@ -65,6 +65,7 @@ export type ReponseDataGraphiqueText = ApiResponse<data_graphique_text_labels>
 export type ReponseCalculComplete = ApiResponse<boolean>
 
 export type ReponseResultatAnaVarBarre = ApiResponse<resultatAnalyseVariabilite[]>
+export type ReponseResultatAnaVarHisto = ApiResponse<resultatHistoVariabilite[]>
 // types pour la validation state
 export type ReponseStrateValide = ApiResponse<Strate[]>
 export type ReponseStrateUnique = ApiResponse<Strate>

@@ -203,16 +203,21 @@ export interface serieBoxplotVariabilite{
 }
 
 export interface RetourBDAnalyseVariabilite{
-    land_use:number,
+    cubf:number,
     valeur:number,
     id_er:number,
     description_er:string,
     n_lots:number,
-    land_use_desc:string,
+    desc_cubf:string,
     facteur_echelle?:number
 }
 
-
+export interface RetourBDHistoVariabilite{
+    cubf: number,
+    desc_cubf: string,
+    interval_pred: string,
+    frequence: number
+}
 
 export interface RequeteCalculeInventaireRegMan{
     cubf:number,

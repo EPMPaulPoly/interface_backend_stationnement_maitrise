@@ -3,7 +3,7 @@ import { Pool } from 'pg';
 // Types pour les requêtes
 import { Polygon, MultiPolygon } from 'geojson';
 import path from 'path';
-import { dataBoxPlotVariabilite, dataHistogrammeVariabilite, RequeteAnalyseFacteurEchelle, RequeteAnalyseVariabilite, RequeteHistoVariabilite, RetourBDAnalyseVariabilite } from 'database';
+import { dataBoxPlotVariabilite, dataHistogrammeVariabilite, RequeteAnalyseFacteurEchelle, RequeteAnalyseVariabilite, RequeteHistoVariabilite, RetourBDAnalyseVariabilite, RetourBDHistoVariabilite } from 'database';
 import { spawn } from 'child_process';
 import {bin,Bin} from 'd3-array';
 
@@ -356,12 +356,12 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
             if (id_out.length > 0 && cubf_out !== -1) {
                 query = `
                 SELECT
-                    av.land_use,
+                    av.land_use as cubf,
                     ${value_out} as valeur,
                     av.id_er::int,
                     rsd.description_er,
                     av.n_lots,
-                    lud.land_use_desc
+                    lud.land_use_desc as desc_cubf
                 FROM 
                     variabilite av
                 LEFT JOIN
@@ -375,7 +375,8 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                     ${value_out} as valeur,
                     av.id_er::int,
                     rsd.description_er,
-                    'Tous' as land_use_desc
+                    'Tous' as desc_cubf,
+                    -1 as cubf
                 FROM 
                     variabilite av
                 LEFT JOIN
@@ -384,13 +385,30 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                 
                 `
                 query = pre_query + query + joins.join('\n') + ' WHERE ' + `av.id_er IN (${id_out.join(',')}) AND av.facteur_echelle = ${echelle_fin} GROUP BY av.id_er,rsd.description_er `;
-            }else {
+            } else if(cubf_out!==-1){
+                query = `
+                SELECT
+                    av.land_use as cubf,
+                    ${value_out} as valeur,
+                    av.id_er::int,
+                    rsd.description_er,
+                    av.n_lots,
+                    lud.land_use_desc as desc_cubf
+                FROM 
+                    variabilite av
+                LEFT JOIN
+                    reg_set_defs rsd ON rsd.id_er=av.id_er
+                LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
+                `
+                query = pre_query + query + joins.join('\n')+'\n WHERE ' + `av.land_use = ${cubf_out} AND av.facteur_echelle = ${echelle_fin}`;
+            } else {
                 query = pre_query+`
                 SELECT
                     ${value_out} as valeur,
                     av.id_er::int,
                     rsd.description_er,
-                    'Tous' as land_use_desc
+                    'Tous' as desc_cubf,
+                    -1 as cubf
                 FROM 
                     variabilite av
                 LEFT JOIN
@@ -418,38 +436,49 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                 binLabels = sampleBins.map((b:Bin<number, number>) => `${b.x0?.toFixed(0)} - ${b.x1?.toFixed(0)}`);
             }
             const dataOut = sampleBins.map((b:Bin<number, number>) => b.length/nValues)
+            let formatted_out: RetourBDHistoVariabilite[] = [];
+            formatted_out = binLabels.map((bin,i)=>{
+                    return {
+                        cubf:donnees[0].cubf,
+                        desc_cubf: donnees[0].desc_cubf,
+                        interval_pred: bin,
+                        frequence: dataOut[i]
+                    }
+                }
+            )        
+            
             let formatted_output: dataHistogrammeVariabilite;
             if (id_out.length > 0) {
-                const land_uses = Array.from(new Set(donnees.map((row) => row.land_use)));
+                const land_uses = Array.from(new Set(donnees.map((row) => row.cubf)));
                 
                 formatted_output = {
                     labels: binLabels,
                     datasets: land_uses.map((lu) => {
-                        const lu_filter_data = donnees.filter((row) => row.land_use === lu);
+                        const lu_filter_data = donnees.filter((row) => row.cubf === lu);
                         return {
-                            label: lu_filter_data[0]?.land_use_desc ?? 'N/A',
+                            label: lu_filter_data[0]?.desc_cubf ?? 'N/A',
                             data: dataOut
                         };
                     })
                 }
             } else {
-                const land_uses = Array.from(new Set(donnees.map((row) => row.land_use)));
+                const land_uses = Array.from(new Set(donnees.map((row) => row.cubf)));
                 const rulesets = Array.from(new Set(donnees.map((row)=>row.id_er)));
                 
                 formatted_output = {
                     labels: rulesets.map((id) => { return donnees.find((row) => row.id_er === id)?.description_er ?? 'N/A' }),
                     datasets: land_uses.map((lu) => {
-                        const lu_filter_data = donnees.filter((row) => row.land_use === lu);
+                        const lu_filter_data = donnees.filter((row) => row.cubf === lu);
                         return {
-                            label: lu_filter_data[0]?.land_use_desc ?? 'N/A',
+                            label: lu_filter_data[0]?.desc_cubf ?? 'N/A',
                             data: rulesets.map((id) => {
                                 return lu_filter_data.find((row) => row.id_er === id)?.valeur ?? 0}),
-                            cubf: lu_filter_data[0]?.land_use ?? -1,
+                            cubf: lu_filter_data[0]?.cubf ?? -1,
                         }
                     })
                 }
             }
-            res.json({ success: true, data: formatted_output });
+            res.json({ success: true, data: formatted_out });
         } catch (err) {
             res.status(500).json({ success: false, error: 'Database error' });
         } finally {

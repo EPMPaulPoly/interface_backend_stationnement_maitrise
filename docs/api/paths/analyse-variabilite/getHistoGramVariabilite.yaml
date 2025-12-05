@@ -1,0 +1,33 @@
+get:
+  summary: Présente l'analyse de variabilité sous forme d'une distribution d'inventaires
+  tags: ['Analyse de variabilité']
+  parameters:
+    - name: id_er
+      in: query
+      type: string
+      description: Liste séparée de virgules des identifiants d'ensembles de règlements qu'on veut inclure dans la distribution
+      example: 1,2,3,4
+    - name: ratio_inv_act
+      in: query
+      schema:
+        $ref: '../../components/schemas.yaml#/boolean_enum'
+      example: false
+      description: La distribution est exprimée comme un ratio de l'inventaire règlementaire actuel
+    - name: cubf_n1
+      in: query
+      schema:
+        $ref: '../../components/schemas.yaml#/cubf_n1_enum'
+      description: Entier entre 1 et 9 spécifiant l'utilisation du sol 
+  responses:
+    '200':
+      description: Succès
+      content:  
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+    '500':
+      description: Erreur interne serveur
+      content:  
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'

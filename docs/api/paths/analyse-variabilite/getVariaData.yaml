@@ -1,4 +1,3 @@
-# incomplet a toujours besoin d'être spécifié
 get:
   summary: Obtiens les chiffres brutes de l'analyse de variabilité
   tags: ['Analyse de variabilité']
@@ -8,22 +7,26 @@ get:
       required: false
       example: 1
       type: integer
+      description: Liste séparée de virgules des ensembles de règlements que l'on veut voir
     - name: cubf_n1
       in: query
       required: false
       example: 1
       type: integer
+      description: Entier entre 1 et 9 décrivant l'utilisation du sol dont on veut constater la valeur. Si elle n,est pas spcéfiée l'ensemble des cubf sont fournis
     - name: voir_inv
       in: query
       required: false
       example: true
       schema:
         $ref: '../../components/schemas.yaml#/boolean_enum'
+      description: Voir l'inventaire actuel
     - name: id_ref
       in: query
       required: false
       example: 1
       type: integer
+      description: Identifiant de référence. Si spécifié la valeur renvoyéee est en pourcentage de l'ensemble de règlements
   responses:
     '200':
       description: Succès

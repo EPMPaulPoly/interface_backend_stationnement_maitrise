@@ -111,6 +111,8 @@ paths:
     $ref: './paths/analyse-variabilite/recalculeAnaVar.yaml'
   /api/ana-var/obtiens-donnees-varia:
     $ref: './paths/analyse-variabilite/getVariaData.yaml'
+  /api/ana-var/histo-varia:
+    $ref: './paths/analyse-variabilite/GetHistoGramVariabilite.yaml'
 components:
   schemas:
     $ref: './components/schemas.yaml'
