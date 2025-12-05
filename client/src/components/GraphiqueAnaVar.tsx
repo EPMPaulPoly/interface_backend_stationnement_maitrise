@@ -1,7 +1,7 @@
 import { FC, useState, useEffect } from 'react'
 import { GraphiqueReglementsProps, PropsGraphAnaVar } from '../types/InterfaceTypes'
 import { Chart as ChartPlot, Bar, Line } from 'react-chartjs-2';
-import { data_graphique, utilisation_sol, data_box_plot } from '../types/DataTypes';
+import { data_graphique, utilisation_sol, data_box_plot, data_graphique_text_labels } from '../types/DataTypes';
 import { serviceAnaVariabilite } from '../services/serviceAnaVariabilite';
 import serviceUtilisationDuSol from '../services/serviceUtilisationDuSol';
 import { BoxPlotDataPoint } from '@sgratzl/chartjs-chart-boxplot';
@@ -11,7 +11,7 @@ import { ChartData, ChartDataset } from 'chart.js';
 
 const GraphiqueAnaVar: FC<PropsGraphAnaVar> = (props: PropsGraphAnaVar) => {
     const [cubf, defCUBF] = useState<utilisation_sol>({ cubf: -1, description: 'N/A' })
-    const [data, defData] = useState<data_graphique>({
+    const [data, defData] = useState<data_graphique|data_graphique_text_labels>({
         labels: [0],
         datasets: [{
             label: `N/A`,
@@ -455,14 +455,15 @@ const GraphiqueAnaVar: FC<PropsGraphAnaVar> = (props: PropsGraphAnaVar) => {
         <div className="graphique-rendu-ana-var">
             {(props.methodeVisualisation.idMethodeAnalyse != 2 && props.methodeVisualisation.idMethodeAnalyse != 3) ?
                 <div className="graphique">
-                    <Bar
+                    <Bar<number[], string | number>
                         data={{
                             ...data,
                             datasets: data.datasets.map((ds, i) => {
+                                const paletteIndex = Math.max(0, ds.cubf ?? index) % props.colorPalette.length;    
                                 return {
                                     ...ds,
-                                    color: props.colorPalette[ds.cubf ?? index],
-                                    backgroundColor: props.colorPalette[ds.cubf ?? index]
+                                    color: props.colorPalette[paletteIndex],
+                                    backgroundColor: props.colorPalette[paletteIndex]
                                 };
                             }),
                         }}

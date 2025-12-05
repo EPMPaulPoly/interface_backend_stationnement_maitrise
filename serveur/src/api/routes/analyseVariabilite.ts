@@ -108,12 +108,12 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                                 ensembles_reglements_stat
                         )
                         SELECT
-                            inv.land_use,
+                            inv.land_use as cubf,
                             inv.n_places_min as valeur,
                             -5::int as id_er,
                             'Inventaire Actuel' as description_er,
                             inv.n_lots::int,
-                            lud.land_use_desc,
+                            lud.land_use_desc as desc_cubf,
                             1 as facteur_echelle
                         FROM 
                             inv_reg_aggreg_cubf_n1 inv
@@ -147,12 +147,12 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                                 ensembles_reglements_stat
                         )
                         SELECT
-                            inv.land_use::int,
+                            inv.land_use::int as cubf,
                             COALESCE(inv.n_places_min / NULLIF(bd.n_places_ref, 0) *100, 0) as valeur,
                             -5::int as id_er,
                             'Inventaire Actuel' as description_er,
                             inv.n_lots::int,
-                            lud.land_use_desc,
+                            lud.land_use_desc as desc_cubf,
                             1 as facteur_echelle
                         FROM 
                             inv_reg_aggreg_cubf_n1 inv
@@ -214,12 +214,12 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                     query = `
                     
                     SELECT
-                        av.land_use,
+                        av.land_use as cubf,
                         av.n_places_min as valeur,
                         av.id_er::int,
                         rsd.description_er,
                         av.n_lots,
-                        lud.land_use_desc,
+                        lud.land_use_desc as desc_cubf,
                         av.facteur_echelle
                     FROM 
                         variabilite av
@@ -231,12 +231,12 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                 } else {
                     query = `
                     SELECT
-                        av.land_use,
+                        av.land_use as cubf,
                         COALESCE(av.n_places_min / NULLIF(bd.n_places_ref, 0) *100, 0) as valeur,
                         av.id_er::int,
                         rsd.description_er,
                         av.n_lots,
-                        lud.land_use_desc,
+                        lud.land_use_desc as desc_cubf,
                         av.facteur_echelle
                     FROM 
                         variabilite av
@@ -252,12 +252,12 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                 if (id_ref_out === -1) {
                     query = pre_query +`
                     SELECT
-                        av.land_use,
+                        av.land_use as cubf,
                         av.n_places_min as valeur,
                         av.id_er::int,
                         rsd.description_er,
                         av.n_lots,
-                        lud.land_use_desc
+                        lud.land_use_desc as desc_cubf
                     FROM 
                         variabilite av
                     LEFT JOIN
@@ -270,12 +270,12 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                 } else {
                     query = pre_query + `
                     SELECT
-                        av.land_use,
+                        av.land_use as cubf,
                         COALESCE(av.n_places_min / NULLIF(bd.n_places_ref, 0) *100, 0) as valeur,
                         av.id_er::int,
                         rsd.description_er,
                         av.n_lots,
-                        lud.land_use_desc
+                        lud.land_use_desc as desc_cubf
                     FROM 
                         variabilite av
                     LEFT JOIN
@@ -290,42 +290,8 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
             result = await client.query(query)
             const donnees: RetourBDAnalyseVariabilite[] = result.rows;
             let formatted_output: dataHistogrammeVariabilite;
-            if (id_out.length > 0) {
-                const land_uses = Array.from(new Set(donnees.map((row) => row.land_use)));
-                if (voir_inv_fin){
-                    id_out.unshift(-5)
-                }
-                formatted_output = {
-                    labels: id_out.map((id) => { return donnees.find((row) => row.id_er === id)?.description_er ?? 'N/A' }),
-                    datasets: land_uses.map((lu) => {
-                        const lu_filter_data = donnees.filter((row) => row.land_use === lu);
-                        return {
-                            label: lu_filter_data[0]?.land_use_desc ?? 'N/A',
-                            data: id_out.map((id) => lu_filter_data.find((row) => row.id_er === id)?.valeur ?? 0),
-                            cubf: lu_filter_data[0]?.land_use ?? -1,
-                        };
-                    })
-                }
-            } else {
-                const land_uses = Array.from(new Set(donnees.map((row) => row.land_use)));
-                const rulesets = Array.from(new Set(donnees.map((row)=>row.id_er)));
-                if (voir_inv_fin){
-                    rulesets.unshift(-5)
-                }
-                formatted_output = {
-                    labels: rulesets.map((id) => { return donnees.find((row) => row.id_er === id)?.description_er ?? 'N/A' }),
-                    datasets: land_uses.map((lu) => {
-                        const lu_filter_data = donnees.filter((row) => row.land_use === lu);
-                        return {
-                            label: lu_filter_data[0]?.land_use_desc ?? 'N/A',
-                            data: rulesets.map((id) => {
-                                return lu_filter_data.find((row) => row.id_er === id)?.valeur ?? 0}),
-                            cubf: lu_filter_data[0]?.land_use ?? -1,
-                        }
-                    })
-                }
-            }
-            res.json({ success: true, data: formatted_output });
+            
+            res.json({ success: true, data: donnees });
         } catch (err) {
             res.status(500).json({ success: false, error: 'Database error' });
         } finally {

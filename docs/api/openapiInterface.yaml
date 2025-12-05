@@ -107,6 +107,10 @@ paths:
     $ref: './paths/cubf/cubfNId.yaml'
   /api/cubf/n_entrees:
     $ref: './paths/cubf/cubfNEntries.yaml'
+  /api/ana-var/recalcule-inventaires-tous-ens-regs:
+    $ref: './paths/analyse-variabilite/recalculeAnaVar.yaml'
+  /api/ana-var/obtiens-donnees-varia:
+    $ref: './paths/analyse-variabilite/getVariaData.yaml'
 components:
   schemas:
     $ref: './components/schemas.yaml'

@@ -1,0 +1,30 @@
+# incomplet a toujours besoin d'être spécifié
+get:
+  summary: Obtiens les chiffres brutes d
+  tags: ['Analyse de variabilité']
+  parameters: 
+    - name: id_er
+      in: query
+      required: false
+      example: 1
+      type: integer
+    - 
+  responses:
+    '200':
+      description: Succès
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+      example:
+        success: true
+    '500':
+      description: Erreur interne serveur
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example: 
+            success: false
+            message: Erreur interne serveur
+      

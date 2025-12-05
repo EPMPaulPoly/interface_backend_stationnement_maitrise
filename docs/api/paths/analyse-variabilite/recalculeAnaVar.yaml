@@ -1,0 +1,18 @@
+get:
+  summary: Recomplète les calculs pour l'analyse de variabilité
+  tags: ['Analyse de variabilité']
+  deprecated: false
+  responses:
+    '200':
+      description: Succès
+      schema:
+        $ref: '../../components/schemas.yaml#/api_response'
+      example:
+        success: true
+    '500':
+      description: Erreur interne serveur
+      schema: 
+        $ref: '../../components/schemas.yaml#/api_response'
+      example:
+        success: false
+        message: Erreur interne serveur

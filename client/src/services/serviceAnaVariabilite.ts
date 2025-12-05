@@ -1,7 +1,7 @@
-import { ReponseCalculComplete, ReponseDataGraphique } from '../types/serviceTypes';
+import { ReponseCalculComplete, ReponseDataGraphique, ReponseDataGraphiqueText, ReponseResultatAnaVarBarre } from '../types/serviceTypes';
 import api from './api';
 import axios, { AxiosResponse } from 'axios';
-import { data_graphique } from '../types/DataTypes';
+import { data_graphique, data_graphique_text_labels, resultatAnalyseVariabilite } from '../types/DataTypes';
 export const serviceAnaVariabilite = {
     recalculeInventairesFonciersAvecTousEnsRegs: async (): Promise<boolean> => {
         try {
@@ -19,7 +19,7 @@ export const serviceAnaVariabilite = {
 
         }
     },
-    obtiensInventairesEnsRegs: async (ids: number[], idRef?: number, cubf_n1?: number,voirInv?:boolean): Promise<ReponseDataGraphique> => {
+    obtiensInventairesEnsRegs: async (ids: number[], idRef?: number, cubf_n1?: number,voirInv?:boolean): Promise<ReponseDataGraphiqueText> => {
         try {
             let query_add: string[] = [];
             if (typeof idRef !== 'undefined') {
@@ -35,10 +35,48 @@ export const serviceAnaVariabilite = {
             if (query_add.length > 0) {
                 base_query += '&' + query_add.join('&')
             }
-            const response: AxiosResponse<ReponseDataGraphique> = await api.get(base_query);
+            const response: AxiosResponse<ReponseResultatAnaVarBarre> = await api.get(base_query);
+            const donnees: resultatAnalyseVariabilite[] = response.data.data
+            let formatted_output: data_graphique_text_labels
+            let idsCopy = [...ids]
+            if (ids.length > 0) {
+                const land_uses = Array.from(new Set(donnees.map((row) => row.cubf)));
+                if (voirInv){
+                    idsCopy.unshift(-5)
+                }
+                formatted_output = {
+                    labels: idsCopy.map((id) => { return donnees.find((row) => row.id_er === id)?.description_er ?? 'N/A' }),
+                    datasets: land_uses.map((lu) => {
+                        const lu_filter_data = donnees.filter((row) => row.cubf === lu);
+                        return {
+                            label: lu_filter_data[0]?.desc_cubf ?? 'N/A',
+                            data: idsCopy.map((id) => Number(lu_filter_data.find((row) => row.id_er === id)?.valeur ?? 0)),
+                            cubf: lu_filter_data[0]?.cubf ?? -1,
+                        };
+                    })
+                }
+            } else {
+                const land_uses = Array.from(new Set(donnees.map((row) => row.cubf)));
+                const rulesets = Array.from(new Set(donnees.map((row)=>row.id_er)));
+                formatted_output = {
+                    labels: rulesets.map(id => {
+                        const desc = donnees.find(row => row.id_er === id)?.description_er;
+                        return desc ? String(desc) : 'N/A';
+                    }),
+                    datasets: land_uses.map((lu) => {
+                        const lu_filter_data = donnees.filter((row) => row.cubf === lu);
+                        return {
+                            label: lu_filter_data[0]?.desc_cubf ?? 'N/A',
+                            data: rulesets.map((id) => {
+                                return lu_filter_data.find((row) => row.id_er === id)?.valeur ?? 0}),
+                            cubf: lu_filter_data[0]?.cubf ?? -1,
+                        }
+                    })
+                }
+            }
             return ({
                 success: response.data.success,
-                data: response.data.data
+                data: formatted_output
             });
         } catch (error: any) {
             if (axios.isAxiosError(error)) {

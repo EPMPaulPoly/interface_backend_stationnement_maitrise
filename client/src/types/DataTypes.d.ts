@@ -298,11 +298,24 @@ export interface data_graphique{
     datasets:y_serie_data_graphique[]
 }
 
+export interface data_graphique_text_labels extends Omit<data_graphique, "labels"> {
+    labels: string[]
+}
+
 export type data_box_plot = ChartData<'boxplot', BoxPlotDataPoint[], string>;
 
 export interface methodeAnalyseVariabillite{
     idMethodeAnalyse:number,
     descriptionMethodeAnalyse:string
+}
+
+export interface resultatAnalyseVariabilite{
+    id_er: number,
+    description_er: string,
+    valeur: number,
+    cubf: number,
+    desc_cubf: string
+    n_lots: number
 }
 
 export interface requete_calcul_manuel_reg{
