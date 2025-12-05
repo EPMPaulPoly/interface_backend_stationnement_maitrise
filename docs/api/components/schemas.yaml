@@ -862,7 +862,7 @@ ana_XY:
             description: valeur de l'abscisse
           y:
             type: number
-            description:
+            description: valeur de l'ordonnée
 
 # -------------------------------------------------------------------------
 # --------------- Profile Accumulation Véhicules --------------------------
@@ -895,7 +895,6 @@ var_cap_stat:
     - tot
     - none
 
-order_stat_enum:
 
 PAV_recalcul_sans_id_quartier: 
   type: object
@@ -1021,7 +1020,42 @@ retour_PAV_etendu:
         voit_transfer_res_a_pub:
           type: integer
           description: Voitures qui sont transférées de manière interne du résidentiel au public
-        
+
+
+# -------------------------------------------------------------------------
+# --------------------- Analyse de variabilité ----------------------------
+# -------------------------------------------------------------------------
+boolean_enum:
+  type: string
+  enum:
+    - true
+    - false
+    - ''
+
+retour_ana_var:
+  type: object
+  properties: 
+    cubf: 
+      type: integer
+      description: code d'utilisation du biend fonds simplifié (1 à 9)
+    id_er:
+      type: integer
+      description: Identifiant de l'ensemble de règlements
+    description_er: 
+      type: string
+      description: description de l'ensemble de règlemnts
+    facteur_echelle:
+      type: string
+      description: facteur d'échelle utilisé pour l'analyse de variabilité
+    desc_cubf:
+      type: string
+      description: description du code d'utilistion du bien fonds
+    valeur:
+      type: number
+      description: "valeur d'intérêt qu'on essaie de grapher. Peut être un nombre de places brutes ou un ratio"
+    
+  
+
 # -------------------------------------------------------------------
 # --------------------------- Formats réponse -----------------------
 # ------------------------------------------------------------------- 
@@ -1233,6 +1267,22 @@ reponse_ana_xy:
           schema:
             $ref: '#/ana_XY'
 
+# -------------------------------------------------------------------
+# -------------------- Réponse analyse variabilité ------------------
+# -------------------------------------------------------------------
+
+reponse_ana_var:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data: 
+          schema:
+            $ref: '#/retour_ana_var'
+
+# -------------------------------------------------------------------
+# -------------------- Reponse PAV ----------------------------------
+# -------------------------------------------------------------------
 corps_requete_sauve_pav:
   type: array
   items: 

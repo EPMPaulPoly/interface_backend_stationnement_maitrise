@@ -1,6 +1,6 @@
 # incomplet a toujours besoin d'être spécifié
 get:
-  summary: Obtiens les chiffres brutes d
+  summary: Obtiens les chiffres brutes de l'analyse de variabilité
   tags: ['Analyse de variabilité']
   parameters: 
     - name: id_er
@@ -8,16 +8,46 @@ get:
       required: false
       example: 1
       type: integer
-    - 
+    - name: cubf_n1
+      in: query
+      required: false
+      example: 1
+      type: integer
+    - name: voir_inv
+      in: query
+      required: false
+      example: true
+      schema:
+        $ref: '../../components/schemas.yaml#/boolean_enum'
+    - name: id_ref
+      in: query
+      required: false
+      example: 1
+      type: integer
   responses:
     '200':
       description: Succès
       content:
         application/json:
           schema:
-            $ref: '../../components/schemas.yaml#/api_response'
+            $ref: '../../components/schemas.yaml#/reponse_ana_var'
       example:
         success: true
+        data: 
+          - cubf: 1 
+            desc_cubf: RÉSIDENTIELLE
+            id_er: 1
+            description_er: 'Québec - post harm - urbain dense'
+            n_lots: 125225
+            facteur_echelle: 1
+            valeur: 138435
+          - cubf: 1
+            desc_cubf: RÉSIDENTIELLE
+            id_er: 2
+            description_er: Québec - post harm - structurant A
+            n_lots: 125225
+            facteur_echelle: 1
+            valeur: 206263
     '500':
       description: Erreur interne serveur
       content:

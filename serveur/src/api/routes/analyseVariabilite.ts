@@ -138,7 +138,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                                 n_places_min as n_places_ref
                             FROM 
                                 variabilite 
-                            WHERE id_er = ${id_ref_out}
+                            WHERE id_er = ${id_ref_out} and facteur_echelle=1
                         ),reg_set_defs AS (
                             SELECT
                                 id_er,
@@ -196,7 +196,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                                     n_places_min as n_places_ref
                                 FROM 
                                     variabilite 
-                                WHERE id_er = ${id_ref_out}
+                                WHERE id_er = ${id_ref_out} and facteur_echelle=1
                             ),reg_set_defs AS (
                                 SELECT
                                     id_er,
@@ -218,7 +218,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                         av.n_places_min as valeur,
                         av.id_er::int,
                         rsd.description_er,
-                        av.n_lots,
+                        av.n_lots::int,
                         lud.land_use_desc as desc_cubf,
                         av.facteur_echelle
                     FROM 
@@ -235,7 +235,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                         COALESCE(av.n_places_min / NULLIF(bd.n_places_ref, 0) *100, 0) as valeur,
                         av.id_er::int,
                         rsd.description_er,
-                        av.n_lots,
+                        av.n_lots::int,
                         lud.land_use_desc as desc_cubf,
                         av.facteur_echelle
                     FROM 
@@ -246,7 +246,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                         base_data bd ON bd.land_use = av.land_use
                     LEFT JOIN land_use_desc lud ON lud.land_use = av.land_use 
                     `
-                    query = pre_query + query + 'WHERE ' + conditions.join(' AND ') + 'AND av.facteur_echelle = 1 ORDER BY valeur ASC';
+                    query = pre_query + query + 'WHERE ' + conditions.join(' AND ') + ' ORDER BY valeur ASC';
                 }
             } else {
                 if (id_ref_out === -1) {
@@ -256,7 +256,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                         av.n_places_min as valeur,
                         av.id_er::int,
                         rsd.description_er,
-                        av.n_lots,
+                        av.n_lots::int,
                         lud.land_use_desc as desc_cubf
                     FROM 
                         variabilite av
@@ -274,7 +274,7 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                         COALESCE(av.n_places_min / NULLIF(bd.n_places_ref, 0) *100, 0) as valeur,
                         av.id_er::int,
                         rsd.description_er,
-                        av.n_lots,
+                        av.n_lots::int,
                         lud.land_use_desc as desc_cubf
                     FROM 
                         variabilite av
@@ -289,7 +289,6 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
 
             result = await client.query(query)
             const donnees: RetourBDAnalyseVariabilite[] = result.rows;
-            let formatted_output: dataHistogrammeVariabilite;
             
             res.json({ success: true, data: donnees });
         } catch (err) {
