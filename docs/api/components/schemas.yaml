@@ -1037,22 +1037,22 @@ retour_ana_var:
   properties: 
     cubf: 
       type: integer
-      description: code d'utilisation du biend fonds simplifié (1 à 9)
+      description: Code d'utilisation du biend fonds simplifié (1 à 9)
     id_er:
       type: integer
       description: Identifiant de l'ensemble de règlements
     description_er: 
       type: string
-      description: description de l'ensemble de règlemnts
+      description: Description de l'ensemble de règlemnts
     facteur_echelle:
       type: string
-      description: facteur d'échelle utilisé pour l'analyse de variabilité
+      description: Facteur d'échelle utilisé pour l'analyse de variabilité
     desc_cubf:
       type: string
-      description: description du code d'utilistion du bien fonds
+      description: Description du code d'utilistion du bien fonds
     valeur:
       type: number
-      description: "valeur d'intérêt qu'on essaie de grapher. Peut être un nombre de places brutes ou un ratio"
+      description: "Valeur d'intérêt qu'on essaie de grapher. Peut être un nombre de places brutes ou un ratio"
     
   
 
