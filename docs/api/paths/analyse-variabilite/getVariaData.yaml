@@ -28,6 +28,11 @@ get:
       example: 1
       type: integer
       description: Identifiant de référence. Si spécifié la valeur renvoyéee est en pourcentage de l'ensemble de règlements
+    - name: inclure_echelle
+      description: booleen indiquant si les facteurs d'échelles autres que 1 doivent être renvoyés
+      in: query
+      schema:
+        $ref: '../../components/schemas.yaml#/boolean_enum'
   responses:
     '200':
       description: Succès

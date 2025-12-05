@@ -73,24 +73,36 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
         let client;
         try {
             client = await pool.connect();
-            const { id_er, cubf_n1, id_ref,voir_inv,echelle } = req.query;
+            const { id_er, cubf_n1, id_ref,voir_inv,inclure_echelle,somme_sur_total } = req.query;
             const id_out: number[] = (typeof id_er === 'string' ? id_er.split(',').map(Number) : []);
             const cubf_out: number = (typeof cubf_n1 === 'string' ? Number(cubf_n1) : -1);
             const id_ref_out: number = (typeof id_ref === 'string' ? Number(id_ref) : -1);
             const voir_inv_fin:boolean =(typeof voir_inv ==='string' ?voir_inv.toLowerCase() === 'true' :false);
-            const echelle_fin: number = (typeof echelle === 'string' ? Number(echelle) : 1);
+            const echelle_fin: boolean = (typeof inclure_echelle === 'string' && inclure_echelle ==='true' ? true : false);
+            const somme_bool_tot: boolean = (typeof somme_sur_total === 'string' && somme_sur_total ==='true' ? true : false);
             let query: string;
             let result: any;
             let conditions: string[] = [];
+            let groupby_av: string[] = [];
+            let groupby_inv: string[] = [];
+            let val_int_va: string = 'av.n_places_min'
+            let val_int_inv: string = 'inv.n_places_min'
             if (id_out.length > 0) {
                 conditions.push(`av.id_er IN (${id_out.join(',')})`)
             }
             if (cubf_out !== -1) {
                 conditions.push(`av.land_use =  ${cubf_out}`)
             }
-            conditions.push(`av.facteur_echelle = ${echelle_fin}`)
+            if (echelle_fin === false){
+                conditions.push(`av.facteur_echelle = 1`)
+            }
+            if (somme_bool_tot === true && cubf_out!==-1){
+                groupby_av = ['av.land_use','av.id_er','rsd.description_er','lud.land_use_desc','av.facteur_echelle']
+                groupby_inv = ['inv.land_use','av.id_er','rsd.description_er','lud.land_use_desc','av.facteur_echelle']
+            }
+            
             let pre_query:string = '';
-            // Création des CTE et de l'inventaire tel qu'implémenté
+            // Création des CTE et obtention de l'inventaire tel qu'implémenté
             if (voir_inv_fin){
                 if (id_ref_out === -1){
                     pre_query = `

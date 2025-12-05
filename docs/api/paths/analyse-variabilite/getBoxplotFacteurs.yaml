@@ -1,0 +1,20 @@
+get:
+  summary: Obtiens les prédictions pour les différents facteurs d'échelle
+  tags: ["Analyse de variabilité"]
+  parameters:
+    - name: cubf_n1
+      schema:
+        $ref: '../../components/schemas.yaml#/cubf_n1_enum'
+      example: 1
+      description: Code d'utilsaiton du bien fonds simplifié pour l'agrégation
+    - name: id_er
+      type: number
+      example: 1,2,3,4
+      description: Identifiants des identifiants 
+  responses:
+    '200':
+      description: Succès
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_ana_var'

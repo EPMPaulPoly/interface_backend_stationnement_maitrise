@@ -113,6 +113,8 @@ paths:
     $ref: './paths/analyse-variabilite/getVariaData.yaml'
   /api/ana-var/histo-varia:
     $ref: './paths/analyse-variabilite/GetHistoGramVariabilite.yaml'
+  /api/ana-var/boxplot-facteurs:
+    $ref: './paths/analyse-variabilite/getBoxplotFacteurs.yaml'
 components:
   schemas:
     $ref: './components/schemas.yaml'
