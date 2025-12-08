@@ -7,10 +7,12 @@ get:
         $ref: '../../components/schemas.yaml#/cubf_n1_enum'
       example: 1
       description: Code d'utilsaiton du bien fonds simplifié pour l'agrégation
+      in: query
     - name: id_er
       type: number
       example: 1,2,3,4
       description: Identifiants des identifiants 
+      in: query
   responses:
     '200':
       description: Succès

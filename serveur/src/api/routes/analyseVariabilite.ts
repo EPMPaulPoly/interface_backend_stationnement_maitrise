@@ -97,8 +97,8 @@ export const creationRouteurAnalyseVariabilite = (pool: Pool): Router => {
                 conditions.push(`av.facteur_echelle = 1`)
             }
             if (somme_bool_tot === true && cubf_out!==-1){
-                groupby_av = ['av.land_use','av.id_er','rsd.description_er','lud.land_use_desc','av.facteur_echelle']
-                groupby_inv = ['inv.land_use','av.id_er','rsd.description_er','lud.land_use_desc','av.facteur_echelle']
+                groupby_av = ['av.land_use','av.id_er','rsd.description_er','lud.land_use_desc','av.facteur_echelle'];
+                groupby_inv = ['inv.land_use','av.id_er','rsd.description_er','lud.land_use_desc','av.facteur_echelle'];
             }
             
             let pre_query:string = '';
