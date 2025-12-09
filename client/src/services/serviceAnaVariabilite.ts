@@ -1,7 +1,7 @@
 import { ReponseCalculComplete, ReponseDataGraphique, ReponseDataGraphiqueText, ReponseResultatAnaVarBarre, ReponseResultatAnaVarHisto } from '../types/serviceTypes';
 import api from './api';
 import axios, { AxiosResponse } from 'axios';
-import { data_graphique, data_graphique_text_labels, resultatAnalyseVariabilite } from '../types/DataTypes';
+import { data_box_plot, data_graphique, data_graphique_text_labels, resultatAnalyseVariabilite } from '../types/DataTypes';
 export const serviceAnaVariabilite = {
     recalculeInventairesFonciersAvecTousEnsRegs: async (): Promise<boolean> => {
         try {
@@ -138,15 +138,31 @@ export const serviceAnaVariabilite = {
             
             if (typeof cubf_n1 !== 'undefined') {
                 query_add.push(`cubf_n1=${cubf_n1}`)
+            }else{
+                query_add.push(`somme_sur_total=true`)
             }
-            let base_query: string = `/ana-var/boxplot-facteurs?id_er=${ids.join(',')}`
+            let base_query: string = `/ana-var/obtiens-donnees-varia?id_er=${ids.join(',')}&inclure_echelle=true`
             if (query_add.length > 0) {
                 base_query += '&' + query_add.join('&')
             }
-            const response: AxiosResponse<ReponseDataGraphique> = await api.get(base_query);
+            
+            const response: AxiosResponse<ReponseResultatAnaVarBarre> = await api.get(base_query);
+            const facteurs_echelles = Array.from(new Set(response.data.data.map((item)=>item.facteur_echelle)))
+            const data_out_graphique: data_box_plot = {
+                labels: facteurs_echelles,
+                datasets: [{
+                    label: `Variation Facteur Échelle`,
+                    data: facteurs_echelles.map((item) => (response.data.data
+                        .filter((item2) => item2.facteur_echelle === item)
+                        .map((item3) => item3.valeur)
+                ))}]
+            }
+            if(typeof cubf_n1 === 'undefined'){
+                console.log('test')
+            }
             return ({
                 success: response.data.success,
-                data: response.data.data
+                data: data_out_graphique
             });
         } catch (error: any) {
             if (axios.isAxiosError(error)) {
@@ -165,15 +181,30 @@ export const serviceAnaVariabilite = {
             
             if (typeof cubf_n1 !== 'undefined') {
                 query_add.push(`cubf_n1=${cubf_n1}`)
+            }else{
+                query_add.push(`somme_sur_total=true`)
             }
-            let base_query: string = `/ana-var/boxplot-par-usage?id_er=${ids.join(',')}`
+            let base_query: string = `/ana-var/obtiens-donnees-varia?id_er=${ids.join(',')}`
             if (query_add.length > 0) {
                 base_query += '&' + query_add.join('&')
             }
-            const response: AxiosResponse<ReponseDataGraphique> = await api.get(base_query);
+            const response: AxiosResponse<ReponseResultatAnaVarBarre> = await api.get(base_query);
+            const facteurs_echelles = Array.from(new Set(response.data.data.map((item)=>item.facteur_echelle)))
+            const data_out_graphique: data_box_plot = {
+                labels: facteurs_echelles,
+                datasets: [{
+                    label: `Infos distributions`,
+                    data: facteurs_echelles.map((item) => (response.data.data
+                        .filter((item2) => item2.facteur_echelle === item)
+                        .map((item3) => item3.valeur)
+                ))}]
+            }
+            if(typeof cubf_n1 === 'undefined'){
+                console.log('test')
+            }
             return ({
                 success: response.data.success,
-                data: response.data.data
+                data: data_out_graphique
             });
         } catch (error: any) {
             if (axios.isAxiosError(error)) {

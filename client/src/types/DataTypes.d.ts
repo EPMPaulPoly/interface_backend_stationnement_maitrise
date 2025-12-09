@@ -316,6 +316,7 @@ export interface resultatAnalyseVariabilite{
     cubf: number,
     desc_cubf: string
     n_lots: number
+    facteur_echelle:number
 }
 
 export interface resultatHistoVariabilite{
