@@ -1120,7 +1120,7 @@ condition_booleen_strates:
 colonnes_possibles:
   type: string
 
-feuilles_valid:
+population_strate:
   type: object
   properties:
     id_strate:
@@ -1129,12 +1129,19 @@ feuilles_valid:
     desc_concat:
       type: string
       description: Description concatenée de la strate
-    n_sample:
-      type: integer
-      description: Nombre d'échantillons requise par l'utilisateur
     popu_strate:
       type: integer
       description: Nombre de lots appartenant à la strate
+
+feuilles_valid:
+  allOf:
+    - $ref: '#/population_strate'
+    - type: object
+      properties:
+        n_sample:
+          type: integer
+          description: taille de l'échantillon pour l'évaluation de la performance
+
 
 resultat_eval_sans_id:
   type: object
@@ -1532,6 +1539,16 @@ reponse_feuilles_strates_validation:
           type: array
           items:
             $ref: '#/feuilles_valid' 
+
+reponse_popu_strates:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/population_strate'
 
 reponse_resultat_eval:
   allOf:

@@ -127,6 +127,8 @@ paths:
     $ref: './paths/evaluation_perf/resultatsNoId.yaml'
   /api/valid/resultats/{id_val}:
     $ref: './paths/evaluation_perf/resultatsWId.yaml'
+  /api/valid/popu-strate:
+    $ref: './paths/evaluation_perf/popuStrate.yaml'
 components:
   schemas:
     $ref: './components/schemas.yaml'

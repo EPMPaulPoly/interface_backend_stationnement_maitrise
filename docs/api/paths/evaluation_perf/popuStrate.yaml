@@ -1,0 +1,25 @@
+get:
+  summary: Obtiens la population des feuilles de chaque strate
+  tags: ['Évaluation des prédictions']
+  responses:
+    '200':
+      summary: Succès
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_popu_strates'
+          example:
+            success: true
+            data: 
+              - id_strate: 2509
+                desc_concat: usage multiple
+                popu_strate: 97856
+    '500':
+      summary: Erreur interne
+      content: 
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: Erreur interne serveur
