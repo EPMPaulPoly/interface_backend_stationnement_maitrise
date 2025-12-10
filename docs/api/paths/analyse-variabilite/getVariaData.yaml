@@ -33,6 +33,11 @@ get:
       in: query
       schema:
         $ref: '../../components/schemas.yaml#/boolean_enum'
+    - name: somme_sur_total
+      description: Booléen indiquant si l'on veut faire une somme sur le total ou simplement renvoyer toutes les utilisation du sol
+      in: query
+      schema:
+        $ref: '../../components/schemas.yaml#/boolean_enum'
   responses:
     '200':
       description: Succès

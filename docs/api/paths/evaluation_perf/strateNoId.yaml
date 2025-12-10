@@ -1,0 +1,258 @@
+get:
+  summary: Recerche des catégories de performance
+  tags: ['Évaluation des prédictions']
+  parameters: 
+    - name: id_strate
+      in: query
+      description: Identifiant de la strate
+      example: 1
+    - name: n_samples_ge
+      in: query
+      description: Nombre d'échantillons supérieurs à la valeur spécifiée
+      example: 20
+    - name: n_samples_se
+      in: query
+      description: Nombre d'échantillons inférieurs à la valeur spécifiée
+      example: 40
+    - name: colonne_sample
+      in: query
+      description: Nom de la colonne
+      example: n_logements
+  responses:  
+    '200':
+      summary: Succès
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_strate'
+          examples:
+            Exemple 1:
+              value:
+                success: true
+                data:
+                  - id_strate: 1
+                    index_ordre: 0
+                    nom_strate: Usages multiples
+                    est_racine: true
+                    nom_colonne: n_cubf
+                    logements_valides: null
+                    date_valide: true
+                    superf_valide: true
+                    condition:
+                      condition_type: range
+                      condition_min: 2
+                      condition_max: 2000
+                    n_sample: 30
+                    ids_enfants: []
+                    subStrata: []
+                  - id_strate: 2
+                    index_ordre: 1
+                    nom_strate: Usage unique
+                    est_racine: true
+                    nom_colonne: n_cubf
+                    logements_valides: null
+                    date_valide: null
+                    superf_valide: true
+                    n_sample: null
+                    condition: 
+                      condition_type: equals
+                      condition_valeur: 1
+                    ids_enfants: [3,4,5]
+                    subStrata:
+                      - id_strate: 3
+                        index_ordre: 0
+                        nom_strate: Logements
+                        est_racine: false
+                        nom_colonne: cubf
+                        logements_valides: true
+                        date_valide: true
+                        superf_valide: null
+                        n_sample: null
+                        condition:  
+                          condition_type: range
+                          condition_min: 1000
+                          condition_max: 1999
+                        ids_enfants: [6,7]
+                        subStrata:
+                          - id_strate: 6
+                            nom_strate: Unifamilial
+                            index_ordre: 0
+                            est_racine: false
+                            logements_valides: true
+                            date_valide: true
+                            superf_valide: null
+                            n_sample: 30
+                            nom_colonne: n_logements
+                            ids_enfants: []
+                            subStrata: []
+                            condition:
+                              condition_type: equals
+                              condition_valeur: 1
+                          - id_strate: 7
+                            nom_strate: MultiFamilial
+                            index_ordre: 1
+                            est_racine: false
+                            logements_valides: true
+                            date_valide: true
+                            superf_valide: null
+                            n_sample: 30
+                            nom_colonne: n_logements
+                            ids_enfants: []
+                            subStrata: []
+                            condition:
+                              condition_type: range
+                              condition_min: 2
+                              condition_max: 2000
+                      - id_strate: 4
+                        index_ordre: 1
+                        nom_strate: Commercial
+                        est_racine: false
+                        nom_colonne: cubf
+                        logements_valides: null
+                        date_valide: true
+                        superf_valide: null
+                        n_sample: 30
+                        condition:
+                          condition_type: range
+                          condition_min: 5000
+                          condition_max: 5999
+                        ids_enfants: []
+                        subStrata: []
+                      - id_strate: 5
+                        index_ordre: 2
+                        nom_strate: Services
+                        est_racine: false
+                        nom_colonne: cubf
+                        logements_valides: null
+                        date_valide: true
+                        superf_valide: true
+                        condition:
+                          condition_type: range
+                          condition_min: 6000
+                          condition_max: 6999
+                        ids_enfants: []
+                        subStrata: []
+  
+    '500':
+      summary: Erreur Interne serveur
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          examples:
+            Exemple simple:
+              value:
+                success: false
+                message: Erreur Interne serveur
+
+post:
+  summary: Création d'une nouvelle strate
+  tags: ['Évaluation des prédictions']
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas.yaml#/corps_requete_nouvelle_strate'
+        examples:
+          Exemple racine:
+            value:
+              id_parent: null
+              princip:
+                nom_strate: Nouvelle Strate racine usage unique
+                est_racine: true
+                index_ordre: 0
+                nom_colonne: n_cubf
+                logements_valides: null
+                date_valide: null
+                superf_valide: null
+                condition: 
+                  type: equals
+                  condition_valeur: 1
+                n_sample: null
+                ids_enfants: null
+          Exemple feuille:
+            value: 
+              id_parent: 1
+              princip:
+                nom_strate: Nouvelle strate commercial fille de la précédente
+                est_racine: false
+                index_ordre: 0
+                nom_colonne: cubf
+                logements_valides: null
+                date_valide: true
+                superf_valide: true
+                condition:
+                  type: range
+                  condition_min: 5000
+                  condition_max: 5999
+                n_sample: 30
+                ids_enfants: null
+  responses:
+    '200':
+      summary: Succès
+      description: Renvoie l'arbre complet avec la nouvelle strate ajoutée
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_strate'
+          examples:
+            Exemple racine:
+              value:
+                success: true
+                data: 
+                  - id_strate: 1
+                    nom_strate: Nouvelle Strate racine usage unique
+                    est_racine: true
+                    index_ordre: 0 
+                    nom_colonne: n_cubf
+                    logements_valides: null
+                    date_valide: null
+                    superf_valide: null
+                    condition:
+                      type: equals
+                      condition_valeur: 1
+                    n_sample: null
+                    ids_enfants: []
+                    subStrata: []
+            Exemple feuille:
+              value:
+                success: true
+                data: 
+                  - id_strate: 1
+                    nom_strate: Nouvelle Strate racine usage unique
+                    est_racine: true
+                    index_ordre: 0 
+                    nom_colonne: n_cubf
+                    logements_valides: null
+                    date_valide: null
+                    superf_valide: null
+                    condition:
+                      condition_type: equals
+                      condition_valeur: 1
+                    n_sample: null
+                    ids_enfants: [2]
+                    subStrata: 
+                      - id_strate: 2
+                        nom_strate: Nouvelle strate commercial fille de la précédente
+                        est_racine: false
+                        index_ordre: 0
+                        nom_colonne: cubf
+                        logements_valides: null
+                        date_valide: true
+                        superf_valide: null
+                        condition: 
+                          condition_type: range
+                          condition_min: 5000
+                          condition_max: 5999
+                        ids_enfants: null
+                        subStrata: []
+    '500':
+      summary: Erreur Interne serveur
+      description: Erreur
+      content: 
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: Erreur interne serveur

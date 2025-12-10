@@ -1,0 +1,31 @@
+get:
+  summary: Renvoie les variables sélectionables pour les conditions
+  description: La définition des strates se fait en mettant des conditions sur les propriétés combinées des lots et des entrées du cadastre. 
+  tags: ['Évaluation des prédictions']
+  responses:
+    '200':
+      summary: Succès
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: true
+            data: 
+              - nb_entrees
+              - n_cubf
+              - sup_planch_tot 
+              - n_logements_tot
+              - premiere_constr
+              - valeur_totale
+              - cubf_principal
+              - valeur_maximale
+    '500':
+      summary: Erreur
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: Erreur interne serveur

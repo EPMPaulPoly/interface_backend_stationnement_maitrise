@@ -1,0 +1,27 @@
+get:
+  summary: Renvoie une description consolidée des strates qui n'ont pas d'enfants
+  description: La structure en arbre fait en sorte que les strates sont tributaires de leur parent. Cet appel de l'API permet de seulement renvoyer les 
+  tags: ['Évaluation des prédictions']
+  responses:
+    '200':
+      summary: Succès
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_feuilles_strates_validation'
+          example:
+            success: true
+            data:
+              - id_strate: 36
+                desc_concat: Usage unique - Logements - Unifamilial
+                n_sample: 30
+                popu_strate: 97748
+    '500':
+      summary: Erreur interne serveur 
+      content:
+        application/json: 
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: Erreur interne

@@ -113,8 +113,20 @@ paths:
     $ref: './paths/analyse-variabilite/getVariaData.yaml'
   /api/ana-var/histo-varia:
     $ref: './paths/analyse-variabilite/GetHistoGramVariabilite.yaml'
-  /api/ana-var/boxplot-facteurs:
-    $ref: './paths/analyse-variabilite/getBoxplotFacteurs.yaml'
+  /api/valid/strate:
+    $ref: './paths/evaluation_perf/strateNoId.yaml'
+  /api/valid/strate/{id_strate}:
+    $ref: './paths/evaluation_perf/strateWId.yaml'
+  /api/valid/strate/donnees_intrantes:
+    $ref: './paths/evaluation_perf/strateDonneesIntrantes.yaml'
+  /api/valid/strate/colonnes_possibles:
+    $ref: './paths/evaluation_perf/strateColonnesPossibles.yaml'
+  /api/valid/feuilles:
+    $ref: './paths/evaluation_perf/feuillesStrates.yaml'
+  /api/valid/resultats:
+    $ref: './paths/evaluation_perf/resultatsNoId.yaml'
+  /api/valid/resultats/{id_val}:
+    $ref: './paths/evaluation_perf/resultatsWId.yaml'
 components:
   schemas:
     $ref: './components/schemas.yaml'

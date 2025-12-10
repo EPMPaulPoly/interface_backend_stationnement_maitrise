@@ -1,0 +1,68 @@
+put:
+  summary: modification d'un résultat d'évaluation de la performance
+  tags: ['Évaluation des prédictions']
+  parameters:
+    - name: id_val
+      in: path
+      type: integer
+      example: 2509
+      description: Identifiant du résultat d'évaluation
+  requestBody:  
+    content: 
+      application/json:
+        schema: 
+          $ref: '../../components/schemas.yaml#/resultat_eval_sans_id'
+        example:
+          id_strate: 45
+          g_no_lot: 'test 206 208'
+          n_places: 35
+          fond_tuile: test
+  responses:
+    '200':
+      summary: Succès
+      content:
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/reponse_resultat_eval'
+          example: 
+            success: true
+            data: 
+              - id_val: 2509
+                id_strate: 45
+                g_no_lot: 'test 206 208'
+                n_places: 35
+                fond_tuile: test
+    '500':
+      summary: Erreur interne serveur
+      content:
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/api_response'
+delete:
+  summary: Suppression d'un résultat d'évaluation de la performance
+  tags: ['Évaluation des prédictions']
+  parameters:
+    - name: id_val
+      in: path
+      type: integer
+      example: 2509
+      description: Identifiant du résultat d'évaluation
+  responses:
+    '200':
+      summary: Succès
+      content:
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/api_response'
+          example: 
+            id_val: 2509
+            id_strate: 45
+            g_no_lot: 'test 206 208'
+            n_places: 35
+            fond_tuile: test
+    '500':
+      summary: Erreur interne serveur
+      content:
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/api_response'

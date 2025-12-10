@@ -1,0 +1,89 @@
+get:
+  summary: Obtiens les résultats d'évaluation existants
+  tags: ['Évaluation des prédictions']
+  parameters:
+    - name: id_strate
+      in: query
+      description: Identifiant de strate dont on veut obtenir les résultats
+      example: 36
+      type: integer
+    - name: g_no_lot
+      in: query
+      description: Identifiant de lot dont on veut obtenir les résultats d'évaluation de performance
+      example: '1 407 608'
+    - name: fond_tuile
+      schema:
+        $ref: '../../components/schemas.yaml#/enumeration_fond_tuile'
+      example: Géodésie Québec
+      description: Fond de tuile utilisé pour faire le comptage
+    - name: id_val
+      type: integer
+      description: Identifiant de l'entrée d'évaluation des performances
+      example: 30
+  responses:
+    '200':
+      summary: Succès
+      content:
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/reponse_resultat_eval'
+          example: 
+            success: true
+            data: 
+              - id_val: 1
+                id_strate: 36
+                g_no_lot: "1 736 212"
+                n_places: 2
+                fond_tuile: "Géodésie Québec"
+              - id_val: 2
+                id_strate: 36
+                g_no_lot: "1 388 275"
+                n_places: 5
+                fond_tuile: "Géodésie Québec"
+    '500':
+      summary: Erreur serveur
+      content: 
+        application/json:   
+          schema: 
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            succes: false
+            message: Erreur serveur
+post:
+  summary: Création d'un nouveau résultat
+  tags: ['Évaluation des prédictions']
+  requestBody:
+    content:  
+      application/json:
+        schema:
+          $ref: '../../components/schemas.yaml#/resultat_eval_sans_id'
+        example:
+          id_strate: 45
+          g_no_lot: 'test 206 208'
+          n_places: 35
+          fond_tuile: test
+  responses:
+    '200':
+      summary: Succès
+      content:
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/reponse_resultat_eval'
+          example:
+            success: true
+            data: 
+              - id_strate: 45
+                g_no_lot: 'test 206 208'
+                n_places: 35
+                fond_tuile: test
+                id_val: 2509
+    '500':
+      summary: Erreur interne
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: Erreur interne serveur
+      

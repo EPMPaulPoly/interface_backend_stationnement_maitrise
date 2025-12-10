@@ -1,0 +1,119 @@
+put:
+  summary: Modification d'une strate existante
+  tags: ['Évaluation des prédictions']
+  parameters: 
+    - name: id_strate
+      type: integer
+      description: Identifiant de la strate à modifier
+      example: 2
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas.yaml#/strate_valid_sans_sous_strate_et_id'
+        examples: 
+          Exemple Modification feuille:
+            value:
+              nom_strate: Modification de la strate 2 pour couvrir les Services
+              index_ordre: 0
+              nom_colonne: cubf
+              est_racine: false
+              logements_valides: null
+              date_valide: true
+              superf_valide: true
+              ids_enfants: null
+              condition:
+                condition_type: range
+                condition_min: 6000
+                condition_max: 6999 
+  responses:
+    '200':
+      summary: Succès
+      content:
+        application/json:
+          schema: 
+            $ref: '../../components/schemas.yaml#/reponse_strate'
+          examples:
+            Exemple Modification feuille:
+              value:
+                success: true
+                data: 
+                  - id_strate: 1
+                    nom_strate: Nouvelle Strate racine usage unique
+                    est_racine: true
+                    index_ordre: 0 
+                    nom_colonne: n_cubf
+                    logements_valides: null
+                    date_valide: null
+                    superf_valide: null
+                    condition:
+                      condition_type: equals
+                      condition_valeur: 1
+                    n_sample: null
+                    ids_enfants: [2]
+                    subStrata: 
+                      - id_strate: 2
+                        nom_strate: Modification de la strate 2 pour couvrir les Services
+                        est_racine: false
+                        index_ordre: 0
+                        nom_colonne: cubf
+                        logements_valides: null
+                        date_valide: true
+                        superf_valide: true
+                        condition: 
+                          condition_type: range
+                          condition_min: 600
+                          condition_max: 5999
+                        ids_enfants: null
+                        subStrata: []
+    '500':
+      summary: Erreur Interne serveur
+      content:
+        schema:
+          
+delete:
+  summary: Suppression catégorie de validation
+  tags: ['Évaluation des prédictions']
+  parameters:
+    - name: id_strate
+      in: path
+      type: integer
+      description: Identifiant de la strate à supprimer
+      example: 2
+  responses: 
+    '200':
+      summary: Succès
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/reponse_strate'
+          examples:
+            Suppression feuille:
+              value:
+                success: true
+                data: 
+                  - id_strate: 1
+                    nom_strate: Nouvelle Strate racine usage unique
+                    est_racine: true
+                    index_ordre: 0 
+                    nom_colonne: n_cubf
+                    logements_valides: null
+                    date_valide: null
+                    superf_valide: null
+                    condition:
+                      condition_type: equals
+                      condition_valeur: 1
+                    n_sample: null
+                    ids_enfants: []
+                    subStrata: []
+    '500':
+      summary: Erreur interne serveur
+      content: 
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: Erreur interne serveur
+
+        

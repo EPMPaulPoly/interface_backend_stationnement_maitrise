@@ -1022,9 +1022,9 @@ retour_PAV_etendu:
           description: Voitures qui sont transférées de manière interne du résidentiel au public
 
 
-# -------------------------------------------------------------------------
-# --------------------- Analyse de variabilité ----------------------------
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------
+# --------------------- Analyse de variabilité --------------------------
+# -----------------------------------------------------------------------
 boolean_enum:
   type: string
   enum:
@@ -1081,7 +1081,163 @@ retour_histo_ana_var:
     frequence: 
       type: number
       description: Fréquence à laquelle les prédictions dans l'intervalle ont lieu
+# -----------------------------------------------------------------------
+# ------------------------ Évaluation Prédictions -----------------------
+# -----------------------------------------------------------------------
+condition_validation:
+  type: object
+  properties:
+    condition_type:
+      type: string
+      description: Énumération pour donner s'il s'agit d'une étendue de valeurs ou une valeur unique
+      enum: 
+        - range
+        - equals 
+    condition_min:
+      type: number
+      description: Valeur minimum inclusive de l'étendue de validité de la condition
+    condition_max:
+      type: number
+      description: Valeur maximum inclusive de l'étendue de validit de la condition
+    condition_valeur:
+      type: number
+      description: Valeur exacte à laquelle doit être égale la colonne spécifiée
 
+enumeration_fond_tuile:
+  type: string
+  enum:
+    - OSM
+    - Géodésie Québec
+    - ESRI
+
+condition_booleen_strates:
+  type: boolean
+  enum:
+    - true
+    - false
+    - null
+
+colonnes_possibles:
+  type: string
+
+feuilles_valid:
+  type: object
+  properties:
+    id_strate:
+      description: identifiant de strate
+      type: integer
+    desc_concat:
+      type: string
+      description: Description concatenée de la strate
+    n_sample:
+      type: integer
+      description: Nombre d'échantillons requise par l'utilisateur
+    popu_strate:
+      type: integer
+      description: Nombre de lots appartenant à la strate
+
+resultat_eval_sans_id:
+  type: object
+  properties:
+    g_no_lot: 
+      decription: Identifiant de lot
+      type: string
+    id_strate: 
+      description: Strate à laquelle appartient le lot
+      type: string
+    n_places:
+      description: nombre de places observées
+      type: integer
+    fond_tuile:
+      schema: 
+        $ref: '#/enumeration_fond_tuile'
+
+resultat_eval:
+  allOf:
+    - $ref: '#/resultat_eval_sans_id'
+    - type: object
+      properties:
+        g_no_lot: 
+          decription: Identifiant de lot
+          type: string
+        id_strate: 
+          description: Strate à laquelle appartient le lot
+          type: string
+        n_places:
+          description: nombre de places observées
+          type: integer
+        fond_tuile:
+          schema: 
+            $ref: '#/enumeration_fond_tuile'
+
+
+strate_valid_sans_sous_strate_et_id:
+  type: object
+  properties:
+    nom_strate:
+      type: string
+      description: Titre descriptif de la strate
+    est_racine:
+      type: boolean
+      description: Booléen indiquant que cette strate est un point d'entrée de l'arbre
+    index_ordre:
+      type: integer
+      description: Variable implémentée pour rendre persistent l'ordre d'affichage des différents éléments
+    nom_colonne:
+      type: string
+      description: Nom de la colonne à laquelle s'applique 
+    logements_valides:
+      schema:
+        $ref: '#/condition_booleen_strates'
+    superf_valide:
+      schema:
+        $ref: '#/condition_booleen_strates'
+    date_valide:
+      schema:
+        $ref: '#/condition_booleen_strates'
+    condition:
+      schema:
+        $ref: '#/condition_validation'
+    n_sample:
+      type: integer
+      description: Nombre de lots à valider pour quantifier la précision du modèle
+    ids_enfants:
+      type: array
+      description: Liste des identifiants des strates enfants
+      nullable: true
+      items:
+        type: number
+
+strate_valid_sans_sous_strate:
+  allOf:  
+    - $ref: '#/strate_valid_sans_sous_strate_et_id'
+    - type: object
+      properties: 
+        id_strate:
+          type: integer
+          description: identifiant de la strate
+
+strate_validation:
+  allOf:
+    - $ref: '#/strate_valid_sans_sous_strate'
+    - type: object
+      properties:
+        subStrata:
+          type: array
+          items:
+            schema: 
+              $ref: '#/strate_validation'
+
+corps_requete_nouvelle_strate:
+  type: object
+  properties:
+    id_parent:
+      type: integer
+      description: identifiant de la strate parent dans laquelle on veut insérer cette sous-strate
+      nullable: true
+    princip:
+      schema: 
+        $ref: '#/strate_valid_sans_sous_strate_et_id'
 # -------------------------------------------------------------------
 # --------------------------- Formats réponse -----------------------
 # ------------------------------------------------------------------- 
@@ -1343,3 +1499,46 @@ reponse_PAV_recalcul:
           items: 
             schema:
               $ref: '#/retour_PAV_etendu'
+
+# -------------------------------------------------------------------
+# -------------------- Reponse Strate Évaluation --------------------
+# -------------------------------------------------------------------
+reponse_strate:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/strate_validation'
+  
+reponse_colonne_possible:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/colonnes_possibles'
+
+reponse_feuilles_strates_validation:  
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/feuilles_valid' 
+
+reponse_resultat_eval:
+  allOf:
+    - $ref: '#/api_response'
+    - type: object
+      properties: 
+        data: 
+          type: array
+          items:  
+            $ref: '#/resultat_eval'

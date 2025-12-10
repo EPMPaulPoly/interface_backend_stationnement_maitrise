@@ -1,0 +1,21 @@
+get:
+  summary: Assignation des lots aux strates et calculs anciliaires
+  tags: ['Évaluation des prédictions']
+  responses:
+    '200':
+      summary: Succès
+      content: 
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: true
+    '500':
+      summary: Erreur interne serveur
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+          example:
+            success: false
+            message: Erreur interne serveur
