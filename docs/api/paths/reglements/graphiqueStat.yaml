@@ -1,0 +1,41 @@
+get:
+  summary: Obtenir les règlements sous forme graphique
+  tags: ['Règlements']
+  parameters:
+    - name: id_er
+      type: string
+      example: 1,2,3,4
+      description: Identifiant de l'ensemble de règlement auquel appartient le règlements
+      required: true
+      in: query
+    - name: id_unite
+      type: integer
+      description: Identifiant de l'unité à utiliser
+      example: 2
+      required: true
+      in: query
+    - name: cubf
+      type: integer
+      description: Identifiant du code d'utilsation du bien fonds à utiliser pour le graphique
+      example: 1
+      required: true
+      in: query
+    - name: min
+      type: integer
+      description: valeur minimal de l'abscisse (l'unité fournie)
+      example: 0
+      in: query
+    - name: max
+      type: integer
+      description: valeur maximale de l'abscisse (l'unité fournie)
+    - name: pas
+      type: integer
+      description: Pas à utiliser entre la valeur minimnale et maximale fournies
+      in: query
+  responses:
+    '200':
+      summary: Succès
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'

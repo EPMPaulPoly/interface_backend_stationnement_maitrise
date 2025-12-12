@@ -1120,6 +1120,17 @@ condition_booleen_strates:
 colonnes_possibles:
   type: string
 
+enumeration_type_graphiques_validation:
+  type: string
+  enum: 
+    - stationnement
+    - stationnement_reel
+    - stationnement_predit
+    - pred_par_reel
+    - reel_par_pred
+    - bland_altman
+    - reel_vs_pred
+
 population_strate:
   type: object
   properties:

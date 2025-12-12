@@ -1,0 +1,30 @@
+get:
+  summary: Formattage des données pour pouvoir être représentées sous forme graphique
+  tags: ['Évaluation des prédictions']
+  parameters:
+    - name: id_strate
+      in: query
+      type: integer
+      description: Identifiant de la strate pour laquelle on veut obtenir l'information
+    - name: type
+      in: query
+      description: Type de graphique à renvoyer
+      schema:
+        $ref: '../../components/schemas.yaml#/enumeration_type_graphiques_validation'
+    - name: x_max
+      in: query
+      type: number
+      description: Valeur maximale de l'abscisse. Utile pour les distributions
+  responses: 
+    '200':
+      summary: Succès
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'
+    '500':
+      summary: Erreur interne serveur
+      content:  
+        application/json:
+          schema:
+            $ref: '../../components/schemas.yaml#/api_response'

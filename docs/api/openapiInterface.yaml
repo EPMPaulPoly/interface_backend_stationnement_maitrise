@@ -51,6 +51,8 @@ paths:
     $ref: './paths/reglements/ligneDefReglementWId.yaml'
   /api/reglements/ligne-def:
     $ref: './paths/reglements/ligneDefReglementNoId.yaml'
+  /api/reglements/graphiques:
+    $ref: './paths/reglements/graphiqueStat.yaml'
   /api/ens-reg/{id_er}:
     $ref: './paths/ensemble_reglements/ensRegWId.yaml'
   /api/ens-reg/complet/{id_er}:
@@ -129,6 +131,8 @@ paths:
     $ref: './paths/evaluation_perf/resultatsWId.yaml'
   /api/valid/popu-strate:
     $ref: './paths/evaluation_perf/popuStrate.yaml'
+  /api/valid/graphiques:
+    $ref: './paths/evaluation_perf/graphiquesEvalPerf.yaml'
 components:
   schemas:
     $ref: './components/schemas.yaml'
