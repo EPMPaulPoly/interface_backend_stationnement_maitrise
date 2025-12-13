@@ -28,10 +28,12 @@ get:
     - name: max
       type: integer
       description: valeur maximale de l'abscisse (l'unité fournie)
+      example: 1000
     - name: pas
       type: integer
       description: Pas à utiliser entre la valeur minimnale et maximale fournies
       in: query
+      example: 50
   responses:
     '200':
       summary: Succès

@@ -3,15 +3,14 @@ import { Pool } from 'pg';
 import { DbDefReglement, DbEnteteReglement, DbReglementComplet } from '../../types/database';
 import path from 'path';
 import { spawn } from 'child_process';
-
+import { GetReglementsParams } from '../repositories/reglements.repositories';
+import { serviceGetReg } from '../services/reglements.services';
 
 export const creationRouteurReglements = (pool: Pool): Router => {
     const router = Router();
     // Get all lines
     // Get all lines
-    const obtiensTousEntetesReglements: RequestHandler = async (req, res): Promise<void> => {
-        console.log('Serveur - Obtention toutes entetes')
-
+    const parseParamsGetRules = (req:Request):GetReglementsParams =>{
         const {
             annee_debut_apres,
             annee_debut_avant,
@@ -21,97 +20,45 @@ export const creationRouteurReglements = (pool: Pool): Router => {
             ville,
             texte,
             article,
-            paragraphe
+            paragraphe,
+            unite,
+            format,
+            id_er,
+            id_periode_geo,
+            id_periode,
+            cubf,
+            id_reg_stat
         } = req.query;
 
-        const conditions: string[] = [];
-        const values: any[] = []; // store parameters
-        let paramIndex = 1;
+        return{
+            reg_complet: format!==undefined && format==='c'?true:false,
+            annee_debut_apres: annee_debut_apres!==undefined? Number(annee_debut_apres) : undefined,
+            annee_debut_avant: annee_debut_avant!==undefined? annee_debut_avant!=='null'? Number(annee_debut_avant):null:undefined,
+            annee_fin_avant: annee_fin_avant!==undefined?Number(annee_fin_avant):undefined,
+            annee_fin_apres: annee_fin_apres!==undefined?annee_fin_apres!=='null'?Number(annee_fin_apres):null:undefined,
+            description: description!==undefined?String(description):undefined,
+            ville: ville!==undefined?String(ville):undefined,
+            texte: texte!==undefined?String(texte):undefined,
+            paragraphe: paragraphe!==undefined?String(paragraphe):undefined,
+            article: article!==undefined?String(article):undefined,
+            unite: unite!==undefined?String(unite).split(',').map((item)=>Number(item)):undefined,
+            id_er: id_er!==undefined?String(id_er).split(',').map((item)=>Number(item)):undefined,
+            id_periode_geo:id_periode_geo!==undefined?String(id_periode_geo).split(',').map((item)=>Number(item)):undefined,
+            id_periode: id_periode!==undefined?String(id_periode).split(',').map((item)=>Number(item)):undefined,
+            cubf: cubf!==undefined?String(cubf).split(',').map((item)=>Number(item)):undefined,
+            id_reg_stat: id_reg_stat!==undefined?String(id_reg_stat).split(',').map((item)=>Number(item)):undefined,
+        }
+    }
 
-        let client;
-
+    const obtiensTousEntetesReglements: RequestHandler = async (req, res): Promise<void> => {
+        console.log('Serveur - Obtention toutes entetes')
         try {
-            // Helper function to add condition and param
-            const addCondition = (sql: string, value: any) => {
-                conditions.push(sql.replace('?', `$${paramIndex}`));
-                values.push(value);
-                paramIndex++;
-            };
-
-            if (annee_debut_apres !== undefined) {
-                if (annee_debut_apres === 'null') {
-                    conditions.push('annee_debut_reg IS NULL');
-                } else {
-                    addCondition('annee_debut_reg >= ?', Number(annee_debut_apres));
-                }
-            }
-
-            if (annee_debut_avant !== undefined) {
-                if (annee_debut_avant === 'null') {
-                    conditions.push('annee_debut_reg IS NULL');
-                } else {
-                    addCondition('annee_debut_reg <= ?', Number(annee_debut_avant));
-                }
-            }
-
-            if (annee_fin_apres !== undefined) {
-                if (annee_fin_apres === 'null') {
-                    conditions.push('annee_fin_reg IS NULL');
-                } else {
-                    addCondition('annee_fin_reg >= ?', Number(annee_fin_apres));
-                }
-            }
-
-            if (annee_fin_avant !== undefined) {
-                if (annee_fin_avant === 'null') {
-                    conditions.push('annee_fin_reg IS NULL');
-                } else {
-                    addCondition('annee_fin_reg <= ?', Number(annee_fin_avant));
-                }
-            }
-
-            if (description !== undefined) {
-                addCondition(`to_tsvector('french', description) @@ plainto_tsquery('french', ?)`, decodeURIComponent(description as string));
-            }
-
-            if (ville !== undefined) {
-                addCondition(`to_tsvector('french', ville) @@ plainto_tsquery('french', ?)`, decodeURIComponent(ville as string));
-            }
-
-            if (texte !== undefined) {
-                addCondition(`to_tsvector('french', texte_loi) @@ plainto_tsquery('french', ?)`, decodeURIComponent(texte as string));
-            }
-
-            if (paragraphe !== undefined) {
-                addCondition(`to_tsvector('french', paragraphe_loi) @@ plainto_tsquery('french', ?)`, decodeURIComponent(paragraphe as string));
-            }
-
-            if (article !== undefined) {
-                addCondition(`to_tsvector('french', article_loi) @@ plainto_tsquery('french', ?)`, decodeURIComponent(article as string));
-            }
-
-            // Final SQL build
-            let query = `
-      SELECT *
-      FROM public.entete_reg_stationnement
-    `;
-
-            if (conditions.length > 0) {
-                query += 'WHERE ' + conditions.join(' AND ') + '\n';
-            }
-
-            query += 'ORDER BY id_reg_stat ASC';
-
-            client = await pool.connect();
-            const result = await client.query(query, values);
-            res.json({ success: true, data: result.rows });
+            const params = parseParamsGetRules(req)
+            const result_2 = await serviceGetReg(pool,params)
+            res.json({ success: true, data: result_2 });
         } catch (err) {
             res.status(500).json({ success: false, error: 'Database error' });
-        } finally {
-            if (client) {
-                client.release(); // Release the connection back to the pool
-            }
-        }
+        } 
     };
 
     const obtiensReglementCompletParId: RequestHandler = async (req, res): Promise<void> => {
