@@ -1,6 +1,6 @@
 get:
   summary: Obtenir les règlements sous forme graphique
-  tags: ['Règlements']
+  tags: ['Règlement']
   parameters:
     - name: id_er
       type: string
